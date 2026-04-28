@@ -6,10 +6,11 @@ UniVerse — 대학생 실명 SNS 커뮤니티 플랫폼
 - 1차 타겟: 국민대학교
 
 ## 기술 스택
-- Next.js 14 App Router + TypeScript + Tailwind CSS
+- Next.js 16 App Router + TypeScript + Tailwind CSS
 - Supabase (Auth, Postgres, Storage, Realtime)
 - Vercel 배포
 - Expo (React Native) — 앱 전환 예정
+- 현재 런타임 버전: React 19
 
 ## 개발 단계
 ```
@@ -75,35 +76,51 @@ features/     ← 로직/훅/API → 앱 전환 시 재사용
 ```
 src/
   app/
-    (auth)/           ← 인증 관련 페이지
+    (auth)/           ← 인증 관련 페이지 그룹
+      auth/
+        callback/route.ts
+        login/
+          LoginForm.tsx
+          page.tsx
+        signup/
+          SignupForm.tsx
+          page.tsx
+      login/page.tsx   ← `/auth/login` alias
+      signup/page.tsx  ← `/auth/signup` alias
     (main)/           ← 메인 앱 페이지
+      layout.tsx
       page.tsx        ← 홈 피드
-      search/
-      category/
-      profile/[id]/
-      chat/
-      notifications/
-      story/[id]/
       posts/write/
-    api/              ← API route handlers
+    onboarding/
+      page.tsx
     layout.tsx
+    globals.css
   components/
-    common/           ← Avatar, Button, Modal 등
-    feed/             ← FeedList, PostCard, LikeButton 등
-    story/            ← StoryBar, StoryItem, StoryViewer
+    feed/
+      FeedList.tsx
+      PostCard.tsx
+      PostImageUploader.tsx
+    story/
+      StoryBar.tsx
+      StoryItem.tsx
     layout/           ← Header, BottomTabBar, SideBar
   features/
-    auth/             ← useCurrentUser, authApi.ts
-    feed/             ← useFeed, usePost, feedApi.ts
-    story/            ← useStory, storyApi.ts
-    profile/          ← useProfile, profileApi.ts
-    chat/             ← useChat, chatApi.ts
+    auth/
+      api.ts
+    feed/
+      api.ts
   lib/
-    supabase/         ← browser.ts, server.ts, middleware.ts
-    utils/            ← date.ts, image.ts 등
-  types/              ← database.types.ts
-  constants/          ← routes.ts, queryKeys.ts 등
+    supabase/
+      browser.ts
+      server.ts
+  middleware.ts
+  types/
+    database.types.ts
 supabase/
   migrations/         ← DB 마이그레이션 파일
 docs/                 ← 운영 문서
 ```
+
+## 2026-04-28 구현 메모
+- 현재 문서 기준보다 실제 구현이 앞선 항목: 인증(비밀번호 로그인/회원가입), 온보딩, 게시물 작성, 피드 조회 및 렌더링
+- 아직 비어 있는 라우트(`search`, `category`, `profile`, `chat`, `notifications`, `story`)는 추후 단계에서 추가 예정

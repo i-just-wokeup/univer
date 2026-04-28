@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-04-28
+
+### 완료
+- 메인 피드 화면 연결 완료
+  - `src/app/(main)/page.tsx`에서 `getFeed()` 호출 후 `FeedList`로 데이터 전달
+  - 로딩 상태, 에러 메시지, 좋아요/댓글/북마크 임시 `console.log` 콜백 연결
+- 피드 레이아웃 및 카드 크기 조정
+  - `src/app/(main)/layout.tsx`의 메인 피드 최대 폭을 약 470px로 축소
+  - `src/components/feed/PostCard.tsx` 이미지 영역을 카드 폭 전체를 쓰는 1:1 비율로 조정
+  - `src/components/story/StoryBar.tsx` 구분선 제거 및 배경 단순화
+- 웹 사이드바 고정 및 작성 버튼 위치 보정
+  - `src/components/layout/SideBar.tsx`를 `justify-between` 구조로 변경
+  - `+ 새 게시물` 버튼이 항상 하단에 보이도록 수정
+  - 사이드바에 `sticky`, `top-0`, `h-screen`을 적용해 스크롤 시에도 고정되도록 조정
+- 운영 문서 및 코드 주석 정리
+  - `docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/WORKLOG.md` 최신 상태 반영
+  - 피드/레이아웃/미들웨어 관련 핵심 파일에 역할 및 주요 로직 주석 추가
+
 ## 2026-04-27
 
 ### 완료
@@ -20,6 +38,119 @@
 - DB 스키마 설계 완료 (총 23개 테이블)
 - 화면 구조 확정 (모바일/웹 레이아웃, 라우팅)
 - 개발 단계 순서 확정 (SNS → 채팅 → 커뮤니티 → 앱전환 → 부가기능)
+- 메인 화면 껍데기 구현
+  - `src/components/layout/Header.tsx` 추가 (모바일 전용: 로고, 알림, 채팅)
+  - `src/components/layout/BottomTabBar.tsx` 추가 (모바일 전용: 홈, 검색, 글쓰기, 카테고리, 프로필)
+  - `src/components/layout/SideBar.tsx` 추가 (웹 전용: 로고, 홈, 검색, 카테고리, 프로필, 채팅, 알림)
+  - `src/app/(main)/layout.tsx` 추가 (모바일/웹 반응형 메인 레이아웃)
+  - `src/app/(main)/page.tsx` 추가 (빈 피드 상태)
+  - 기존 `src/app/page.tsx` 제거 후 메인 라우트를 `(main)` 그룹으로 이동
+- 검증 완료
+  - `npm run lint` 통과
+  - `npm run build` 통과
+- 학교 이메일 인증 기본 흐름 구현
+  - `@supabase/ssr`, `@supabase/supabase-js` 설치
+  - `src/lib/supabase/browser.ts` 추가 (브라우저용 Supabase 클라이언트)
+  - `src/lib/supabase/server.ts` 추가 (server component / route handler용 클라이언트)
+  - `src/features/auth/api.ts` 추가
+    - 이메일 도메인 추출
+    - `universities` 조회
+    - 매직링크 발송
+    - `users.is_onboarded` 조회
+  - `src/middleware.ts` 추가
+    - 비로그인 유저 ` /auth/login ` 리다이렉트
+    - 로그인 + 미온보딩 유저 ` /onboarding ` 리다이렉트
+    - `/auth/*`, `/onboarding` 예외 처리
+  - `src/app/(auth)/auth/login/page.tsx` + `LoginForm.tsx` 추가
+    - 학교 이메일 입력
+    - 등록된 도메인만 매직링크 발송
+    - 미등록 도메인 에러 표시
+  - `src/app/(auth)/auth/callback/route.ts` 추가
+    - 매직링크 코드 교환
+    - 온보딩 여부에 따라 `/` 또는 `/onboarding` 이동
+  - `src/app/onboarding/page.tsx` 추가 (임시 placeholder)
+- 로그인 방식 조정
+  - `signInWithOtp`에 `shouldCreateUser: true` 추가
+  - `emailRedirectTo`를 `http://localhost:3000/auth/callback`으로 고정
+  - Confirm email이 꺼진 환경에서 비밀번호 없이 즉시 로그인 가능한 OTP 흐름으로 조정
+- 개발 환경 미들웨어 인증 체크 임시 비활성화
+  - `src/middleware.ts`에서 `NODE_ENV === 'development'`면 인증/온보딩 체크 없이 통과
+  - 프로덕션 환경에서는 기존 인증 체크 유지
+- 웹 사이드바 게시물 작성 버튼 추가
+  - `src/components/layout/SideBar.tsx` 하단에 `+ 새 게시물` 버튼 추가
+  - 클릭 시 `/posts/write`로 이동하도록 메인 레이아웃에서 props 전달
+- 스토리바 컴포넌트 추가
+  - `src/components/story/StoryItem.tsx` 추가 (아바타, 이름, viewed 상태별 테두리)
+  - `src/components/story/StoryBar.tsx` 추가 (가로 스크롤 목록, 첫 슬롯 `내 스토리`)
+  - `src/app/(main)/page.tsx` 상단에 스토리바 배치
+- 스토리바 더미 데이터 제거
+  - `src/app/(main)/page.tsx`의 하드코딩 스토리 배열 제거
+  - `StoryBar`는 `stories` props만 받아 렌더링하고, 빈 배열이면 `내 스토리`만 표시
+  - 실제 스토리 데이터는 추후 `features/story/api.ts`에서 주입 예정
+- 스토리바 `내 스토리` 버튼 링크화
+  - `src/components/story/StoryBar.tsx`의 `MyStoryItem`을 `Link`로 변경
+  - 클릭 시 `/story/create`로 이동하고 클릭 커서를 표시하도록 수정
+- 게시물 이미지 업로더 컴포넌트 추가
+  - `src/components/feed/PostImageUploader.tsx` 추가
+  - 다중 사진 선택, 최대 10장 제한, 선택 이미지 미리보기, 삭제 버튼 구현
+  - `images` / `onImagesChange` props만으로 동작하도록 구성
+- 게시물 작성 페이지 추가
+  - `src/app/(main)/posts/write/page.tsx` 추가
+  - 상단 헤더, 이미지 업로더, 내용 textarea, 공개 범위 토글, 해시태그 입력 UI 구현
+  - 게시 버튼 클릭 시 `{ images, content, visibility, hashtags }`를 `console.log`로 출력
+- 게시물 작성 저장 로직 연결
+  - `src/features/feed/api.ts` 추가
+  - `post-images` Storage 업로드, `posts` / `post_images` / `post_hashtags` 저장 로직 구현
+  - 현재 로그인 유저의 `university_id` 조회 후 게시물 저장하도록 연결
+  - 미로그인/학교 정보 없음/저장 실패 시 에러 처리 추가
+  - 게시 중 로딩 상태 표시, 저장 완료 후 `/`로 이동
+  - 공개 범위 UI는 화면에서 숨기고 `visibility`는 현재 `public`으로 고정
+- 인증/온보딩 비밀번호 기반 흐름으로 전환
+  - `src/app/(auth)/auth/login/page.tsx`, `LoginForm.tsx` 수정
+  - 매직링크 UI 제거 후 이메일 + 비밀번호 로그인(`signInWithPassword`)으로 변경
+  - 로그인 성공 시 `/` 이동, `/auth/signup` 링크 추가
+  - `src/app/(auth)/auth/signup/page.tsx`, `SignupForm.tsx` 추가
+  - 국민대 이메일(`kookmin.ac.kr`) 검증 후 `signUp`으로 회원가입, 성공 시 `/onboarding` 이동
+  - `src/app/onboarding/page.tsx` 수정
+  - 닉네임/학과 입력, `users` 테이블 `nickname`, `department`, `is_onboarded=true` 업데이트 후 `/` 이동
+  - 인증/온보딩 로직을 `src/features/auth/api.ts`로 정리
+- 미들웨어 인증 체크 재활성화
+  - `src/middleware.ts`의 개발 환경 우회 코드 제거
+  - 비로그인 유저는 `/auth/login`으로 리다이렉트
+  - 로그인 완료 + 미온보딩 유저는 `/onboarding`으로 리다이렉트
+  - 예외 경로는 `/auth/login`, `/auth/signup`, `/auth/callback`, `/onboarding`만 유지
+- 피드 조회 API 1차 추가
+  - `src/features/feed/api.ts`에 `getFeed` 함수 추가
+  - 현재 로그인 유저의 `university_id` 기준으로 `posts`를 최신순 조회
+  - `users`, `post_images`, `post_hashtags`, `hashtags` 데이터를 배치 조회해 `FeedPost[]` 형태로 조립
+  - `deleted_at IS NULL`, 기본 `limit=20`, `created_at` 커서 기반 `nextCursor` 반환 처리
+- 피드 게시물 카드 컴포넌트 추가
+  - `src/components/feed/PostCard.tsx` 추가
+  - 아바타/닉네임/학과/상대 시간/더보기 버튼을 포함한 카드 헤더 구현
+  - 이미지 스와이프 영역과 페이지 인디케이터 구현
+  - 좋아요/댓글/북마크 버튼과 카운트, 본문, 해시태그 표시 구현
+  - 실제 동작은 props 콜백만 연결하고 Supabase 쿼리는 포함하지 않음
+- 피드 목록 컴포넌트 추가
+  - `src/components/feed/FeedList.tsx` 추가
+  - `PostCard` 목록 렌더링, 빈 상태 문구, 로딩 스켈레톤 UI 구현
+  - 실제 데이터 조회 없이 props만 받아 동작하도록 구성
+- 메인 피드 페이지 연결
+  - `src/app/(main)/page.tsx`를 client component로 전환
+  - `getFeed()` 호출 후 `FeedList`에 `posts`, `isLoading` 전달
+  - 좋아요/댓글/북마크 액션은 임시로 `console.log` 콜백 연결
+  - 피드 조회 실패 시 에러 메시지 표시하도록 처리
+- 피드 이미지/웹 사이드바 레이아웃 보정
+  - `src/components/feed/PostCard.tsx`의 이미지 영역을 정사각형 비율로 유지하면서 최대 크기를 제한
+  - 이미지에 `object-cover`를 유지하고 카드 안에서 가운데 정렬되도록 조정
+  - `src/components/layout/SideBar.tsx`를 `justify-between` 구조로 변경해 메뉴는 상단, `+ 새 게시물` 버튼은 하단에 고정
+- 메인 피드 디자인 밀도 조정
+  - `src/app/(main)/layout.tsx`의 전체 배경을 흰색으로 통일하고 피드 최대 폭을 약 470px로 축소
+  - 메인 레이아웃과 우측 패널의 경계선 성격 요소를 제거해 화면을 단순화
+  - `src/components/feed/PostCard.tsx`에서 이미지 좌우 패딩과 둥근 모서리를 제거하고 카드 폭 전체를 쓰는 1:1 이미지로 조정
+  - `src/components/story/StoryBar.tsx`의 배경을 흰색으로 유지하고 구분선을 제거
+- 웹 사이드바 고정 처리
+  - `src/components/layout/SideBar.tsx`에 `sticky`, `top-0`, `h-screen` 기준 레이아웃을 적용
+  - 피드 스크롤 시에도 사이드바는 화면 왼쪽에 고정되도록 조정
 
 ### 주요 결정사항
 - 친한친구 기능 추가 (일방적, close_friends 테이블)
@@ -33,4 +164,6 @@
 ### 다음 작업
 - [ ] DB 마이그레이션 파일 작성 (1단계 17개 테이블)
 - [ ] Supabase 마이그레이션 적용
-- [ ] Claude Code로 인증 구현 시작
+- [ ] 온보딩 페이지 구현 (학교, 학과, 닉네임 저장)
+- [ ] 가입 시 `users.university_id`를 실제 이메일 도메인 기준으로 반영하도록 보완
+- [ ] 피드 기능 설계 및 `features/feed` 구조 초안 작성
