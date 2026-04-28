@@ -21,6 +21,11 @@
 - 운영 문서 및 코드 주석 정리
   - `docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/WORKLOG.md` 최신 상태 반영
   - 피드/레이아웃/미들웨어 관련 핵심 파일에 역할 및 주요 로직 주석 추가
+- 인증/스토리/Supabase 유틸 주석 보강 및 전체 정리
+  - `src/app/(auth)/`, `src/app/(main)/`, `src/app/onboarding/` 하위 주요 페이지에 한국어 주석 추가
+  - `src/components/feed/PostImageUploader.tsx`, `src/components/story/` 전체에 props/역할/핵심 흐름 주석 추가
+  - `src/features/auth/api.ts`, `src/lib/supabase/`, `src/types/database.types.ts`, `src/middleware.ts` 주석 보강
+  - 전체 변경분 기준으로 문서 동기화 후 커밋/푸시 준비
 
 ## 2026-04-27
 

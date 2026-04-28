@@ -120,5 +120,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // 정적 파일과 에셋 요청을 제외한 모든 앱 경로에 인증 체크를 적용한다.
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
