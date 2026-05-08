@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { FeedPost } from "@/features/feed/api";
 
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
@@ -64,6 +64,34 @@ function BookmarkIcon() {
   );
 }
 
+function ChevronLeftIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="M15 5 8 12l7 7"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="m9 5 7 7-7 7"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // 서버 UTC 시간을 클라이언트에서 간단한 상대 시간 라벨로 바꾼다.
 function getRelativeTimeLabel(createdAt: string) {
   const createdTime = new Date(createdAt).getTime();
@@ -99,7 +127,9 @@ export function PostCard({
   post,
 }: PostCardProps) {
   const carouselId = useId();
+  const carouselRef = useRef<HTMLDivElement | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const hasMultipleImages = post.images.length > 1;
 
   // 스크롤 위치를 카드 폭으로 나눠 현재 보고 있는 이미지 인덱스를 계산한다.
   function handleImageScroll(event: React.UIEvent<HTMLDivElement>) {
@@ -110,6 +140,20 @@ export function PostCard({
     }
 
     const nextIndex = Math.round(element.scrollLeft / element.clientWidth);
+    setCurrentImageIndex(nextIndex);
+  }
+
+  function moveToImage(nextIndex: number) {
+    const carousel = carouselRef.current;
+
+    if (!carousel) {
+      return;
+    }
+
+    carousel.scrollTo({
+      left: carousel.clientWidth * nextIndex,
+      behavior: "smooth",
+    });
     setCurrentImageIndex(nextIndex);
   }
 
@@ -157,6 +201,7 @@ export function PostCard({
         <div className="relative bg-white">
           <div
             id={carouselId}
+            ref={carouselRef}
             onScroll={handleImageScroll}
             className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
@@ -172,7 +217,35 @@ export function PostCard({
             ))}
           </div>
 
-          {post.images.length > 1 ? (
+          {hasMultipleImages && currentImageIndex > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                moveToImage(currentImageIndex - 1);
+              }}
+              className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white shadow-sm transition hover:bg-black/60"
+              aria-label="이전 이미지"
+              aria-controls={carouselId}
+            >
+              <ChevronLeftIcon />
+            </button>
+          ) : null}
+
+          {hasMultipleImages && currentImageIndex < post.images.length - 1 ? (
+            <button
+              type="button"
+              onClick={() => {
+                moveToImage(currentImageIndex + 1);
+              }}
+              className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white shadow-sm transition hover:bg-black/60"
+              aria-label="다음 이미지"
+              aria-controls={carouselId}
+            >
+              <ChevronRightIcon />
+            </button>
+          ) : null}
+
+          {hasMultipleImages ? (
             // 인디케이터는 현재 이미지 인덱스만 시각적으로 보여준다.
             <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/40 px-2 py-1">
               {post.images.map((image, index) => (

@@ -7,6 +7,14 @@
 ## 2026-04-28
 
 ### 완료
+- PostCard 이미지 슬라이드 좌우 화살표 추가
+  - `src/components/feed/PostCard.tsx`에서 이미지가 2장 이상일 때만 이전/다음 버튼 표시
+  - 첫 이미지에서는 왼쪽 버튼, 마지막 이미지에서는 오른쪽 버튼을 숨기도록 처리
+  - 버튼 클릭 시 현재 카드 폭 기준으로 이전/다음 이미지로 부드럽게 이동
+- 메인 피드 무한 스크롤 구현
+  - `src/app/(main)/page.tsx`에서 `posts`, `nextCursor`, `isLoadingMore` 상태를 관리하고 `IntersectionObserver`로 다음 페이지 자동 로드
+  - `src/features/feed/api.ts`의 기본 조회 개수를 테스트용 3개로 임시 조정하고 복구 TODO 주석 추가
+  - `src/components/feed/FeedList.tsx`에 추가 로딩 표시(`더 불러오는 중...`) props 연결
 - 메인 피드 화면 연결 완료
   - `src/app/(main)/page.tsx`에서 `getFeed()` 호출 후 `FeedList`로 데이터 전달
   - 로딩 상태, 에러 메시지, 좋아요/댓글/북마크 임시 `console.log` 콜백 연결
