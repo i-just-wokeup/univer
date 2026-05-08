@@ -229,7 +229,8 @@ export async function createPost({
 // 같은 학교 게시물만 최신순으로 불러오고, 피드 카드에 필요한 조인 데이터를 조립한다.
 export async function getFeed({
   cursor,
-  limit = 20,
+  // TODO: 테스트 완료 후 20으로 복구
+  limit = 3,
 }: GetFeedParams = {}): Promise<GetFeedResult> {
   const supabase = requireSupabaseClient();
   const { universityId } = await getCurrentUserUniversityId();
