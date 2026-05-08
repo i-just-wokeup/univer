@@ -4,6 +4,7 @@ import type { FeedPost } from "@/features/feed/api";
 // FeedList는 데이터 주입만 받고, 액션은 상위 페이지에서 제어한다.
 type FeedListProps = {
   isLoading?: boolean;
+  isLoadingMore?: boolean;
   onBookmark?: (postId: string) => void;
   onComment?: (postId: string) => void;
   onLike?: (postId: string) => void;
@@ -35,6 +36,7 @@ function FeedCardSkeleton() {
 // 피드 목록 컨테이너. 로딩/빈 상태/목록 렌더링만 담당한다.
 export function FeedList({
   isLoading = false,
+  isLoadingMore = false,
   onBookmark,
   onComment,
   onLike,
@@ -70,6 +72,12 @@ export function FeedList({
           onBookmark={onBookmark}
         />
       ))}
+      {isLoadingMore ? (
+        <div className="flex items-center justify-center gap-2 px-4 py-6 text-sm font-medium text-zinc-500">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-500" />
+          <span>더 불러오는 중...</span>
+        </div>
+      ) : null}
     </section>
   );
 }
