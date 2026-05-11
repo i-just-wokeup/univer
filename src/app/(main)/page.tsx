@@ -70,7 +70,9 @@ function MainPageContent() {
         ? "게시물이 등록됐습니다"
         : toastParam === "updated"
           ? "게시물이 수정됐습니다"
-          : null;
+          : toastParam === "story_posted"
+            ? "스토리가 공유됐습니다"
+            : null;
 
     if (!toastMessage) {
       return;
@@ -330,8 +332,7 @@ function MainPageContent() {
 
   return (
     <>
-      {/* 실제 스토리 데이터 연결 전까지는 비어 있는 배열만 전달한다. */}
-      <StoryBar stories={[]} />
+      <StoryBar />
       <section className="flex flex-1 flex-col px-4 py-4 sm:px-6">
         {error ? (
           <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">

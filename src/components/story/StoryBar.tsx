@@ -1,12 +1,11 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import { StoryItem, type Story } from "@/components/story/StoryItem";
+import { useEffect, useState } from "react";
 
-// 스토리 목록은 상위에서 주입받고, 내부에서는 렌더링만 수행한다.
-type StoryBarProps = {
-  stories: Story[];
-};
+import { getStories, type StoryGroup } from "@/features/stories/api";
 
-// 내 스토리 추가 아이콘.
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
@@ -20,8 +19,11 @@ function PlusIcon() {
   );
 }
 
-// 첫 슬롯은 항상 "내 스토리" 진입점으로 고정한다.
-function MyStoryItem() {
+function getInitial(name: string) {
+  return name.trim().charAt(0) || "?";
+}
+
+function MyStoryCreateItem() {
   return (
     <Link
       href="/story/create"
@@ -42,19 +44,94 @@ function MyStoryItem() {
   );
 }
 
-// 가로 스크롤 가능한 스토리바. 실제 데이터 조회는 나중에 연결한다.
-export function StoryBar({ stories }: StoryBarProps) {
+function StoryGroupItem({ group }: { group: StoryGroup }) {
+  const borderClass = group.hasUnviewed
+    ? "border-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]"
+    : "border-zinc-300";
+
+  return (
+    <Link
+      href={`/story/${group.user.id}`}
+      className="flex w-[72px] shrink-0 cursor-pointer flex-col items-center gap-2 text-center"
+    >
+      <div
+        className={`flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 bg-white ${borderClass}`}
+      >
+        {group.user.avatar_url ? (
+          <Image
+            src={group.user.avatar_url}
+            alt={group.user.nickname}
+            width={66}
+            height={66}
+            className="h-[66px] w-[66px] rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-zinc-100 text-lg font-semibold text-zinc-700">
+            {getInitial(group.user.nickname)}
+          </span>
+        )}
+      </div>
+      <span className="line-clamp-1 w-full text-xs font-medium text-zinc-700">
+        {group.user.nickname}
+      </span>
+    </Link>
+  );
+}
+
+function StorySkeleton() {
+  return (
+    <div className="flex w-[72px] shrink-0 flex-col items-center gap-2">
+      <div className="h-[72px] w-[72px] animate-pulse rounded-full bg-zinc-100" />
+      <div className="h-3 w-12 animate-pulse rounded-full bg-zinc-100" />
+    </div>
+  );
+}
+
+export function StoryBar() {
+  const [storyGroups, setStoryGroups] = useState<StoryGroup[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStories() {
+      try {
+        const loadedStoryGroups = await getStories();
+
+        if (isMounted) {
+          setStoryGroups(loadedStoryGroups);
+        }
+      } catch (error) {
+        console.error("스토리 목록 조회 실패", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadStories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const hasMyStory = storyGroups[0]?.user.nickname === "나";
+
   return (
     <section className="bg-white">
       <div className="flex gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <MyStoryItem />
-        {stories.map((story) => (
-          <StoryItem
-            key={story.id}
-            story={story}
-            viewed={story.viewed ?? false}
-          />
+        {!hasMyStory ? <MyStoryCreateItem /> : null}
+        {storyGroups.map((group) => (
+          <StoryGroupItem key={group.user.id} group={group} />
         ))}
+        {isLoading ? (
+          <>
+            <StorySkeleton />
+            <StorySkeleton />
+          </>
+        ) : null}
       </div>
     </section>
   );

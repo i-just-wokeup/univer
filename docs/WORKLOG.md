@@ -302,10 +302,40 @@
 - 게시물 작성/수정 완료 토스트 (피드에서 표시)
   - 작성/수정 완료 후 쿼리 파라미터로 피드에 전달
   - 피드 page.tsx에서 토스트 표시 후 URL 정리
+- 스토리 작성 1차 구현
+  - story-images Storage 업로드 API 추가 (features/stories/api.ts)
+  - stories 테이블 insert 및 24시간 expires_at 설정
+  - /story/create 페이지 추가 (사진 1장 선택, 세로 미리보기, 공유하기)
+  - 공유 완료 후 피드에서 "스토리가 공유됐습니다" 토스트 표시
+- 스토리바 실제 데이터 조회 연결
+  - `getStories` 추가 (같은 학교, 만료 전, 삭제되지 않은 스토리 조회)
+  - 유저별 스토리 그룹핑 및 `story_views` 기반 `hasUnviewed` 계산
+  - 본인 스토리 우선 표시, StoryBar 내부 조회 및 `/story/[userId]` 이동 연결
+- 스토리 뷰어 구현
+  - `getUserStories`, `recordStoryView`, `getStoryViewers` 추가 (features/stories/api.ts)
+  - `/story/[userId]` 전체화면 뷰어 추가 (5초 자동 진행, 진행 바, 좌우 이동, 닫기)
+  - 타인 스토리 진입 시 `story_views` 기록 및 조회수 증가
+  - 본인 스토리에서 조회자 수와 조회자 목록 바텀시트 표시
+- 토스트 메시지 컴포넌트 구현 (src/components/common/Toast.tsx)
+- 토스트 PostCard/피드 연결 (삭제/링크복사/수정완료/작성완료)
+- 스토리 업로드 구현 (src/app/(main)/story/create/page.tsx)
+- 스토리 API 구현 (src/features/stories/api.ts)
+  - uploadStoryImage, createStory, getStories, getUserStories
+  - recordStoryView, toggleStoryLike, getMyStoryLikedStatus
+  - getStoryViewers (조회자별 isLiked 포함), deleteStory
+- 스토리바 구현 (StoryBar.tsx 수정)
+- 스토리 뷰어 구현 (src/app/(main)/story/[userId]/page.tsx)
+  - 9:16 비율, 블러 배경, 5초 자동 넘김, 일시정지
+  - 진행바, 화살표 네비게이션
+  - 본인: 조회수 + 조회자 바텀시트 (좋아요 여부 포함)
+  - 타인: 하트 좋아요 버튼
+  - X 버튼 화면 우측 상단, ... 버튼 (본인: 삭제 / 타인: 신고)
 
 ### 트러블슈팅
 - posts UPDATE 정책 with_check 누락 → 삭제 실패 → 수정
 - posts SELECT 정책 deleted_at IS NULL 조건이 soft delete UPDATE 차단 → 본인 게시물은 deleted_at 무관하게 SELECT 가능하도록 정책 수정
+- stories UPDATE RLS 정책 with_check 누락 → 수정
+- 스토리 비율/블러배경 렌더링 수정 여러 차례
 
 ### 다음 작업
 - [ ] 토스트 메시지 PostCard 연결 완료
