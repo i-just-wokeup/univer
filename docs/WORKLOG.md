@@ -4,37 +4,6 @@
 
 ---
 
-## 2026-04-28
-
-### 완료
-- PostCard 이미지 슬라이드 좌우 화살표 추가
-  - `src/components/feed/PostCard.tsx`에서 이미지가 2장 이상일 때만 이전/다음 버튼 표시
-  - 첫 이미지에서는 왼쪽 버튼, 마지막 이미지에서는 오른쪽 버튼을 숨기도록 처리
-  - 버튼 클릭 시 현재 카드 폭 기준으로 이전/다음 이미지로 부드럽게 이동
-- 메인 피드 무한 스크롤 구현
-  - `src/app/(main)/page.tsx`에서 `posts`, `nextCursor`, `isLoadingMore` 상태를 관리하고 `IntersectionObserver`로 다음 페이지 자동 로드
-  - `src/features/feed/api.ts`의 기본 조회 개수를 테스트용 3개로 임시 조정하고 복구 TODO 주석 추가
-  - `src/components/feed/FeedList.tsx`에 추가 로딩 표시(`더 불러오는 중...`) props 연결
-- 메인 피드 화면 연결 완료
-  - `src/app/(main)/page.tsx`에서 `getFeed()` 호출 후 `FeedList`로 데이터 전달
-  - 로딩 상태, 에러 메시지, 좋아요/댓글/북마크 임시 `console.log` 콜백 연결
-- 피드 레이아웃 및 카드 크기 조정
-  - `src/app/(main)/layout.tsx`의 메인 피드 최대 폭을 약 470px로 축소
-  - `src/components/feed/PostCard.tsx` 이미지 영역을 카드 폭 전체를 쓰는 1:1 비율로 조정
-  - `src/components/story/StoryBar.tsx` 구분선 제거 및 배경 단순화
-- 웹 사이드바 고정 및 작성 버튼 위치 보정
-  - `src/components/layout/SideBar.tsx`를 `justify-between` 구조로 변경
-  - `+ 새 게시물` 버튼이 항상 하단에 보이도록 수정
-  - 사이드바에 `sticky`, `top-0`, `h-screen`을 적용해 스크롤 시에도 고정되도록 조정
-- 운영 문서 및 코드 주석 정리
-  - `docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/WORKLOG.md` 최신 상태 반영
-  - 피드/레이아웃/미들웨어 관련 핵심 파일에 역할 및 주요 로직 주석 추가
-- 인증/스토리/Supabase 유틸 주석 보강 및 전체 정리
-  - `src/app/(auth)/`, `src/app/(main)/`, `src/app/onboarding/` 하위 주요 페이지에 한국어 주석 추가
-  - `src/components/feed/PostImageUploader.tsx`, `src/components/story/` 전체에 props/역할/핵심 흐름 주석 추가
-  - `src/features/auth/api.ts`, `src/lib/supabase/`, `src/types/database.types.ts`, `src/middleware.ts` 주석 보강
-  - 전체 변경분 기준으로 문서 동기화 후 커밋/푸시 준비
-
 ## 2026-04-27
 
 ### 완료
@@ -180,3 +149,119 @@
 - [ ] 온보딩 페이지 구현 (학교, 학과, 닉네임 저장)
 - [ ] 가입 시 `users.university_id`를 실제 이메일 도메인 기준으로 반영하도록 보완
 - [ ] 피드 기능 설계 및 `features/feed` 구조 초안 작성
+
+## 2026-04-28
+
+### 완료
+- PostCard 이미지 슬라이드 좌우 화살표 추가
+  - `src/components/feed/PostCard.tsx`에서 이미지가 2장 이상일 때만 이전/다음 버튼 표시
+  - 첫 이미지에서는 왼쪽 버튼, 마지막 이미지에서는 오른쪽 버튼을 숨기도록 처리
+  - 버튼 클릭 시 현재 카드 폭 기준으로 이전/다음 이미지로 부드럽게 이동
+- 메인 피드 무한 스크롤 구현
+  - `src/app/(main)/page.tsx`에서 `posts`, `nextCursor`, `isLoadingMore` 상태를 관리하고 `IntersectionObserver`로 다음 페이지 자동 로드
+  - `src/features/feed/api.ts`의 기본 조회 개수를 테스트용 3개로 임시 조정하고 복구 TODO 주석 추가
+  - `src/components/feed/FeedList.tsx`에 추가 로딩 표시(`더 불러오는 중...`) props 연결
+- 메인 피드 화면 연결 완료
+  - `src/app/(main)/page.tsx`에서 `getFeed()` 호출 후 `FeedList`로 데이터 전달
+  - 로딩 상태, 에러 메시지, 좋아요/댓글/북마크 임시 `console.log` 콜백 연결
+- 피드 레이아웃 및 카드 크기 조정
+  - `src/app/(main)/layout.tsx`의 메인 피드 최대 폭을 약 470px로 축소
+  - `src/components/feed/PostCard.tsx` 이미지 영역을 카드 폭 전체를 쓰는 1:1 비율로 조정
+  - `src/components/story/StoryBar.tsx` 구분선 제거 및 배경 단순화
+- 웹 사이드바 고정 및 작성 버튼 위치 보정
+  - `src/components/layout/SideBar.tsx`를 `justify-between` 구조로 변경
+  - `+ 새 게시물` 버튼이 항상 하단에 보이도록 수정
+  - 사이드바에 `sticky`, `top-0`, `h-screen`을 적용해 스크롤 시에도 고정되도록 조정
+- 운영 문서 및 코드 주석 정리
+  - `docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/WORKLOG.md` 최신 상태 반영
+  - 피드/레이아웃/미들웨어 관련 핵심 파일에 역할 및 주요 로직 주석 추가
+- 인증/스토리/Supabase 유틸 주석 보강 및 전체 정리
+  - `src/app/(auth)/`, `src/app/(main)/`, `src/app/onboarding/` 하위 주요 페이지에 한국어 주석 추가
+  - `src/components/feed/PostImageUploader.tsx`, `src/components/story/` 전체에 props/역할/핵심 흐름 주석 추가
+  - `src/features/auth/api.ts`, `src/lib/supabase/`, `src/types/database.types.ts`, `src/middleware.ts` 주석 보강
+  - 전체 변경분 기준으로 문서 동기화 후 커밋/푸시 준비
+
+## 2026-05-09
+
+### 완료
+- 댓글 바텀시트 UI 및 피드 연결
+  - `src/components/feed/CommentSheet.tsx` 신규 추가
+  - 댓글 목록/작성/삭제 UI와 로딩/빈 상태 처리
+  - 메인 피드 댓글 버튼 클릭 시 바텀시트 열기 및 댓글 수 즉시 동기화
+- 댓글 API 1차 구현
+  - `src/features/comments/api.ts` 신규 추가
+  - `getComments`, `createComment`, `deleteComment` 구현
+  - 댓글 작성/삭제 시 `posts.comments_count` 증감 처리 및 soft delete 적용
+- `database.types.ts` 수동 교체 및 `post_likes` 타입 정상화
+  - `src/types/database.types.ts`에 `post_likes` 포함 최신 public 스키마 타입 반영
+  - `src/features/feed/api.ts`의 post_likes 타입 우회 코드 제거
+  - `togglePostLike`, `getLikedPostIds`를 `supabase.from("post_likes")` 직접 호출로 정리
+- 게시물 좋아요 토글 기능 구현
+  - `src/features/feed/api.ts`에 `togglePostLike`, `getLikedPostIds` 추가
+  - 메인 피드에서 좋아요 상태를 초기 조회하고 낙관적 업데이트 후 서버 응답으로 동기화
+  - `PostCard` 하트 아이콘을 좋아요 여부에 따라 채움/비움으로 표시
+- Supabase 프로젝트 복구 (INACTIVE → ACTIVE)
+- AGENTS.md 업데이트 (Next.js 16, Supabase 프로젝트 ID, 현재 진행상황 반영)
+- 노션 로드맵 업데이트 (관리자 페이지 설계 추가, Sprint 계획 갱신)
+- 무한 스크롤 구현 (IntersectionObserver + cursor 페이지네이션 + isLoadingMore 상태, 테스트용 limit=3)
+- PostCard 이미지 슬라이드 화살표 버튼 추가 (2장 이상일 때만 표시, 첫/마지막에서 해당 방향 숨김, smooth 스크롤)
+
+### 주요 결정사항
+- 관리자 페이지 MVP에 포함 (비개발자 UI, 전체 학교 조회)
+- 이미지 처리/최적화는 배포 전 일괄 처리
+- 사진 비율 선택은 추후 추가
+
+## 2026-05-10
+
+### 완료
+- 대댓글 1단계 중첩 기능 구현
+  - `comments.deleted_at` 제거에 맞춰 댓글 API를 hard delete 방식으로 변경
+  - `getComments`가 부모 댓글 최신순, 대댓글 오래된순 중첩 구조를 반환하도록 수정
+  - `CommentSheet`에 답글 보기 토글, 답글 대상 표시/취소, 대댓글 작성/삭제/좋아요 UI 연결
+- 댓글 좋아요 기능 구현
+  - `src/types/database.types.ts`의 `comments` 타입에 `likes_count` 반영
+  - `src/features/comments/api.ts`에 `toggleCommentLike`, `getLikedCommentIds` 추가
+  - `src/components/feed/CommentSheet.tsx`에서 댓글 좋아요 상태 조회, 하트 UI, 낙관적 업데이트 및 실패 롤백 처리
+
+## 2026-05-10
+
+### 완료
+- 성능 인덱스 6개 Supabase에 추가
+  - idx_comments_post_id (댓글 게시물별 조회)
+  - idx_post_images_post_id (이미지 게시물별 조회)
+  - idx_posts_university_created (피드 학교별 최신순)
+  - idx_posts_user_created (프로필 유저별 최신순)
+  - idx_post_likes_target_id (좋아요 목록 게시물별)
+  - idx_notifications_user_created (알림 유저별 최신순)
+- 댓글 좋아요 기능 구현
+  - toggleCommentLike, getLikedCommentIds 추가 (features/comments/api.ts)
+  - 모든 댓글에 하트 + likes_count 표시 (본인 댓글도 포함)
+  - 낙관적 업데이트 + 실패 시 롤백
+- 대댓글 구현
+  - 1단계 중첩 구조 (대댓글에 대댓글 없음)
+  - 답글 달기 버튼 + @닉네임 자동 입력
+  - 답글 N개 보기/숨기기 토글
+  - 대댓글도 좋아요/삭제 가능
+- 댓글 hard delete로 전환
+  - deleted_at 컬럼 제거
+  - 부모 댓글 삭제 시 대댓글 cascade 삭제
+  - comment_likes cascade 삭제
+- 댓글 UI 개선
+  - 댓글 간격 축소
+  - 대댓글 왼쪽 세로 막대기 제거
+  - 답글 숨기기 버튼 대댓글 아래로 이동
+- 본문 더보기/접기 버튼 구현 (PostCard.tsx)
+  - 2줄 초과 시 말줄임 + ...더보기 버튼 표시
+  - 펼친 상태에서 접기 버튼 표시
+  - 본문 텍스트 색상 text-zinc-950으로 변경
+
+### 트러블슈팅
+- comments UPDATE RLS 정책 누락 → likes_count 업데이트 실패 → 정책 추가
+- hard delete 전환 시 deleted_at 참조 RLS 정책 충돌 → 정책 재설계
+
+### 다음 작업
+- [ ] PostCard ... 버튼 메뉴 (본인: 수정/삭제 / 타인: 신고/차단)
+- [ ] 좋아요 목록 모달
+- [ ] 스토리
+- [ ] 프로필 페이지
+- [ ] 관리자 페이지

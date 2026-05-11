@@ -6,11 +6,11 @@
 
 ## 도구별 역할 분담
 - **Claude (claude.ai)** — 문서 작성, DB 스키마 설계, 방향 논의 및 결정
-- **Claude Code** — 실제 코드 구현 담당. 코드 작성 외 역할 없음
-- **Codex** — 코드 검수, 리뷰, 보완점 피드백 담당. 코드 직접 작성 금지
+- **Claude Code** — 실제 코드 구현 담당
+- **Codex** — 실제 코드 구현 담당 (Claude Code와 동일한 역할)
 
 ## 스택
-- Next.js 14 App Router + TypeScript + Tailwind CSS
+- Next.js 16 App Router + TypeScript + Tailwind CSS
 - Supabase (Auth, DB, Storage, Realtime) / Vercel 배포
 - 앱 전환 예정: Expo (React Native)
 
@@ -44,8 +44,26 @@ docs/             ← 운영 문서
 → `docs/WORKLOG.md` 참고 (날짜별 완료 기록)
 
 ## Supabase
-- 프로젝트 ID: (생성 후 기입)
+- 프로젝트 ID: qmslcvnuzjraphvnaqxx
+- 리전: ap-northeast-2 (서울)
 - `.env.local`: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
+- users RLS 현재 비활성화 상태 (서비스 오픈 전 재설계 필요)
+
+## 현재 완료된 작업 요약
+- 레이아웃 (Header, SideBar, BottomTabBar, 웹 3단 구조)
+- 인증 (이메일+비밀번호 로그인/회원가입/온보딩/미들웨어)
+- 게시물 작성 + 이미지 업로드 (Supabase Storage)
+- 피드 (getFeed, PostCard, FeedList, 메인 피드 연결)
+- 피드 디자인 1차 보정 (흰 배경, 1:1 비율, 사이드바 sticky)
+
+## 다음 작업
+1. 무한 스크롤
+2. 좋아요 기능
+3. 댓글 / 대댓글
+4. PostCard ... 버튼 메뉴 (삭제/신고/차단)
+5. 스토리
+6. 프로필 페이지
+7. 관리자 페이지 (/admin)
 
 ## 작업 완료 후 필수 (Claude Code / Codex 모두 적용)
 1. `docs/WORKLOG.md` 날짜 + 완료 내용 추가

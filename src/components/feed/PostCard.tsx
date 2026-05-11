@@ -5,6 +5,7 @@ import type { FeedPost } from "@/features/feed/api";
 
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
 type PostCardProps = {
+  isLiked?: boolean;
   onBookmark?: (postId: string) => void;
   onComment?: (postId: string) => void;
   onLike?: (postId: string) => void;
@@ -22,11 +23,16 @@ function MoreIcon() {
   );
 }
 
-function HeartIcon() {
+function HeartIcon({ isLiked }: { isLiked: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill={isLiked ? "currentColor" : "none"}
+      className="h-6 w-6"
+      aria-hidden="true"
+    >
       <path
-        d="M12 20.25s-6.75-4.2-8.75-8.22C1.76 9.03 3.33 5.25 7.23 5.25c2.1 0 3.28 1.1 4.02 2.15.74-1.05 1.92-2.15 4.02-2.15 3.9 0 5.47 3.78 3.98 6.78C18.75 16.05 12 20.25 12 20.25Z"
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
@@ -121,6 +127,7 @@ function getInitial(name: string) {
 
 // 피드 단일 카드. 데이터 조회 없이 전달된 post만 렌더링한다.
 export function PostCard({
+  isLiked = false,
   onBookmark,
   onComment,
   onLike,
@@ -128,8 +135,32 @@ export function PostCard({
 }: PostCardProps) {
   const carouselId = useId();
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLParagraphElement | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [isContentOverflowing, setIsContentOverflowing] = useState(false);
   const hasMultipleImages = post.images.length > 1;
+
+  function handleContentRef(element: HTMLParagraphElement | null) {
+    contentRef.current = element;
+
+    if (!element) {
+      return;
+    }
+
+    if (isContentExpanded) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const nextIsOverflowing = element.scrollHeight > element.clientHeight + 1;
+      setIsContentOverflowing((currentIsOverflowing) =>
+        currentIsOverflowing === nextIsOverflowing
+          ? currentIsOverflowing
+          : nextIsOverflowing,
+      );
+    });
+  }
 
   // 스크롤 위치를 카드 폭으로 나눠 현재 보고 있는 이미지 인덱스를 계산한다.
   function handleImageScroll(event: React.UIEvent<HTMLDivElement>) {
@@ -268,10 +299,12 @@ export function PostCard({
             <button
               type="button"
               onClick={() => onLike?.(post.id)}
-              className="flex items-center gap-1.5 text-zinc-700 transition hover:text-zinc-950"
+              className={`flex items-center gap-1.5 transition hover:text-zinc-950 ${
+                isLiked ? "text-red-500" : "text-zinc-700"
+              }`}
               aria-label="좋아요"
             >
-              <HeartIcon />
+              <HeartIcon isLiked={isLiked} />
               <span className="text-sm font-medium">{post.likes_count}</span>
             </button>
 
@@ -297,9 +330,36 @@ export function PostCard({
         </div>
 
         {post.content ? (
-          <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-800">
-            {post.content}
-          </p>
+          <div className="mt-3">
+            <p
+              ref={handleContentRef}
+              className="whitespace-pre-wrap break-words text-sm leading-6 text-zinc-950"
+              style={
+                isContentExpanded
+                  ? undefined
+                  : {
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 2,
+                      display: "-webkit-box",
+                      overflow: "hidden",
+                    }
+              }
+            >
+              {post.content}
+            </p>
+
+            {isContentOverflowing ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsContentExpanded((currentIsExpanded) => !currentIsExpanded);
+                }}
+                className="mt-1 text-sm font-medium text-zinc-500 transition hover:text-zinc-950"
+              >
+                {isContentExpanded ? "접기" : "...더보기"}
+              </button>
+            ) : null}
+          </div>
         ) : null}
 
         {post.hashtags.length > 0 ? (

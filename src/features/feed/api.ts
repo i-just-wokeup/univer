@@ -8,6 +8,8 @@ type PostImageRow = Database["public"]["Tables"]["post_images"]["Row"];
 type PostHashtagRow = Database["public"]["Tables"]["post_hashtags"]["Row"];
 type HashtagRow = Database["public"]["Tables"]["hashtags"]["Row"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
+type PostLikeRow = Database["public"]["Tables"]["post_likes"]["Row"];
+type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
 
 // 게시물 작성 시 페이지 레이어에서 조합한 값을 그대로 전달받는다.
 type CreatePostParams = {
@@ -53,6 +55,11 @@ export type GetFeedParams = {
 export type GetFeedResult = {
   nextCursor: string | null;
   posts: FeedPost[];
+};
+
+export type TogglePostLikeResult = {
+  liked: boolean;
+  likesCount: number;
 };
 
 // 브라우저 환경변수가 없을 때 각 API가 동일한 에러로 빠지도록 통일한다.
@@ -224,6 +231,119 @@ export async function createPost({
   }
 
   return post.id;
+}
+
+// 현재 로그인 유저가 좋아요한 게시물 id만 골라 UI 초기 상태에 사용한다.
+export async function getLikedPostIds(postIds: string[]) {
+  if (postIds.length === 0) {
+    return [];
+  }
+
+  const supabase = requireSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data, error } = await supabase
+    .from("post_likes")
+    .select("target_id")
+    .eq("user_id", user.id)
+    .eq("target_type", "post")
+    .in("target_id", postIds);
+
+  if (error || !data) {
+    throw new Error("좋아요 정보를 불러오지 못했습니다.");
+  }
+
+  return data.map((like: Pick<PostLikeRow, "target_id">) => like.target_id);
+}
+
+// 게시물 좋아요 레코드와 posts.likes_count를 함께 갱신한다.
+export async function togglePostLike(postId: string): Promise<TogglePostLikeResult> {
+  const supabase = requireSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("id, likes_count")
+    .eq("id", postId)
+    .is("deleted_at", null)
+    .single();
+
+  if (postError || !post) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  const { data: existingLike, error: likeSelectError } = await supabase
+    .from("post_likes")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("target_type", "post")
+    .eq("target_id", postId)
+    .maybeSingle();
+
+  if (likeSelectError) {
+    throw new Error("좋아요 상태를 확인하지 못했습니다.");
+  }
+
+  const nextLiked = !existingLike;
+  const nextLikesCount = Math.max(
+    0,
+    post.likes_count + (nextLiked ? 1 : -1),
+  );
+
+  if (existingLike) {
+    const { error: deleteError } = await supabase
+      .from("post_likes")
+      .delete()
+      .eq("id", existingLike.id);
+
+    if (deleteError) {
+      throw new Error("좋아요 취소에 실패했습니다.");
+    }
+  } else {
+    const postLikeInsert: PostLikeInsert = {
+      target_id: postId,
+      target_type: "post",
+      user_id: user.id,
+    };
+
+    const { error: insertError } = await supabase
+      .from("post_likes")
+      .insert(postLikeInsert);
+
+    if (insertError) {
+      throw new Error("좋아요에 실패했습니다.");
+    }
+  }
+
+  const { data: updatedPost, error: updateError } = await supabase
+    .from("posts")
+    .update({ likes_count: nextLikesCount })
+    .eq("id", postId)
+    .select("likes_count")
+    .single();
+
+  if (updateError || !updatedPost) {
+    throw new Error("좋아요 수 업데이트에 실패했습니다.");
+  }
+
+  return {
+    liked: nextLiked,
+    likesCount: updatedPost.likes_count,
+  };
 }
 
 // 같은 학교 게시물만 최신순으로 불러오고, 피드 카드에 필요한 조인 데이터를 조립한다.
