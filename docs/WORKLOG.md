@@ -265,3 +265,51 @@
 - [ ] 스토리
 - [ ] 프로필 페이지
 - [ ] 관리자 페이지
+
+## 2026-05-11
+
+### 완료
+- 게시물 수정 모드 구현
+  - `/posts/write?postId=...` 진입 시 기존 게시물 content, hashtags, images 조회
+  - 수정 모드 타이틀을 `게시물 수정`으로 변경
+  - 기존 이미지는 읽기 전용으로 표시하고 사진 수정은 비활성화
+  - content, hashtags만 업데이트하도록 `updatePost` 연결
+- 게시물 상세 조회 API 추가
+  - `getPost(postId)`로 수정 화면에 필요한 content, hashtags, images 반환
+  - 해시태그 저장/교체 로직을 공통 함수로 정리
+
+## 2026-05-11
+
+### 완료
+- 시스템 폰트 적용 (-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Noto Sans KR)
+- PostCard ... 버튼 메뉴 구현
+  - ActionSheet 공용 컴포넌트 신규 생성 (src/components/common/ActionSheet.tsx)
+  - 본인 게시물: 수정 / 삭제 / 링크 복사 / 취소
+  - 타인 게시물: 신고 / 차단 / 링크 복사 / 취소
+  - 신고/차단은 console.log (추후 구현)
+- 게시물 수정 모드 구현
+  - getPost, updatePost 함수 추가 (features/feed/api.ts)
+  - /posts/write?postId=xxx 수정 모드 분기
+  - 기존 내용/해시태그 미리 채워짐, 사진은 읽기 전용
+- 게시물 삭제 구현 (soft delete)
+  - deletePost 함수 추가 (features/feed/api.ts)
+  - 삭제 후 피드에서 즉시 제거
+- 토스트 메시지 컴포넌트 구현 (src/components/common/Toast.tsx)
+  - 하단 중앙 고정, 3초 후 자동 사라짐
+  - success/error 두 가지 타입
+- 토스트 PostCard 연결
+  - 삭제 성공/실패, 링크 복사 시 토스트 표시
+- 게시물 작성/수정 완료 토스트 (피드에서 표시)
+  - 작성/수정 완료 후 쿼리 파라미터로 피드에 전달
+  - 피드 page.tsx에서 토스트 표시 후 URL 정리
+
+### 트러블슈팅
+- posts UPDATE 정책 with_check 누락 → 삭제 실패 → 수정
+- posts SELECT 정책 deleted_at IS NULL 조건이 soft delete UPDATE 차단 → 본인 게시물은 deleted_at 무관하게 SELECT 가능하도록 정책 수정
+
+### 다음 작업
+- [ ] 토스트 메시지 PostCard 연결 완료
+- [ ] 좋아요 목록 모달
+- [ ] 스토리
+- [ ] 프로필 페이지
+- [ ] 관리자 페이지

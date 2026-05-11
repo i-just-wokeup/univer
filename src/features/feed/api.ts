@@ -20,6 +20,12 @@ type CreatePostParams = {
   visibility: Visibility;
 };
 
+type UpdatePostParams = {
+  content: string;
+  hashtags: string[];
+  postId: string;
+};
+
 // 피드 카드에서 바로 쓰는 이미지 최소 형태.
 export type PostImage = {
   id: string;
@@ -55,6 +61,13 @@ export type GetFeedParams = {
 export type GetFeedResult = {
   nextCursor: string | null;
   posts: FeedPost[];
+};
+
+export type PostDetail = {
+  content: string | null;
+  hashtags: string[];
+  id: string;
+  images: PostImage[];
 };
 
 export type TogglePostLikeResult = {
@@ -140,6 +153,61 @@ export async function uploadPostImages(images: File[]) {
   return uploadResults;
 }
 
+async function replacePostHashtags(postId: string, hashtags: string[]) {
+  const supabase = requireSupabaseClient();
+  const normalizedHashtags = Array.from(
+    new Set(hashtags.map(normalizeHashtag).filter(Boolean)),
+  );
+
+  const { error: deleteError } = await supabase
+    .from("post_hashtags")
+    .delete()
+    .eq("post_id", postId);
+
+  if (deleteError) {
+    throw new Error("기존 해시태그 연결을 정리하지 못했습니다.");
+  }
+
+  if (normalizedHashtags.length === 0) {
+    return;
+  }
+
+  const { error: hashtagsUpsertError } = await supabase
+    .from("hashtags")
+    .upsert(
+      normalizedHashtags.map((name) => ({ name })),
+      {
+        onConflict: "name",
+      },
+    );
+
+  if (hashtagsUpsertError) {
+    throw new Error("해시태그 저장에 실패했습니다.");
+  }
+
+  const { data: hashtagRows, error: hashtagsSelectError } = await supabase
+    .from("hashtags")
+    .select("id, name")
+    .in("name", normalizedHashtags);
+
+  if (hashtagsSelectError || !hashtagRows) {
+    throw new Error("해시태그 정보를 불러오지 못했습니다.");
+  }
+
+  const { error: postHashtagsError } = await supabase
+    .from("post_hashtags")
+    .insert(
+      hashtagRows.map((hashtag) => ({
+        hashtag_id: hashtag.id,
+        post_id: postId,
+      })),
+    );
+
+  if (postHashtagsError) {
+    throw new Error("게시물 해시태그 연결에 실패했습니다.");
+  }
+}
+
 // 게시물 본문, 이미지, 해시태그를 posts 관련 테이블에 순서대로 저장한다.
 export async function createPost({
   content,
@@ -189,48 +257,162 @@ export async function createPost({
     }
   }
 
-  const normalizedHashtags = Array.from(
-    new Set(hashtags.map(normalizeHashtag).filter(Boolean)),
-  );
+  await replacePostHashtags(post.id, hashtags);
 
-  if (normalizedHashtags.length > 0) {
-    const { error: hashtagsUpsertError } = await supabase
-      .from("hashtags")
-      .upsert(
-        normalizedHashtags.map((name) => ({ name })),
-        {
-          onConflict: "name",
-        },
-      );
+  return post.id;
+}
 
-    if (hashtagsUpsertError) {
-      throw new Error("해시태그 저장에 실패했습니다.");
-    }
+// 수정 화면에서 필요한 본문, 이미지, 해시태그만 조회한다.
+export async function getPost(postId: string): Promise<PostDetail> {
+  const supabase = requireSupabaseClient();
 
-    const { data: hashtagRows, error: hashtagsSelectError } = await supabase
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("id, content")
+    .eq("id", postId)
+    .is("deleted_at", null)
+    .single();
+
+  if (postError || !post) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  const [{ data: imagesData, error: imagesError }, { data: postHashtagsData, error: postHashtagsError }] =
+    await Promise.all([
+      supabase
+        .from("post_images")
+        .select("id, post_id, url, order_index, created_at")
+        .eq("post_id", postId)
+        .order("order_index", { ascending: true }),
+      supabase
+        .from("post_hashtags")
+        .select("post_id, hashtag_id")
+        .eq("post_id", postId),
+    ]);
+
+  if (imagesError || !imagesData) {
+    throw new Error("게시물 이미지를 불러오지 못했습니다.");
+  }
+
+  if (postHashtagsError || !postHashtagsData) {
+    throw new Error("게시물 해시태그를 불러오지 못했습니다.");
+  }
+
+  const hashtagIds = postHashtagsData.map((postHashtag) => postHashtag.hashtag_id);
+  let hashtags: string[] = [];
+
+  if (hashtagIds.length > 0) {
+    const { data: hashtagsData, error: hashtagsError } = await supabase
       .from("hashtags")
       .select("id, name")
-      .in("name", normalizedHashtags);
+      .in("id", hashtagIds);
 
-    if (hashtagsSelectError || !hashtagRows) {
+    if (hashtagsError || !hashtagsData) {
       throw new Error("해시태그 정보를 불러오지 못했습니다.");
     }
 
-    const { error: postHashtagsError } = await supabase
-      .from("post_hashtags")
-      .insert(
-        hashtagRows.map((hashtag) => ({
-          hashtag_id: hashtag.id,
-          post_id: post.id,
-        })),
-      );
+    const hashtagsById = new Map(
+      hashtagsData.map((hashtag: Pick<HashtagRow, "id" | "name">) => [
+        hashtag.id,
+        hashtag.name,
+      ]),
+    );
 
-    if (postHashtagsError) {
-      throw new Error("게시물 해시태그 연결에 실패했습니다.");
-    }
+    hashtags = postHashtagsData
+      .map((postHashtag) => hashtagsById.get(postHashtag.hashtag_id))
+      .filter((hashtag): hashtag is string => Boolean(hashtag));
   }
 
-  return post.id;
+  return {
+    content: post.content,
+    hashtags,
+    id: post.id,
+    images: imagesData.map((image: PostImageRow) => ({
+      id: image.id,
+      order_index: image.order_index,
+      url: image.url,
+    })),
+  };
+}
+
+// 본인 게시물의 본문과 해시태그만 수정한다. 이미지는 수정 모드에서 변경하지 않는다.
+export async function updatePost({
+  content,
+  hashtags,
+  postId,
+}: UpdatePostParams): Promise<void> {
+  const supabase = requireSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("id, user_id")
+    .eq("id", postId)
+    .is("deleted_at", null)
+    .single();
+
+  if (postError || !post) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  if (post.user_id !== user.id) {
+    throw new Error("본인 게시물만 수정할 수 있습니다.");
+  }
+
+  const trimmedContent = content.trim();
+  const { error: updateError } = await supabase
+    .from("posts")
+    .update({ content: trimmedContent.length > 0 ? trimmedContent : null })
+    .eq("id", post.id);
+
+  if (updateError) {
+    throw new Error("게시물 수정에 실패했습니다.");
+  }
+
+  await replacePostHashtags(post.id, hashtags);
+}
+
+// 본인 게시물만 deleted_at을 갱신해 피드에서 숨긴다.
+export async function deletePost(postId: string): Promise<void> {
+  const supabase = requireSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("id, user_id")
+    .eq("id", postId)
+    .maybeSingle();
+
+  if (postError || !post) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  if (post.user_id !== user.id) {
+    throw new Error("본인 게시물만 삭제할 수 있습니다.");
+  }
+
+  const { error: deleteError } = await supabase
+    .from("posts")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", post.id);
+
+  if (deleteError) {
+    throw new Error("게시물 삭제에 실패했습니다.");
+  }
 }
 
 // 현재 로그인 유저가 좋아요한 게시물 id만 골라 UI 초기 상태에 사용한다.

@@ -1,15 +1,26 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
-import type { FeedPost } from "@/features/feed/api";
+import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { Toast } from "@/components/common/Toast";
+import { deletePost, type FeedPost } from "@/features/feed/api";
 
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
 type PostCardProps = {
+  currentUserId?: string;
   isLiked?: boolean;
   onBookmark?: (postId: string) => void;
   onComment?: (postId: string) => void;
+  onDelete?: (postId: string) => void;
   onLike?: (postId: string) => void;
   post: FeedPost;
+};
+
+type ToastState = {
+  isVisible: boolean;
+  message: string;
+  type: "success" | "error";
 };
 
 // 더보기 아이콘은 실제 메뉴 구현 전까지 버튼 셸로만 사용한다.
@@ -127,19 +138,112 @@ function getInitial(name: string) {
 
 // 피드 단일 카드. 데이터 조회 없이 전달된 post만 렌더링한다.
 export function PostCard({
+  currentUserId = "",
   isLiked = false,
   onBookmark,
   onComment,
+  onDelete,
   onLike,
   post,
 }: PostCardProps) {
+  const router = useRouter();
   const carouselId = useId();
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLParagraphElement | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [isContentOverflowing, setIsContentOverflowing] = useState(false);
+  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [toast, setToast] = useState<ToastState>({
+    isVisible: false,
+    message: "",
+    type: "success",
+  });
   const hasMultipleImages = post.images.length > 1;
+  const isOwnPost = post.user.id === currentUserId;
+
+  function showToast(message: string, type: ToastState["type"] = "success") {
+    setToast({
+      isVisible: true,
+      message,
+      type,
+    });
+  }
+
+  async function handleCopyLink() {
+    const postUrl = `${window.location.origin}/posts/${post.id}`;
+
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      showToast("링크가 복사됐습니다");
+    } catch {
+      showToast("링크 복사에 실패했습니다", "error");
+    }
+  }
+
+  async function handleDeletePost() {
+    try {
+      await deletePost(post.id);
+      showToast("게시물이 삭제됐습니다");
+      window.setTimeout(() => {
+        onDelete?.(post.id);
+      }, 700);
+    } catch {
+      showToast("게시물 삭제에 실패했습니다", "error");
+    }
+  }
+
+  const actionSheetItems: ActionSheetItem[] = isOwnPost
+    ? [
+        {
+          label: "수정",
+          onClick: () => {
+            router.push(`/posts/write?postId=${post.id}`);
+          },
+        },
+        {
+          danger: true,
+          label: "삭제",
+          onClick: () => {
+            void handleDeletePost();
+          },
+        },
+        {
+          label: "링크 복사",
+          onClick: () => {
+            void handleCopyLink();
+          },
+        },
+        {
+          label: "취소",
+          onClick: () => {},
+        },
+      ]
+    : [
+        {
+          danger: true,
+          label: "신고",
+          onClick: () => {
+            console.log("신고", post.id);
+          },
+        },
+        {
+          label: "차단",
+          onClick: () => {
+            console.log("차단", post.user.id);
+          },
+        },
+        {
+          label: "링크 복사",
+          onClick: () => {
+            void handleCopyLink();
+          },
+        },
+        {
+          label: "취소",
+          onClick: () => {},
+        },
+      ];
 
   function handleContentRef(element: HTMLParagraphElement | null) {
     contentRef.current = element;
@@ -221,6 +325,9 @@ export function PostCard({
 
         <button
           type="button"
+          onClick={() => {
+            setIsActionSheetOpen(true);
+          }}
           className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
           aria-label="게시물 더보기"
         >
@@ -375,6 +482,25 @@ export function PostCard({
           </div>
         ) : null}
       </div>
+
+      <ActionSheet
+        isOpen={isActionSheetOpen}
+        items={actionSheetItems}
+        onClose={() => {
+          setIsActionSheetOpen(false);
+        }}
+      />
+      <Toast
+        isVisible={toast.isVisible}
+        message={toast.message}
+        type={toast.type}
+        onHide={() => {
+          setToast((currentToast) => ({
+            ...currentToast,
+            isVisible: false,
+          }));
+        }}
+      />
     </article>
   );
 }

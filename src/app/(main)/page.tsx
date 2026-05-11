@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
+import { Toast } from "@/components/common/Toast";
 import { CommentSheet } from "@/components/feed/CommentSheet";
 import { PostCard } from "@/components/feed/PostCard";
 import { StoryBar } from "@/components/story/StoryBar";
@@ -11,6 +13,7 @@ import {
   togglePostLike,
   type FeedPost,
 } from "@/features/feed/api";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // 실제 데이터가 오기 전 카드 높이를 유지해 레이아웃 점프를 줄인다.
 function FeedCardSkeleton() {
@@ -34,17 +37,84 @@ function FeedCardSkeleton() {
   );
 }
 
+type ToastState = {
+  isVisible: boolean;
+  message: string;
+  type: "success" | "error";
+};
+
 // 홈 피드 페이지. 현재는 클라이언트에서 피드를 불러와 목록 컴포넌트에 주입한다.
-export default function MainPage() {
+function MainPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState("");
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>({
+    isVisible: false,
+    message: "",
+    type: "success",
+  });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isLoadingMoreRef = useRef(false);
+
+  useEffect(() => {
+    const toastParam = searchParams.get("toast");
+    const toastMessage =
+      toastParam === "posted"
+        ? "게시물이 등록됐습니다"
+        : toastParam === "updated"
+          ? "게시물이 수정됐습니다"
+          : null;
+
+    if (!toastMessage) {
+      return;
+    }
+
+    const toastTimer = window.setTimeout(() => {
+      setToast({
+        isVisible: true,
+        message: toastMessage,
+        type: "success",
+      });
+      router.replace("/");
+    }, 0);
+
+    return () => {
+      window.clearTimeout(toastTimer);
+    };
+  }, [router, searchParams]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCurrentUserId = async () => {
+      const supabase = getSupabaseBrowserClient();
+
+      if (!supabase) {
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (isMounted) {
+        setCurrentUserId(user?.id ?? "");
+      }
+    };
+
+    void loadCurrentUserId();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -254,6 +324,10 @@ export default function MainPage() {
     [],
   );
 
+  const handleDeletePost = useCallback((postId: string) => {
+    setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
+  }, []);
+
   return (
     <>
       {/* 실제 스토리 데이터 연결 전까지는 비어 있는 배열만 전달한다. */}
@@ -285,11 +359,13 @@ export default function MainPage() {
               <PostCard
                 key={post.id}
                 post={post}
+                currentUserId={currentUserId}
                 isLiked={likedPostIds.has(post.id)}
                 onLike={handleLike}
                 onComment={(postId) => {
                   setCommentSheetPostId(postId);
                 }}
+                onDelete={handleDeletePost}
                 onBookmark={(postId) => {
                   console.log("bookmark", postId);
                 }}
@@ -313,6 +389,25 @@ export default function MainPage() {
         }}
         onCommentCountChange={handleCommentCountChange}
       />
+      <Toast
+        isVisible={toast.isVisible}
+        message={toast.message}
+        type={toast.type}
+        onHide={() => {
+          setToast((currentToast) => ({
+            ...currentToast,
+            isVisible: false,
+          }));
+        }}
+      />
     </>
+  );
+}
+
+export default function MainPage() {
+  return (
+    <Suspense fallback={null}>
+      <MainPageContent />
+    </Suspense>
   );
 }

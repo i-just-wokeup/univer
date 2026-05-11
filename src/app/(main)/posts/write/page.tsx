@@ -1,12 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { PostImageUploader } from "@/components/feed/PostImageUploader";
 import {
   createPost,
   getCurrentUserUniversityId,
+  getPost,
+  updatePost,
   uploadPostImages,
+  type PostImage,
 } from "@/features/feed/api";
 
 // MVP에서는 공개/친한친구 두 범위만 고려하지만 현재 UI는 public으로 고정한다.
@@ -18,15 +21,65 @@ function normalizeHashtag(value: string) {
 }
 
 // 게시물 작성 페이지. 업로드와 저장 orchestration만 담당한다.
-export default function PostWritePage() {
+function PostWriteContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const postId = searchParams.get("postId");
+  const isEditMode = Boolean(postId);
   const [images, setImages] = useState<File[]>([]);
+  const [readonlyImages, setReadonlyImages] = useState<PostImage[]>([]);
   const [content, setContent] = useState("");
   const [visibility] = useState<Visibility>("public");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!postId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadPost = async () => {
+      try {
+        setIsLoadingPost(true);
+        setError(null);
+
+        const post = await getPost(postId);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setContent(post.content ?? "");
+        setHashtags(post.hashtags);
+        setReadonlyImages(post.images);
+      } catch (loadError) {
+        if (!isMounted) {
+          return;
+        }
+
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "게시물을 불러오지 못했습니다.",
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoadingPost(false);
+        }
+      }
+    };
+
+    void loadPost();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [postId]);
 
   // 한 번에 여러 개 입력된 해시태그를 분리하고, 중복 없는 배열로 합친다.
   function appendHashtags(rawValue: string) {
@@ -110,19 +163,28 @@ export default function PostWritePage() {
     setIsSubmitting(true);
 
     try {
-      const { universityId } = await getCurrentUserUniversityId();
-      const imageUrls = await uploadPostImages(images);
+      if (postId) {
+        await updatePost({
+          content,
+          hashtags,
+          postId,
+        });
+        router.replace("/?toast=updated");
+        return;
+      } else {
+        const { universityId } = await getCurrentUserUniversityId();
+        const imageUrls = await uploadPostImages(images);
 
-      await createPost({
-        content,
-        hashtags,
-        imageUrls,
-        universityId,
-        visibility,
-      });
+        await createPost({
+          content,
+          hashtags,
+          imageUrls,
+          universityId,
+          visibility,
+        });
+      }
 
-      router.replace("/");
-      router.refresh();
+      router.replace("/?toast=posted");
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -135,7 +197,9 @@ export default function PostWritePage() {
   }
 
   // 본문이나 이미지 둘 다 없으면 빈 게시물 방지를 위해 제출을 막는다.
-  const isSubmitDisabled = content.trim().length === 0 && images.length === 0;
+  const isSubmitDisabled = isEditMode
+    ? content.trim().length === 0 && readonlyImages.length === 0
+    : content.trim().length === 0 && images.length === 0;
 
   return (
     <div className="flex min-h-full flex-col bg-white">
@@ -146,22 +210,56 @@ export default function PostWritePage() {
             onClick={() => router.back()}
             className="text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
           >
-            취소
-          </button>
-          <h1 className="text-base font-semibold text-zinc-950">새 게시물</h1>
+              취소
+            </button>
+          <h1 className="text-base font-semibold text-zinc-950">
+            {isEditMode ? "게시물 수정" : "새 게시물"}
+          </h1>
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSubmitDisabled || isSubmitting}
+            disabled={isSubmitDisabled || isSubmitting || isLoadingPost}
             className="text-sm font-semibold text-zinc-950 transition disabled:text-zinc-400"
           >
-            {isSubmitting ? "게시 중..." : "게시"}
+            {isSubmitting ? "저장 중..." : isEditMode ? "저장" : "게시"}
           </button>
         </div>
       </header>
 
       <div className="flex flex-1 flex-col gap-6 px-4 py-5">
-        <PostImageUploader images={images} onImagesChange={setImages} />
+        {isEditMode ? (
+          <section className="flex flex-col gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-950">사진</h2>
+              <p className="mt-1 text-xs text-zinc-500">
+                수정 모드에서는 사진을 변경할 수 없습니다.
+              </p>
+            </div>
+            {readonlyImages.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2">
+                {readonlyImages.map((image) => (
+                  <div
+                    key={image.id}
+                    className="aspect-square overflow-hidden rounded-2xl bg-zinc-100"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={image.url}
+                      alt="게시물 이미지"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm text-zinc-500">
+                첨부된 사진이 없습니다.
+              </p>
+            )}
+          </section>
+        ) : (
+          <PostImageUploader images={images} onImagesChange={setImages} />
+        )}
 
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-zinc-950">내용</h2>
@@ -239,5 +337,13 @@ export default function PostWritePage() {
         ) : null}
       </div>
     </div>
+  );
+}
+
+export default function PostWritePage() {
+  return (
+    <Suspense fallback={null}>
+      <PostWriteContent />
+    </Suspense>
   );
 }
