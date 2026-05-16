@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import {
   deleteStory,
   getMyStoryLikedStatus,
@@ -17,6 +18,7 @@ import {
 
 const STORY_DURATION_MS = 5000;
 const PROGRESS_TICK_MS = 50;
+const FEED_REFRESH_URL = "/?refreshStories=1";
 
 function getInitial(name: string) {
   return name.trim().charAt(0) || "?";
@@ -196,6 +198,7 @@ export default function StoryViewerPage() {
   const params = useParams<{ userId: string }>();
   const router = useRouter();
   const viewedStoryIdsRef = useRef<Set<string>>(new Set());
+  const keepPausedAfterActionSheetCloseRef = useRef(false);
   const [stories, setStories] = useState<Story[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -207,6 +210,7 @@ export default function StoryViewerPage() {
   const [viewers, setViewers] = useState<Viewer[]>([]);
   const [isViewerSheetOpen, setIsViewerSheetOpen] = useState(false);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const currentStory = stories[currentIndex] ?? null;
 
@@ -330,7 +334,7 @@ export default function StoryViewerPage() {
         if (currentIndex < stories.length - 1) {
           setCurrentIndex((index) => index + 1);
         } else {
-          router.replace("/");
+          router.replace(FEED_REFRESH_URL);
         }
 
         return 100;
@@ -348,10 +352,12 @@ export default function StoryViewerPage() {
     }
 
     try {
+      setIsPaused(true);
       const loadedViewers = await getStoryViewers(currentStory.id);
       setViewers(loadedViewers);
       setIsViewerSheetOpen(true);
     } catch (viewerError) {
+      setIsPaused(false);
       console.error("스토리 조회자 목록 조회 실패", viewerError);
     }
   }
@@ -362,7 +368,7 @@ export default function StoryViewerPage() {
 
   function goNext() {
     if (currentIndex >= stories.length - 1) {
-      router.replace("/");
+      router.replace(FEED_REFRESH_URL);
       return;
     }
 
@@ -401,7 +407,7 @@ export default function StoryViewerPage() {
       await deleteStory(deletedStoryId);
 
       if (currentIndex >= stories.length - 1) {
-        router.replace("/");
+        router.replace(FEED_REFRESH_URL);
         return;
       }
 
@@ -409,9 +415,22 @@ export default function StoryViewerPage() {
         currentStories.filter((story) => story.id !== deletedStoryId),
       );
       setProgress(0);
+      setIsPaused(false);
     } catch (deleteError) {
+      setIsPaused(false);
       console.error("스토리 삭제 실패", deleteError);
     }
+  }
+
+  function closeActionSheet() {
+    setIsActionSheetOpen(false);
+
+    if (keepPausedAfterActionSheetCloseRef.current) {
+      keepPausedAfterActionSheetCloseRef.current = false;
+      return;
+    }
+
+    setIsPaused(false);
   }
 
   function togglePause() {
@@ -434,7 +453,7 @@ export default function StoryViewerPage() {
         </p>
         <button
           type="button"
-          onClick={() => router.replace("/")}
+          onClick={() => router.replace(FEED_REFRESH_URL)}
           className="rounded-full bg-white px-5 py-3 text-sm font-bold text-zinc-950"
         >
           피드로 돌아가기
@@ -449,7 +468,9 @@ export default function StoryViewerPage() {
           danger: true,
           label: "삭제",
           onClick: () => {
-            void handleDeleteStory();
+            keepPausedAfterActionSheetCloseRef.current = true;
+            setIsPaused(true);
+            setIsDeleteConfirmOpen(true);
           },
         },
         {
@@ -475,7 +496,7 @@ export default function StoryViewerPage() {
     <main className="relative flex min-h-screen items-center justify-center bg-black px-0 py-8 text-white">
       <button
         type="button"
-        onClick={() => router.replace("/")}
+        onClick={() => router.replace(FEED_REFRESH_URL)}
         className="fixed right-4 top-4 z-30 rounded-full bg-black/30 p-2 text-white backdrop-blur"
         aria-label="스토리 닫기"
       >
@@ -532,7 +553,10 @@ export default function StoryViewerPage() {
               ) : null}
               <button
                 type="button"
-                onClick={() => setIsActionSheetOpen(true)}
+                onClick={() => {
+                  setIsPaused(true);
+                  setIsActionSheetOpen(true);
+                }}
                 className="text-white"
                 aria-label="스토리 메뉴 열기"
               >
@@ -618,13 +642,30 @@ export default function StoryViewerPage() {
 
       <ViewerSheet
         isOpen={isViewerSheetOpen}
-        onClose={() => setIsViewerSheetOpen(false)}
+        onClose={() => {
+          setIsViewerSheetOpen(false);
+          setIsPaused(false);
+        }}
         viewers={viewers}
       />
       <ActionSheet
         isOpen={isActionSheetOpen}
         items={actionSheetItems}
-        onClose={() => setIsActionSheetOpen(false)}
+        onClose={closeActionSheet}
+      />
+      <ConfirmDialog
+        confirmLabel="삭제"
+        description="삭제된 스토리는 복구되지 않습니다."
+        isOpen={isDeleteConfirmOpen}
+        onCancel={() => {
+          setIsDeleteConfirmOpen(false);
+          setIsPaused(false);
+        }}
+        onConfirm={() => {
+          setIsDeleteConfirmOpen(false);
+          void handleDeleteStory();
+        }}
+        title="스토리를 삭제할까요?"
       />
     </main>
   );
