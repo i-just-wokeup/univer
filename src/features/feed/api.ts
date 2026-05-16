@@ -577,7 +577,7 @@ export async function getFeed({
       supabase
         .from("users")
         .select(
-          "id, nickname, department, avatar_url, email, university_id, role, is_onboarded, is_active, fcm_token, visibility, deleted_at, created_at",
+          "id, nickname, bio, department, avatar_url, email, university_id, role, is_onboarded, is_active, fcm_token, visibility, deleted_at, created_at",
         )
         .in("id", userIds),
       supabase
