@@ -343,3 +343,26 @@
 - [ ] 스토리
 - [ ] 프로필 페이지
 - [ ] 관리자 페이지
+
+## 2026-05-12
+
+### 완료
+- stories SELECT RLS 정책 수정 (soft delete 호환 — 본인 스토리는 deleted_at 무관 SELECT 가능)
+- 스토리 삭제 확인 다이얼로그 구현 (ConfirmDialog 공용 컴포넌트 신규)
+  - ActionSheet → ConfirmDialog 2단계 흐름
+  - 게시물 삭제/로그아웃/신고에도 재사용 예정
+- ActionSheet/ConfirmDialog/ViewerSheet 열릴 때 스토리 타이머 멈춤, 닫을 때 재개
+- 스토리 뷰어 종료 시 refreshStories 파라미터로 StoryBar 새로고침
+- users 테이블 bio 컬럼 추가 (프로필 소개글)
+- users 테이블 nickname UNIQUE 제약 추가
+- database.types.ts bio 컬럼 반영
+
+### 트러블슈팅
+- stories soft delete 시 SELECT 정책 위반으로 403 발생 → posts와 동일한 패턴으로 정책 수정
+- users RLS 활성화 시도 → 재귀 문제로 일시 롤백, 배포 전 재설계 필요
+
+### 다음 작업
+- [ ] 온보딩 닉네임 중복 체크 추가
+- [ ] 프로필 페이지 /profile/[nickname]
+- [ ] 프로필 편집 페이지 (닉네임/소개/프로필사진 + 로그아웃)
+- [ ] 사이드바/탭바 프로필 버튼 연결
