@@ -576,9 +576,7 @@ export async function getFeed({
     await Promise.all([
       supabase
         .from("users")
-        .select(
-          "id, nickname, bio, department, avatar_url, email, university_id, role, is_onboarded, is_active, fcm_token, visibility, deleted_at, created_at",
-        )
+        .select("id, nickname, department, avatar_url")
         .in("id", userIds),
       supabase
         .from("post_images")
@@ -628,7 +626,7 @@ export async function getFeed({
   }
 
   const usersById = new Map<string, FeedUser>(
-    usersData.map((user: UserRow) => [
+    usersData.map((user: Pick<UserRow, "id" | "nickname" | "department" | "avatar_url">) => [
       user.id,
       {
         avatar_url: user.avatar_url,

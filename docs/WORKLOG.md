@@ -366,3 +366,11 @@
 - [ ] 프로필 페이지 /profile/[nickname]
 - [ ] 프로필 편집 페이지 (닉네임/소개/프로필사진 + 로그아웃)
 - [ ] 사이드바/탭바 프로필 버튼 연결
+
+## 2026-05-16
+
+### 완료
+- `src/types/database.types.ts` users Row/Insert/Update에 `real_name: string | null` 반영
+- `docs/PLAN.md`에 users real_name 타입 반영 완료 항목 추가
+- `src/features/auth/api.ts` getCurrentUserProfile users select 목록에 `real_name` 추가
+- `src/features/feed/api.ts` getFeed 작성자 조회 select를 FeedUser 필요 컬럼 4개로 축소하고 Pick 타입으로 정리

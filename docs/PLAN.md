@@ -29,6 +29,7 @@
 - [x] 스토리 업로드/스토리바/뷰어 구현
 - [x] ConfirmDialog 공용 컴포넌트 구현
 - [x] stories RLS soft delete 호환 정책 수정
+- [x] database.types.ts users real_name 컬럼 반영
 
 ## 진행 중인 작업
 - [ ] DB 마이그레이션 파일 작성 (1단계 17개 테이블)
@@ -39,6 +40,7 @@
 ### 1단계 — SNS MVP
 1. **인증** — 학교 이메일 가입, 구글/카카오, 온보딩 (학교/학과/닉네임)
    - 완료: 학교 이메일 도메인 검증, 이메일+비밀번호 로그인, 회원가입, 온보딩 저장, middleware 보호 재활성화
+   - 완료: users 타입에 real_name 컬럼 반영
    - 남음: users 프로필 보완, 비밀번호 재설정 등 부가 흐름
 2. **레이아웃** — 모바일/웹 공통 레이아웃, Header, BottomTabBar, SideBar
    - 완료: 메인 화면 껍데기 및 반응형 3단 레이아웃
