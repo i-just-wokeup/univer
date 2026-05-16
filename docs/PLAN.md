@@ -30,6 +30,8 @@
 - [x] ConfirmDialog 공용 컴포넌트 구현
 - [x] stories RLS soft delete 호환 정책 수정
 - [x] database.types.ts users real_name 컬럼 반영
+- [x] 프로필 조회 API 1차 구현 (`src/features/profile/api.ts`)
+- [x] 프로필 페이지 1차 구현 (`/profile/[nickname]`)
 
 ## 진행 중인 작업
 - [ ] DB 마이그레이션 파일 작성 (1단계 17개 테이블)
@@ -72,6 +74,11 @@
    - 완료: ConfirmDialog 공용 컴포넌트 및 스토리 삭제 확인 흐름 연결
    - 다음: 스토리 보관함
 6. **프로필 페이지**
+   - 완료: 프로필 조회/프로필 게시물/게시물 수 API 1차 구현
+   - 완료: `/profile/[nickname]` 페이지 1차 구현 (프로필 영역, 게시물 3열 그리드, 로딩 스켈레톤)
+   - 완료: `/profile/me` 현재 유저 프로필 alias 처리
+   - 완료: 프로필 게시물 그리드 모바일 전체 폭 확장 및 탭 구분선 추가
+   - 다음: 프로필 편집 페이지 및 프로필 버튼 실제 닉네임 연결
 7. **유저 좋아요 + 친한친구**
 8. **북마크 / 해시태그**
 9. **알림**

@@ -374,3 +374,12 @@
 - `docs/PLAN.md`에 users real_name 타입 반영 완료 항목 추가
 - `src/features/auth/api.ts` getCurrentUserProfile users select 목록에 `real_name` 추가
 - `src/features/feed/api.ts` getFeed 작성자 조회 select를 FeedUser 필요 컬럼 4개로 축소하고 Pick 타입으로 정리
+- `src/features/profile/api.ts` 신규 생성
+  - `getProfile(nickname)` 구현: users nickname 기반 프로필 조회
+  - `getProfilePosts(userId)` 구현: 삭제되지 않은 게시물 최신순 + 첫 번째 이미지 조회
+  - `getPostsCount(userId)` 구현: 삭제되지 않은 게시물 수 조회
+- `/profile/[nickname]` 페이지 1차 구현
+  - 프로필 사진/닉네임/학과/소개/게시물 수/본인 프로필 편집 버튼 표시
+  - 게시물 3열 그리드 및 썸네일 fallback/빈 상태/로딩 스켈레톤 추가
+- `/profile/me` 접근 시 현재 로그인 유저 프로필로 해석하고 실제 닉네임 URL로 교체하도록 처리
+- 프로필 게시물 그리드를 모바일 화면 전체 폭으로 확장하고 게시물 탭 구분선을 추가
