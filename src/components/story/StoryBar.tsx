@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getStories, type StoryGroup } from "@/features/stories/api";
@@ -88,6 +89,8 @@ function StorySkeleton() {
 }
 
 export function StoryBar() {
+  const searchParams = useSearchParams();
+  const refreshStories = searchParams.get("refreshStories");
   const [storyGroups, setStoryGroups] = useState<StoryGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -96,6 +99,7 @@ export function StoryBar() {
 
     async function loadStories() {
       try {
+        setIsLoading(true);
         const loadedStoryGroups = await getStories();
 
         if (isMounted) {
@@ -115,7 +119,7 @@ export function StoryBar() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [refreshStories]);
 
   const hasMyStory = storyGroups[0]?.user.nickname === "나";
 
