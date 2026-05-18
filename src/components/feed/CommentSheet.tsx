@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { Avatar } from "@/components/common/Avatar";
+import { UserInfo } from "@/components/common/UserInfo";
 import {
   createComment,
   deleteComment,
@@ -373,22 +373,17 @@ export function CommentSheet({
       key={comment.id}
       className={`flex gap-3 px-4 py-2 ${isReply ? "ml-11" : ""}`}
   >
-      <Avatar
-        src={comment.user.avatar_url}
-        nickname={comment.user.nickname}
-        size="xs"
-      />
-
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-semibold text-zinc-950">
-            {comment.user.nickname}
-          </span>
+          <UserInfo
+            avatarUrl={comment.user.avatar_url}
+            nickname={comment.user.nickname}
+          />
           <span className="shrink-0 text-xs text-zinc-400">
             {getRelativeTimeLabel(comment.created_at)}
           </span>
         </div>
-        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700">
+        <p className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700">
           {comment.content}
         </p>
 
@@ -398,7 +393,7 @@ export function CommentSheet({
             onClick={() => {
               handleReply(comment);
             }}
-            className="mt-2 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+            className="ml-11 mt-2 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
           >
             답글 달기
           </button>
