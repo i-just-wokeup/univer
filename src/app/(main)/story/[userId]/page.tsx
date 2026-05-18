@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { Avatar } from "@/components/common/Avatar";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import {
   deleteStory,
@@ -521,22 +522,15 @@ export default function StoryViewerPage() {
                 />
               </div>
             ))}
-          </div>
+            </div>
 
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              {currentStory.user.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={currentStory.user.avatar_url}
-                  alt={currentStory.user.nickname}
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-              ) : (
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
-                  {getInitial(currentStory.user.nickname)}
-                </span>
-              )}
+              <Avatar
+                src={currentStory.user.avatar_url}
+                nickname={currentStory.user.nickname}
+                size="lg"
+              />
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold">{currentStory.user.nickname}</p>
                 <p className="text-xs text-white/70">

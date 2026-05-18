@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Avatar } from "@/components/common/Avatar";
 import { getCurrentUserProfile } from "@/features/auth/api";
 import {
   getPostsCount,
@@ -18,10 +19,6 @@ type ProfilePageState = {
   postsCount: number;
   profile: Profile | null;
 };
-
-function getInitial(nickname: string) {
-  return nickname.trim().charAt(0) || "?";
-}
 
 function ProfileSkeleton() {
   return (
@@ -44,27 +41,6 @@ function ProfileSkeleton() {
   );
 }
 
-function ProfileAvatar({ profile }: { profile: Profile }) {
-  if (profile.avatar_url) {
-    return (
-      <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-zinc-100">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={profile.avatar_url}
-          alt={`${profile.nickname} 프로필 사진`}
-          className="h-full w-full object-cover"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-2xl font-bold text-white">
-      {getInitial(profile.nickname)}
-    </div>
-  );
-}
-
 function ProfileHeader({
   isMine,
   postsCount,
@@ -77,7 +53,11 @@ function ProfileHeader({
   return (
     <section className="px-4 py-6">
       <div className="flex gap-5">
-        <ProfileAvatar profile={profile} />
+        <Avatar
+          src={profile.avatar_url}
+          nickname={profile.nickname}
+          size="xl"
+        />
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
@@ -261,29 +241,29 @@ export default function ProfilePage() {
         postsCount={state.postsCount}
         profile={state.profile}
       />
-      <section className="border-y border-zinc-200">
-        <div className="mx-auto flex h-11 w-full max-w-[470px] items-center justify-around">
-          <button
-            type="button"
-            className="flex h-full w-24 items-center justify-center border-b-2 border-zinc-950 text-zinc-950"
-            aria-label="게시물 그리드"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-5 w-5"
-              fill="none"
-              aria-hidden="true"
+      <div className="relative left-1/2 w-screen -translate-x-1/2 lg:w-[calc(100vw-36rem)] lg:max-w-[832px] xl:w-[calc(100vw-38rem)]">
+        <section className="border-y border-zinc-200">
+          <div className="mx-auto flex h-11 w-full items-center justify-around">
+            <button
+              type="button"
+              className="flex h-full w-24 items-center justify-center border-b-2 border-zinc-950 text-zinc-950"
+              aria-label="게시물 그리드"
             >
-              <path
-                d="M5 5h4v4H5V5Zm5 0h4v4h-4V5Zm5 0h4v4h-4V5ZM5 10h4v4H5v-4Zm5 0h4v4h-4v-4Zm5 0h4v4h-4v-4ZM5 15h4v4H5v-4Zm5 0h4v4h-4v-4Zm5 0h4v4h-4v-4Z"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              />
-            </svg>
-          </button>
-        </div>
-      </section>
-      <div className="relative left-1/2 w-screen -translate-x-1/2 lg:left-auto lg:w-full lg:translate-x-0">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M5 5h4v4H5V5Zm5 0h4v4h-4V5Zm5 0h4v4h-4V5ZM5 10h4v4H5v-4Zm5 0h4v4h-4v-4Zm5 0h4v4h-4v-4ZM5 15h4v4H5v-4Zm5 0h4v4h-4v-4Zm5 0h4v4h-4v-4Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                />
+              </svg>
+            </button>
+          </div>
+        </section>
         <PostsGrid posts={state.posts} />
       </div>
     </div>

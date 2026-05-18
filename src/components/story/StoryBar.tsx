@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Avatar } from "@/components/common/Avatar";
 import { getStories, type StoryGroup } from "@/features/stories/api";
 
 function PlusIcon() {
@@ -18,10 +18,6 @@ function PlusIcon() {
       />
     </svg>
   );
-}
-
-function getInitial(name: string) {
-  return name.trim().charAt(0) || "?";
 }
 
 function MyStoryCreateItem() {
@@ -58,19 +54,11 @@ function StoryGroupItem({ group }: { group: StoryGroup }) {
       <div
         className={`flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 bg-white ${borderClass}`}
       >
-        {group.user.avatar_url ? (
-          <Image
-            src={group.user.avatar_url}
-            alt={group.user.nickname}
-            width={66}
-            height={66}
-            className="h-[66px] w-[66px] rounded-full object-cover"
-          />
-        ) : (
-          <span className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-zinc-100 text-lg font-semibold text-zinc-700">
-            {getInitial(group.user.nickname)}
-          </span>
-        )}
+        <Avatar
+          src={group.user.avatar_url}
+          nickname={group.user.nickname}
+          size="md"
+        />
       </div>
       <span className="line-clamp-1 w-full text-xs font-medium text-zinc-700">
         {group.user.nickname}

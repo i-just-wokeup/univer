@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { Avatar } from "@/components/common/Avatar";
 import { Toast } from "@/components/common/Toast";
 import { deletePost, type FeedPost } from "@/features/feed/api";
 
@@ -129,11 +130,6 @@ function getRelativeTimeLabel(createdAt: string) {
 
   const days = Math.max(1, Math.floor(diffMs / dayMs));
   return `${days}일 전`;
-}
-
-// 아바타 이미지가 없을 때 닉네임 첫 글자를 fallback으로 사용한다.
-function getInitial(name: string) {
-  return name.trim().charAt(0) || "?";
 }
 
 // 피드 단일 카드. 데이터 조회 없이 전달된 post만 렌더링한다.
@@ -296,18 +292,11 @@ export function PostCard({
     <article className="bg-white">
       <header className="flex items-center justify-between px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700">
-            {post.user.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={post.user.avatar_url}
-                alt={post.user.nickname}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span>{getInitial(post.user.nickname)}</span>
-            )}
-          </div>
+          <Avatar
+            src={post.user.avatar_url}
+            nickname={post.user.nickname}
+            size="sm"
+          />
 
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-sm">

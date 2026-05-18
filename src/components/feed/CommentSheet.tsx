@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { Avatar } from "@/components/common/Avatar";
 import {
   createComment,
   deleteComment,
@@ -23,10 +24,6 @@ type ReplyTarget = {
   parentId: string;
   nickname: string;
 };
-
-function getInitial(name: string) {
-  return name.trim().charAt(0) || "?";
-}
 
 function getRelativeTimeLabel(createdAt: string) {
   const createdTime = new Date(createdAt).getTime();
@@ -375,19 +372,12 @@ export function CommentSheet({
     <article
       key={comment.id}
       className={`flex gap-3 px-4 py-2 ${isReply ? "ml-11" : ""}`}
-    >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700">
-        {comment.user.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={comment.user.avatar_url}
-            alt={comment.user.nickname}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <span>{getInitial(comment.user.nickname)}</span>
-        )}
-      </div>
+  >
+      <Avatar
+        src={comment.user.avatar_url}
+        nickname={comment.user.nickname}
+        size="xs"
+      />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
