@@ -64,10 +64,14 @@ export type GetFeedResult = {
 };
 
 export type PostDetail = {
+  comments_count: number;
   content: string | null;
+  created_at: string;
   hashtags: string[];
   id: string;
   images: PostImage[];
+  likes_count: number;
+  user: FeedUser;
 };
 
 export type TogglePostLikeResult = {
@@ -262,13 +266,13 @@ export async function createPost({
   return post.id;
 }
 
-// 수정 화면에서 필요한 본문, 이미지, 해시태그만 조회한다.
+// 수정 화면과 상세 화면에서 필요한 게시물 정보를 조회한다.
 export async function getPost(postId: string): Promise<PostDetail> {
   const supabase = requireSupabaseClient();
 
   const { data: post, error: postError } = await supabase
     .from("posts")
-    .select("id, content")
+    .select("id, content, created_at, likes_count, comments_count, user_id")
     .eq("id", postId)
     .is("deleted_at", null)
     .single();
@@ -277,7 +281,11 @@ export async function getPost(postId: string): Promise<PostDetail> {
     throw new Error("게시물을 찾을 수 없습니다.");
   }
 
-  const [{ data: imagesData, error: imagesError }, { data: postHashtagsData, error: postHashtagsError }] =
+  const [
+    { data: imagesData, error: imagesError },
+    { data: postHashtagsData, error: postHashtagsError },
+    { data: userData, error: userError },
+  ] =
     await Promise.all([
       supabase
         .from("post_images")
@@ -288,6 +296,11 @@ export async function getPost(postId: string): Promise<PostDetail> {
         .from("post_hashtags")
         .select("post_id, hashtag_id")
         .eq("post_id", postId),
+      supabase
+        .from("users")
+        .select("id, nickname, department, avatar_url")
+        .eq("id", post.user_id)
+        .single(),
     ]);
 
   if (imagesError || !imagesData) {
@@ -296,6 +309,10 @@ export async function getPost(postId: string): Promise<PostDetail> {
 
   if (postHashtagsError || !postHashtagsData) {
     throw new Error("게시물 해시태그를 불러오지 못했습니다.");
+  }
+
+  if (userError || !userData) {
+    throw new Error("게시물 작성자 정보를 불러오지 못했습니다.");
   }
 
   const hashtagIds = postHashtagsData.map((postHashtag) => postHashtag.hashtag_id);
@@ -324,7 +341,9 @@ export async function getPost(postId: string): Promise<PostDetail> {
   }
 
   return {
+    comments_count: post.comments_count,
     content: post.content,
+    created_at: post.created_at,
     hashtags,
     id: post.id,
     images: imagesData.map((image: PostImageRow) => ({
@@ -332,6 +351,13 @@ export async function getPost(postId: string): Promise<PostDetail> {
       order_index: image.order_index,
       url: image.url,
     })),
+    likes_count: post.likes_count,
+    user: {
+      avatar_url: userData.avatar_url,
+      department: userData.department,
+      id: userData.id,
+      nickname: userData.nickname,
+    },
   };
 }
 
