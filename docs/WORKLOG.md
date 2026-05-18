@@ -370,16 +370,36 @@
 ## 2026-05-16
 
 ### 완료
-- `src/types/database.types.ts` users Row/Insert/Update에 `real_name: string | null` 반영
-- `docs/PLAN.md`에 users real_name 타입 반영 완료 항목 추가
-- `src/features/auth/api.ts` getCurrentUserProfile users select 목록에 `real_name` 추가
-- `src/features/feed/api.ts` getFeed 작성자 조회 select를 FeedUser 필요 컬럼 4개로 축소하고 Pick 타입으로 정리
-- `src/features/profile/api.ts` 신규 생성
-  - `getProfile(nickname)` 구현: users nickname 기반 프로필 조회
-  - `getProfilePosts(userId)` 구현: 삭제되지 않은 게시물 최신순 + 첫 번째 이미지 조회
-  - `getPostsCount(userId)` 구현: 삭제되지 않은 게시물 수 조회
-- `/profile/[nickname]` 페이지 1차 구현
-  - 프로필 사진/닉네임/학과/소개/게시물 수/본인 프로필 편집 버튼 표시
-  - 게시물 3열 그리드 및 썸네일 fallback/빈 상태/로딩 스켈레톤 추가
-- `/profile/me` 접근 시 현재 로그인 유저 프로필로 해석하고 실제 닉네임 URL로 교체하도록 처리
-- 프로필 게시물 그리드를 모바일 화면 전체 폭으로 확장하고 게시물 탭 구분선을 추가
+- users 테이블 bio, real_name 컬럼 추가
+- users 테이블 nickname UNIQUE 제약 추가
+- database.types.ts bio, real_name 반영
+- feed/api.ts users select 불필요한 컬럼 제거 (id, nickname, department, avatar_url 4개만)
+- auth/api.ts getCurrentUserProfile real_name, bio select 추가
+- 프로필 페이지 구현 (/profile/[nickname])
+  - getProfile, getProfilePosts, getPostsCount (features/profile/api.ts 신규)
+  - 프로필 헤더, 게시물 3열 그리드, 본인/타인 분기
+  - /profile/me 자동 리다이렉트
+- NavItems 컴포넌트 신규 생성 (클라이언트 컴포넌트로 분리)
+  - usePathname()으로 현재 경로 감지, 사이드바/탭바 활성화 표시
+- 사이드바 border-r 제거
+- lucide-react 설치 및 아이콘 적용
+  - 알림: Bell 아이콘
+  - 메시지: MessageCircleMore 아이콘
+  - 채팅 → 메시지로 명칭 변경
+- Avatar 공용 컴포넌트 신규 생성 (src/components/common/Avatar.tsx)
+  - 회색 실루엣 기본 이미지, xs/sm/md/lg/xl 5가지 사이즈
+  - 피드/댓글/스토리바/스토리뷰어/프로필 전체 적용
+- 사이드바/탭바 프로필 아이콘 → 본인 프로필 사진으로 변경
+
+### 트러블슈팅
+- lucide-react를 서버 컴포넌트(layout.tsx)에서 import 시 createContext 에러 → 클라이언트 컴포넌트(NavItems.tsx)로 이동
+- users RLS 활성화 시도 → 재귀 문제로 롤백
+- gmail 계정에 국민대 닉네임이 저장된 문제 → 세션 꼬임으로 발생, DB 직접 수정
+
+### 다음 작업
+- [ ] 회원가입 플로우 재설계 (이메일 → 인증 → 비밀번호+닉네임+이름+학과)
+- [ ] 온보딩 닉네임 중복 체크
+- [ ] 프로필 편집 페이지 (닉네임/소개/프로필사진 + 로그아웃)
+- [ ] 스토리 UI/UX 개선
+- [ ] 좋아요 목록 모달
+- [ ] 관리자 페이지
