@@ -24,6 +24,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 - 업로드 전 클라이언트에서 반드시 압축 (`browser-image-compression`)
 - Supabase Storage 버킷명: `post-images`, `story-images`, `avatars`
 - DB에는 URL만 저장
+- TODO: 배포 전 업로드 시 비율 범위 체크(1.91:1 ~ 4:5) 및 크롭 UI 구현 예정
 
 ### 스토리 자동 만료
 - `expires_at` 컬럼 기준으로 Supabase Edge Function으로 처리
@@ -42,6 +43,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 - 파일명 `middleware.ts` 사용 (proxy.ts 아님)
 - 로그인 여부 + 온보딩 완료 여부 체크
 
+### 이미지 비율 정책 (2026-05-18)
+- 피드/게시물 모달: 원본 비율 유지 (object-contain, 배경 검정)
+- 프로필 썸네일 그리드: 1:1 크롭 (object-cover) 유지
+- 인스타 허용 범위 기준: 1.91:1 ~ 4:5
+- 업로드 시 비율 체크 및 크롭 UI: 배포 전 TODO
+
 ---
 
 ## 트러블슈팅
@@ -55,6 +62,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ### Supabase Storage 버킷 정책 (2026-04-27)
 - post-images, story-images, avatars 버킷 생성 후 정책 추가 필요
 - 로그인 유저만 업로드, 조회는 공개
+
+### 모달 내 링크 이동 이슈 (2026-05-18)
+- 증상: PostDetail 모달 안에서 UserInfo 링크 클릭 시 모달이 닫히지 않고 뒤에서 페이지만 변경
+- 원인: next/link는 router.push와 달리 모달 오버레이를 닫지 않음
+- 해결 방향: UserInfo에 onClose? props 추가, 클릭 시 onClose() 호출 후 router.push()
 
 ---
 

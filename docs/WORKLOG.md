@@ -420,18 +420,38 @@
 - features/auth/api.ts에 signOut() 추가
 - 전체 button 태그에 cursor-pointer 전역 적용 (globals.css)
 - 프로필 편집 버튼 UI 수정 (검은색 → 회색 테두리)
+- 설정 페이지 신규 (/settings)
+  - ChevronLeft 뒤로가기, 프로필 편집 이동, 공지사항/문의하기 비활성, 로그아웃 ConfirmDialog
+- 헤더 이중 렌더링 버그 수정
+  - `(sub)` route group 분리 → `/settings`, `/profile/edit`에서 UNIVER 헤더 제거
+  - 스크롤 시 헤더 침범 현상 해결
+- 프로필 페이지 설정 아이콘(톱니바퀴) 추가 → /settings 이동
+- 프로필 편집 로그아웃 버튼 제거
+- 게시물 상세 모달 구현 (PostDetail.tsx + Intercepting Routes)
+  - `@modal/(.)posts/[postId]` — 프로필/피드에서 모달
+  - `(sub)/posts/[postId]` — 직접 URL 접근 시 풀페이지
+  - 웹 좌우 2단, 인스타 방식 (본문+댓글 스크롤, 좋아요+입력 하단 고정)
+  - 피드 댓글 버튼 → PostDetail 모달 연결
+- 피드 이미지 원본 비율로 변경 (PostCard.tsx)
+  - aspect-square 제거, object-contain, 배경 검정
+  - 프로필 썸네일 1:1 유지
+- UserInfo 공용 컴포넌트 신규 (`src/components/common/UserInfo.tsx`)
+  - 아바타 + 닉네임 → `/profile/${nickname}` Link
+  - PostCard, PostDetail, CommentSheet, PostDetail CommentsList 적용
+- 학과(department) 표시 주석 처리
+
+### 미해결 이슈
+- 모달 안 UserInfo 링크 클릭 시 모달 안 닫힘
+  - 해결 방향: onClose 호출 후 이동하도록 수정 필요
 
 ### 주요 결정
 - 로그아웃 버튼을 프로필 편집에서 설정 페이지로 이동 (B안)
-  - 프로필 페이지에 설정 아이콘(톱니바퀴) 추가 예정
-  - /settings 페이지에 로그아웃 포함 예정
+  - 프로필 페이지 설정 아이콘(톱니바퀴)에서 /settings로 이동
+  - /settings 페이지에 로그아웃 포함
 
 ### 다음 작업
-- [ ] 프로필 페이지에 설정 아이콘 추가
-- [ ] /settings 페이지 신규 (로그아웃 포함)
-- [ ] 프로필 편집에서 로그아웃 버튼 제거
-- [ ] 게시물 상세 모달 (썸네일 클릭 시)
+- [ ] 모달 내 UserInfo 링크 클릭 시 모달 닫기 처리
+- [ ] 관리자 페이지 (/admin)
 - [ ] 회원가입 플로우 재설계
 - [ ] 스토리 UI/UX 개선
 - [ ] 좋아요 목록 모달
-- [ ] 관리자 페이지
