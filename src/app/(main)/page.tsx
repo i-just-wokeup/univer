@@ -364,7 +364,7 @@ function MainPageContent() {
                 isLiked={likedPostIds.has(post.id)}
                 onLike={handleLike}
                 onComment={(postId) => {
-                  setCommentSheetPostId(postId);
+                  router.push(`/posts/${postId}`);
                 }}
                 onDelete={handleDeletePost}
                 onBookmark={(postId) => {
@@ -382,6 +382,7 @@ function MainPageContent() {
         ) : null}
         <div ref={loadMoreRef} className="h-px w-full" aria-hidden="true" />
       </section>
+      {/* 앱 전환 시 댓글 바텀시트 재사용 예정. 웹에서는 PostDetail 모달로 이동한다. */}
       <CommentSheet
         postId={commentSheetPostId}
         isOpen={commentSheetPostId !== null}
