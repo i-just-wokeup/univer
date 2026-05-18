@@ -22,7 +22,7 @@ type SideBarProps = {
 // 데스크톱에서만 보이는 고정 사이드바. 메뉴와 작성 버튼을 분리해 유지한다.
 export function SideBar({ logo, items, postAction }: SideBarProps) {
   return (
-    <aside className="hidden h-screen border-r border-zinc-200 bg-white lg:sticky lg:top-0 lg:flex lg:w-64 lg:self-start lg:flex-col lg:justify-between lg:px-6 lg:py-8 xl:w-72">
+    <aside className="hidden h-screen bg-white lg:sticky lg:top-0 lg:flex lg:w-64 lg:self-start lg:flex-col lg:justify-between lg:px-6 lg:py-8 xl:w-72">
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="px-4 text-2xl font-semibold tracking-[-0.03em] text-zinc-950">
           {logo}
