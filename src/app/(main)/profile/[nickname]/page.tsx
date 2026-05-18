@@ -1,5 +1,6 @@
 "use client";
 
+import { Settings } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -44,11 +45,13 @@ function ProfileSkeleton() {
 function ProfileHeader({
   isMine,
   onEditProfile,
+  onOpenSettings,
   postsCount,
   profile,
 }: {
   isMine: boolean;
   onEditProfile: () => void;
+  onOpenSettings: () => void;
   postsCount: number;
   profile: Profile;
 }) {
@@ -72,8 +75,22 @@ function ProfileHeader({
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-lg font-bold text-zinc-950">{postsCount}</p>
-              <p className="text-xs font-medium text-zinc-500">게시물</p>
+              <div className="flex items-start justify-end gap-3">
+                <div>
+                  <p className="text-lg font-bold text-zinc-950">{postsCount}</p>
+                  <p className="text-xs font-medium text-zinc-500">게시물</p>
+                </div>
+                {isMine ? (
+                  <button
+                    type="button"
+                    onClick={onOpenSettings}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-700"
+                    aria-label="설정"
+                  >
+                    <Settings className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </div>
             </div>
           </div>
 
@@ -100,7 +117,13 @@ function ProfileHeader({
   );
 }
 
-function PostsGrid({ posts }: { posts: ProfilePost[] }) {
+function PostsGrid({
+  onPostClick,
+  posts,
+}: {
+  onPostClick: (postId: string) => void;
+  posts: ProfilePost[];
+}) {
   if (posts.length === 0) {
     return (
       <section className="flex min-h-56 items-center justify-center px-6">
@@ -117,7 +140,12 @@ function PostsGrid({ posts }: { posts: ProfilePost[] }) {
         const thumbnail = post.images[0];
 
         return (
-          <article key={post.id} className="aspect-square bg-zinc-100">
+          <button
+            key={post.id}
+            type="button"
+            onClick={() => onPostClick(post.id)}
+            className="aspect-square bg-zinc-100"
+          >
             {thumbnail ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -130,7 +158,7 @@ function PostsGrid({ posts }: { posts: ProfilePost[] }) {
             ) : (
               <div className="h-full w-full bg-zinc-100" />
             )}
-          </article>
+          </button>
         );
       })}
     </section>
@@ -242,6 +270,7 @@ export default function ProfilePage() {
       <ProfileHeader
         isMine={state.currentUserId === state.profile.id}
         onEditProfile={() => router.push("/profile/edit")}
+        onOpenSettings={() => router.push("/settings")}
         postsCount={state.postsCount}
         profile={state.profile}
       />
@@ -268,7 +297,10 @@ export default function ProfilePage() {
             </button>
           </div>
         </section>
-        <PostsGrid posts={state.posts} />
+        <PostsGrid
+          posts={state.posts}
+          onPostClick={(postId) => router.push(`/posts/${postId}`)}
+        />
       </div>
     </div>
   );
