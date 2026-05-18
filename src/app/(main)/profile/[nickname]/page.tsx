@@ -43,10 +43,12 @@ function ProfileSkeleton() {
 
 function ProfileHeader({
   isMine,
+  onEditProfile,
   postsCount,
   profile,
 }: {
   isMine: boolean;
+  onEditProfile: () => void;
   postsCount: number;
   profile: Profile;
 }) {
@@ -79,7 +81,8 @@ function ProfileHeader({
             {isMine ? (
               <button
                 type="button"
-                className="h-9 rounded-2xl bg-zinc-950 px-4 text-sm font-bold text-white"
+                onClick={onEditProfile}
+                className="h-9 min-w-32 cursor-pointer rounded-lg bg-zinc-100 px-5 text-sm font-bold text-zinc-950"
               >
                 프로필 편집
               </button>
@@ -238,6 +241,7 @@ export default function ProfilePage() {
     <div className="flex flex-1 flex-col bg-white">
       <ProfileHeader
         isMine={state.currentUserId === state.profile.id}
+        onEditProfile={() => router.push("/profile/edit")}
         postsCount={state.postsCount}
         profile={state.profile}
       />

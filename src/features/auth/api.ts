@@ -93,6 +93,16 @@ export async function signInWithPassword(params: SignInWithPasswordParams) {
   }
 }
 
+// 현재 세션을 종료한다.
+export async function signOut() {
+  const supabase = requireSupabaseClient();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    throw new Error("로그아웃에 실패했습니다.");
+  }
+}
+
 // 현재 MVP에서는 국민대 이메일만 허용한다. 추후 universities 조회로 바꿀 예정.
 export async function signUpWithPassword(params: SignUpWithPasswordParams) {
   const supabase = requireSupabaseClient();
