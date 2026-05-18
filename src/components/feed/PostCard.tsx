@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
-import { Avatar } from "@/components/common/Avatar";
 import { Toast } from "@/components/common/Toast";
+import { UserInfo } from "@/components/common/UserInfo";
 import { deletePost, type FeedPost } from "@/features/feed/api";
 
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
@@ -291,25 +291,20 @@ export function PostCard({
   return (
     <article className="bg-white">
       <header className="flex items-center justify-between px-4 py-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <Avatar
-            src={post.user.avatar_url}
-            nickname={post.user.nickname}
-            size="sm"
-          />
-
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-sm">
-              <span className="truncate font-semibold text-zinc-950">
-                {post.user.nickname}
-              </span>
-              <span className="text-zinc-300">·</span>
-              <span className="truncate text-zinc-500">{post.user.department}</span>
-            </div>
-            <p className="mt-0.5 text-xs text-zinc-400">
-              {getRelativeTimeLabel(post.created_at)}
-            </p>
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <UserInfo
+              avatarUrl={post.user.avatar_url}
+              nickname={post.user.nickname}
+            />
+            {/*
+            <span className="text-zinc-300">·</span>
+            <span className="truncate text-zinc-500">{post.user.department}</span>
+            */}
           </div>
+          <p className="mt-0.5 pl-11 text-xs text-zinc-400">
+            {getRelativeTimeLabel(post.created_at)}
+          </p>
         </div>
 
         <button
@@ -333,12 +328,12 @@ export function PostCard({
             className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {post.images.map((image) => (
-              <div key={image.id} className="relative aspect-square w-full shrink-0 snap-start bg-zinc-100">
+              <div key={image.id} className="relative w-full shrink-0 snap-start bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={image.url}
                   alt={`${post.user.nickname} 게시물 이미지`}
-                  className="h-full w-full object-cover"
+                  className="h-auto w-full object-contain"
                 />
               </div>
             ))}
@@ -374,11 +369,11 @@ export function PostCard({
 
           {hasMultipleImages ? (
             // 인디케이터는 현재 이미지 인덱스만 시각적으로 보여준다.
-            <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/40 px-2 py-1">
+            <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/40 px-1.5 py-0.5">
               {post.images.map((image, index) => (
                 <span
                   key={image.id}
-                  className={`block h-2 w-2 rounded-full ${
+                  className={`block h-1.5 w-1.5 rounded-full ${
                     index === currentImageIndex ? "bg-white" : "bg-white/40"
                   }`}
                   aria-hidden="true"
