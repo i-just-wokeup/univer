@@ -403,3 +403,35 @@
 - [ ] 스토리 UI/UX 개선
 - [ ] 좋아요 목록 모달
 - [ ] 관리자 페이지
+
+## 2026-05-18
+
+### 완료
+- 프로필 편집 페이지 구현 (src/app/(main)/profile/edit/page.tsx 신규)
+  - 프로필 사진 변경 (avatars 버킷 업로드, 카메라 아이콘 오버레이)
+  - 닉네임 수정 (대소문자 입력 허용, 저장 시 소문자 변환)
+  - 닉네임 실시간 중복 체크 (debounce 300ms, 본인 닉네임 제외)
+  - 소개(bio) 수정 (최대 150자)
+  - 학과 표시만 (수정 불가)
+  - 프로필 편집 버튼 연결 (/profile/edit으로 이동)
+- features/profile/mutations.ts 신규 생성
+  - updateProfile, checkNicknameDuplicate, uploadAvatar 함수
+  - features/profile/api.ts에서 분리
+- features/auth/api.ts에 signOut() 추가
+- 전체 button 태그에 cursor-pointer 전역 적용 (globals.css)
+- 프로필 편집 버튼 UI 수정 (검은색 → 회색 테두리)
+
+### 주요 결정
+- 로그아웃 버튼을 프로필 편집에서 설정 페이지로 이동 (B안)
+  - 프로필 페이지에 설정 아이콘(톱니바퀴) 추가 예정
+  - /settings 페이지에 로그아웃 포함 예정
+
+### 다음 작업
+- [ ] 프로필 페이지에 설정 아이콘 추가
+- [ ] /settings 페이지 신규 (로그아웃 포함)
+- [ ] 프로필 편집에서 로그아웃 버튼 제거
+- [ ] 게시물 상세 모달 (썸네일 클릭 시)
+- [ ] 회원가입 플로우 재설계
+- [ ] 스토리 UI/UX 개선
+- [ ] 좋아요 목록 모달
+- [ ] 관리자 페이지
