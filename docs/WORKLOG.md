@@ -454,6 +454,13 @@
 ## 2026-05-19
 
 ### 완료
+- 게시물 작성 페이지 경로 변경
+  - 기존 `src/app/(main)/posts/write/page.tsx`를 유지한 채 `src/app/(sub)/write/page.tsx` 신규 생성
+  - 게시물 작성/수정 진입 경로를 `/posts/write`에서 `/write`로 변경
+  - PostCard, PostDetail 수정 액션 및 NavItems 작성 버튼 링크를 `/write`로 연결
+- 메인 피드 컬럼 폭 되돌림
+  - `src/app/(main)/layout.tsx`의 피드 컬럼을 `max-w-[630px]`에서 `max-w-[470px]`로 복구
+  - 우측 패널 `w-72` 조정은 유지
 - 모달 내 UserInfo 링크 클릭 시 모달 자동 닫힘 처리
   - `@modal/(.)posts/[postId]/page.tsx`에 `usePathname` 추가
   - `pathname`이 `/posts/${postId}`와 다르면 `null` 반환 → 다른 경로 이동 시 모달 자동 언마운트
