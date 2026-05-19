@@ -182,7 +182,7 @@ export function NavItems(props: NavItemsProps) {
       isActive: pathname.startsWith("/search"),
     },
     {
-      href: "/posts/write",
+      href: "/write",
       label: "+",
       icon: <PlusIcon />,
       isPrimary: true,
@@ -224,7 +224,7 @@ export function NavItems(props: NavItemsProps) {
   ];
 
   const sideBarPostAction = {
-    href: "/posts/write",
+    href: "/write",
     label: "새 게시물",
     icon: <PlusIcon className="h-5 w-5" />,
   };
