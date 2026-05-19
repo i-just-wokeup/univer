@@ -440,18 +440,39 @@
   - PostCard, PostDetail, CommentSheet, PostDetail CommentsList 적용
 - 학과(department) 표시 주석 처리
 
-### 미해결 이슈
-- 모달 안 UserInfo 링크 클릭 시 모달 안 닫힘
-  - 해결 방향: onClose 호출 후 이동하도록 수정 필요
-
 ### 주요 결정
 - 로그아웃 버튼을 프로필 편집에서 설정 페이지로 이동 (B안)
   - 프로필 페이지 설정 아이콘(톱니바퀴)에서 /settings로 이동
   - /settings 페이지에 로그아웃 포함
 
 ### 다음 작업
-- [ ] 모달 내 UserInfo 링크 클릭 시 모달 닫기 처리
 - [ ] 관리자 페이지 (/admin)
 - [ ] 회원가입 플로우 재설계
 - [ ] 스토리 UI/UX 개선
 - [ ] 좋아요 목록 모달
+
+## 2026-05-19
+
+### 완료
+- 모달 내 UserInfo 링크 클릭 시 모달 자동 닫힘 처리
+  - `@modal/(.)posts/[postId]/page.tsx`에 `usePathname` 추가
+  - `pathname`이 `/posts/${postId}`와 다르면 `null` 반환 → 다른 경로 이동 시 모달 자동 언마운트
+- 회원가입 후 자동 로그인 처리
+  - `signUpWithPassword` 완료 후 `signInWithPassword` 자동 호출
+  - 이메일 인증 비활성화 상태에서 세션 미생성 문제 해결
+- 온보딩 완료 후 홈 이동
+  - `router.replace("/") + router.refresh()` → `window.location.href = "/"` 로 변경
+- 사이드바 프로필 활성화 조건 수정
+  - 내 닉네임 기준 정확히 일치할 때만 활성화, 남의 프로필에서는 비활성화
+- 스토리바 내 스토리/스토리 링 UI 수정
+  - `MyStoryCreateItem`의 "나" 텍스트를 현재 유저 아바타로 교체
+  - `getCurrentUserProfile()`로 현재 유저 프로필 조회 후 Avatar fallback 포함 적용
+  - 미확인 스토리는 인스타 스타일 그라데이션 링으로 변경
+  - 확인한 스토리는 기존 회색 링 유지
+  - 내 스토리 생성 아이템은 내 스토리가 있을 때 회색 링, 없을 때는 링 없이 아바타만 표시
+  - 내 스토리 그룹은 목록에서 제외해 중복 렌더링 제거
+  - 내 스토리가 있을 때는 아바타 원은 `/story/[userId]`, + 버튼은 `/story/create`로 클릭 동작 분리
+
+### 기타
+- Supabase 이메일 인증 비활성화 (개발 편의, 배포 전 재활성화 필요)
+- `simsim020304@kookmin.ac.kr` 계정 수동 `email_confirmed_at` 처리
