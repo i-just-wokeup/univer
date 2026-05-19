@@ -34,7 +34,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Header logo={logo} actions={headerActions} />
             <main className="flex flex-1 flex-col">
               {/* 가운데 피드 컬럼 폭은 인스타그램 비슷한 밀도를 기준으로 제한한다. */}
-              <div className="mx-auto flex w-full max-w-[630px] flex-1 flex-col bg-white">
+              <div className="mx-auto flex w-full max-w-[470px] flex-1 flex-col bg-white">
                 {children}
               </div>
             </main>
