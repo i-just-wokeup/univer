@@ -194,7 +194,7 @@ export function PostCard({
         {
           label: "수정",
           onClick: () => {
-            router.push(`/posts/write?postId=${post.id}`);
+            router.push(`/write?postId=${post.id}`);
           },
         },
         {
