@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 
 import { Avatar } from "@/components/common/Avatar";
 
@@ -18,13 +20,18 @@ export function UserInfo({
   nickname,
   size = "sm",
 }: UserInfoProps) {
+  const router = useRouter();
+
   return (
-    <Link
-      href={`/profile/${encodeURIComponent(nickname)}`}
+    <button
+      type="button"
+      onClick={() => {
+        router.push(`/profile/${nickname}`);
+      }}
       className={`flex min-w-0 items-center gap-3 font-semibold text-zinc-950 transition hover:text-zinc-700 ${textClassName[size]}`}
     >
       <Avatar src={avatarUrl} nickname={nickname} size={size} />
       <span className="truncate">{nickname}</span>
-    </Link>
+    </button>
   );
 }
