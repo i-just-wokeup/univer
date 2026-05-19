@@ -68,6 +68,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 - 원인: next/link는 router.push와 달리 모달 오버레이를 닫지 않음
 - 해결 방향: UserInfo에 onClose? props 추가, 클릭 시 onClose() 호출 후 router.push()
 
+### 이메일 인증 비활성화 (2026-05-19)
+- Supabase Authentication → Email → Confirm email 토글 OFF (개발 편의)
+- 배포 전 반드시 재활성화 + 회원가입 플로우 재설계 필요
+- "이메일을 확인해주세요" 화면 추가
+- `signUpWithPassword` 내 자동 로그인 로직 제거
+
 ---
 
 ## 구조적 부채 (앱 전환 전 해결 필요)
