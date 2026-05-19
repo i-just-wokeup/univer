@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { updateOnboardingProfile } from "@/features/auth/api";
 
 // 최초 로그인 후 닉네임과 학과를 채우는 온보딩 페이지.
 export default function OnboardingPage() {
-  const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [department, setDepartment] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,8 +22,7 @@ export default function OnboardingPage() {
         nickname,
       });
 
-      router.replace("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (submitError) {
       setError(
         submitError instanceof Error
