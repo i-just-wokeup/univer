@@ -1,13 +1,18 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 import { PostDetail } from "@/components/feed/PostDetail";
 
 export default function PostDetailModalPage() {
   const params = useParams<{ postId: string }>();
+  const pathname = usePathname();
   const router = useRouter();
   const postId = decodeURIComponent(params.postId);
+
+  if (pathname !== `/posts/${postId}`) {
+    return null;
+  }
 
   function handleClose() {
     router.back();
