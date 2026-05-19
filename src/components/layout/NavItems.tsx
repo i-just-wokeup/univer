@@ -197,7 +197,10 @@ export function NavItems(props: NavItemsProps) {
       href: "/profile/me",
       label: "프로필",
       icon: profileAvatar,
-      isActive: pathname.startsWith("/profile"),
+      isActive: currentUserProfile?.nickname
+        ? pathname === `/profile/${currentUserProfile.nickname}` ||
+          pathname === "/profile/me"
+        : false,
     },
   ];
 
