@@ -34,7 +34,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Header logo={logo} actions={headerActions} />
             <main className="flex flex-1 flex-col">
               {/* 가운데 피드 컬럼 폭은 인스타그램 비슷한 밀도를 기준으로 제한한다. */}
-              <div className="mx-auto flex w-full max-w-[470px] flex-1 flex-col bg-white">
+              <div className="mx-auto flex w-full max-w-[630px] flex-1 flex-col bg-white">
                 {children}
               </div>
             </main>
@@ -42,7 +42,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </div>
 
           {/* 우측 패널은 향후 추천/프로필/해시태그 영역이 들어올 자리다. */}
-          <aside className="hidden w-80 shrink-0 lg:block">
+          <aside className="hidden w-72 shrink-0 lg:block">
             <div className="sticky top-0 flex min-h-screen items-start pt-8">
               <div className="h-[420px] w-full bg-white" />
             </div>
