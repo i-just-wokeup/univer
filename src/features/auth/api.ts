@@ -120,6 +120,11 @@ export async function signUpWithPassword(params: SignUpWithPasswordParams) {
   if (error) {
     throw new Error("회원가입에 실패했습니다. 다시 시도해주세요.");
   }
+
+  await supabase.auth.signInWithPassword({
+    email: normalizeEmail(params.email),
+    password: params.password,
+  });
 }
 
 // 미들웨어와 콜백 라우트에서 공용으로 쓰는 온보딩 완료 여부 조회.
