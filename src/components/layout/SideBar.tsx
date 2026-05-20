@@ -6,6 +6,7 @@ type SideBarItem = {
   label: string;
   icon: React.ReactNode;
   isActive?: boolean;
+  onClick?: () => void;
 };
 
 // 앱 전환을 고려해 렌더링 정보만 props로 받는다.
@@ -14,13 +15,20 @@ type SideBarProps = {
   items: SideBarItem[];
   postAction: {
     href: string;
+    isActive?: boolean;
+    label: string;
+    icon: React.ReactNode;
+  };
+  secondaryAction?: {
+    href: string;
+    isActive?: boolean;
     label: string;
     icon: React.ReactNode;
   };
 };
 
 // 데스크톱에서만 보이는 고정 사이드바. 메뉴와 작성 버튼을 분리해 유지한다.
-export function SideBar({ logo, items, postAction }: SideBarProps) {
+export function SideBar({ logo, items, postAction, secondaryAction }: SideBarProps) {
   return (
     <aside className="hidden h-screen bg-white lg:sticky lg:top-0 lg:flex lg:w-64 lg:self-start lg:flex-col lg:justify-between lg:px-6 lg:py-8 xl:w-72">
       <div className="flex min-h-0 flex-1 flex-col">
@@ -29,30 +37,69 @@ export function SideBar({ logo, items, postAction }: SideBarProps) {
         </div>
         {/* 항목 수가 늘어나도 작성 버튼은 하단에 남도록 nav만 스크롤되게 둔다. */}
         <nav className="mt-8 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-          {items.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              aria-current={item.isActive ? "page" : undefined}
-              className={`flex items-center gap-4 rounded-2xl px-4 py-3 text-base transition ${
-                item.isActive
-                  ? "bg-zinc-950 text-white"
-                  : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
+          {items.map((item) => {
+            const className = `flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left text-base transition ${
+              item.isActive
+                ? "bg-zinc-950 text-white"
+                : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
+            }`;
+
+            if (item.onClick) {
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={item.onClick}
+                  aria-current={item.isActive ? "page" : undefined}
+                  className={className}
+                >
+                  <span>{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                aria-current={item.isActive ? "page" : undefined}
+                className={className}
+              >
+                <span>{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
-      <Link
-        href={postAction.href}
-        className="mt-6 flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-zinc-950 px-4 py-3 text-base font-semibold text-white transition hover:bg-zinc-800"
-      >
-        <span>{postAction.icon}</span>
-        <span>{postAction.label}</span>
-      </Link>
+      <div className="mt-6 flex shrink-0 flex-col gap-3">
+        {secondaryAction ? (
+          <Link
+            href={secondaryAction.href}
+            className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-base font-semibold transition ${
+              secondaryAction.isActive
+                ? "border-zinc-950 bg-zinc-950 text-white"
+                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
+            }`}
+          >
+            <span>{secondaryAction.icon}</span>
+            <span>{secondaryAction.label}</span>
+          </Link>
+        ) : null}
+
+        <Link
+          href={postAction.href}
+          className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition ${
+            postAction.isActive
+              ? "bg-zinc-800 text-white"
+              : "bg-zinc-950 text-white hover:bg-zinc-800"
+          }`}
+        >
+          <span>{postAction.icon}</span>
+          <span>{postAction.label}</span>
+        </Link>
+      </div>
     </aside>
   );
 }
