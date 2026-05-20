@@ -245,6 +245,13 @@ reports (
 )
 ```
 
+**RPC**
+```sql
+search_users(search_query text)
+delete_account()
+restore_account()
+```
+
 ---
 
 ### 2단계 — 채팅 4개

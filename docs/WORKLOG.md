@@ -533,3 +533,18 @@
   - `NotificationPanel` 웹 슬라이드 패널 구현
   - 모바일 `/notifications` 페이지 구현
   - 벨 아이콘 읽지 않은 알림 수 뱃지 표시
+- 회원가입 이메일 인증 흐름 조정
+  - `signUpWithPassword`에 `emailRedirectTo=/auth/callback` 추가
+  - 회원가입 직후 자동 로그인 제거
+  - 회원가입 성공 시 인증 메일 발송 완료 화면으로 전환
+- 계정 탈퇴 및 복구 기능 구현
+  - `delete_account` RPC 연동
+  - 설정 페이지에 탈퇴 확인 다이얼로그 및 탈퇴 액션 추가
+  - 탈퇴 완료 후 즉시 로그아웃하고 `/auth/login`으로 이동하도록 단순화
+- 유저 검색 기능 구현
+  - `search_users` RPC 기반 `features/search/api.ts` 추가
+  - 최근 검색 localStorage 관리 (`search_history`, 최대 10개)
+  - 검색 입력/결과/최근 검색 컴포넌트 분리
+  - `/search` 페이지에 300ms debounce, 최근 검색, 프로필 이동 연결
+- 버그 수정
+  - `comment_likes` INSERT RLS `WITH CHECK` 추가
