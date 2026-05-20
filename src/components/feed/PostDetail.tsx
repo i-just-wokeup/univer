@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, type UIEvent } from "react";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
 import { UserInfo } from "@/components/common/UserInfo";
 import {
@@ -28,6 +29,7 @@ import {
   togglePostLike,
   type PostDetail as FeedPostDetail,
 } from "@/features/feed/api";
+import { createReport } from "@/features/reports/api";
 
 interface PostDetailProps {
   onClose?: () => void;
@@ -100,7 +102,7 @@ function ImageCarousel({ post }: { post: FeedPostDetail }) {
   const carouselId = useId();
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const hasMultipleImages = post.images.length > 1;
+  const hasMultipleImages = post.media.length > 1;
 
   function handleImageScroll(event: UIEvent<HTMLDivElement>) {
     const element = event.currentTarget;
@@ -126,7 +128,7 @@ function ImageCarousel({ post }: { post: FeedPostDetail }) {
     setCurrentImageIndex(nextIndex);
   }
 
-  if (post.images.length === 0) {
+  if (post.media.length === 0) {
     return <div className="aspect-square bg-zinc-100" />;
   }
 
@@ -138,7 +140,7 @@ function ImageCarousel({ post }: { post: FeedPostDetail }) {
         onScroll={handleImageScroll}
         className="flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {post.images.map((image) => (
+        {post.media.map((image) => (
           <div
             key={image.id}
             className="flex h-full w-full shrink-0 snap-start items-center justify-center bg-black"
@@ -167,7 +169,7 @@ function ImageCarousel({ post }: { post: FeedPostDetail }) {
         </button>
       ) : null}
 
-      {hasMultipleImages && currentImageIndex < post.images.length - 1 ? (
+      {hasMultipleImages && currentImageIndex < post.media.length - 1 ? (
         <button
           type="button"
           onClick={() => {
@@ -183,7 +185,7 @@ function ImageCarousel({ post }: { post: FeedPostDetail }) {
 
       {hasMultipleImages ? (
         <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/40 px-2 py-1">
-          {post.images.map((image, index) => (
+          {post.media.map((image, index) => (
             <span
               key={image.id}
               className={`block h-2 w-2 rounded-full ${
@@ -459,6 +461,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
   const [isCommentsLoading, setIsCommentsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [post, setPost] = useState<FeedPostDetail | null>(null);
   const [toast, setToast] = useState<ToastState>({
@@ -548,6 +551,20 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
       }, 700);
     } catch {
       showToast("게시물 삭제에 실패했습니다", "error");
+    }
+  }
+
+  async function handleConfirmReportPost() {
+    setIsReportConfirmOpen(false);
+
+    try {
+      await createReport({ targetId: postId, targetType: "post" });
+      showToast("신고가 접수되었습니다.");
+    } catch (reportError) {
+      showToast(
+        reportError instanceof Error ? reportError.message : "신고에 실패했습니다.",
+        "error",
+      );
     }
   }
 
@@ -709,7 +726,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
           danger: true,
           label: "신고",
           onClick: () => {
-            console.log("신고", post.id);
+            setIsReportConfirmOpen(true);
           },
         },
         {
@@ -831,6 +848,18 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
         onClose={() => {
           setIsActionSheetOpen(false);
         }}
+      />
+      <ConfirmDialog
+        confirmLabel="신고"
+        description="이 콘텐츠를 신고하시겠습니까?"
+        isOpen={isReportConfirmOpen}
+        onCancel={() => {
+          setIsReportConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          void handleConfirmReportPost();
+        }}
+        title="신고하시겠습니까?"
       />
       <Toast
         isVisible={toast.isVisible}
