@@ -27,7 +27,7 @@ export default function PostDetailModalPage() {
         aria-label="게시물 상세 닫기"
       />
 
-      <section className="relative h-[90vh] w-full max-w-6xl overflow-hidden rounded-sm bg-white shadow-2xl">
+      <section className="relative h-[96vh] w-full max-w-[calc(100vw-1rem)] overflow-hidden rounded-sm bg-white shadow-2xl lg:w-fit lg:max-w-[1100px]">
         <PostDetail postId={postId} onClose={handleClose} />
       </section>
     </div>
