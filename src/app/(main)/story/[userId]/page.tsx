@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { Avatar } from "@/components/common/Avatar";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { Toast } from "@/components/common/Toast";
+import { createReport } from "@/features/reports/api";
 import {
   deleteStory,
   getMyStoryLikedStatus,
@@ -20,6 +22,12 @@ import {
 const STORY_DURATION_MS = 5000;
 const PROGRESS_TICK_MS = 50;
 const FEED_REFRESH_URL = "/?refreshStories=1";
+
+type ToastState = {
+  isVisible: boolean;
+  message: string;
+  type: "success" | "error";
+};
 
 function getInitial(name: string) {
   return name.trim().charAt(0) || "?";
@@ -212,6 +220,12 @@ export default function StoryViewerPage() {
   const [isViewerSheetOpen, setIsViewerSheetOpen] = useState(false);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
+  const [toast, setToast] = useState<ToastState>({
+    isVisible: false,
+    message: "",
+    type: "success",
+  });
 
   const currentStory = stories[currentIndex] ?? null;
 
@@ -423,6 +437,35 @@ export default function StoryViewerPage() {
     }
   }
 
+  function showToast(message: string, type: ToastState["type"] = "success") {
+    setToast({
+      isVisible: true,
+      message,
+      type,
+    });
+  }
+
+  async function handleConfirmReportStory() {
+    setIsReportConfirmOpen(false);
+
+    if (!currentStory) {
+      setIsPaused(false);
+      return;
+    }
+
+    try {
+      await createReport({ targetId: currentStory.id, targetType: "story" });
+      showToast("신고가 접수되었습니다.");
+    } catch (reportError) {
+      showToast(
+        reportError instanceof Error ? reportError.message : "신고에 실패했습니다.",
+        "error",
+      );
+    } finally {
+      setIsPaused(false);
+    }
+  }
+
   function closeActionSheet() {
     setIsActionSheetOpen(false);
 
@@ -484,7 +527,9 @@ export default function StoryViewerPage() {
           danger: true,
           label: "신고",
           onClick: () => {
-            console.log("신고", currentStory.id);
+            keepPausedAfterActionSheetCloseRef.current = true;
+            setIsPaused(true);
+            setIsReportConfirmOpen(true);
           },
         },
         {
@@ -508,7 +553,7 @@ export default function StoryViewerPage() {
         <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
           <div className="mb-4 flex gap-1">
             {stories.map((story, index) => (
-              <div key={story.id} className="h-1 flex-1 overflow-hidden rounded-full bg-white/30">
+              <div key={story.id} className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/30">
                 <div
                   className="h-full rounded-full bg-white transition-[width] duration-75"
                   style={{
@@ -525,19 +570,24 @@ export default function StoryViewerPage() {
             </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push(`/profile/${currentStory.user.nickname}`)}
+              className="flex min-w-0 items-center gap-3"
+              aria-label={`${currentStory.user.nickname} 프로필 보기`}
+            >
               <Avatar
                 src={currentStory.user.avatar_url}
                 nickname={currentStory.user.nickname}
-                size="lg"
+                size="sm"
               />
-              <div className="min-w-0">
+              <div className="min-w-0 text-left">
                 <p className="truncate text-sm font-bold">{currentStory.user.nickname}</p>
                 <p className="text-xs text-white/70">
                   {formatRelativeTime(currentStory.created_at)}
                 </p>
               </div>
-            </div>
+            </button>
 
             <div className="flex shrink-0 items-center gap-3">
               {isPaused ? (
@@ -596,17 +646,17 @@ export default function StoryViewerPage() {
             </button>
           </div>
         ) : (
-          <div className="absolute bottom-0 right-0 z-20 px-4 pb-8">
+          <div className="absolute bottom-0 right-0 z-20 px-5 pb-6">
             <button
               type="button"
               onClick={handleStoryLike}
               disabled={isLikeLoading}
-              className={`p-1 transition disabled:opacity-60 ${
+              className={`p-2 transition disabled:opacity-60 ${
                 isStoryLiked ? "text-red-500" : "text-white"
               }`}
               aria-label={isStoryLiked ? "스토리 좋아요 취소" : "스토리 좋아요"}
             >
-              <span className="[&>svg]:h-6 [&>svg]:w-6">
+              <span className="[&>svg]:h-7 [&>svg]:w-7">
                 <HeartIcon filled={isStoryLiked} />
               </span>
             </button>
@@ -660,6 +710,30 @@ export default function StoryViewerPage() {
           void handleDeleteStory();
         }}
         title="스토리를 삭제할까요?"
+      />
+      <ConfirmDialog
+        confirmLabel="신고"
+        description="이 콘텐츠를 신고하시겠습니까?"
+        isOpen={isReportConfirmOpen}
+        onCancel={() => {
+          setIsReportConfirmOpen(false);
+          setIsPaused(false);
+        }}
+        onConfirm={() => {
+          void handleConfirmReportStory();
+        }}
+        title="신고하시겠습니까?"
+      />
+      <Toast
+        isVisible={toast.isVisible}
+        message={toast.message}
+        type={toast.type}
+        onHide={() => {
+          setToast((currentToast) => ({
+            ...currentToast,
+            isVisible: false,
+          }));
+        }}
       />
     </main>
   );
