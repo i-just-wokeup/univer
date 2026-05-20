@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
 import { UserInfo } from "@/components/common/UserInfo";
 import { deletePost, type FeedPost } from "@/features/feed/api";
+import { createReport } from "@/features/reports/api";
 
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
 type PostCardProps = {
@@ -150,12 +152,13 @@ export function PostCard({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [isContentOverflowing, setIsContentOverflowing] = useState(false);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({
     isVisible: false,
     message: "",
     type: "success",
   });
-  const hasMultipleImages = post.images.length > 1;
+  const hasMultipleImages = post.media.length > 1;
   const isOwnPost = post.user.id === currentUserId;
 
   function showToast(message: string, type: ToastState["type"] = "success") {
@@ -186,6 +189,20 @@ export function PostCard({
       }, 700);
     } catch {
       showToast("게시물 삭제에 실패했습니다", "error");
+    }
+  }
+
+  async function handleConfirmReportPost() {
+    setIsReportConfirmOpen(false);
+
+    try {
+      await createReport({ targetId: post.id, targetType: "post" });
+      showToast("신고가 접수되었습니다.");
+    } catch (reportError) {
+      showToast(
+        reportError instanceof Error ? reportError.message : "신고에 실패했습니다.",
+        "error",
+      );
     }
   }
 
@@ -220,7 +237,7 @@ export function PostCard({
           danger: true,
           label: "신고",
           onClick: () => {
-            console.log("신고", post.id);
+            setIsReportConfirmOpen(true);
           },
         },
         {
@@ -319,7 +336,7 @@ export function PostCard({
         </button>
       </header>
 
-      {post.images.length > 0 ? (
+      {post.media.length > 0 ? (
         <div className="relative bg-white">
           <div
             id={carouselId}
@@ -327,7 +344,7 @@ export function PostCard({
             onScroll={handleImageScroll}
             className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {post.images.map((image) => (
+            {post.media.map((image) => (
               <div key={image.id} className="relative w-full shrink-0 snap-start bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -353,7 +370,7 @@ export function PostCard({
             </button>
           ) : null}
 
-          {hasMultipleImages && currentImageIndex < post.images.length - 1 ? (
+          {hasMultipleImages && currentImageIndex < post.media.length - 1 ? (
             <button
               type="button"
               onClick={() => {
@@ -370,7 +387,7 @@ export function PostCard({
           {hasMultipleImages ? (
             // 인디케이터는 현재 이미지 인덱스만 시각적으로 보여준다.
             <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/40 px-1.5 py-0.5">
-              {post.images.map((image, index) => (
+              {post.media.map((image, index) => (
                 <span
                   key={image.id}
                   className={`block h-1.5 w-1.5 rounded-full ${
@@ -473,6 +490,18 @@ export function PostCard({
         onClose={() => {
           setIsActionSheetOpen(false);
         }}
+      />
+      <ConfirmDialog
+        confirmLabel="신고"
+        description="이 콘텐츠를 신고하시겠습니까?"
+        isOpen={isReportConfirmOpen}
+        onCancel={() => {
+          setIsReportConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          void handleConfirmReportPost();
+        }}
+        title="신고하시겠습니까?"
       />
       <Toast
         isVisible={toast.isVisible}
