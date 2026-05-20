@@ -103,6 +103,15 @@ export async function signOut() {
   }
 }
 
+export async function deleteAccount() {
+  const supabase = requireSupabaseClient();
+  const { error } = await supabase.rpc("delete_account");
+
+  if (error) {
+    throw new Error("계정 탈퇴에 실패했습니다.");
+  }
+}
+
 // 현재 MVP에서는 국민대 이메일만 허용한다. 추후 universities 조회로 바꿀 예정.
 export async function signUpWithPassword(params: SignUpWithPasswordParams) {
   const supabase = requireSupabaseClient();
@@ -115,16 +124,16 @@ export async function signUpWithPassword(params: SignUpWithPasswordParams) {
   const { error } = await supabase.auth.signUp({
     email: normalizeEmail(params.email),
     password: params.password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
+    },
   });
 
   if (error) {
     throw new Error("회원가입에 실패했습니다. 다시 시도해주세요.");
   }
 
-  await supabase.auth.signInWithPassword({
-    email: normalizeEmail(params.email),
-    password: params.password,
-  });
+  return { success: true as const };
 }
 
 // 미들웨어와 콜백 라우트에서 공용으로 쓰는 온보딩 완료 여부 조회.
