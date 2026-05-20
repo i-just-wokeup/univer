@@ -54,6 +54,32 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 - 인스타 허용 범위 기준: 1.91:1 ~ 4:5
 - 업로드 시 비율 체크 및 크롭 UI: 배포 전 TODO
 
+### 영상 도입 고려한 설계 (2026-05-19)
+영상 기능은 MVP 이후 도입 예정이지만, 구조를 닫아두면 나중에 다시 뜯어야 하므로 지금부터 영상까지 버틸 수 있는 구조로 설계.
+
+영향받는 부분:
+1. DB 스키마: post_images → post_media (type, thumbnail_url, duration 추가)
+2. features/feed/api.ts: PostImage → PostMedia 타입 변경
+3. UI 컴포넌트: PostCard/PostDetail/PostImageUploader 영상 분기
+4. Storage 버킷: post-videos 버킷 추가
+5. 스토리도 동일한 확장 필요
+
+MVP 수준에서 무조건 작업:
+A. DB 스키마 변경 (post_images → post_media)
+B. features/feed/api.ts 타입 마이그레이션
+C. Storage 버킷 분리 (post-videos 생성)
+
+기록만 해두고 나중에 작업:
+D. UI 컴포넌트 영상 분기 (실제 영상 도입 시점)
+E. 영상 트랜스코딩 (FFmpeg + DASH/HLS 또는 Mux)
+F. 자동재생/음소거/영상 길이 제한 UI
+G. 스토리 영상 지원
+H. CDN 전략 (Cloudflare R2, Bunny CDN, Mux)
+
+참고:
+- Meta 엔지니어링 블로그: https://engineering.fb.com
+- 키워드: video transcoding pipeline FFmpeg, HLS streaming, DASH adaptive streaming
+
 ---
 
 ## 트러블슈팅

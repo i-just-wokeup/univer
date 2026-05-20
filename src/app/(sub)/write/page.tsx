@@ -9,7 +9,7 @@ import {
   getPost,
   updatePost,
   uploadPostImages,
-  type PostImage,
+  type PostMedia,
 } from "@/features/feed/api";
 
 // MVP에서는 공개/친한친구 두 범위만 고려하지만 현재 UI는 public으로 고정한다.
@@ -27,7 +27,7 @@ function PostWriteContent() {
   const postId = searchParams.get("postId");
   const isEditMode = Boolean(postId);
   const [images, setImages] = useState<File[]>([]);
-  const [readonlyImages, setReadonlyImages] = useState<PostImage[]>([]);
+  const [readonlyImages, setReadonlyImages] = useState<PostMedia[]>([]);
   const [content, setContent] = useState("");
   const [visibility] = useState<Visibility>("public");
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -56,7 +56,7 @@ function PostWriteContent() {
 
         setContent(post.content ?? "");
         setHashtags(post.hashtags);
-        setReadonlyImages(post.images);
+        setReadonlyImages(post.media);
       } catch (loadError) {
         if (!isMounted) {
           return;

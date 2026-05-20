@@ -68,14 +68,17 @@ posts (
 )
 ```
 
-**post_images**
+**post_media**
 ```sql
-post_images (
-  id          uuid PK default gen_random_uuid(),
-  post_id     uuid FK → posts on delete cascade,
-  url         text not null,
-  order_index int default 0,
-  created_at  timestamptz default now()
+post_media (
+  id            uuid PK default gen_random_uuid(),
+  post_id       uuid FK → posts on delete cascade,
+  type          text not null default 'image', -- 'image' | 'video'
+  url           text not null,
+  thumbnail_url text,
+  duration      int,
+  order_index   int default 0,
+  created_at    timestamptz default now()
 )
 ```
 
@@ -230,12 +233,13 @@ blocks (
 reports (
   id          uuid PK default gen_random_uuid(),
   reporter_id uuid FK → users,
-  target_type text not null,   -- 'post' | 'comment' | 'story' | 'user'
+  target_type text not null,   -- 'post' | 'story' | 'user'
   target_id   uuid not null,
-  reason      text not null,   -- 선택지 고정 (스팸, 욕설, 음란물 등)
+  reason      text,
   status      text default 'pending',
   -- 'pending' | 'reviewed' | 'dismissed' | 'action_taken'
-  created_at  timestamptz default now()
+  created_at  timestamptz default now(),
+  UNIQUE(reporter_id, target_type, target_id)
 )
 ```
 
@@ -331,7 +335,7 @@ community_comments (
 | universities | 전체 공개 | 관리자만 |
 | users | 같은 학교 유저 | 본인만 |
 | posts | 같은 학교 + visibility 체크 | 본인만 |
-| post_images | 같은 학교 유저 | 본인만 |
+| post_media | 같은 학교 유저 | 본인만 |
 | stories | 같은 학교 + visibility 체크 | 본인만 |
 | story_views | 본인만 | 로그인 유저 |
 | post_likes | 공개 | 로그인 유저 |

@@ -3,7 +3,7 @@ import type { Database } from "@/types/database.types";
 
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
-type PostImageRow = Database["public"]["Tables"]["post_images"]["Row"];
+type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
 
 export type Profile = Pick<
   UserRow,
@@ -17,7 +17,7 @@ export type Profile = Pick<
   | "university_id"
 >;
 
-export type ProfilePostImage = Pick<PostImageRow, "order_index" | "url">;
+export type ProfilePostImage = Pick<PostMediaRow, "order_index" | "url">;
 
 export type ProfilePost = Pick<
   PostRow,
@@ -27,7 +27,7 @@ export type ProfilePost = Pick<
 };
 
 type ProfilePostImageRow = Pick<
-  PostImageRow,
+  PostMediaRow,
   "order_index" | "post_id" | "url"
 >;
 
@@ -84,9 +84,10 @@ export async function getProfilePosts(userId: string): Promise<ProfilePost[]> {
 
   const postIds = postsData.map((post) => post.id);
   const { data: imagesData, error: imagesError } = await supabase
-    .from("post_images")
+    .from("post_media")
     .select("post_id, url, order_index")
     .in("post_id", postIds)
+    .eq("type", "image")
     .eq("order_index", 0)
     .order("order_index", { ascending: true });
 

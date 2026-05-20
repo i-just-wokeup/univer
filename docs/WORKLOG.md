@@ -483,3 +483,18 @@
 ### 기타
 - Supabase 이메일 인증 비활성화 (개발 편의, 배포 전 재활성화 필요)
 - `simsim020304@kookmin.ac.kr` 계정 수동 `email_confirmed_at` 처리
+
+## 2026-05-20
+
+### 완료
+- 게시물 미디어 테이블 전환 반영
+  - Supabase `post_images` 테이블을 `post_media`로 교체한 스키마를 `database.types.ts`에 반영
+  - `post_images` → `post_media` 전환 및 reports 정비 마이그레이션 추가
+  - `features/feed/api.ts`의 `PostImage` 타입을 `PostMedia`로 변경하고 `media` 필드로 반환하도록 수정
+  - 게시물 생성/피드/상세 조회 쿼리를 `post_media` 기준으로 변경
+  - PostCard, PostDetail, 게시물 작성/수정 화면, 프로필 썸네일 조회를 새 미디어 구조에 맞게 수정
+- 신고 API 연결
+  - `features/reports/api.ts` 신규 생성 (`createReport`)
+  - `reports` 타입을 현재 DB 스키마에 맞게 반영
+  - 피드/게시물 상세 신고와 스토리 신고 ActionSheet를 실제 reports insert로 연결
+  - 신고 전 ConfirmDialog 확인 절차와 완료/실패 Toast 피드백 추가
