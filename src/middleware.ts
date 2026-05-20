@@ -112,6 +112,21 @@ export async function middleware(request: NextRequest) {
     if (!isOnboarded) {
       return redirectWithCookies(request, response, "/onboarding");
     }
+
+    if (pathname.startsWith("/admin")) {
+      const { data: currentUser, error: roleError } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (roleError || currentUser?.role !== "admin") {
+        return copyCookiesToResponse(
+          response,
+          NextResponse.redirect(new URL("/", request.url)),
+        );
+      }
+    }
   } catch {
     return response;
   }
