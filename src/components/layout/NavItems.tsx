@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, MessageCircleMore } from "lucide-react";
+import { Bell, MessageCircleMore, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -8,6 +8,7 @@ import { Avatar } from "@/components/common/Avatar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { SideBar } from "@/components/layout/SideBar";
 import { getCurrentUserProfile } from "@/features/auth/api";
+import { getUnreadCount } from "@/features/notifications/api";
 
 type IconProps = {
   className?: string;
@@ -19,11 +20,13 @@ type NavigationItem = {
   icon: ReactNode;
   isActive?: boolean;
   isPrimary?: boolean;
+  onClick?: () => void;
 };
 
 type NavItemsProps =
   | {
       logo: ReactNode;
+      onNotificationsClick?: () => void;
       variant: "sidebar";
     }
   | {
@@ -33,7 +36,7 @@ type NavItemsProps =
 
 type CurrentUserProfile = Pick<
   NonNullable<Awaited<ReturnType<typeof getCurrentUserProfile>>>,
-  "avatar_url" | "nickname"
+  "avatar_url" | "nickname" | "role"
 >;
 
 function HomeIcon({ className = "h-6 w-6" }: IconProps) {
@@ -130,6 +133,7 @@ export function NavItems(props: NavItemsProps) {
   const pathname = usePathname();
   const [currentUserProfile, setCurrentUserProfile] =
     useState<CurrentUserProfile | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -145,6 +149,7 @@ export function NavItems(props: NavItemsProps) {
             ? {
                 avatar_url: profile.avatar_url,
                 nickname: profile.nickname,
+                role: profile.role,
               }
             : null,
         );
@@ -160,6 +165,32 @@ export function NavItems(props: NavItemsProps) {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUnreadCount() {
+      try {
+        const count = await getUnreadCount();
+
+        if (isMounted) {
+          setUnreadCount(count);
+        }
+      } catch {
+        if (isMounted) {
+          setUnreadCount(0);
+        }
+      }
+    }
+
+    void loadUnreadCount();
+    window.addEventListener("notifications:refresh", loadUnreadCount);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("notifications:refresh", loadUnreadCount);
+    };
+  }, []);
+
   const profileAvatar = (
     <Avatar
       src={currentUserProfile?.avatar_url}
@@ -167,6 +198,16 @@ export function NavItems(props: NavItemsProps) {
       size="sm"
     />
   );
+  const notificationIcon = (
+    <span className="relative inline-flex">
+      <Bell className="h-6 w-6" />
+      {unreadCount > 0 ? (
+        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
+      ) : null}
+    </span>
+  );
+  const handleNotificationsClick =
+    props.variant === "sidebar" ? props.onNotificationsClick : undefined;
 
   const navigationItems: NavigationItem[] = [
     {
@@ -218,8 +259,9 @@ export function NavItems(props: NavItemsProps) {
     {
       href: "/notifications",
       label: "알림",
-      icon: <Bell className="h-6 w-6" />,
+      icon: notificationIcon,
       isActive: pathname.startsWith("/notifications"),
+      onClick: handleNotificationsClick,
     },
   ];
 
@@ -227,7 +269,17 @@ export function NavItems(props: NavItemsProps) {
     href: "/write",
     label: "새 게시물",
     icon: <PlusIcon className="h-5 w-5" />,
+    isActive: pathname === "/write",
   };
+  const sideBarAdminAction =
+    currentUserProfile?.role === "admin"
+      ? {
+          href: "/admin",
+          label: "관리자",
+          icon: <ShieldCheck className="h-5 w-5" />,
+          isActive: pathname.startsWith("/admin"),
+        }
+      : undefined;
 
   if (props.variant === "sidebar") {
     return (
@@ -235,6 +287,7 @@ export function NavItems(props: NavItemsProps) {
         logo={props.logo}
         items={sideBarItems}
         postAction={sideBarPostAction}
+        secondaryAction={sideBarAdminAction}
       />
     );
   }
