@@ -498,3 +498,13 @@
   - `reports` 타입을 현재 DB 스키마에 맞게 반영
   - 피드/게시물 상세 신고와 스토리 신고 ActionSheet를 실제 reports insert로 연결
   - 신고 전 ConfirmDialog 확인 절차와 완료/실패 Toast 피드백 추가
+- 게시물 상세 데스크톱 모달 레이아웃 버그 수정
+  - 모달 높이를 96vh, 최대 폭을 1100px로 조정하고 우측 댓글 컬럼을 500px 고정
+  - 좌측 이미지 영역을 600px 이하로 제한하고 현재 이미지 비율에 맞춰 폭 계산
+  - 우측 댓글 스크롤 영역과 하단 입력창 분리로 댓글이 없을 때도 입력창 고정
+- 게시물 상세 댓글 기능 복구
+  - 댓글 좋아요, 대댓글 표시, 답글 보기/숨기기, 답글 달기 입력 흐름 복구
+  - `toggleCommentLike`, `getLikedCommentIds` 기반 낙관적 업데이트와 실패 롤백 적용
+- 게시물 상세 컴포넌트 파일 분리
+  - `ImageCarousel`, `PostComments`, `PostDetailParts`, `lib/utils/time`으로 코드 이동
+  - 기능/로직/스타일 변경 없이 `PostDetail.tsx` 본체만 남기도록 정리
