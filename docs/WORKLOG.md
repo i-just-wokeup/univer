@@ -508,3 +508,28 @@
 - 게시물 상세 컴포넌트 파일 분리
   - `ImageCarousel`, `PostComments`, `PostDetailParts`, `lib/utils/time`으로 코드 이동
   - 기능/로직/스타일 변경 없이 `PostDetail.tsx` 본체만 남기도록 정리
+- 알림 시스템 UI 구현
+  - `features/notifications/api.ts` 신규 생성 (`getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead`)
+  - `notifications` 타입을 현재 알림 종류(`post_like`, `story_like`, `comment_like`, `post_comment`, `report_received`)에 맞게 반영
+  - 웹 사이드바 벨 클릭 시 360px 알림 패널 표시, 바깥 클릭 닫기, 모두 읽음/단건 읽음 처리 연결
+  - 모바일 `/notifications` 페이지 신규 생성
+  - Header/NavItems 벨 아이콘에 읽지 않은 알림 빨간 점 뱃지 추가
+  - 알림 항목에 actor 아바타, 알림 문구, 상대 시간, 게시물/스토리 썸네일, 클릭 이동 처리 적용
+- 관리자 페이지 1차 구현
+  - `middleware.ts`에 `/admin` 접근 시 `users.role = 'admin'` 검사 추가, 비관리자는 `/`로 리다이렉트
+  - `features/admin/api.ts` 신규 생성 (`getDashboardStats`, `getAdminReports`, `getAdminUsers`, `handleReport`)
+  - `/admin` 전용 레이아웃과 좌측 사이드바 구현
+  - `/admin` 대시보드 구현 (일/월/년/전체 탭, 신규가입/게시물/스토리/댓글/좋아요/미처리신고 KPI 카드, 새로고침)
+  - `/admin/reports` 구현 (목록 조회, 기각/삭제/복구 처리, 상태별 버튼 분기, 처리 후 새로고침)
+  - `/admin/users` 구현 (닉네임/이메일 검색, 가입일/게시물 수/신고당한 횟수/권한 뱃지 표시)
+  - 사이드바 하단에 관리자 전용 버튼 추가 (`role='admin'`일 때만 노출)
+- 신고 시스템 개선
+  - `reports.target_snapshot` 컬럼 추가 (신고 시점 콘텐츠 스냅샷 자동 저장)
+  - `reports.target_author_id` 컬럼 추가 (콘텐츠 삭제 후에도 작성자 보존)
+  - 콘텐츠 삭제 방식을 hard delete에서 soft delete로 전환해 복구 가능하도록 조정
+  - `trg_fill_report_snapshot` 트리거 추가
+- 알림 시스템
+  - `post_like`, `story_like`, `comment_like`, `post_comment`, `report_received` 알림 트리거 5종 연결
+  - `NotificationPanel` 웹 슬라이드 패널 구현
+  - 모바일 `/notifications` 페이지 구현
+  - 벨 아이콘 읽지 않은 알림 수 뱃지 표시

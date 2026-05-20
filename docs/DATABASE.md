@@ -42,7 +42,7 @@ users (
   avatar_url    text,
   university_id uuid FK → universities not null,
   department    text not null,
-  role          text default 'user',          -- 'user' | 'official'
+  role          text default 'user',          -- 'user' | 'official' | 'admin'
   is_onboarded  bool default false,
   is_active     bool default true,
   fcm_token     text,
@@ -203,7 +203,7 @@ notifications (
   id             uuid PK default gen_random_uuid(),
   user_id        uuid FK → users,
   type           text not null,
-  reference_type text,                        -- 'post' | 'user' | 'comment'
+  reference_type text,                        -- 'post' | 'user' | 'comment' | 'story'
   reference_id   uuid,
   message        text,
   is_read        bool default false,
@@ -211,10 +211,10 @@ notifications (
 )
 -- type 종류:
 -- post_like      내 게시물 좋아요
+-- story_like     내 스토리 좋아요
+-- comment_like   내 댓글 좋아요
 -- post_comment   내 게시물 댓글
--- comment_reply  내 댓글에 대댓글
--- user_like      나를 유저 좋아요
--- new_post       좋아요한 계정 새 게시물 (notify=true만)
+-- report_received 신고 접수
 ```
 
 **blocks**
@@ -235,6 +235,8 @@ reports (
   reporter_id uuid FK → users,
   target_type text not null,   -- 'post' | 'story' | 'user'
   target_id   uuid not null,
+  target_author_id uuid FK → users on delete set null,
+  target_snapshot jsonb,
   reason      text,
   status      text default 'pending',
   -- 'pending' | 'reviewed' | 'dismissed' | 'action_taken'
