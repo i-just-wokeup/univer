@@ -4,7 +4,7 @@ import type { Database } from "@/types/database.types";
 // 게시물 공개 범위는 현재 MVP 기준 두 가지로 제한한다.
 type Visibility = "public" | "close_friends";
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
-type PostImageRow = Database["public"]["Tables"]["post_images"]["Row"];
+type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
 type PostHashtagRow = Database["public"]["Tables"]["post_hashtags"]["Row"];
 type HashtagRow = Database["public"]["Tables"]["hashtags"]["Row"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
@@ -26,10 +26,13 @@ type UpdatePostParams = {
   postId: string;
 };
 
-// 피드 카드에서 바로 쓰는 이미지 최소 형태.
-export type PostImage = {
+// 피드 카드에서 바로 쓰는 미디어 최소 형태.
+export type PostMedia = {
+  duration: number | null;
   id: string;
   order_index: number;
+  thumbnail_url: string | null;
+  type: "image" | "video";
   url: string;
 };
 
@@ -48,7 +51,7 @@ export type FeedPost = {
   created_at: string;
   hashtags: string[];
   id: string;
-  images: PostImage[];
+  media: PostMedia[];
   likes_count: number;
   user: FeedUser;
 };
@@ -69,7 +72,7 @@ export type PostDetail = {
   created_at: string;
   hashtags: string[];
   id: string;
-  images: PostImage[];
+  media: PostMedia[];
   likes_count: number;
   user: FeedUser;
 };
@@ -248,16 +251,17 @@ export async function createPost({
   }
 
   if (imageUrls.length > 0) {
-    const { error: postImagesError } = await supabase.from("post_images").insert(
+    const { error: postMediaError } = await supabase.from("post_media").insert(
       imageUrls.map((url, index) => ({
         order_index: index,
         post_id: post.id,
+        type: "image" as const,
         url,
       })),
     );
 
-    if (postImagesError) {
-      throw new Error("게시물 이미지 저장에 실패했습니다.");
+    if (postMediaError) {
+      throw new Error("게시물 미디어 저장에 실패했습니다.");
     }
   }
 
@@ -282,14 +286,14 @@ export async function getPost(postId: string): Promise<PostDetail> {
   }
 
   const [
-    { data: imagesData, error: imagesError },
+    { data: mediaData, error: mediaError },
     { data: postHashtagsData, error: postHashtagsError },
     { data: userData, error: userError },
   ] =
     await Promise.all([
       supabase
-        .from("post_images")
-        .select("id, post_id, url, order_index, created_at")
+        .from("post_media")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index, created_at")
         .eq("post_id", postId)
         .order("order_index", { ascending: true }),
       supabase
@@ -303,8 +307,8 @@ export async function getPost(postId: string): Promise<PostDetail> {
         .single(),
     ]);
 
-  if (imagesError || !imagesData) {
-    throw new Error("게시물 이미지를 불러오지 못했습니다.");
+  if (mediaError || !mediaData) {
+    throw new Error("게시물 미디어를 불러오지 못했습니다.");
   }
 
   if (postHashtagsError || !postHashtagsData) {
@@ -346,10 +350,13 @@ export async function getPost(postId: string): Promise<PostDetail> {
     created_at: post.created_at,
     hashtags,
     id: post.id,
-    images: imagesData.map((image: PostImageRow) => ({
-      id: image.id,
-      order_index: image.order_index,
-      url: image.url,
+    media: mediaData.map((media: PostMediaRow) => ({
+      duration: media.duration,
+      id: media.id,
+      order_index: media.order_index,
+      thumbnail_url: media.thumbnail_url,
+      type: media.type,
+      url: media.url,
     })),
     likes_count: post.likes_count,
     user: {
@@ -598,15 +605,15 @@ export async function getFeed({
   const postIds = slicedPosts.map((post) => post.id);
   const userIds = Array.from(new Set(slicedPosts.map((post) => post.user_id)));
 
-  const [{ data: usersData, error: usersError }, { data: imagesData, error: imagesError }] =
+  const [{ data: usersData, error: usersError }, { data: mediaData, error: mediaError }] =
     await Promise.all([
       supabase
         .from("users")
         .select("id, nickname, department, avatar_url")
         .in("id", userIds),
       supabase
-        .from("post_images")
-        .select("id, post_id, url, order_index, created_at")
+        .from("post_media")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index, created_at")
         .in("post_id", postIds)
         .order("order_index", { ascending: true }),
     ]);
@@ -615,8 +622,8 @@ export async function getFeed({
     throw new Error("작성자 정보를 불러오지 못했습니다.");
   }
 
-  if (imagesError || !imagesData) {
-    throw new Error("게시물 이미지를 불러오지 못했습니다.");
+  if (mediaError || !mediaData) {
+    throw new Error("게시물 미디어를 불러오지 못했습니다.");
   }
 
   // 해시태그는 연결 테이블과 실제 이름 테이블을 나눠서 읽어야 한다.
@@ -663,17 +670,20 @@ export async function getFeed({
     ]),
   );
 
-  const imagesByPostId = new Map<string, PostImage[]>();
+  const mediaByPostId = new Map<string, PostMedia[]>();
 
-  imagesData.forEach((image: PostImageRow) => {
+  mediaData.forEach((media: PostMediaRow) => {
     // 쿼리 정렬을 그대로 유지한 채 post_id별 배열만 묶는다.
-    const currentImages = imagesByPostId.get(image.post_id) ?? [];
-    currentImages.push({
-      id: image.id,
-      order_index: image.order_index,
-      url: image.url,
+    const currentMedia = mediaByPostId.get(media.post_id) ?? [];
+    currentMedia.push({
+      duration: media.duration,
+      id: media.id,
+      order_index: media.order_index,
+      thumbnail_url: media.thumbnail_url,
+      type: media.type,
+      url: media.url,
     });
-    imagesByPostId.set(image.post_id, currentImages);
+    mediaByPostId.set(media.post_id, currentMedia);
   });
 
   const hashtagsById = new Map<string, string>(
@@ -708,7 +718,7 @@ export async function getFeed({
       created_at: post.created_at,
       hashtags: hashtagsByPostId.get(post.id) ?? [],
       id: post.id,
-      images: imagesByPostId.get(post.id) ?? [],
+      media: mediaByPostId.get(post.id) ?? [],
       likes_count: post.likes_count,
       user,
     };
