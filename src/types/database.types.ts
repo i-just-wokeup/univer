@@ -43,7 +43,7 @@ export type Database = {
           avatar_url: string | null
           university_id: string
           department: string
-          role: 'user' | 'official'
+          role: 'user' | 'official' | 'admin'
           is_onboarded: boolean
           is_active: boolean
           fcm_token: string | null
@@ -60,7 +60,7 @@ export type Database = {
           avatar_url?: string | null
           university_id: string
           department: string
-          role?: 'user' | 'official'
+          role?: 'user' | 'official' | 'admin'
           is_onboarded?: boolean
           is_active?: boolean
           fcm_token?: string | null
@@ -77,7 +77,7 @@ export type Database = {
           avatar_url?: string | null
           university_id?: string
           department?: string
-          role?: 'user' | 'official'
+          role?: 'user' | 'official' | 'admin'
           is_onboarded?: boolean
           is_active?: boolean
           fcm_token?: string | null
@@ -397,7 +397,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          type: 'post_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'new_post'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'report_received'
           reference_type: 'post' | 'user' | 'comment' | 'story' | null
           reference_id: string | null
           message: string | null
@@ -407,7 +407,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          type: 'post_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'new_post'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -417,7 +417,7 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          type?: 'post_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'new_post'
+          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
