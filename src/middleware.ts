@@ -113,14 +113,14 @@ export async function middleware(request: NextRequest) {
       return redirectWithCookies(request, response, "/onboarding");
     }
 
-    if (pathname.startsWith("/admin")) {
-      const { data: currentUser, error: roleError } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
+    const { data: currentUser, error: currentUserError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
 
-      if (roleError || currentUser?.role !== "admin") {
+    if (pathname.startsWith("/admin")) {
+      if (currentUserError || currentUser?.role !== "admin") {
         return copyCookiesToResponse(
           response,
           NextResponse.redirect(new URL("/", request.url)),
