@@ -126,25 +126,34 @@ export type Database = {
         }
         Relationships: []
       }
-      post_images: {
+      post_media: {
         Row: {
           id: string
           post_id: string
+          type: 'image' | 'video'
           url: string
+          thumbnail_url: string | null
+          duration: number | null
           order_index: number
           created_at: string
         }
         Insert: {
           id?: string
           post_id: string
+          type?: 'image' | 'video'
           url: string
+          thumbnail_url?: string | null
+          duration?: number | null
           order_index?: number
           created_at?: string
         }
         Update: {
           id?: string
           post_id?: string
+          type?: 'image' | 'video'
           url?: string
+          thumbnail_url?: string | null
+          duration?: number | null
           order_index?: number
           created_at?: string
         }
@@ -442,29 +451,23 @@ export type Database = {
         Row: {
           id: string
           reporter_id: string
-          target_type: 'post' | 'comment' | 'story' | 'user'
+          target_type: 'post' | 'story' | 'user'
           target_id: string
-          reason: 'spam' | 'abuse' | 'obscene' | 'false_info' | 'other'
+          reason: string | null
           status: 'pending' | 'reviewed' | 'dismissed' | 'action_taken'
           created_at: string
         }
         Insert: {
           id?: string
           reporter_id: string
-          target_type: 'post' | 'comment' | 'story' | 'user'
+          target_type: 'post' | 'story' | 'user'
           target_id: string
-          reason: 'spam' | 'abuse' | 'obscene' | 'false_info' | 'other'
-          status?: 'pending' | 'reviewed' | 'dismissed' | 'action_taken'
+          reason?: string | null
+          status?: string
           created_at?: string
         }
         Update: {
-          id?: string
-          reporter_id?: string
-          target_type?: 'post' | 'comment' | 'story' | 'user'
-          target_id?: string
-          reason?: 'spam' | 'abuse' | 'obscene' | 'false_info' | 'other'
-          status?: 'pending' | 'reviewed' | 'dismissed' | 'action_taken'
-          created_at?: string
+          status?: string
         }
         Relationships: []
       }
