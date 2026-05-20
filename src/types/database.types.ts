@@ -473,7 +473,61 @@ export type Database = {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      delete_account: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_admin_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_admin_reports: {
+        Args: {
+          limit?: number
+          limit_count?: number
+          offset?: number
+          offset_count?: number
+          p_limit?: number
+          p_offset?: number
+          p_status?: string | null
+          status?: string | null
+          status_filter?: string | null
+        }
+        Returns: Json
+      }
+      get_admin_users: {
+        Args: {
+          limit?: number
+          limit_count?: number
+          offset?: number
+          offset_count?: number
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          search?: string
+          search_query?: string
+        }
+        Returns: Json
+      }
+      handle_admin_report: {
+        Args: {
+          action_type?: string
+          report_id?: string
+        }
+        Returns: Json
+      }
+      restore_account: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      search_users: {
+        Args: {
+          search_query: string
+        }
+        Returns: Json
+      }
+    }
     Enums: Record<string, never>
   }
 }
