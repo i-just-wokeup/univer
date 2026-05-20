@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { signOut } from "@/features/auth/api";
+import { deleteAccount, signOut } from "@/features/auth/api";
 
 function Section({
   children,
@@ -59,6 +59,7 @@ function Row({
 export default function SettingsPage() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   async function handleLogoutConfirm() {
@@ -71,6 +72,21 @@ export default function SettingsPage() {
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "로그아웃에 실패했습니다.",
+      );
+    }
+  }
+
+  async function handleDeleteConfirm() {
+    setIsDeleteDialogOpen(false);
+    setErrorMessage("");
+
+    try {
+      await deleteAccount();
+      await signOut();
+      window.location.href = "/auth/login";
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "계정 탈퇴에 실패했습니다.",
       );
     }
   }
@@ -103,13 +119,22 @@ export default function SettingsPage() {
         </Section>
 
         <section className="px-4 py-5">
-          <button
-            type="button"
-            onClick={() => setIsLogoutDialogOpen(true)}
-            className="h-12 text-sm font-bold text-red-500"
-          >
-            로그아웃
-          </button>
+          <div className="flex flex-col items-start gap-3">
+            <button
+              type="button"
+              onClick={() => setIsLogoutDialogOpen(true)}
+              className="h-12 text-sm font-bold text-red-500"
+            >
+              로그아웃
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-sm font-semibold text-zinc-500"
+            >
+              탈퇴하기
+            </button>
+          </div>
 
           {errorMessage ? (
             <p className="mt-3 text-sm font-semibold text-red-500">
@@ -126,6 +151,14 @@ export default function SettingsPage() {
         confirmLabel="로그아웃"
         onCancel={() => setIsLogoutDialogOpen(false)}
         onConfirm={handleLogoutConfirm}
+      />
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title="정말 탈퇴하시겠습니까?"
+        description="30일 이내 복구 가능합니다."
+        confirmLabel="탈퇴"
+        onCancel={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );
