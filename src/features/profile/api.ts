@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { Json } from "@/types/database.types";
 import type { Database } from "@/types/database.types";
 
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
@@ -30,6 +31,24 @@ type ProfilePostImageRow = Pick<
   PostMediaRow,
   "order_index" | "post_id" | "url"
 >;
+
+type UserLikeStatus = {
+  is_liked: boolean;
+  likes_count: number;
+};
+
+function isUserLikeStatus(value: Json | null): value is UserLikeStatus {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  return (
+    "is_liked" in value &&
+    typeof value.is_liked === "boolean" &&
+    "likes_count" in value &&
+    typeof value.likes_count === "number"
+  );
+}
 
 function requireSupabaseClient() {
   const supabase = getSupabaseBrowserClient();
@@ -132,4 +151,38 @@ export async function getPostsCount(userId: string): Promise<number> {
   }
 
   return count ?? 0;
+}
+
+export async function toggleUserLike(userId: string): Promise<void> {
+  const supabase = requireSupabaseClient();
+
+  const { error } = await supabase.rpc("toggle_user_like", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("유저 좋아요 처리에 실패했습니다.");
+  }
+}
+
+export async function getUserLikeStatus(
+  userId: string,
+): Promise<UserLikeStatus> {
+  const supabase = requireSupabaseClient();
+
+  const { data, error } = await supabase.rpc("get_user_like_status", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("유저 좋아요 상태를 불러오지 못했습니다.");
+  }
+
+  const normalizedData = (data ?? null) as Json | null;
+
+  if (!isUserLikeStatus(normalizedData)) {
+    throw new Error("유저 좋아요 상태 응답 형식이 올바르지 않습니다.");
+  }
+
+  return normalizedData;
 }
