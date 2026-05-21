@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-05-21
+
+### 완료
+- 유저 연결 모델 전환 (`user_likes` → `user_connections`)
+  - `user_connections` 테이블 신규 (`requester_id`, `receiver_id`, `status: pending/accepted/rejected`)
+  - `send_friend_request`, `accept_friend_request`, `reject_friend_request`, `remove_friend`, `get_connection_status` RPC 생성
+  - `trg_notify_friend_request` 트리거 (신청/수락 알림)
+  - `notifications` type CHECK 제약에 `friend_request`, `friend_accepted` 추가
+  - `users` 테이블에 `credit_balance`, `level`, `level_score` 컬럼 추가 (크레딧/레벨 시스템 대비)
+- 프로필 페이지 친구 시스템 UI 적용
+  - 상태별 버튼 분기 (`none` / `pending` / `accepted`)
+  - 친구 수 표시 및 낙관적 업데이트/실패 롤백 처리
+- 알림 타입 전환
+  - `user_like` 제거
+  - 알림 패널 친구 신청/수락 문구 추가
+
 ## 2026-04-27
 
 ### 완료

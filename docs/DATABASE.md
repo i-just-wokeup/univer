@@ -42,6 +42,9 @@ users (
   avatar_url    text,
   university_id uuid FK → universities not null,
   department    text not null,
+  credit_balance int default 0,
+  level         int default 1,
+  level_score   int default 0,
   role          text default 'user',          -- 'user' | 'official' | 'admin'
   is_onboarded  bool default false,
   is_active     bool default true,
@@ -145,15 +148,15 @@ comment_likes (
 )
 ```
 
-**user_likes** (팔로우 대체)
+**user_connections** (친구 신청/수락)
 ```sql
-user_likes (
+user_connections (
   id           uuid PK default gen_random_uuid(),
-  from_user_id uuid FK → users,
-  to_user_id   uuid FK → users,
-  notify       bool default false,            -- 새 게시물 알림 수신 여부
+  requester_id uuid FK → users,
+  receiver_id  uuid FK → users,
+  status       text not null default 'pending', -- 'pending' | 'accepted' | 'rejected'
   created_at   timestamptz default now(),
-  UNIQUE(from_user_id, to_user_id)
+  UNIQUE(requester_id, receiver_id)
 )
 ```
 
@@ -214,6 +217,8 @@ notifications (
 -- story_like     내 스토리 좋아요
 -- comment_like   내 댓글 좋아요
 -- post_comment   내 게시물 댓글
+-- friend_request 친구 신청
+-- friend_accepted 친구 신청 수락
 -- report_received 신고 접수
 ```
 
@@ -250,6 +255,11 @@ reports (
 search_users(search_query text)
 delete_account()
 restore_account()
+send_friend_request(target_user_id uuid)
+accept_friend_request(target_user_id uuid)
+reject_friend_request(target_user_id uuid)
+remove_friend(target_user_id uuid)
+get_connection_status(target_user_id uuid)
 ```
 
 ---
@@ -349,7 +359,7 @@ community_comments (
 | story_views | 본인만 | 로그인 유저 |
 | post_likes | 공개 | 로그인 유저 |
 | comment_likes | 공개 | 로그인 유저 |
-| user_likes | 공개 | 로그인 유저 |
+| user_connections | 공개 | 로그인 유저 |
 | close_friends | 본인만 | 본인만 |
 | comments | 같은 학교 유저 | 본인만 |
 | bookmarks | 본인만 | 본인만 |
