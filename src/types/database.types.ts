@@ -41,10 +41,13 @@ export type Database = {
           nickname: string
           bio: string | null
           avatar_url: string | null
-          university_id: string
-          department: string
-          role: 'user' | 'official' | 'admin'
-          is_onboarded: boolean
+        university_id: string
+        department: string
+        credit_balance: number
+        level: number
+        level_score: number
+        role: 'user' | 'official' | 'admin'
+        is_onboarded: boolean
           is_active: boolean
           fcm_token: string | null
           visibility: 'public' | 'close_friends'
@@ -60,6 +63,9 @@ export type Database = {
           avatar_url?: string | null
           university_id: string
           department: string
+          credit_balance?: number
+          level?: number
+          level_score?: number
           role?: 'user' | 'official' | 'admin'
           is_onboarded?: boolean
           is_active?: boolean
@@ -77,6 +83,9 @@ export type Database = {
           avatar_url?: string | null
           university_id?: string
           department?: string
+          credit_balance?: number
+          level?: number
+          level_score?: number
           role?: 'user' | 'official' | 'admin'
           is_onboarded?: boolean
           is_active?: boolean
@@ -294,26 +303,26 @@ export type Database = {
         }
         Relationships: []
       }
-      user_likes: {
+      user_connections: {
         Row: {
           id: string
-          from_user_id: string
-          to_user_id: string
-          notify: boolean
+          requester_id: string
+          receiver_id: string
+          status: 'pending' | 'accepted' | 'rejected'
           created_at: string
         }
         Insert: {
           id?: string
-          from_user_id: string
-          to_user_id: string
-          notify?: boolean
+          requester_id: string
+          receiver_id: string
+          status?: 'pending' | 'accepted' | 'rejected'
           created_at?: string
         }
         Update: {
           id?: string
-          from_user_id?: string
-          to_user_id?: string
-          notify?: boolean
+          requester_id?: string
+          receiver_id?: string
+          status?: 'pending' | 'accepted' | 'rejected'
           created_at?: string
         }
         Relationships: []
@@ -397,7 +406,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'user_like' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
           reference_type: 'post' | 'user' | 'comment' | 'story' | null
           reference_id: string | null
           message: string | null
@@ -407,7 +416,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'user_like' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -417,7 +426,7 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'user_like' | 'report_received'
+          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -478,7 +487,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
-      get_user_like_status: {
+      accept_friend_request: {
+        Args: {
+          requester_user_id: string
+        }
+        Returns: Json
+      }
+      get_connection_status: {
         Args: {
           target_user_id: string
         }
@@ -527,13 +542,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      reject_friend_request: {
+        Args: {
+          requester_user_id: string
+        }
+        Returns: Json
+      }
+      remove_friend: {
+        Args: {
+          target_user_id: string
+        }
+        Returns: Json
+      }
       search_users: {
         Args: {
           search_query: string
         }
         Returns: Json
       }
-      toggle_user_like: {
+      send_friend_request: {
         Args: {
           target_user_id: string
         }
