@@ -33,8 +33,10 @@ function getNotificationText(notification: NotificationItem) {
       return `${nickname}님이 회원님의 댓글을 좋아합니다`;
     case "post_comment":
       return `${nickname}님이 회원님의 게시물에 댓글을 남겼습니다`;
-    case "user_like":
-      return `${nickname}님이 회원님을 좋아합니다`;
+    case "friend_request":
+      return `${nickname}님이 친구 신청을 보냈습니다`;
+    case "friend_accepted":
+      return `${nickname}님이 친구 신청을 수락했습니다`;
     case "report_received":
       return "새로운 신고가 접수됐습니다";
     default:
