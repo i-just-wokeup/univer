@@ -397,7 +397,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'user_like' | 'report_received'
           reference_type: 'post' | 'user' | 'comment' | 'story' | null
           reference_id: string | null
           message: string | null
@@ -407,7 +407,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'user_like' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -417,7 +417,7 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'report_received'
+          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'user_like' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -478,6 +478,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_user_like_status: {
+        Args: {
+          target_user_id: string
+        }
+        Returns: Json
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -524,6 +530,12 @@ export type Database = {
       search_users: {
         Args: {
           search_query: string
+        }
+        Returns: Json
+      }
+      toggle_user_like: {
+        Args: {
+          target_user_id: string
         }
         Returns: Json
       }
