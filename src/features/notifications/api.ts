@@ -36,6 +36,24 @@ type NotificationMeta = {
   storyId: string | null;
 };
 
+function getLatestRowsByTargetId<T extends { created_at: string }>(
+  rows: T[],
+  getTargetId: (row: T) => string,
+) {
+  const latestRowsByTargetId = new Map<string, T>();
+
+  rows.forEach((row) => {
+    const targetId = getTargetId(row);
+    const currentRow = latestRowsByTargetId.get(targetId);
+
+    if (!currentRow || currentRow.created_at < row.created_at) {
+      latestRowsByTargetId.set(targetId, row);
+    }
+  });
+
+  return latestRowsByTargetId;
+}
+
 function requireSupabaseClient() {
   const supabase = getSupabaseBrowserClient();
 
@@ -112,40 +130,37 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     metaByNotificationId.set(notification.id, getFallbackMeta(notification));
   });
 
-  const postLikeReferenceIds = notifications
+  const postLikeTargetIds = notifications
     .filter(
       (notification) =>
-        (notification.type === "post_like" || notification.type === "story_like") &&
+        notification.type === "post_like" &&
         Boolean(notification.reference_id),
     )
     .map((notification) => notification.reference_id)
     .filter((referenceId): referenceId is string => Boolean(referenceId));
 
-  if (postLikeReferenceIds.length > 0) {
+  if (postLikeTargetIds.length > 0) {
     const { data: postLikes, error: postLikesError } = await supabase
       .from("post_likes")
       .select("id, user_id, target_type, target_id, created_at")
-      .in("id", postLikeReferenceIds);
+      .eq("target_type", "post")
+      .in("target_id", postLikeTargetIds);
 
     if (postLikesError || !postLikes) {
       throw new Error("좋아요 알림 정보를 불러오지 못했습니다.");
     }
 
-    const postLikesById = new Map<string, PostLikeRow>(
-      postLikes.map((postLike: PostLikeRow) => [postLike.id, postLike]),
+    const latestPostLikesByPostId = getLatestRowsByTargetId(
+      postLikes as PostLikeRow[],
+      (postLike) => postLike.target_id,
     );
 
     notifications.forEach((notification: NotificationRow) => {
-      if (
-        notification.type !== "post_like" &&
-        notification.type !== "story_like"
-      ) {
+      if (notification.type !== "post_like" || !notification.reference_id) {
         return;
       }
 
-      const postLike = notification.reference_id
-        ? postLikesById.get(notification.reference_id)
-        : null;
+      const postLike = latestPostLikesByPostId.get(notification.reference_id);
 
       if (!postLike) {
         return;
@@ -153,12 +168,53 @@ export async function getNotifications(): Promise<NotificationItem[]> {
 
       metaByNotificationId.set(notification.id, {
         actorUserId: postLike.user_id,
-        href:
-          postLike.target_type === "post"
-            ? `/posts/${postLike.target_id}`
-            : null,
-        postId: postLike.target_type === "post" ? postLike.target_id : null,
-        storyId: postLike.target_type === "story" ? postLike.target_id : null,
+        href: `/posts/${postLike.target_id}`,
+        postId: postLike.target_id,
+        storyId: null,
+      });
+    });
+  }
+
+  const storyLikeTargetIds = notifications
+    .filter(
+      (notification) =>
+        notification.type === "story_like" && Boolean(notification.reference_id),
+    )
+    .map((notification) => notification.reference_id)
+    .filter((referenceId): referenceId is string => Boolean(referenceId));
+
+  if (storyLikeTargetIds.length > 0) {
+    const { data: storyLikes, error: storyLikesError } = await supabase
+      .from("post_likes")
+      .select("id, user_id, target_type, target_id, created_at")
+      .eq("target_type", "story")
+      .in("target_id", storyLikeTargetIds);
+
+    if (storyLikesError || !storyLikes) {
+      throw new Error("스토리 좋아요 알림 정보를 불러오지 못했습니다.");
+    }
+
+    const latestStoryLikesByStoryId = getLatestRowsByTargetId(
+      storyLikes as PostLikeRow[],
+      (storyLike) => storyLike.target_id,
+    );
+
+    notifications.forEach((notification: NotificationRow) => {
+      if (notification.type !== "story_like" || !notification.reference_id) {
+        return;
+      }
+
+      const storyLike = latestStoryLikesByStoryId.get(notification.reference_id);
+
+      if (!storyLike) {
+        return;
+      }
+
+      metaByNotificationId.set(notification.id, {
+        actorUserId: storyLike.user_id,
+        href: null,
+        postId: null,
+        storyId: storyLike.target_id,
       });
     });
   }
@@ -175,7 +231,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     const { data: commentLikes, error: commentLikesError } = await supabase
       .from("comment_likes")
       .select("id, user_id, comment_id, created_at")
-      .in("id", commentLikeReferenceIds);
+      .in("comment_id", commentLikeReferenceIds);
 
     if (commentLikesError || !commentLikes) {
       throw new Error("댓글 좋아요 알림 정보를 불러오지 못했습니다.");
@@ -193,11 +249,9 @@ export async function getNotifications(): Promise<NotificationItem[]> {
       throw new Error("댓글 알림 정보를 불러오지 못했습니다.");
     }
 
-    const commentLikesById = new Map<string, CommentLikeRow>(
-      commentLikes.map((commentLike: CommentLikeRow) => [
-        commentLike.id,
-        commentLike,
-      ]),
+    const latestCommentLikesByCommentId = getLatestRowsByTargetId(
+      commentLikes as CommentLikeRow[],
+      (commentLike) => commentLike.comment_id,
     );
     const commentsById = new Map<string, CommentRow>(
       comments.map((comment: CommentRow) => [comment.id, comment]),
@@ -209,7 +263,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
       }
 
       const commentLike = notification.reference_id
-        ? commentLikesById.get(notification.reference_id)
+        ? latestCommentLikesByCommentId.get(notification.reference_id)
         : null;
       const comment = commentLike
         ? commentsById.get(commentLike.comment_id)
@@ -240,14 +294,15 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     const { data: comments, error: commentsError } = await supabase
       .from("comments")
       .select("id, user_id, post_id, parent_id, content, likes_count, created_at")
-      .in("id", commentReferenceIds);
+      .in("post_id", commentReferenceIds);
 
     if (commentsError || !comments) {
       throw new Error("댓글 알림 정보를 불러오지 못했습니다.");
     }
 
-    const commentsById = new Map<string, CommentRow>(
-      comments.map((comment: CommentRow) => [comment.id, comment]),
+    const latestCommentsByPostId = getLatestRowsByTargetId(
+      comments as CommentRow[],
+      (comment) => comment.post_id,
     );
 
     notifications.forEach((notification: NotificationRow) => {
@@ -256,7 +311,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
       }
 
       const comment = notification.reference_id
-        ? commentsById.get(notification.reference_id)
+        ? latestCommentsByPostId.get(notification.reference_id)
         : null;
 
       if (!comment) {
@@ -271,6 +326,19 @@ export async function getNotifications(): Promise<NotificationItem[]> {
       });
     });
   }
+
+  notifications.forEach((notification: NotificationRow) => {
+    if (notification.type !== "user_like" || !notification.reference_id) {
+      return;
+    }
+
+    metaByNotificationId.set(notification.id, {
+      actorUserId: notification.reference_id,
+      href: `/profile/${notification.reference_id}`,
+      postId: null,
+      storyId: null,
+    });
+  });
 
   const storyIds = Array.from(
     new Set(
@@ -363,6 +431,10 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     const meta = metaByNotificationId.get(notification.id) ?? getFallbackMeta(notification);
     const actorUser = meta.actorUserId ? usersById.get(meta.actorUserId) : null;
     const story = meta.storyId ? storiesById.get(meta.storyId) : null;
+    const profileHref =
+      notification.type === "user_like" && actorUser
+        ? `/profile/${encodeURIComponent(actorUser.nickname)}`
+        : meta.href;
 
     return {
       actor: actorUser
@@ -372,7 +444,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
           }
         : null,
       created_at: notification.created_at,
-      href: meta.href,
+      href: profileHref,
       id: notification.id,
       is_read: notification.is_read,
       message: notification.message,
