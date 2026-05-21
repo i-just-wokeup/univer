@@ -5,17 +5,22 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
+import { HeartIcon } from "@/components/feed/PostCard";
 import { getCurrentUserProfile } from "@/features/auth/api";
 import {
+  getUserLikeStatus,
   getPostsCount,
   getProfile,
   getProfilePosts,
+  toggleUserLike,
   type Profile,
   type ProfilePost,
 } from "@/features/profile/api";
 
 type ProfilePageState = {
   currentUserId: string | null;
+  isLiked: boolean;
+  likesCount: number;
   posts: ProfilePost[];
   postsCount: number;
   profile: Profile | null;
@@ -44,14 +49,20 @@ function ProfileSkeleton() {
 
 function ProfileHeader({
   isMine,
+  isLiked,
+  likesCount,
   onEditProfile,
   onOpenSettings,
+  onToggleLike,
   postsCount,
   profile,
 }: {
   isMine: boolean;
+  isLiked: boolean;
+  likesCount: number;
   onEditProfile: () => void;
   onOpenSettings: () => void;
+  onToggleLike: () => void;
   postsCount: number;
   profile: Profile;
 }) {
@@ -103,7 +114,21 @@ function ProfileHeader({
               >
                 프로필 편집
               </button>
-            ) : null}
+            ) : (
+              <button
+                type="button"
+                onClick={onToggleLike}
+                className={`flex h-9 items-center gap-1.5 rounded-lg px-4 text-sm font-bold transition ${
+                  isLiked
+                    ? "text-red-500 hover:text-red-600"
+                    : "text-zinc-700 hover:text-zinc-950"
+                }`}
+                aria-label="유저 좋아요"
+              >
+                <HeartIcon isLiked={isLiked} />
+                <span>{likesCount}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -170,6 +195,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const [state, setState] = useState<ProfilePageState>({
     currentUserId: null,
+    isLiked: false,
+    likesCount: 0,
     posts: [],
     postsCount: 0,
     profile: null,
@@ -208,9 +235,13 @@ export default function ProfilePage() {
               }
             : await getProfile(profileNickname);
 
-        const [loadedPosts, loadedPostsCount] = await Promise.all([
+        const isMine = currentUser?.id === loadedProfile.id;
+        const [loadedPosts, loadedPostsCount, likeStatus] = await Promise.all([
           getProfilePosts(loadedProfile.id),
           getPostsCount(loadedProfile.id),
+          isMine
+            ? Promise.resolve({ is_liked: false, likes_count: 0 })
+            : getUserLikeStatus(loadedProfile.id),
         ]);
 
         if (!isMounted) {
@@ -223,6 +254,8 @@ export default function ProfilePage() {
 
         setState({
           currentUserId: currentUser?.id ?? null,
+          isLiked: likeStatus.is_liked,
+          likesCount: likeStatus.likes_count,
           posts: loadedPosts,
           postsCount: loadedPostsCount,
           profile: loadedProfile,
@@ -265,12 +298,47 @@ export default function ProfilePage() {
     );
   }
 
+  async function handleToggleLike() {
+    if (!state.profile || state.currentUserId === state.profile.id) {
+      return;
+    }
+
+    const previousIsLiked = state.isLiked;
+    const previousLikesCount = state.likesCount;
+    const nextIsLiked = !previousIsLiked;
+    const nextLikesCount = Math.max(
+      0,
+      previousLikesCount + (nextIsLiked ? 1 : -1),
+    );
+
+    setState((currentState) => ({
+      ...currentState,
+      isLiked: nextIsLiked,
+      likesCount: nextLikesCount,
+    }));
+
+    try {
+      await toggleUserLike(state.profile.id);
+    } catch {
+      setState((currentState) => ({
+        ...currentState,
+        isLiked: previousIsLiked,
+        likesCount: previousLikesCount,
+      }));
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col bg-white">
       <ProfileHeader
         isMine={state.currentUserId === state.profile.id}
+        isLiked={state.isLiked}
+        likesCount={state.likesCount}
         onEditProfile={() => router.push("/profile/edit")}
         onOpenSettings={() => router.push("/settings")}
+        onToggleLike={() => {
+          void handleToggleLike();
+        }}
         postsCount={state.postsCount}
         profile={state.profile}
       />
