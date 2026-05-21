@@ -1,26 +1,29 @@
 "use client";
 
+import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { Settings } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
-import { HeartIcon } from "@/components/feed/PostCard";
 import { getCurrentUserProfile } from "@/features/auth/api";
 import {
-  getUserLikeStatus,
+  acceptFriendRequest,
+  getConnectionStatus,
   getPostsCount,
   getProfile,
   getProfilePosts,
-  toggleUserLike,
+  rejectFriendRequest,
+  removeFriend,
+  sendFriendRequest,
+  type ConnectionStatus,
   type Profile,
   type ProfilePost,
 } from "@/features/profile/api";
 
 type ProfilePageState = {
+  connectionStatus: ConnectionStatus;
   currentUserId: string | null;
-  isLiked: boolean;
-  likesCount: number;
   posts: ProfilePost[];
   postsCount: number;
   profile: Profile | null;
@@ -48,24 +51,117 @@ function ProfileSkeleton() {
 }
 
 function ProfileHeader({
+  connectionStatus,
   isMine,
-  isLiked,
-  likesCount,
   onEditProfile,
+  onOpenConnectionMenu,
   onOpenSettings,
-  onToggleLike,
+  onRejectFriendRequest,
+  onRespondFriendRequest,
+  onSendFriendRequest,
+  onWithdrawFriendRequest,
   postsCount,
   profile,
 }: {
+  connectionStatus: ConnectionStatus;
   isMine: boolean;
-  isLiked: boolean;
-  likesCount: number;
   onEditProfile: () => void;
+  onOpenConnectionMenu: () => void;
   onOpenSettings: () => void;
-  onToggleLike: () => void;
+  onRejectFriendRequest: () => void;
+  onRespondFriendRequest: () => void;
+  onSendFriendRequest: () => void;
+  onWithdrawFriendRequest: () => void;
   postsCount: number;
   profile: Profile;
 }) {
+  function renderConnectionActions() {
+    if (isMine) {
+      return (
+        <button
+          type="button"
+          onClick={onEditProfile}
+          className="h-9 min-w-32 cursor-pointer rounded-lg bg-zinc-100 px-5 text-sm font-bold text-zinc-950"
+        >
+          프로필 편집
+        </button>
+      );
+    }
+
+    if (connectionStatus.status === "none" || connectionStatus.status === "rejected") {
+      return (
+        <button
+          type="button"
+          onClick={onSendFriendRequest}
+          className="h-9 min-w-32 rounded-lg bg-zinc-950 px-5 text-sm font-bold text-white"
+        >
+          친구 신청
+        </button>
+      );
+    }
+
+    if (connectionStatus.status === "pending" && connectionStatus.is_requester) {
+      return (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled
+            className="h-9 min-w-24 rounded-lg bg-zinc-100 px-4 text-sm font-bold text-zinc-500"
+          >
+            요청됨
+          </button>
+          <button
+            type="button"
+            onClick={onWithdrawFriendRequest}
+            className="h-9 min-w-20 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700"
+          >
+            취소
+          </button>
+        </div>
+      );
+    }
+
+    if (connectionStatus.status === "pending") {
+      return (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onRespondFriendRequest}
+            className="h-9 min-w-20 rounded-lg bg-zinc-950 px-4 text-sm font-bold text-white"
+          >
+            수락
+          </button>
+          <button
+            type="button"
+            onClick={onRejectFriendRequest}
+            className="h-9 min-w-20 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700"
+          >
+            거절
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="h-9 min-w-24 rounded-lg bg-zinc-100 px-4 text-sm font-bold text-zinc-950"
+        >
+          친구 ✓
+        </button>
+        <button
+          type="button"
+          onClick={onOpenConnectionMenu}
+          className="h-9 w-9 rounded-lg border border-zinc-200 text-sm font-bold text-zinc-700"
+          aria-label="친구 옵션"
+        >
+          ⋯
+        </button>
+      </div>
+    );
+  }
+
   return (
     <section className="px-4 py-6">
       <div className="flex gap-5">
@@ -91,6 +187,12 @@ function ProfileHeader({
                   <p className="text-lg font-bold text-zinc-950">{postsCount}</p>
                   <p className="text-xs font-medium text-zinc-500">게시물</p>
                 </div>
+                <div>
+                  <p className="text-lg font-bold text-zinc-950">
+                    {connectionStatus.friends_count}
+                  </p>
+                  <p className="text-xs font-medium text-zinc-500">친구</p>
+                </div>
                 {isMine ? (
                   <button
                     type="button"
@@ -106,29 +208,7 @@ function ProfileHeader({
           </div>
 
           <div className="mt-4 h-9">
-            {isMine ? (
-              <button
-                type="button"
-                onClick={onEditProfile}
-                className="h-9 min-w-32 cursor-pointer rounded-lg bg-zinc-100 px-5 text-sm font-bold text-zinc-950"
-              >
-                프로필 편집
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onToggleLike}
-                className={`flex h-9 items-center gap-1.5 rounded-lg px-4 text-sm font-bold transition ${
-                  isLiked
-                    ? "text-red-500 hover:text-red-600"
-                    : "text-zinc-700 hover:text-zinc-950"
-                }`}
-                aria-label="유저 좋아요"
-              >
-                <HeartIcon isLiked={isLiked} />
-                <span>{likesCount}</span>
-              </button>
-            )}
+            {renderConnectionActions()}
           </div>
         </div>
       </div>
@@ -194,15 +274,19 @@ export default function ProfilePage() {
   const params = useParams<{ nickname: string }>();
   const router = useRouter();
   const [state, setState] = useState<ProfilePageState>({
+    connectionStatus: {
+      friends_count: 0,
+      is_requester: false,
+      status: "none",
+    },
     currentUserId: null,
-    isLiked: false,
-    likesCount: 0,
     posts: [],
     postsCount: 0,
     profile: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isConnectionMenuOpen, setIsConnectionMenuOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -236,12 +320,10 @@ export default function ProfilePage() {
             : await getProfile(profileNickname);
 
         const isMine = currentUser?.id === loadedProfile.id;
-        const [loadedPosts, loadedPostsCount, likeStatus] = await Promise.all([
+        const [loadedPosts, loadedPostsCount, connectionStatus] = await Promise.all([
           getProfilePosts(loadedProfile.id),
           getPostsCount(loadedProfile.id),
-          isMine
-            ? Promise.resolve({ is_liked: false, likes_count: 0 })
-            : getUserLikeStatus(loadedProfile.id),
+          getConnectionStatus(loadedProfile.id),
         ]);
 
         if (!isMounted) {
@@ -253,9 +335,8 @@ export default function ProfilePage() {
         }
 
         setState({
+          connectionStatus,
           currentUserId: currentUser?.id ?? null,
-          isLiked: likeStatus.is_liked,
-          likesCount: likeStatus.likes_count,
           posts: loadedPosts,
           postsCount: loadedPostsCount,
           profile: loadedProfile,
@@ -298,46 +379,145 @@ export default function ProfilePage() {
     );
   }
 
-  async function handleToggleLike() {
+  async function handleSendFriendRequest() {
     if (!state.profile || state.currentUserId === state.profile.id) {
       return;
     }
 
-    const previousIsLiked = state.isLiked;
-    const previousLikesCount = state.likesCount;
-    const nextIsLiked = !previousIsLiked;
-    const nextLikesCount = Math.max(
-      0,
-      previousLikesCount + (nextIsLiked ? 1 : -1),
-    );
+    const previousConnectionStatus = state.connectionStatus;
 
     setState((currentState) => ({
       ...currentState,
-      isLiked: nextIsLiked,
-      likesCount: nextLikesCount,
+      connectionStatus: {
+        ...currentState.connectionStatus,
+        is_requester: true,
+        status: "pending",
+      },
     }));
 
     try {
-      await toggleUserLike(state.profile.id);
+      await sendFriendRequest(state.profile.id);
     } catch {
       setState((currentState) => ({
         ...currentState,
-        isLiked: previousIsLiked,
-        likesCount: previousLikesCount,
+        connectionStatus: previousConnectionStatus,
       }));
     }
   }
 
+  async function handleAcceptFriendRequest() {
+    if (!state.profile) {
+      return;
+    }
+
+    const previousConnectionStatus = state.connectionStatus;
+
+    setState((currentState) => ({
+      ...currentState,
+      connectionStatus: {
+        friends_count: currentState.connectionStatus.friends_count + 1,
+        is_requester: false,
+        status: "accepted",
+      },
+    }));
+
+    try {
+      await acceptFriendRequest(state.profile.id);
+    } catch {
+      setState((currentState) => ({
+        ...currentState,
+        connectionStatus: previousConnectionStatus,
+      }));
+    }
+  }
+
+  async function handleRejectFriendRequest() {
+    if (!state.profile) {
+      return;
+    }
+
+    const previousConnectionStatus = state.connectionStatus;
+
+    setState((currentState) => ({
+      ...currentState,
+      connectionStatus: {
+        ...currentState.connectionStatus,
+        is_requester: false,
+        status: "none",
+      },
+    }));
+
+    try {
+      await rejectFriendRequest(state.profile.id);
+    } catch {
+      setState((currentState) => ({
+        ...currentState,
+        connectionStatus: previousConnectionStatus,
+      }));
+    }
+  }
+
+  async function handleRemoveFriend() {
+    if (!state.profile) {
+      return;
+    }
+
+    const previousConnectionStatus = state.connectionStatus;
+
+    setState((currentState) => ({
+      ...currentState,
+      connectionStatus: {
+        friends_count: Math.max(0, currentState.connectionStatus.friends_count - 1),
+        is_requester: false,
+        status: "none",
+      },
+    }));
+
+    try {
+      await removeFriend(state.profile.id);
+    } catch {
+      setState((currentState) => ({
+        ...currentState,
+        connectionStatus: previousConnectionStatus,
+      }));
+    }
+  }
+
+  const connectionMenuItems: ActionSheetItem[] = [
+    {
+      danger: true,
+      label: "친구 삭제",
+      onClick: () => {
+        void handleRemoveFriend();
+      },
+    },
+    {
+      label: "취소",
+      onClick: () => {},
+    },
+  ];
+
   return (
     <div className="flex flex-1 flex-col bg-white">
       <ProfileHeader
+        connectionStatus={state.connectionStatus}
         isMine={state.currentUserId === state.profile.id}
-        isLiked={state.isLiked}
-        likesCount={state.likesCount}
         onEditProfile={() => router.push("/profile/edit")}
+        onOpenConnectionMenu={() => {
+          setIsConnectionMenuOpen(true);
+        }}
         onOpenSettings={() => router.push("/settings")}
-        onToggleLike={() => {
-          void handleToggleLike();
+        onRejectFriendRequest={() => {
+          void handleRejectFriendRequest();
+        }}
+        onRespondFriendRequest={() => {
+          void handleAcceptFriendRequest();
+        }}
+        onSendFriendRequest={() => {
+          void handleSendFriendRequest();
+        }}
+        onWithdrawFriendRequest={() => {
+          void handleRemoveFriend();
         }}
         postsCount={state.postsCount}
         profile={state.profile}
@@ -370,6 +550,13 @@ export default function ProfilePage() {
           onPostClick={(postId) => router.push(`/posts/${postId}`)}
         />
       </div>
+      <ActionSheet
+        isOpen={isConnectionMenuOpen}
+        items={connectionMenuItems}
+        onClose={() => {
+          setIsConnectionMenuOpen(false);
+        }}
+      />
     </div>
   );
 }
