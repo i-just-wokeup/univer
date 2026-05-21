@@ -487,6 +487,14 @@
 ## 2026-05-20
 
 ### 완료
+- 알림 actor 닉네임 표시 보정
+  - `notifications.reference_id`와 타입별 원본 테이블을 기준으로 actor 역추적 로직 수정
+  - 게시물 좋아요/스토리 좋아요/댓글 좋아요/게시물 댓글/유저 좋아요 알림에서 실제 닉네임 표시
+- 프로필 유저 좋아요 기능 추가
+  - `features/profile/api.ts`에 `toggleUserLike`, `getUserLikeStatus` RPC 래퍼 추가
+  - `database.types.ts`에 `toggle_user_like`, `get_user_like_status` RPC 타입 반영
+  - 프로필 페이지 타인 헤더에 하트 아이콘 + 좋아요 수 표시
+  - 유저 좋아요 토글 낙관적 업데이트 및 실패 시 롤백 적용
 - 게시물 미디어 테이블 전환 반영
   - Supabase `post_images` 테이블을 `post_media`로 교체한 스키마를 `database.types.ts`에 반영
   - `post_images` → `post_media` 전환 및 reports 정비 마이그레이션 추가
