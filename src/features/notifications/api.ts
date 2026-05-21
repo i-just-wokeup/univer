@@ -328,13 +328,17 @@ export async function getNotifications(): Promise<NotificationItem[]> {
   }
 
   notifications.forEach((notification: NotificationRow) => {
-    if (notification.type !== "user_like" || !notification.reference_id) {
+    if (
+      (notification.type !== "friend_request" &&
+        notification.type !== "friend_accepted") ||
+      !notification.reference_id
+    ) {
       return;
     }
 
     metaByNotificationId.set(notification.id, {
       actorUserId: notification.reference_id,
-      href: `/profile/${notification.reference_id}`,
+      href: null,
       postId: null,
       storyId: null,
     });
@@ -432,7 +436,9 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     const actorUser = meta.actorUserId ? usersById.get(meta.actorUserId) : null;
     const story = meta.storyId ? storiesById.get(meta.storyId) : null;
     const profileHref =
-      notification.type === "user_like" && actorUser
+      (notification.type === "friend_request" ||
+        notification.type === "friend_accepted") &&
+      actorUser
         ? `/profile/${encodeURIComponent(actorUser.nickname)}`
         : meta.href;
 
