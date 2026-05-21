@@ -32,21 +32,28 @@ type ProfilePostImageRow = Pick<
   "order_index" | "post_id" | "url"
 >;
 
-type UserLikeStatus = {
-  is_liked: boolean;
-  likes_count: number;
+export type ConnectionStatus = {
+  friends_count: number;
+  is_requester: boolean;
+  status: "none" | "pending" | "accepted" | "rejected";
 };
 
-function isUserLikeStatus(value: Json | null): value is UserLikeStatus {
+function isConnectionStatus(value: Json | null): value is ConnectionStatus {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return false;
   }
 
   return (
-    "is_liked" in value &&
-    typeof value.is_liked === "boolean" &&
-    "likes_count" in value &&
-    typeof value.likes_count === "number"
+    "status" in value &&
+    typeof value.status === "string" &&
+    (value.status === "none" ||
+      value.status === "pending" ||
+      value.status === "accepted" ||
+      value.status === "rejected") &&
+    "is_requester" in value &&
+    typeof value.is_requester === "boolean" &&
+    "friends_count" in value &&
+    typeof value.friends_count === "number"
   );
 }
 
@@ -153,35 +160,71 @@ export async function getPostsCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
-export async function toggleUserLike(userId: string): Promise<void> {
+export async function sendFriendRequest(userId: string): Promise<void> {
   const supabase = requireSupabaseClient();
 
-  const { error } = await supabase.rpc("toggle_user_like", {
+  const { error } = await supabase.rpc("send_friend_request", {
     target_user_id: userId,
   });
 
   if (error) {
-    throw new Error("유저 좋아요 처리에 실패했습니다.");
+    throw new Error("친구 신청에 실패했습니다.");
   }
 }
 
-export async function getUserLikeStatus(
-  userId: string,
-): Promise<UserLikeStatus> {
+export async function acceptFriendRequest(userId: string): Promise<void> {
   const supabase = requireSupabaseClient();
 
-  const { data, error } = await supabase.rpc("get_user_like_status", {
+  const { error } = await supabase.rpc("accept_friend_request", {
+    requester_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 요청 수락에 실패했습니다.");
+  }
+}
+
+export async function rejectFriendRequest(userId: string): Promise<void> {
+  const supabase = requireSupabaseClient();
+
+  const { error } = await supabase.rpc("reject_friend_request", {
+    requester_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 요청 거절에 실패했습니다.");
+  }
+}
+
+export async function removeFriend(userId: string): Promise<void> {
+  const supabase = requireSupabaseClient();
+
+  const { error } = await supabase.rpc("remove_friend", {
     target_user_id: userId,
   });
 
   if (error) {
-    throw new Error("유저 좋아요 상태를 불러오지 못했습니다.");
+    throw new Error("친구 연결 해제에 실패했습니다.");
+  }
+}
+
+export async function getConnectionStatus(
+  userId: string,
+): Promise<ConnectionStatus> {
+  const supabase = requireSupabaseClient();
+
+  const { data, error } = await supabase.rpc("get_connection_status", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 연결 상태를 불러오지 못했습니다.");
   }
 
   const normalizedData = (data ?? null) as Json | null;
 
-  if (!isUserLikeStatus(normalizedData)) {
-    throw new Error("유저 좋아요 상태 응답 형식이 올바르지 않습니다.");
+  if (!isConnectionStatus(normalizedData)) {
+    throw new Error("친구 연결 상태 응답 형식이 올바르지 않습니다.");
   }
 
   return normalizedData;
