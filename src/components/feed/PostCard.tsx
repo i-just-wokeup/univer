@@ -37,7 +37,7 @@ function MoreIcon() {
   );
 }
 
-function HeartIcon({ isLiked }: { isLiked: boolean }) {
+export function HeartIcon({ isLiked }: { isLiked: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"
