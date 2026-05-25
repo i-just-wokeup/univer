@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
 import { getAdminUsers, type AdminUser } from "@/features/admin/api";
@@ -48,7 +48,7 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadUsers(nextQuery: string) {
+  const loadUsers = useCallback(async (nextQuery: string) => {
     try {
       setError(null);
       setIsLoading(true);
@@ -64,11 +64,15 @@ export default function AdminUsersPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    void loadUsers(query);
-  }, [query]);
+    const timeoutId = window.setTimeout(() => {
+      void loadUsers(query);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadUsers, query]);
 
   return (
     <div className="space-y-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Header } from "@/components/layout/Header";
 import { NavItems } from "@/components/layout/NavItems";
@@ -12,12 +12,12 @@ type MainLayoutShellProps = {
 };
 
 export function MainLayoutShell({ children }: MainLayoutShellProps) {
-  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const pathname = usePathname();
+  const [notificationPanelPathname, setNotificationPanelPathname] = useState<
+    string | null
+  >(null);
+  const isNotificationPanelOpen = notificationPanelPathname === pathname;
 
-  useEffect(() => {
-    setIsNotificationPanelOpen(false);
-  }, [pathname]);
   const logo = <span>UNIVER</span>;
 
   const headerActions = [
@@ -39,7 +39,7 @@ export function MainLayoutShell({ children }: MainLayoutShellProps) {
         <NavItems
           logo={logo}
           variant="sidebar"
-          onNotificationsClick={() => setIsNotificationPanelOpen(true)}
+          onNotificationsClick={() => setNotificationPanelPathname(pathname)}
         />
 
         <div className="flex min-h-screen flex-1 flex-col lg:flex-row lg:items-stretch">
@@ -65,7 +65,7 @@ export function MainLayoutShell({ children }: MainLayoutShellProps) {
 
       <NotificationPanel
         isOpen={isNotificationPanelOpen}
-        onClose={() => setIsNotificationPanelOpen(false)}
+        onClose={() => setNotificationPanelPathname(null)}
       />
     </div>
   );

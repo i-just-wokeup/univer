@@ -149,34 +149,41 @@ export default function ProfileEditPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!nickname || !isNicknameValid) {
-      setNicknameStatus("idle");
-      return;
-    }
-
     const normalizedNickname = nickname.toLowerCase();
+    const shouldCheckDuplicate =
+      nickname &&
+      isNicknameValid &&
+      normalizedNickname !== initialNickname.toLowerCase();
 
-    if (normalizedNickname === initialNickname.toLowerCase()) {
-      setNicknameStatus("available");
-      return;
-    }
+    const timeoutId = window.setTimeout(
+      () => {
+        if (!nickname || !isNicknameValid) {
+          setNicknameStatus("idle");
+          return;
+        }
 
-    const timeoutId = window.setTimeout(() => {
-      setNicknameStatus("checking");
+        if (normalizedNickname === initialNickname.toLowerCase()) {
+          setNicknameStatus("available");
+          return;
+        }
 
-      checkNicknameDuplicate(normalizedNickname)
-        .then((isDuplicate) => {
-          setNicknameStatus(isDuplicate ? "duplicate" : "available");
-        })
-        .catch(() => {
-          setNicknameStatus("error");
-        });
-    }, 300);
+        setNicknameStatus("checking");
+
+        checkNicknameDuplicate(normalizedNickname)
+          .then((isDuplicate) => {
+            setNicknameStatus(isDuplicate ? "duplicate" : "available");
+          })
+          .catch(() => {
+            setNicknameStatus("error");
+          });
+      },
+      shouldCheckDuplicate ? 300 : 0,
+    );
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [isNicknameValid, nickname]);
+  }, [initialNickname, isNicknameValid, nickname]);
 
   function handleNicknameChange(event: ChangeEvent<HTMLInputElement>) {
     setNickname(normalizeNickname(event.target.value));

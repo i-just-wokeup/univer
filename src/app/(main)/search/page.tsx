@@ -17,11 +17,11 @@ import {
 export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() =>
+    getSearchHistory(),
+  );
   const [results, setResults] = useState<SearchUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => setRecentSearches(getSearchHistory()), []);
 
   useEffect(() => {
     const timer = window.setTimeout(async () => {

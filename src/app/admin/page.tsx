@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   getDashboardStats,
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadStats(showRefreshing = false) {
+  const loadStats = useCallback(async (showRefreshing = false) => {
     try {
       setError(null);
       setIsLoading(!showRefreshing);
@@ -106,11 +106,15 @@ export default function AdminDashboardPage() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    void loadStats();
-  }, []);
+    const timeoutId = window.setTimeout(() => {
+      void loadStats();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadStats]);
 
   const currentMetrics = stats[period];
 

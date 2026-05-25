@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-05-25
+
+### 완료
+- React 19/Next 16 hook lint 에러 수정
+  - `/search` 최근 검색 초기화를 `useState` lazy initializer로 변경
+  - 메인 레이아웃 알림 패널 닫힘 상태를 pathname 기반으로 계산하도록 조정
+  - 프로필 편집 닉네임 상태 업데이트를 effect 내부 타이머 콜백으로 이동하고 `initialNickname` 의존성 추가
+  - 관리자 대시보드/신고/유저 목록 로드 함수를 `useCallback`으로 고정하고 effect 초기 호출을 타이머 콜백으로 지연
+- 검증 완료
+  - `npm run lint` 통과 (기존 미사용 변수 warning 1개 유지)
+  - `npm run build` 통과
+
 ## 2026-05-21
 
 ### 완료
@@ -572,3 +584,54 @@
   - `/search` 페이지에 300ms debounce, 최근 검색, 프로필 이동 연결
 - 버그 수정
   - `comment_likes` INSERT RLS `WITH CHECK` 추가
+
+## 2026-05-24
+
+### 현재 상태 확인
+- 프로젝트 경로: `/mnt/c/dev/univer` (`C:\dev\univer`)
+- 로컬 URL: `http://localhost:3000/`
+- 기존 오류: `lightningcss.linux-x64-gnu.node missing`
+- 조치 완료: `node_modules`, `.next` 삭제 후 `npm install` 재실행
+- 현재 화면 상태: 로그인 페이지 정상 표시, 브라우저 콘솔 에러 없음
+- Git 상태: `package-lock.json`만 변경됨 (`npm install` 재실행 영향으로 보임)
+
+### 문서/코드 기준 진행 상태
+- 기능명세서 기준 핵심 방향: 대학생 실명 SNS, 국민대 우선, 사진 중심 SNS MVP, 전교생/크루 공개 범위, 피드/스토리/프로필/알림/관리자 기능 중심
+- 로컬 코드 기준 이미 구현된 큰 기능
+  - 이메일+비밀번호 로그인/회원가입/온보딩/미들웨어
+  - 메인 레이아웃, 피드, 게시물 작성/수정/삭제, 게시물 상세 모달
+  - 댓글/대댓글/좋아요, 스토리 업로드/뷰어/삭제
+  - 프로필/프로필 편집/설정/로그아웃/계정 탈퇴
+  - 유저 검색, 알림, 신고, 관리자 1차 페이지
+  - 친구(크루) 신청/수락/거절/삭제 흐름
+
+### 확인 중 발견한 문제
+- `npm run lint` 실패
+  - React 19/Next 16 ESLint 규칙 `react-hooks/set-state-in-effect` 관련 에러 6개
+  - 위치: `/search`, `/profile/edit`, `/admin`, `/admin/reports`, `/admin/users`, `MainLayoutShell`
+  - 경고 3개: 미사용 변수/의존성 경고
+- 실제 로그인 테스트는 아직 계정 정보 확인이 필요함
+  - 일반 계정 로그인 가능 여부 확인 필요
+  - 관리자 계정 로그인 후 `/admin` 접근 가능 여부 확인 필요
+
+### 내일 바로 할 일
+1. 일반 계정으로 로그인 테스트
+   - `/auth/login`에서 이메일+비밀번호 입력
+   - 로그인 성공 시 `/` 홈 피드로 이동하는지 확인
+   - 온보딩 미완료 계정이면 `/onboarding` 이동 여부 확인
+2. 관리자 계정으로 로그인 테스트
+   - 관리자 계정 로그인
+   - `/admin` 접근 가능 여부 확인
+   - 비관리자 계정은 `/admin` 접근 시 `/`로 돌려보내지는지 확인
+3. `npm run lint` 에러 수정
+   - `setState`를 직접 effect 안에서 호출하는 패턴 정리
+   - admin/search/profile/edit/MainLayoutShell 순서로 수정
+4. 수정 후 검증
+   - `npm run lint`
+   - `npm run build`
+   - 로그인/관리자 화면 수동 확인
+5. 남은 기능 작업 재개
+   - 기존 `/posts/write` 라우트 삭제
+   - 스토리 UI/UX 개선
+   - 좋아요 목록 모달
+   - 관리자 액션 범위 확장

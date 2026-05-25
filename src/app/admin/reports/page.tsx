@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
@@ -58,7 +58,7 @@ export default function AdminReportsPage() {
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [isToastVisible, setIsToastVisible] = useState(false);
 
-  async function loadReports() {
+  const loadReports = useCallback(async () => {
     try {
       setError(null);
       setIsLoading(true);
@@ -76,11 +76,15 @@ export default function AdminReportsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [tab]);
 
   useEffect(() => {
-    void loadReports();
-  }, [tab]);
+    const timeoutId = window.setTimeout(() => {
+      void loadReports();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadReports]);
 
   function showToast(message: string, type: "success" | "error") {
     setToastMessage(message);
