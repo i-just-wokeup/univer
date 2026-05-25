@@ -54,6 +54,7 @@ function ProfileHeader({
   connectionStatus,
   isMine,
   onEditProfile,
+  onOpenConnections,
   onOpenConnectionMenu,
   onOpenSettings,
   onRejectFriendRequest,
@@ -66,6 +67,7 @@ function ProfileHeader({
   connectionStatus: ConnectionStatus;
   isMine: boolean;
   onEditProfile: () => void;
+  onOpenConnections: () => void;
   onOpenConnectionMenu: () => void;
   onOpenSettings: () => void;
   onRejectFriendRequest: () => void;
@@ -187,12 +189,27 @@ function ProfileHeader({
                   <p className="text-lg font-bold text-zinc-950">{postsCount}</p>
                   <p className="text-xs font-medium text-zinc-500">게시물</p>
                 </div>
-                <div>
-                  <p className="text-lg font-bold text-zinc-950">
-                    {connectionStatus.friends_count}
-                  </p>
-                  <p className="text-xs font-medium text-zinc-500">친구</p>
-                </div>
+                {isMine ? (
+                  <button
+                    type="button"
+                    onClick={onOpenConnections}
+                    className="text-center"
+                  >
+                    <span className="block text-lg font-bold text-zinc-950">
+                      {connectionStatus.friends_count}
+                    </span>
+                    <span className="block text-xs font-medium text-zinc-500">
+                      크루
+                    </span>
+                  </button>
+                ) : (
+                  <div>
+                    <p className="text-lg font-bold text-zinc-950">
+                      {connectionStatus.friends_count}
+                    </p>
+                    <p className="text-xs font-medium text-zinc-500">크루</p>
+                  </div>
+                )}
                 {isMine ? (
                   <button
                     type="button"
@@ -319,7 +336,6 @@ export default function ProfilePage() {
               }
             : await getProfile(profileNickname);
 
-        const isMine = currentUser?.id === loadedProfile.id;
         const [loadedPosts, loadedPostsCount, connectionStatus] = await Promise.all([
           getProfilePosts(loadedProfile.id),
           getPostsCount(loadedProfile.id),
@@ -503,6 +519,7 @@ export default function ProfilePage() {
         connectionStatus={state.connectionStatus}
         isMine={state.currentUserId === state.profile.id}
         onEditProfile={() => router.push("/profile/edit")}
+        onOpenConnections={() => router.push("/profile/connections")}
         onOpenConnectionMenu={() => {
           setIsConnectionMenuOpen(true);
         }}

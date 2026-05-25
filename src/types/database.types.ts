@@ -499,6 +499,35 @@ export type Database = {
         }
         Returns: Json
       }
+      get_friends: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          id: string
+          nickname: string
+          avatar_url: string | null
+          department: string
+        }>
+      }
+      get_pending_requests: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          id: string
+          nickname: string
+          avatar_url: string | null
+          department: string
+          created_at: string
+        }>
+      }
+      get_sent_requests: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          id: string
+          nickname: string
+          avatar_url: string | null
+          department: string
+          created_at: string
+        }>
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json

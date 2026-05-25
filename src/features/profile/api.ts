@@ -38,6 +38,13 @@ export type ConnectionStatus = {
   status: "none" | "pending" | "accepted" | "rejected";
 };
 
+export type ConnectionUser = {
+  id: string;
+  nickname: string;
+  avatar_url: string | null;
+  department: string;
+};
+
 function isConnectionStatus(value: Json | null): value is ConnectionStatus {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return false;
@@ -228,4 +235,52 @@ export async function getConnectionStatus(
   }
 
   return normalizedData;
+}
+
+export async function getFriends(): Promise<ConnectionUser[]> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase.rpc("get_friends");
+
+  if (error || !data) {
+    throw new Error("크루 목록을 불러오지 못했습니다.");
+  }
+
+  return data.map(({ avatar_url, department, id, nickname }) => ({
+    avatar_url,
+    department,
+    id,
+    nickname,
+  }));
+}
+
+export async function getPendingRequests(): Promise<ConnectionUser[]> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase.rpc("get_pending_requests");
+
+  if (error || !data) {
+    throw new Error("받은 요청 목록을 불러오지 못했습니다.");
+  }
+
+  return data.map(({ avatar_url, department, id, nickname }) => ({
+    avatar_url,
+    department,
+    id,
+    nickname,
+  }));
+}
+
+export async function getSentRequests(): Promise<ConnectionUser[]> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase.rpc("get_sent_requests");
+
+  if (error || !data) {
+    throw new Error("보낸 요청 목록을 불러오지 못했습니다.");
+  }
+
+  return data.map(({ avatar_url, department, id, nickname }) => ({
+    avatar_url,
+    department,
+    id,
+    nickname,
+  }));
 }

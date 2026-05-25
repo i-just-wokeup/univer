@@ -260,6 +260,9 @@ accept_friend_request(target_user_id uuid)
 reject_friend_request(target_user_id uuid)
 remove_friend(target_user_id uuid)
 get_connection_status(target_user_id uuid)
+get_friends()
+get_pending_requests()
+get_sent_requests()
 ```
 
 ---

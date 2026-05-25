@@ -13,7 +13,19 @@
   - 프로필 편집 닉네임 상태 업데이트를 effect 내부 타이머 콜백으로 이동하고 `initialNickname` 의존성 추가
   - 관리자 대시보드/신고/유저 목록 로드 함수를 `useCallback`으로 고정하고 effect 초기 호출을 타이머 콜백으로 지연
 - 검증 완료
-  - `npm run lint` 통과 (기존 미사용 변수 warning 1개 유지)
+  - `npm run lint` 통과
+  - `npm run build` 통과
+- 크루 목록 및 요청 관리 페이지 구현
+  - `get_friends`, `get_pending_requests`, `get_sent_requests` RPC 마이그레이션 추가
+  - `src/features/profile/api.ts`에 크루 목록/받은 요청/보낸 요청 조회 함수 추가
+  - `/profile/connections` 페이지 추가 (내 크루/받은 요청/보낸 요청 탭, 수락/거절/삭제/취소 액션)
+  - 본인 프로필의 크루 수 클릭 시 `/profile/connections`로 이동하도록 연결
+- Supabase RPC 직접 적용 (마이그레이션 파일만 있었고 미적용 상태였음)
+  - `get_friends`, `get_pending_requests`, `get_sent_requests` Supabase에 직접 실행
+- 화면 동작 확인 완료 (내 크루 / 받은 요청 / 보낸 요청 / 수락·거절·취소·삭제 액션)
+- 개발 환경 WSL2(Ubuntu)로 전환 완료
+- 검증 완료
+  - `npm run lint` 통과
   - `npm run build` 통과
 
 ## 2026-05-21
