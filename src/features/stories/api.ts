@@ -163,6 +163,20 @@ export async function getStories(): Promise<StoryGroup[]> {
     throw new Error("스토리 조회 여부를 불러오지 못했습니다.");
   }
 
+  const { data: connections } = await supabase
+    .from("user_connections")
+    .select("requester_id, receiver_id")
+    .eq("status", "accepted")
+    .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`);
+
+  const friendIds = new Set(
+    (connections ?? []).map((connection) =>
+      connection.requester_id === userId
+        ? connection.receiver_id
+        : connection.requester_id,
+    ),
+  );
+
   const usersById = new Map(
     (users ?? []).map((user) => [
       user.id,
@@ -214,6 +228,17 @@ export async function getStories(): Promise<StoryGroup[]> {
     }
 
     if (right.user.id === userId) {
+      return 1;
+    }
+
+    const leftIsFriend = friendIds.has(left.user.id);
+    const rightIsFriend = friendIds.has(right.user.id);
+
+    if (leftIsFriend && !rightIsFriend) {
+      return -1;
+    }
+
+    if (!leftIsFriend && rightIsFriend) {
       return 1;
     }
 
@@ -457,6 +482,55 @@ export async function getStoryViewers(storyId: string): Promise<Viewer[]> {
       });
     }
 
-    return viewers;
+  return viewers;
   }, []);
+}
+
+export type StoryPreview = {
+  imageUrl: string;
+  user: Pick<UserRow, "avatar_url" | "id" | "nickname">;
+};
+
+export async function getStoryPreview(
+  userId: string,
+): Promise<StoryPreview | null> {
+  const supabase = requireSupabaseClient();
+  const now = new Date().toISOString();
+
+  try {
+    const { data: story, error: storyError } = await supabase
+      .from("stories")
+      .select("image_url")
+      .eq("user_id", userId)
+      .gt("expires_at", now)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (storyError || !story) {
+      return null;
+    }
+
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id, nickname, avatar_url")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (userError || !user) {
+      return null;
+    }
+
+    return {
+      imageUrl: story.image_url,
+      user: {
+        avatar_url: user.avatar_url,
+        id: user.id,
+        nickname: user.nickname,
+      },
+    };
+  } catch {
+    return null;
+  }
 }
