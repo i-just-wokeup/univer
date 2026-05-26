@@ -382,7 +382,7 @@ function MainPageContent() {
         ) : null}
         <div ref={loadMoreRef} className="h-px w-full" aria-hidden="true" />
       </section>
-      {/* 앱 전환 시 댓글 바텀시트 재사용 예정. 웹에서는 PostDetail 모달로 이동한다. */}
+      {/* [앱 재사용 예정] Expo 전환 시 댓글 바텀시트로 사용. 웹에서는 commentSheetPostId가 항상 null이라 열리지 않으며, 댓글은 /posts/[postId] 모달로 처리한다. */}
       <CommentSheet
         postId={commentSheetPostId}
         isOpen={commentSheetPostId !== null}
