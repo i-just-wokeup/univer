@@ -1,7 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { Avatar } from "@/components/common/Avatar";
@@ -11,11 +11,13 @@ import { createReport } from "@/features/reports/api";
 import {
   deleteStory,
   getMyStoryLikedStatus,
+  getStoryPreview,
   getStoryViewers,
   getUserStories,
   recordStoryView,
   toggleStoryLike,
   type Story,
+  type StoryPreview,
   type Viewer,
 } from "@/features/stories/api";
 
@@ -203,9 +205,47 @@ function ViewerSheet({
   );
 }
 
+function UserPreviewCard({
+  onClick,
+  preview,
+}: {
+  onClick: () => void;
+  preview: StoryPreview;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative hidden h-56 w-32 shrink-0 overflow-hidden rounded-xl bg-zinc-900 text-left opacity-70 transition hover:opacity-100 sm:block"
+      aria-label={`${preview.user.nickname} 스토리 보기`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={preview.imageUrl}
+        alt=""
+        aria-hidden="true"
+        className="h-full w-full object-cover"
+      />
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar
+            src={preview.user.avatar_url}
+            nickname={preview.user.nickname}
+            size="xs"
+          />
+          <span className="min-w-0 truncate text-xs font-bold text-white">
+            {preview.user.nickname}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export default function StoryViewerPage() {
   const params = useParams<{ userId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const viewedStoryIdsRef = useRef<Set<string>>(new Set());
   const keepPausedAfterActionSheetCloseRef = useRef(false);
   const [stories, setStories] = useState<Story[]>([]);
@@ -221,6 +261,11 @@ export default function StoryViewerPage() {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [prevUserPreview, setPrevUserPreview] =
+    useState<StoryPreview | null>(null);
+  const [nextUserPreview, setNextUserPreview] =
+    useState<StoryPreview | null>(null);
   const [toast, setToast] = useState<ToastState>({
     isVisible: false,
     message: "",
@@ -228,6 +273,19 @@ export default function StoryViewerPage() {
   });
 
   const currentStory = stories[currentIndex] ?? null;
+  const usersParam = searchParams.get("users");
+  const parsedUserIds = usersParam ? usersParam.split(",").filter(Boolean) : [];
+  const orderedUserIds = parsedUserIds.includes(params.userId)
+    ? parsedUserIds
+    : [params.userId];
+  const currentUserIndex = orderedUserIds.indexOf(params.userId);
+  const prevUserId =
+    currentUserIndex > 0 ? orderedUserIds[currentUserIndex - 1] : null;
+  const nextUserId =
+    currentUserIndex < orderedUserIds.length - 1
+      ? orderedUserIds[currentUserIndex + 1]
+      : null;
+  const orderedUsersQuery = orderedUserIds.join(",");
 
   useEffect(() => {
     let isMounted = true;
@@ -244,6 +302,7 @@ export default function StoryViewerPage() {
         }
 
         setStories(loadedStories);
+        setCurrentIndex(0);
 
         if (loadedStories.length === 0) {
           setError("볼 수 있는 스토리가 없습니다.");
@@ -332,6 +391,63 @@ export default function StoryViewerPage() {
   }, [currentStory]);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const timeoutId = window.setTimeout(() => {
+      async function loadUserPreviews() {
+        try {
+          const [prevPreview, nextPreview] = await Promise.all([
+            prevUserId ? getStoryPreview(prevUserId) : Promise.resolve(null),
+            nextUserId ? getStoryPreview(nextUserId) : Promise.resolve(null),
+          ]);
+
+          if (isMounted) {
+            setPrevUserPreview(prevPreview);
+            setNextUserPreview(nextPreview);
+          }
+        } catch {
+          if (isMounted) {
+            setPrevUserPreview(null);
+            setNextUserPreview(null);
+          }
+        }
+      }
+
+      void loadUserPreviews();
+    }, 0);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [nextUserId, prevUserId]);
+
+  const goNext = useCallback(() => {
+    if (currentIndex < stories.length - 1) {
+      setCurrentIndex((index) => index + 1);
+      return;
+    }
+
+    if (nextUserId) {
+      router.push(`/story/${nextUserId}?users=${orderedUsersQuery}`);
+      return;
+    }
+
+    router.replace(FEED_REFRESH_URL);
+  }, [currentIndex, nextUserId, orderedUsersQuery, router, stories.length]);
+
+  const goPrevious = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((index) => index - 1);
+      return;
+    }
+
+    if (prevUserId) {
+      router.push(`/story/${prevUserId}?users=${orderedUsersQuery}`);
+    }
+  }, [currentIndex, orderedUsersQuery, prevUserId, router]);
+
+  useEffect(() => {
     if (!currentStory || isPaused) {
       return;
     }
@@ -349,7 +465,9 @@ export default function StoryViewerPage() {
         if (currentIndex < stories.length - 1) {
           setCurrentIndex((index) => index + 1);
         } else {
-          router.replace(FEED_REFRESH_URL);
+          window.setTimeout(() => {
+            goNext();
+          }, 0);
         }
 
         return 100;
@@ -359,7 +477,7 @@ export default function StoryViewerPage() {
     return () => {
       window.clearInterval(timer);
     };
-  }, [currentIndex, currentStory, isPaused, router, stories.length]);
+  }, [currentIndex, currentStory, goNext, isPaused, stories.length]);
 
   async function openViewerSheet() {
     if (!currentStory?.isMine) {
@@ -375,19 +493,6 @@ export default function StoryViewerPage() {
       setIsPaused(false);
       console.error("스토리 조회자 목록 조회 실패", viewerError);
     }
-  }
-
-  function goPrevious() {
-    setCurrentIndex((index) => Math.max(index - 1, 0));
-  }
-
-  function goNext() {
-    if (currentIndex >= stories.length - 1) {
-      router.replace(FEED_REFRESH_URL);
-      return;
-    }
-
-    setCurrentIndex((index) => index + 1);
   }
 
   async function handleStoryLike() {
@@ -539,7 +644,7 @@ export default function StoryViewerPage() {
       ];
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-black px-0 py-8 text-white">
+    <main className="relative flex min-h-screen items-center justify-center bg-black py-8 text-white">
       <button
         type="button"
         onClick={() => router.replace(FEED_REFRESH_URL)}
@@ -549,27 +654,49 @@ export default function StoryViewerPage() {
         <CloseIcon />
       </button>
 
-      <div className="relative h-[calc(100vh-4rem)] w-auto max-w-full aspect-[9/16] overflow-hidden rounded-lg bg-black">
-        <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
-          <div className="mb-4 flex gap-1">
-            {stories.map((story, index) => (
-              <div key={story.id} className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/30">
-                <div
-                  className="h-full rounded-full bg-white transition-[width] duration-75"
-                  style={{
-                    width:
-                      index < currentIndex
-                        ? "100%"
-                        : index === currentIndex
-                          ? `${progress}%`
-                          : "0%",
-                  }}
-                />
-              </div>
-            ))}
-            </div>
+      <div className="grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4">
+        <div className="flex items-center justify-end gap-3">
+          {prevUserPreview && prevUserId ? (
+            <UserPreviewCard
+              preview={prevUserPreview}
+              onClick={() => {
+                router.push(`/story/${prevUserId}?users=${orderedUsersQuery}`);
+              }}
+            />
+          ) : null}
+          {currentIndex > 0 || prevUserId ? (
+            <button
+              type="button"
+              onClick={goPrevious}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/30"
+              aria-label="이전 스토리"
+            >
+              <ArrowIcon direction="left" />
+            </button>
+          ) : null}
+        </div>
 
-          <div className="flex items-center justify-between gap-3">
+        <div className="relative h-[calc(100vh-4rem)] w-auto max-w-full aspect-[9/16] overflow-hidden rounded-lg bg-black">
+          <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
+            <div className="mb-4 flex gap-1">
+              {stories.map((story, index) => (
+                <div key={story.id} className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/30">
+                  <div
+                    className="h-full rounded-full bg-white transition-[width] duration-75"
+                    style={{
+                      width:
+                        index < currentIndex
+                          ? "100%"
+                          : index === currentIndex
+                            ? `${progress}%`
+                            : "0%",
+                    }}
+                  />
+                </div>
+              ))}
+              </div>
+
+            <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => router.push(`/profile/${currentStory.user.nickname}`)}
@@ -608,81 +735,85 @@ export default function StoryViewerPage() {
               </button>
             </div>
           </div>
-        </header>
+          </header>
 
-        <button
-          type="button"
-          onClick={togglePause}
-          className="absolute inset-0 z-10 overflow-hidden"
-          aria-label={isPaused ? "스토리 재생" : "스토리 일시정지"}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentStory.image_url}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentStory.image_url}
-            alt="스토리 이미지"
-            className="relative z-10 h-full w-full object-contain"
-          />
-        </button>
+          <button
+            type="button"
+            onClick={togglePause}
+            className="absolute inset-0 z-10 overflow-hidden"
+            aria-label={isPaused ? "스토리 재생" : "스토리 일시정지"}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentStory.image_url}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentStory.image_url}
+              alt="스토리 이미지"
+              className={`relative z-10 h-full w-full ${isPortrait ? "object-cover" : "object-contain"}`}
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                setIsPortrait(img.naturalHeight > img.naturalWidth);
+              }}
+            />
+          </button>
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-[15] h-36 bg-gradient-to-b from-black/50 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-36 bg-gradient-to-b from-transparent to-black/50" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-[15] h-36 bg-gradient-to-b from-black/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-36 bg-gradient-to-b from-transparent to-black/50" />
 
-        {currentStory.isMine ? (
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-8">
-            <button
-              type="button"
-              onClick={openViewerSheet}
-              className="inline-flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-sm font-bold text-white backdrop-blur"
-            >
-              <EyeIcon />
-              <span>{currentStory.views_count}명 봄</span>
-            </button>
-          </div>
-        ) : (
-          <div className="absolute bottom-0 right-0 z-20 px-5 pb-6">
-            <button
-              type="button"
-              onClick={handleStoryLike}
-              disabled={isLikeLoading}
-              className={`p-2 transition disabled:opacity-60 ${
-                isStoryLiked ? "text-red-500" : "text-white"
-              }`}
-              aria-label={isStoryLiked ? "스토리 좋아요 취소" : "스토리 좋아요"}
-            >
-              <span className="[&>svg]:h-7 [&>svg]:w-7">
-                <HeartIcon filled={isStoryLiked} />
-              </span>
-            </button>
-          </div>
-        )}
+          {currentStory.isMine ? (
+            <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-8">
+              <button
+                type="button"
+                onClick={openViewerSheet}
+                className="inline-flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-sm font-bold text-white backdrop-blur"
+              >
+                <EyeIcon />
+                <span>{currentStory.views_count}명 봄</span>
+              </button>
+            </div>
+          ) : (
+            <div className="absolute bottom-0 right-0 z-20 px-5 pb-6">
+              <button
+                type="button"
+                onClick={handleStoryLike}
+                disabled={isLikeLoading}
+                className={`p-2 transition disabled:opacity-60 ${
+                  isStoryLiked ? "text-red-500" : "text-white"
+                }`}
+                aria-label={isStoryLiked ? "스토리 좋아요 취소" : "스토리 좋아요"}
+              >
+                <span className="[&>svg]:h-7 [&>svg]:w-7">
+                  <HeartIcon filled={isStoryLiked} />
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-start gap-3">
+          <button
+            type="button"
+            onClick={goNext}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/30"
+            aria-label={currentIndex >= stories.length - 1 ? "피드로 이동" : "다음 스토리"}
+          >
+            <ArrowIcon direction="right" />
+          </button>
+          {nextUserPreview && nextUserId ? (
+            <UserPreviewCard
+              preview={nextUserPreview}
+              onClick={() => {
+                router.push(`/story/${nextUserId}?users=${orderedUsersQuery}`);
+              }}
+            />
+          ) : null}
+        </div>
       </div>
-
-      {currentIndex > 0 ? (
-        <button
-          type="button"
-          onClick={goPrevious}
-          className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur sm:left-[calc(50%-275px)]"
-          aria-label="이전 스토리"
-        >
-          <ArrowIcon direction="left" />
-        </button>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={goNext}
-        className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur sm:right-[calc(50%-275px)]"
-        aria-label={currentIndex >= stories.length - 1 ? "피드로 이동" : "다음 스토리"}
-      >
-        <ArrowIcon direction="right" />
-      </button>
 
       <ViewerSheet
         isOpen={isViewerSheetOpen}

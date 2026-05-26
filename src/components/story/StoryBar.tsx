@@ -57,9 +57,11 @@ function StoryAvatarRing({
 }
 
 function MyStoryCreateItem({
+  allUserIds,
   currentUserProfile,
   hasMyStory,
 }: {
+  allUserIds: string;
   currentUserProfile: CurrentUserProfile | null;
   hasMyStory: boolean;
 }) {
@@ -68,7 +70,7 @@ function MyStoryCreateItem({
       <div className="flex w-[72px] shrink-0 flex-col items-center gap-2 text-center">
         <div className="relative">
           <Link
-            href={`/story/${currentUserProfile.id}`}
+            href={`/story/${currentUserProfile.id}?users=${allUserIds}`}
             className="block cursor-pointer"
           >
             <StoryAvatarRing>
@@ -118,10 +120,16 @@ function MyStoryCreateItem({
   );
 }
 
-function StoryGroupItem({ group }: { group: StoryGroup }) {
+function StoryGroupItem({
+  allUserIds,
+  group,
+}: {
+  allUserIds: string;
+  group: StoryGroup;
+}) {
   return (
     <Link
-      href={`/story/${group.user.id}`}
+      href={`/story/${group.user.id}?users=${allUserIds}`}
       className="flex w-[72px] shrink-0 cursor-pointer flex-col items-center gap-2 text-center"
     >
       <StoryAvatarRing hasUnviewed={group.hasUnviewed}>
@@ -200,16 +208,22 @@ export function StoryBar() {
   const visibleStoryGroups = currentUserProfile
     ? storyGroups.filter((group) => group.user.id !== currentUserProfile.id)
     : storyGroups;
+  const allUserIds = storyGroups.map((group) => group.user.id).join(",");
 
   return (
     <section className="bg-white">
       <div className="flex gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <MyStoryCreateItem
+          allUserIds={allUserIds}
           currentUserProfile={currentUserProfile}
           hasMyStory={hasMyStory}
         />
         {visibleStoryGroups.map((group) => (
-          <StoryGroupItem key={group.user.id} group={group} />
+          <StoryGroupItem
+            key={group.user.id}
+            allUserIds={allUserIds}
+            group={group}
+          />
         ))}
         {isLoading ? (
           <>
