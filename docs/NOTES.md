@@ -27,8 +27,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 - TODO: 배포 전 업로드 시 비율 범위 체크(1.91:1 ~ 4:5) 및 크롭 UI 구현 예정
 
 ### 스토리 자동 만료
-- `expires_at` 컬럼 기준으로 Supabase Edge Function으로 처리
-- 조회 시 `expires_at > now()` 조건 항상 포함
+- 조회 시 `expires_at > now()` 조건으로 필터링 (Cron Job 불필요)
+- 실제 DB row는 남아있으나 모든 조회 쿼리에서 만료 조건 포함되어 있음
 
 ### 학교별 데이터 분리
 - `posts`, `stories` 테이블에 `university` 컬럼 필수
@@ -43,10 +43,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 - 파일명 `middleware.ts` 사용 (proxy.ts 아님)
 - 로그인 여부 + 온보딩 완료 여부 체크
 
-### 게시물 작성 라우트 전환 (2026-05-19)
-- 새 작성/수정 진입 경로는 `/write`
-- 기존 `/posts/write`는 임시 유지 중이며, 검증 완료 후 별도 작업으로 삭제 예정
-- 수정 모드는 `/write?postId=...` 쿼리 파라미터를 그대로 사용
+### 게시물 작성 라우트 (2026-05-19)
+- 작성/수정 진입 경로: `/write`
+- 수정 모드: `/write?postId=...` 쿼리 파라미터 사용
+- 기존 `/posts/write` 라우트 삭제 완료
 
 ### 이미지 비율 정책 (2026-05-18)
 - 피드/게시물 모달: 원본 비율 유지 (object-contain, 배경 검정)
@@ -84,11 +84,12 @@ H. CDN 전략 (Cloudflare R2, Bunny CDN, Mux)
 
 ## 트러블슈팅
 
-### users RLS 재귀 문제 (2026-04-27)
+### users RLS 재귀 문제 → 해결 완료 (2026-05-27)
 - 증상: 게시물 작성 시 "현재 로그인 유저의 학교 정보를 찾을 수 없습니다" 500 에러
 - 원인: users RLS 정책에서 university_id 조회 시 무한 재귀 발생
-- 해결: users 테이블 RLS 임시 비활성화 (개발용)
-- TODO: 서비스 오픈 전 RLS 재설계 필요
+- 해결: SELECT 정책을 `auth.uid() IS NOT NULL` 조건만 사용 (서브쿼리 제거)
+- 민감 컬럼(role 등) 보호는 BEFORE UPDATE 트리거로 분리
+- 마이그레이션: `20260527150000_enable_users_rls_with_sensitive_column_protection.sql`
 
 ### Supabase Storage 버킷 정책 (2026-04-27)
 - post-images, story-images, avatars 버킷 생성 후 정책 추가 필요
@@ -101,9 +102,8 @@ H. CDN 전략 (Cloudflare R2, Bunny CDN, Mux)
 
 ### 이메일 인증 비활성화 (2026-05-19)
 - Supabase Authentication → Email → Confirm email 토글 OFF (개발 편의)
-- 배포 전 반드시 재활성화 + 회원가입 플로우 재설계 필요
-- "이메일을 확인해주세요" 화면 추가
-- `signUpWithPassword` 내 자동 로그인 로직 제거
+- **배포 전 반드시 재활성화** (Supabase 대시보드에서 토글 ON)
+- 재활성화 후 Site URL + Redirect URL 설정 필요 (`/auth/callback`)
 
 ---
 
@@ -137,7 +137,5 @@ H. CDN 전략 (Cloudflare R2, Bunny CDN, Mux)
 - 해시태그 정규화 규칙 중복 (page.tsx, api.ts)
 - 앱 전환 시 src/types/, src/utils/ 정리 필요
 
-### 6. 문서와 실제 버전 불일치
-- AGENTS.md, ARCHITECTURE.md에 Next.js 14로 기재
-- 실제 package.json 기준 Next.js 16 / React 19
-- TODO: 문서 버전 수정 필요
+### 6. 문서와 실제 버전 불일치 → 해결 완료 (2026-05-27)
+- AGENTS.md, ARCHITECTURE.md Next.js 16 / React 19로 수정 완료
