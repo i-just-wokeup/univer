@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
 import { getCurrentUserProfile } from "@/features/auth/api";
+import { getOrCreateConversation } from "@/features/chat/api";
 import {
   acceptFriendRequest,
   getConnectionStatus,
@@ -57,6 +58,7 @@ function ProfileHeader({
   onOpenConnections,
   onOpenConnectionMenu,
   onOpenSettings,
+  onSendMessage,
   onRejectFriendRequest,
   onRespondFriendRequest,
   onSendFriendRequest,
@@ -70,6 +72,7 @@ function ProfileHeader({
   onOpenConnections: () => void;
   onOpenConnectionMenu: () => void;
   onOpenSettings: () => void;
+  onSendMessage: () => void;
   onRejectFriendRequest: () => void;
   onRespondFriendRequest: () => void;
   onSendFriendRequest: () => void;
@@ -224,8 +227,17 @@ function ProfileHeader({
             </div>
           </div>
 
-          <div className="mt-4 h-9">
+          <div className="mt-4">
             {renderConnectionActions()}
+            {!isMine ? (
+              <button
+                type="button"
+                onClick={onSendMessage}
+                className="mt-2 h-9 min-w-32 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white"
+              >
+                메시지 보내기
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -499,6 +511,15 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleSendMessage() {
+    if (!state.profile || state.currentUserId === state.profile.id) {
+      return;
+    }
+
+    const conversationId = await getOrCreateConversation(state.profile.id);
+    router.push(`/messages/${conversationId}`);
+  }
+
   const connectionMenuItems: ActionSheetItem[] = [
     {
       danger: true,
@@ -524,6 +545,9 @@ export default function ProfilePage() {
           setIsConnectionMenuOpen(true);
         }}
         onOpenSettings={() => router.push("/settings")}
+        onSendMessage={() => {
+          void handleSendMessage();
+        }}
         onRejectFriendRequest={() => {
           void handleRejectFriendRequest();
         }}
