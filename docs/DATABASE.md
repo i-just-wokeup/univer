@@ -33,12 +33,14 @@ universities (
 )
 ```
 
-**users**
+**users** (RLS 활성화, 민감 컬럼 BEFORE UPDATE 트리거 보호)
 ```sql
 users (
   id            uuid PK references auth.users,
   email         text,
+  real_name     text,
   nickname      text not null,
+  bio           text,
   avatar_url    text,
   university_id uuid FK → universities not null,
   department    text not null,
@@ -53,6 +55,8 @@ users (
   deleted_at    timestamptz,
   created_at    timestamptz default now()
 )
+-- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name,
+--   credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
 ```
 
 **posts**
@@ -263,6 +267,12 @@ get_connection_status(target_user_id uuid)
 get_friends()
 get_pending_requests()
 get_sent_requests()
+-- admin
+ban_user(target_user_id uuid)
+unban_user(target_user_id uuid)
+update_user_role(target_user_id uuid, new_role text)
+dismiss_report(report_id uuid)
+take_action_on_report(report_id uuid)
 ```
 
 ---
@@ -305,6 +315,7 @@ messages (
 ```sql
 mark_messages_read(p_conversation_id uuid)
 accept_chat_request(p_conversation_id uuid)
+get_or_create_conversation(other_user_id uuid)
 ```
 
 ---
@@ -363,8 +374,7 @@ community_comments (
 | notifications | 본인만 | 시스템 |
 | blocks | 본인만 | 본인만 |
 | reports | 본인만 | 로그인 유저 |
-| chat_rooms | 참여자만 | 로그인 유저 |
+| conversations | 참여자만 | 로그인 유저 |
 | messages | 참여자만 | 참여자만 |
-| message_reads | 본인만 | 본인만 |
 | community_posts | 같은 학교 유저 | 본인만 |
 | community_comments | 같은 학교 유저 | 본인만 |
