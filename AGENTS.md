@@ -47,7 +47,7 @@ docs/             ← 운영 문서
 - 프로젝트 ID: qmslcvnuzjraphvnaqxx
 - 리전: ap-northeast-2 (서울)
 - `.env.local`: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
-- users RLS 현재 비활성화 상태 (서비스 오픈 전 재설계 필요)
+- users RLS 활성화 완료 (2026-05-27) — 민감 컬럼(role/university_id/is_active/real_name 등) BEFORE UPDATE 트리거로 보호
 
 ## 현재 완료된 작업 요약
 - 레이아웃 (Header, SideBar, BottomTabBar, 웹 3단 구조)
@@ -68,7 +68,7 @@ docs/             ← 운영 문서
 2. 스토리 UI/UX 개선
 3. 좋아요 목록 모달
 4. 관리자 액션 확장 (차단/권한 변경/검색 필터 고도화)
-5. 배포 준비 (users RLS, Cron Job, 이메일 인증)
+5. 배포 준비 (Cron Job, 이메일 인증)
 
 ## 작업 완료 후 필수 (Claude Code / Codex 모두 적용)
 1. `docs/WORKLOG.md` 날짜 + 완료 내용 추가
