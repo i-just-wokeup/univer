@@ -69,8 +69,23 @@
 - 앱 전환 전에 정리하면 Expo에서 재사용 가능한 구조가 됨
 - 상세 내용은 docs/NOTES.md "구조적 부채" 섹션 참고
 
-### Next.js 버전 불일치
-**결정:** AGENTS.md, ARCHITECTURE.md 버전 수정 예정
+### Next.js 버전 불일치 → 수정 완료 (2026-05-27)
+- 모든 문서 Next.js 16 / React 19로 통일
+
+---
+
+## 2026-05-27
+
+### users RLS — 재귀 없는 정책 + 트리거 방식 선택
+**결정:** SELECT 정책은 `auth.uid() IS NOT NULL`만 사용, 민감 컬럼 보호는 BEFORE UPDATE 트리거로 분리
 **이유:**
-- 문서: Next.js 14 / 실제: Next.js 16 + React 19
-- 문서 신뢰도 유지를 위해 수정 필요
+- users 테이블 내에서 서브쿼리로 university_id 조회 시 무한 재귀 발생
+- 트리거는 `auth.uid() IS NULL`(service_role/postgres)일 때 bypass → admin RPC, 온보딩에 영향 없음
+
+### 스토리 만료 Cron Job 불필요
+**결정:** 별도 Cron Job 없이 쿼리 조건(`expires_at > now()`)으로만 처리
+**이유:** 모든 스토리 조회 API가 이미 만료 필터를 포함하고 있어 실제 삭제 없어도 동작에 문제 없음
+
+### kookmin.ac.kr MVP 하드코딩 유지
+**결정:** `signUpWithPassword`의 도메인 체크 하드코딩(`domain !== "kookmin.ac.kr"`) MVP에서 유지
+**이유:** 다른 학교 추가 시점에 universities 테이블 조회 방식으로 전환. 지금 바꿔봐야 검증할 학교가 없음
