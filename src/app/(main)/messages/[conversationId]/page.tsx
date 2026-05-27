@@ -43,9 +43,16 @@ export default function MessageRoomPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const previousScrollHeightRef = useRef<number | null>(null);
   const { active, pending, reload } = useConversations();
-  const { hasMore, isLoading, isLoadingMore, loadMore, messages } = useMessages(
-    params.conversationId,
-  );
+  const {
+    addOptimisticMessage,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    loadMore,
+    messages,
+    removeOptimisticMessage,
+    replaceOptimisticMessage,
+  } = useMessages(params.conversationId);
   const [currentUserProfile, setCurrentUserProfile] =
     useState<CurrentUserProfile | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
@@ -131,8 +138,17 @@ export default function MessageRoomPage() {
   }
 
   async function handleSendMessage(content: string) {
-    await sendMessage(params.conversationId, content);
-    await reload();
+    const tempId = addOptimisticMessage(content, currentUserProfile?.id ?? "");
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    try {
+      const realMessage = await sendMessage(params.conversationId, content);
+      replaceOptimisticMessage(tempId, realMessage);
+      await reload();
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch {
+      removeOptimisticMessage(tempId);
+    }
   }
 
   const lastMineMessageId = [...messages]
@@ -222,11 +238,13 @@ export default function MessageRoomPage() {
                     </span>
                   </div>
                 ) : null}
-                <MessageBubble
-                  message={message}
-                  isMine={message.sender_id === currentUserProfile?.id}
-                  showReadReceipt={message.id === lastMineMessageId}
-                />
+                <div className={message.isOptimistic ? "opacity-60" : ""}>
+                  <MessageBubble
+                    message={message}
+                    isMine={message.sender_id === currentUserProfile?.id}
+                    showReadReceipt={message.id === lastMineMessageId}
+                  />
+                </div>
               </Fragment>
             ))}
             <div ref={bottomRef} />
