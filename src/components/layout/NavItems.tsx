@@ -189,7 +189,7 @@ export function NavItems(props: NavItemsProps) {
     window.addEventListener("chat:refresh", loadChatUnreadCount);
     const supabase = getSupabaseBrowserClient();
     const channel = supabase
-      ?.channel(`nav:conversations:${Date.now()}`)
+      ?.channel(`nav:conversations:${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "conversations" },
