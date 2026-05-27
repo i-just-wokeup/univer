@@ -27,7 +27,7 @@ export function MainLayoutShell({ children }: MainLayoutShellProps) {
       iconName: "bell" as const,
     },
     {
-      href: "/chat",
+      href: "/messages",
       label: "메시지",
       iconName: "message" as const,
     },

@@ -8,7 +8,9 @@ import { Avatar } from "@/components/common/Avatar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { SideBar } from "@/components/layout/SideBar";
 import { getCurrentUserProfile } from "@/features/auth/api";
+import { getChatUnreadCount } from "@/features/chat/api";
 import { getUnreadCount } from "@/features/notifications/api";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type IconProps = {
   className?: string;
@@ -134,6 +136,7 @@ export function NavItems(props: NavItemsProps) {
   const [currentUserProfile, setCurrentUserProfile] =
     useState<CurrentUserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -162,6 +165,46 @@ export function NavItems(props: NavItemsProps) {
 
     return () => {
       isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadChatUnreadCount() {
+      try {
+        const count = await getChatUnreadCount();
+
+        if (isMounted) {
+          setChatUnreadCount(count);
+        }
+      } catch {
+        if (isMounted) {
+          setChatUnreadCount(0);
+        }
+      }
+    }
+
+    void loadChatUnreadCount();
+    window.addEventListener("chat:refresh", loadChatUnreadCount);
+    const supabase = getSupabaseBrowserClient();
+    const channel = supabase
+      ?.channel(`nav:conversations:${Date.now()}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "conversations" },
+        () => {
+          void loadChatUnreadCount();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("chat:refresh", loadChatUnreadCount);
+      if (channel) {
+        void supabase?.removeChannel(channel);
+      }
     };
   }, []);
 
@@ -203,6 +246,16 @@ export function NavItems(props: NavItemsProps) {
       <Bell className="h-6 w-6" />
       {unreadCount > 0 ? (
         <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
+      ) : null}
+    </span>
+  );
+  const messageIcon = (
+    <span className="relative inline-flex">
+      <MessageCircleMore className="h-6 w-6" />
+      {chatUnreadCount > 0 ? (
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+          {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+        </span>
       ) : null}
     </span>
   );
@@ -251,10 +304,10 @@ export function NavItems(props: NavItemsProps) {
     navigationItems[3],
     navigationItems[4],
     {
-      href: "/chat",
+      href: "/messages",
       label: "메시지",
-      icon: <MessageCircleMore className="h-6 w-6" />,
-      isActive: pathname.startsWith("/chat"),
+      icon: messageIcon,
+      isActive: pathname.startsWith("/messages"),
     },
     {
       href: "/notifications",

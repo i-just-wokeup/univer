@@ -4,6 +4,7 @@ import { Bell, MessageCircleMore } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { getChatUnreadCount } from "@/features/chat/api";
 import { getUnreadCount } from "@/features/notifications/api";
 
 // 모바일 헤더 우측 액션 링크 정의.
@@ -22,6 +23,7 @@ type HeaderProps = {
 // 모바일 상단 고정 헤더. 웹에서는 사이드바를 쓰므로 숨긴다.
 export function Header({ logo, actions }: HeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,6 +51,32 @@ export function Header({ logo, actions }: HeaderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadChatUnreadCount() {
+      try {
+        const count = await getChatUnreadCount();
+
+        if (isMounted) {
+          setChatUnreadCount(count);
+        }
+      } catch {
+        if (isMounted) {
+          setChatUnreadCount(0);
+        }
+      }
+    }
+
+    void loadChatUnreadCount();
+    window.addEventListener("chat:refresh", loadChatUnreadCount);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("chat:refresh", loadChatUnreadCount);
+    };
+  }, []);
+
   const icons: Record<HeaderAction["iconName"], React.ReactNode> = {
     bell: (
       <span className="relative inline-flex">
@@ -58,7 +86,16 @@ export function Header({ logo, actions }: HeaderProps) {
         ) : null}
       </span>
     ),
-    message: <MessageCircleMore className="h-6 w-6" />,
+    message: (
+      <span className="relative inline-flex">
+        <MessageCircleMore className="h-6 w-6" />
+        {chatUnreadCount > 0 ? (
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-bold leading-none text-white">
+            {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+          </span>
+        ) : null}
+      </span>
+    ),
   };
 
   return (
