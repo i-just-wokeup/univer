@@ -18,3 +18,26 @@ export function getRelativeTimeLabel(createdAt: string) {
   const days = Math.max(1, Math.floor(diffMs / dayMs));
   return `${days}일 전`;
 }
+
+export function formatChatTime(isoString: string): string {
+  const date = new Date(isoString);
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+
+  const isToday =
+    kst.getUTCFullYear() === now.getUTCFullYear() &&
+    kst.getUTCMonth() === now.getUTCMonth() &&
+    kst.getUTCDate() === now.getUTCDate();
+
+  const hours = kst.getUTCHours();
+  const minutes = String(kst.getUTCMinutes()).padStart(2, "0");
+  const ampm = hours < 12 ? "오전" : "오후";
+  const h = hours % 12 === 0 ? 12 : hours % 12;
+  const timeStr = `${ampm} ${h}:${minutes}`;
+
+  if (isToday) {
+    return timeStr;
+  }
+
+  return `${kst.getUTCMonth() + 1}월 ${kst.getUTCDate()}일 ${timeStr}`;
+}

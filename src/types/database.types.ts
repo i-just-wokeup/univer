@@ -327,6 +327,73 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          id: string
+          participant_1_id: string
+          participant_2_id: string
+          status: 'pending' | 'active'
+          initiated_by: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          last_message_sender_id: string | null
+          hidden_at_1: string | null
+          hidden_at_2: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          participant_1_id: string
+          participant_2_id: string
+          status?: 'pending' | 'active'
+          initiated_by: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_message_sender_id?: string | null
+          hidden_at_1?: string | null
+          hidden_at_2?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          status?: 'pending' | 'active'
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_message_sender_id?: string | null
+          hidden_at_1?: string | null
+          hidden_at_2?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          sender_id: string
+          message_type: 'text' | 'image' | 'system'
+          content: string
+          read_at: string | null
+          deleted_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          sender_id: string
+          message_type?: 'text' | 'image' | 'system'
+          content: string
+          read_at?: string | null
+          deleted_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          read_at?: string | null
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
       close_friends: {
         Row: {
           id: string
@@ -493,6 +560,12 @@ export type Database = {
         }
         Returns: Json
       }
+      accept_chat_request: {
+        Args: {
+          p_conversation_id: string
+        }
+        Returns: Json
+      }
       get_connection_status: {
         Args: {
           target_user_id: string
@@ -564,6 +637,12 @@ export type Database = {
         Args: {
           action_type?: string
           report_id?: string
+        }
+        Returns: Json
+      }
+      mark_messages_read: {
+        Args: {
+          p_conversation_id: string
         }
         Returns: Json
       }
