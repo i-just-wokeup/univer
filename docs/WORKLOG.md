@@ -4,9 +4,62 @@
 
 ---
 
+## 2026-05-27
+
+### 완료
+- Supabase migration 로컬 파일 정리
+  - `npx supabase login` + `supabase link` + `supabase db pull`로 `supabase/migrations/` 폴더 생성
+  - db pull로 누락된 4개 migration 파일 수동 생성 (DB에서 DDL 직접 추출하여 동일하게 작성)
+    - `20260521014413_create_user_connections.sql`
+    - `20260521014544_create_notification_triggers.sql`
+    - `20260520064729_create_admin_rpc_functions.sql`
+    - `20260527015619_create_chat_tables.sql`
+  - DB 재생성/복구 시 로컬 파일로 스키마 재현 가능한 상태
+- 1:1 채팅 기능 1차 구현
+  - `conversations`, `messages` 타입 및 채팅 RPC 타입 반영
+  - `features/chat/api.ts` 추가 (`getOrCreateConversation`, 목록/메시지 조회, 전송, 읽음 처리, 요청 수락, 안읽은 수)
+  - `features/chat/hooks.ts` 추가 (메시지/대화 목록 Realtime 구독 및 cleanup)
+  - `components/chat/` UI 추가 (`ConversationItem`, `MessageBubble`, `MessageInput`)
+  - `/messages`, `/messages/[conversationId]` 라우트 추가
+  - 프로필 페이지 "메시지 보내기" 버튼 연결
+  - 사이드바/모바일 헤더 메시지 링크를 `/messages`로 연결하고 안읽은 메시지 뱃지 표시
+- 검증 완료
+  - `npm run lint` 통과
+  - `npm run build` 통과
+- 채팅 실시간 업데이트 및 시간 표시 개선
+  - 대화 목록 Realtime/chat refresh 갱신 시 로딩 스켈레톤 없이 조용히 갱신하도록 분리
+  - 사이드바 메시지 뱃지를 30초 polling 대신 conversations Realtime UPDATE 구독으로 즉시 갱신
+  - 채팅용 KST 시간 포맷(`formatChatTime`) 추가
+  - 메시지 시간/읽음 상태를 hover 시에만 표시하도록 변경
+  - 메시지 간 5분 이상 차이가 날 때 시간 구분선 표시
+- 검증 완료
+  - `npm run lint` 통과
+  - `npm run build` 통과
+- 채팅 UI 추가 개선
+  - 메시지 간격 축소 (`space-y-3` → `space-y-0.5`)
+  - MessageBubble 시간 표시를 말풍선 아래(height 차지)에서 옆 flex 레이아웃으로 변경 — 가로 overflow 없이 빈 공간에 표시
+  - 채팅방 `overflow-x-hidden` 추가로 가로 스크롤 방지
+  - NavItems Realtime 채널 이름 중복 버그 수정 (`"nav:conversations"` → `"nav:conversations:${Date.now()}"`) — React StrictMode 이중 마운트로 인한 에러
+- 채팅 메시지 페이지네이션 구현
+  - `getMessages`를 DESC+reverse 방식으로 변경 — 항상 최신 50개를 가져와 오름차순 표시
+  - `before` cursor 파라미터 추가 — 특정 시점 이전 메시지 조회 지원
+  - `useMessages` 훅에 `hasMore`, `isLoadingMore`, `loadMore` 추가
+  - 채팅방 상단 스크롤 감지 시 이전 메시지 자동 로드 (prepend)
+  - prepend 후 scrollHeight 차이만큼 scrollTop 보정 — 스크롤 위치 튀는 현상 방지
+  - "이전 메시지 불러오는 중..." / "첫 번째 메시지입니다." UI 추가
+
 ## 2026-05-26
 
 ### 완료
+- 개발 환경 안정화
+  - `C:\Users\PC\.wslconfig` 신규 생성 (`memory=8GB`, `processors=4`)
+  - `package.json` dev 스크립트에 `NODE_OPTIONS=--max_old_space_size=4096` 추가
+- 코드 정리
+  - 미사용 중복 파일 3개 삭제 (auth alias login/signup, 구버전 posts/write)
+  - `getFeed` 기본 조회 limit `3` → `20` 복구
+- 스토리 뷰어 이미지 비율 판정
+  - `onLoad`에서 `naturalHeight > naturalWidth` 판정
+  - 세로 사진은 `object-cover`로 꽉 채우고, 가로/정사각형은 `object-contain` + 블러 배경 유지
 - 스토리 목록 정렬 개선
   - `getStories()`에서 accepted 상태 `user_connections`를 조회해 크루 ID Set 생성
   - 친구 조회 실패 시 빈 목록 fallback으로 스토리 로딩은 계속 진행
@@ -20,6 +73,8 @@
   - 메인 스토리를 중앙 고정하는 3열 그리드 구조로 변경
   - 이전/다음 화살표를 absolute 오버레이에서 좌우 열 내부 버튼으로 이동
   - 프리뷰가 없는 경우에도 좌우 열 공간을 유지하도록 배치 조정
+- 문서 최신화
+  - 코드 기준으로 `AGENTS.md`, `docs/PLAN.md`, `docs/WORKLOG.md` 현재 상태 반영
 
 ## 2026-05-25
 

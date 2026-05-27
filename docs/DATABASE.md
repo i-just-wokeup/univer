@@ -267,50 +267,44 @@ get_sent_requests()
 
 ---
 
-### 2단계 — 채팅 4개
+### 2단계 — 채팅 2개
 
-**chat_rooms**
+**conversations**
 ```sql
-chat_rooms (
-  id         uuid PK default gen_random_uuid(),
-  type       text not null,   -- 'direct' | 'group'
-  name       text,            -- 단체채팅방만
-  created_at timestamptz default now()
-)
-```
-
-**chat_room_members**
-```sql
-chat_room_members (
-  id        uuid PK default gen_random_uuid(),
-  room_id   uuid FK → chat_rooms on delete cascade,
-  user_id   uuid FK → users,
-  joined_at timestamptz default now(),
-  UNIQUE(room_id, user_id)
+conversations (
+  id                   uuid PK default gen_random_uuid(),
+  participant_1_id     uuid FK → users,
+  participant_2_id     uuid FK → users,
+  status               text default 'pending', -- 'pending' | 'active'
+  initiated_by         uuid FK → users,
+  last_message_at      timestamptz,
+  last_message_preview text,
+  hidden_at_1          timestamptz,
+  hidden_at_2          timestamptz,
+  created_at           timestamptz default now(),
+  updated_at           timestamptz default now(),
+  UNIQUE(participant_1_id, participant_2_id)
 )
 ```
 
 **messages**
 ```sql
 messages (
-  id         uuid PK default gen_random_uuid(),
-  room_id    uuid FK → chat_rooms on delete cascade,
-  user_id    uuid FK → users,
-  content    text not null,
-  deleted_at timestamptz,
-  created_at timestamptz default now()
+  id              uuid PK default gen_random_uuid(),
+  conversation_id uuid FK → conversations on delete cascade,
+  sender_id       uuid FK → users,
+  message_type    text default 'text', -- 'text' | 'image' | 'system'
+  content         text not null,
+  read_at         timestamptz,
+  deleted_at      timestamptz,
+  created_at      timestamptz default now()
 )
 ```
 
-**message_reads**
+**RPC**
 ```sql
-message_reads (
-  id         uuid PK default gen_random_uuid(),
-  message_id uuid FK → messages on delete cascade,
-  user_id    uuid FK → users,
-  read_at    timestamptz default now(),
-  UNIQUE(message_id, user_id)
-)
+mark_messages_read(p_conversation_id uuid)
+accept_chat_request(p_conversation_id uuid)
 ```
 
 ---
