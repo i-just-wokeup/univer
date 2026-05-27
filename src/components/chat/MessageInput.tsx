@@ -41,6 +41,9 @@ export function MessageInput({ disabled = false, onSend }: Props) {
       }
     } finally {
       setIsSending(false);
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+      });
     }
   }
 
