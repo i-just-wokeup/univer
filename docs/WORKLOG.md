@@ -7,6 +7,20 @@
 ## 2026-05-27
 
 ### 완료
+- **users 테이블 RLS 활성화 + 민감 컬럼 보호** (보안 취약점 수정)
+  - 기존 문제: RLS 비활성화 상태 → anon key REST 직접 호출로 모든 유저 이메일/실명/role 노출
+  - 기존 문제: `users_update_own` 정책에 컬럼 제한 없어 자가 admin 승격 등 가능
+  - 적용:
+    - RLS 활성화 (`relrowsecurity = true`)
+    - `users_select`: 로그인 유저는 활성 유저(`deleted_at IS NULL`) 조회 가능 — 재귀 없는 단순 정책
+    - `users_select_own`: 본인은 deleted_at 무관 조회 (탈퇴 복구 흐름 대비)
+    - `users_update_own`: 본인 row만 UPDATE
+    - `prevent_sensitive_user_update()` BEFORE UPDATE 트리거 — 민감 컬럼 변경 차단
+  - 차단 컬럼: `role`, `university_id`, `is_active`, `email`, `real_name`, `credit_balance`, `level`, `level_score`, `created_at`
+  - 부분 허용: `is_onboarded` (false → true 1회만, 온보딩 완료용)
+  - bypass: `auth.uid() IS NULL`이면 트리거 통과 (handle_new_user, service_role, postgres 직접 접근)
+  - 검증: RLS 활성화 ✓, 정책 3개 ✓, 트리거 1개 ✓
+  - migration 파일: `supabase/migrations/20260527150000_enable_users_rls_with_sensitive_column_protection.sql`
 - Supabase migration 로컬 파일 정리
   - `npx supabase login` + `supabase link` + `supabase db pull`로 `supabase/migrations/` 폴더 생성
   - db pull로 누락된 4개 migration 파일 수동 생성 (DB에서 DDL 직접 추출하여 동일하게 작성)
