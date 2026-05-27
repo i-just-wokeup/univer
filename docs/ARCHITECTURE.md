@@ -7,18 +7,17 @@ UniVerse — 대학생 실명 SNS 커뮤니티 플랫폼
 
 ## 기술 스택
 - Next.js 16 App Router + TypeScript + Tailwind CSS
+- React 19
 - Supabase (Auth, Postgres, Storage, Realtime)
 - Vercel 배포
 - Expo (React Native) — 앱 전환 예정
-- 현재 런타임 버전: React 19
 
 ## 개발 단계
 ```
-1단계 → SNS MVP (피드, 스토리, 좋아요, 댓글, 프로필)
-2단계 → 채팅 (DM 1대1, 단체 채팅)
-3단계 → 커뮤니티 (자유게시판, 베스트, 수업찾기)
-4단계 → 앱 전환 (Expo, 모노레포)
-5단계 → 부가 기능 (AI 커리어, 포트폴리오)
+1단계 → SNS MVP (피드, 스토리, 좋아요, 댓글, 프로필, 채팅)  ← 현재
+2단계 → 커뮤니티 (자유게시판, 베스트, 수업찾기)
+3단계 → 앱 전환 (Expo, 모노레포)
+4단계 → 부가 기능 (AI 커리어, 포트폴리오)
 ```
 
 ## 아키텍처 원칙
@@ -38,7 +37,7 @@ features/     ← 로직/훅/API → 앱 전환 시 재사용
 ### 데이터 원칙
 - soft delete: `deleted_at` 패턴
 - 시간: UTC 저장, KST 출력
-- 이미지: 업로드 전 클라이언트 압축 (browser-image-compression)
+- 이미지: Supabase Storage 저장, DB에는 URL만
 
 ## 화면 구조
 
@@ -52,76 +51,94 @@ features/     ← 로직/훅/API → 앱 전환 시 재사용
 
 ### 웹 (3단)
 ```
-[Left: 사이드바 (홈, 검색, 카테고리, 프로필, 채팅, 알림)]
+[Left: 사이드바 (홈, 검색, 카테고리, 프로필, 메시지, 알림, 새 게시물)]
 [Center: 스토리바 + 피드]
 [Right: 내 프로필, 핫 해시태그, 추천 유저]
 ```
 
 ## 라우팅
 ```
-/                  홈 (피드)
-/search            검색
-/posts/write       게시물 작성
-/category          카테고리
-/profile/[id]      프로필
-/chat              채팅
-/notifications     알림
-/story/[id]        스토리 뷰어
-/auth/login        로그인
-/auth/signup       회원가입
-/onboarding        온보딩
+/                          홈 (피드)
+/search                    유저 검색
+/write                     게시물 작성/수정
+/category                  카테고리 (미구현)
+/profile/[nickname]        프로필
+/profile/me                본인 프로필 alias
+/profile/edit              프로필 편집
+/profile/connections       크루(친구) 관리
+/settings                  설정 (로그아웃, 계정 탈퇴)
+/messages                  채팅 목록
+/messages/[conversationId] 채팅방
+/notifications             알림 (모바일)
+/story/[userId]            스토리 뷰어
+/story/create              스토리 작성
+/posts/[postId]            게시물 상세 직접 접근
+/admin                     관리자 대시보드
+/admin/reports             신고 관리
+/admin/users               유저 관리
+/auth/login                로그인
+/auth/signup               회원가입
+/onboarding                온보딩
 ```
 
 ## 디렉토리 구조
 ```
 src/
   app/
-    (auth)/           ← 인증 관련 페이지 그룹
+    (auth)/                    ← 인증 페이지 그룹 (레이아웃 없음)
       auth/
         callback/route.ts
         login/
-          LoginForm.tsx
-          page.tsx
         signup/
-          SignupForm.tsx
-          page.tsx
-      login/page.tsx   ← `/auth/login` alias
-      signup/page.tsx  ← `/auth/signup` alias
-    (main)/           ← 메인 앱 페이지
+    (main)/                    ← 메인 앱 (Header + NavItems 레이아웃)
       layout.tsx
-      page.tsx        ← 홈 피드
-      posts/write/
+      page.tsx                 ← 홈 피드
+      messages/
+      notifications/
+      profile/[nickname]/
+      search/
+      story/[userId]/
+    (sub)/                     ← 자체 헤더 화면 (뒤로가기 헤더)
+      layout.tsx
+      posts/[postId]/
+      profile/connections/
+      profile/edit/
+      settings/
+      write/
+    @modal/                    ← 웹 인터셉트 모달
+      (.)posts/[postId]/
+    admin/                     ← 관리자 (별도 레이아웃)
     onboarding/
-      page.tsx
-    layout.tsx
-    globals.css
   components/
-    feed/
-      FeedList.tsx
-      PostCard.tsx
-      PostImageUploader.tsx
-    story/
-      StoryBar.tsx
-      StoryItem.tsx
-    layout/           ← Header, BottomTabBar, SideBar
+    admin/                     ← AdminSidebar
+    chat/                      ← ConversationItem, MessageBubble, MessageInput
+    common/                    ← Avatar, ActionSheet, ConfirmDialog, Toast, UserInfo
+    feed/                      ← FeedList, PostCard, PostDetail, PostImageUploader 등
+    layout/                    ← Header, BottomTabBar, SideBar, NavItems, MainLayoutShell
+    notifications/             ← NotificationPanel
+    search/                    ← SearchInput, UserSearchList 등
+    story/                     ← StoryBar, StoryItem
   features/
-    auth/
-      api.ts
-    feed/
-      api.ts
+    admin/api.ts
+    auth/api.ts
+    chat/api.ts + hooks.ts
+    comments/api.ts
+    feed/api.ts
+    notifications/api.ts
+    profile/api.ts + mutations.ts
+    reports/api.ts
+    search/api.ts + history.ts
+    stories/api.ts
   lib/
     supabase/
       browser.ts
       server.ts
+    utils/
+      time.ts
   middleware.ts
   types/
     database.types.ts
 supabase/
-  migrations/         ← DB 마이그레이션 파일
-docs/                 ← 운영 문서
+  migrations/
+docs/
 ```
-
-## 2026-04-28 구현 메모
-- 현재 문서 기준보다 실제 구현이 앞선 항목: 인증(비밀번호 로그인/회원가입), 온보딩, 게시물 작성, 피드 조회 및 렌더링
-- 아직 비어 있는 라우트(`search`, `category`, `profile`, `chat`, `notifications`, `story`)는 추후 단계에서 추가 예정
-- 인증/피드/Supabase 핵심 파일에는 한국어 주석을 추가해 역할과 책임을 코드 레벨에서도 바로 파악할 수 있게 유지
