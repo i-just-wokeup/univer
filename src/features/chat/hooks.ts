@@ -13,8 +13,12 @@ import {
 
 const MESSAGE_PAGE_SIZE = 50;
 
+type ChatMessage = Message & {
+  isOptimistic?: boolean;
+};
+
 export function useMessages(conversationId: string) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -69,6 +73,44 @@ export function useMessages(conversationId: string) {
     }
   }, [conversationId, hasMore, isLoadingMore, messages]);
 
+  const addOptimisticMessage = useCallback(
+    (content: string, senderId: string) => {
+      const tempId = `optimistic_${crypto.randomUUID()}`;
+      const optimisticMessage: ChatMessage = {
+        content,
+        conversation_id: conversationId,
+        created_at: new Date().toISOString(),
+        id: tempId,
+        isOptimistic: true,
+        message_type: "text",
+        read_at: null,
+        sender_id: senderId,
+      };
+
+      setMessages((prevMessages) => [...prevMessages, optimisticMessage]);
+
+      return tempId;
+    },
+    [conversationId],
+  );
+
+  const replaceOptimisticMessage = useCallback(
+    (tempId: string, realMessage: Message) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.id === tempId ? realMessage : message,
+        ),
+      );
+    },
+    [],
+  );
+
+  const removeOptimisticMessage = useCallback((tempId: string) => {
+    setMessages((prevMessages) =>
+      prevMessages.filter((message) => message.id !== tempId),
+    );
+  }, []);
+
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
@@ -87,10 +129,28 @@ export function useMessages(conversationId: string) {
           table: "messages",
         },
         (payload) => {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            payload.new as Message,
-          ]);
+          const nextMessage = payload.new as Message;
+
+          setMessages((prevMessages) => {
+            if (prevMessages.some((message) => message.id === nextMessage.id)) {
+              return prevMessages;
+            }
+
+            const optimisticIndex = prevMessages.findIndex(
+              (message) =>
+                message.isOptimistic === true &&
+                message.sender_id === nextMessage.sender_id &&
+                message.content === nextMessage.content,
+            );
+
+            if (optimisticIndex === -1) {
+              return [...prevMessages, nextMessage];
+            }
+
+            return prevMessages.map((message, index) =>
+              index === optimisticIndex ? nextMessage : message,
+            );
+          });
           window.dispatchEvent(new Event("chat:refresh"));
         },
       )
@@ -101,7 +161,16 @@ export function useMessages(conversationId: string) {
     };
   }, [conversationId]);
 
-  return { hasMore, isLoading, isLoadingMore, loadMore, messages };
+  return {
+    addOptimisticMessage,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    loadMore,
+    messages,
+    removeOptimisticMessage,
+    replaceOptimisticMessage,
+  };
 }
 
 export function useConversations() {
