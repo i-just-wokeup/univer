@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# UniVerse
 
-## Getting Started
+대학생 실명 SNS 커뮤니티 플랫폼. 1차 타겟: 국민대학교.
+같은 학교 가입 즉시 전원 자동 연결, 팔로우 없음.
 
-First, run the development server:
+## 스택
+
+- Next.js 16 App Router + TypeScript + Tailwind CSS
+- Supabase (Auth, DB, Storage, Realtime)
+- Vercel 배포
+
+## 로컬 실행
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` 필요:
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 문서
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `AGENTS.md` — 에이전트 컨텍스트 및 개발 원칙
+- `docs/ARCHITECTURE.md` — 아키텍처, 라우팅, 디렉토리 구조
+- `docs/DATABASE.md` — DB 스키마 및 RLS 정책
+- `docs/PLAN.md` — 현재 진행 중인 작업 및 다음 작업
+- `docs/WORKLOG.md` — 날짜별 완료 기록
+- `docs/DECISIONS.md` — 주요 결정사항 기록
+- `docs/NOTES.md` — 개발 주의사항 및 트러블슈팅
