@@ -10,7 +10,6 @@ type Props = {
 export function MessageInput({ disabled = false, onSend }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [content, setContent] = useState("");
-  const [isSending, setIsSending] = useState(false);
 
   function resizeTextarea() {
     const textarea = textareaRef.current;
@@ -23,28 +22,31 @@ export function MessageInput({ disabled = false, onSend }: Props) {
     textarea.style.height = `${Math.min(textarea.scrollHeight, 96)}px`;
   }
 
-  async function handleSend() {
+  function resetTextarea() {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  }
+
+  function focusTextarea() {
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+    });
+  }
+
+  function handleSend() {
     const trimmedContent = content.trim();
 
-    if (!trimmedContent || disabled || isSending) {
+    if (!trimmedContent || disabled) {
       return;
     }
 
-    setIsSending(true);
-
-    try {
-      await onSend(trimmedContent);
-      setContent("");
-
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
-    } finally {
-      setIsSending(false);
-      requestAnimationFrame(() => {
-        textareaRef.current?.focus();
-      });
-    }
+    setContent("");
+    resetTextarea();
+    focusTextarea();
+    void onSend(trimmedContent).catch(() => {
+      focusTextarea();
+    });
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -53,7 +55,7 @@ export function MessageInput({ disabled = false, onSend }: Props) {
     }
 
     event.preventDefault();
-    void handleSend();
+    handleSend();
   }
 
   return (
@@ -61,13 +63,13 @@ export function MessageInput({ disabled = false, onSend }: Props) {
       className="flex items-end gap-2 border-t border-zinc-200 bg-white px-4 py-3"
       onSubmit={(event) => {
         event.preventDefault();
-        void handleSend();
+        handleSend();
       }}
     >
       <textarea
         ref={textareaRef}
         value={content}
-        disabled={disabled || isSending}
+        disabled={disabled}
         rows={1}
         onChange={(event) => {
           setContent(event.target.value);
@@ -79,7 +81,7 @@ export function MessageInput({ disabled = false, onSend }: Props) {
       />
       <button
         type="submit"
-        disabled={disabled || isSending || !content.trim()}
+        disabled={disabled || !content.trim()}
         className="h-11 rounded-2xl bg-zinc-950 px-4 text-sm font-bold text-white transition hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400"
       >
         전송

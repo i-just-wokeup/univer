@@ -42,6 +42,7 @@ export default function MessageRoomPage() {
   const scrollContainerRef = useRef<HTMLElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const previousScrollHeightRef = useRef<number | null>(null);
+  const previousLastMessageIdRef = useRef<string | null>(null);
   const { active, pending, reload } = useConversations();
   const {
     addOptimisticMessage,
@@ -106,13 +107,27 @@ export default function MessageRoomPage() {
 
   useEffect(() => {
     const container = scrollContainerRef.current;
+    const lastMessageId = messages.at(-1)?.id ?? null;
 
-    if (!container || previousScrollHeightRef.current === null) {
+    if (!container) {
       return;
     }
 
-    container.scrollTop = container.scrollHeight - previousScrollHeightRef.current;
-    previousScrollHeightRef.current = null;
+    if (previousScrollHeightRef.current !== null) {
+      container.scrollTop = container.scrollHeight - previousScrollHeightRef.current;
+      previousScrollHeightRef.current = null;
+      previousLastMessageIdRef.current = lastMessageId;
+      return;
+    }
+
+    if (previousLastMessageIdRef.current !== lastMessageId) {
+      previousLastMessageIdRef.current = lastMessageId;
+      requestAnimationFrame(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "auto" });
+      });
+    } else {
+      previousLastMessageIdRef.current = lastMessageId;
+    }
   }, [messages]);
 
   function handleMessagesScroll() {
