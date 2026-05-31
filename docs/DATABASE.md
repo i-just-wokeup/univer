@@ -318,6 +318,11 @@ accept_chat_request(p_conversation_id uuid)
 get_or_create_conversation(other_user_id uuid)
 ```
 
+**Realtime**
+- `messages`, `conversations`는 `supabase_realtime` publication에 등록
+- 메시지 수신은 `messages` INSERT + `conversation_id` filter로 구독
+- 대화 목록/뱃지는 `conversations` UPDATE 구독으로 갱신
+
 ---
 
 ### 3단계 — 커뮤니티 2개
