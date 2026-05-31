@@ -74,6 +74,7 @@
 - [x] 채팅 메시지 페이지네이션 (최신 50개 초기 로드, 스크롤 위로 이전 메시지 추가 로드)
 - [x] 채팅 메시지 낙관적 전송 처리 (임시 메시지 추가/교체/실패 제거, Realtime 중복 방지)
 - [x] 채팅 전송 후 UX 보정 (입력창 포커스 유지, 전송 후 하단 스크롤)
+- [x] 채팅 Realtime 구독 필터 수정 및 publication 등록 migration 추가
 - [x] Supabase migration 로컬 파일 정리 (supabase/migrations/ 생성, 누락 4개 수동 추가)
 - [x] **users 테이블 RLS 활성화 + 민감 컬럼 보호 트리거** (자가 admin 승격 방지, 개인정보 노출 차단)
 
@@ -190,6 +191,7 @@
   - NavItems Realtime 채널 중복 버그 수정
   - 메시지 낙관적 전송 처리 및 Realtime 중복 표시 방지
   - 전송 후 입력창 포커스 유지 및 하단 스크롤 보정
+  - 메시지 구독 filter 복구 및 채팅 테이블 Realtime publication 등록
 - MVP 제외: 사진 전송, 타이핑 인디케이터, 메시지 삭제/수정, 그룹채팅, 읽음 실시간 반영
 
 ### 3단계 — 커뮤니티
