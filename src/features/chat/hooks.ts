@@ -119,7 +119,7 @@ export function useMessages(conversationId: string) {
     }
 
     const channel = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(`messages:${conversationId}:${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
@@ -209,7 +209,7 @@ export function useConversations() {
     }
 
     const channel = supabase
-      .channel("conversations:mine")
+      .channel(`conversations:mine:${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversations" },
