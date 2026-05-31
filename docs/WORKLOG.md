@@ -69,6 +69,10 @@
 - 채팅 전송 후 UX 버그 수정
   - 메시지 전송 완료 후 입력창 포커스 유지
   - 전송 성공 및 대화 목록 갱신 후 채팅방 하단으로 부드럽게 스크롤
+- 채팅 Realtime 미수신 원인 수정
+  - `messages` INSERT 구독 filter에 UUID가 섞여 `conversation_id` 매칭이 실패하던 문제 수정
+  - 채널 이름만 UUID로 유니크하게 유지하고 filter는 `conversation_id=eq.{id}`로 복구
+  - `messages`, `conversations` 테이블을 `supabase_realtime` publication에 등록하는 migration 추가
 
 ## 2026-05-26
 
