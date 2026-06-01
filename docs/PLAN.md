@@ -80,19 +80,37 @@
 - [x] 채팅 전송 후 모바일 키보드 깜빡임 완화 (조건부 focus, 중복 스크롤/reload 제거)
 - [x] 채팅 Realtime 구독 필터 수정 및 publication 등록 migration 추가
 - [x] 프로필 대표 링크 기능 구현 (`profile_links` 다중 확장 구조, 프로필 편집/표시)
+- [x] 계정 탈퇴/복구 RPC soft delete 정책 보강 (게시글/스토리/댓글/메시지 복구 가능)
 - [x] Supabase migration 로컬 파일 정리 (supabase/migrations/ 생성, 누락 4개 수동 추가)
 - [x] **users 테이블 RLS 활성화 + 민감 컬럼 보호 트리거** (자가 admin 승격 방지, 개인정보 노출 차단)
 
 ## 진행 중인 작업
 - [ ] 배포 전 필수 항목 점검 (Cron Job, 이메일 인증, Storage 정책, 핵심 플로우 실기기 테스트)
+- [ ] 앱 전환 전 `features/` 웹 의존성 정리
+- [ ] 계정 탈퇴/복구 soft delete 실사용 테스트
 
 ## 다음 작업 (순서대로)
 
-1. 배포 전 필수 항목 점검 (Cron Job, 이메일 인증, Storage 정책)
-2. 스토리 UI/UX 개선 (남은 세부 인터랙션/시각 보정)
-3. 좋아요 목록 모달
-4. 관리자 액션 범위 확장 (차단/권한 변경/검색 필터 고도화)
+1. 앱 전환 전 `features/` 웹 의존성 정리
+2. 계정 탈퇴/복구 soft delete 실사용 테스트
+3. 배포 전 필수 항목 점검 (Cron Job, 이메일 인증, Storage 정책)
+4. 스토리 UI/UX 개선 (남은 세부 인터랙션/시각 보정)
 5. Expo 앱 전환 준비
+
+### 검증 필요
+- [ ] 계정 탈퇴 후 피드/프로필/채팅 목록에서 탈퇴 유저 콘텐츠가 정상적으로 숨겨지는지 확인
+- [ ] `restore_account()` 호출 시 30일 내 계정과 작성 콘텐츠가 정상 복구되는지 확인
+- [ ] 탈퇴 전에 사용자가 직접 삭제한 게시글/댓글/스토리가 복구되지 않는지 확인
+- [ ] 탈퇴/복구 관련 이상 발생 시 우선 `20260601100000_soft_delete_account_content.sql` migration과 RPC 본문 확인
+
+### 앱 전환 전 정리 체크리스트
+- [ ] `features/chat/api.ts`의 `window.dispatchEvent` 제거 또는 hook 레이어로 이동
+- [ ] `features/chat/hooks.ts`의 `window` 이벤트 사용을 웹 전용 refresh bus로 분리
+- [ ] `features/auth/api.ts`의 `window.location.origin` 기반 redirect를 플랫폼별 callback URL 주입 방식으로 변경
+- [ ] `features/search/history.ts`의 `localStorage` 접근을 웹 storage adapter로 분리
+- [ ] 이미지 업로드 API의 `File` 의존성(`uploadPostImages`, `uploadStoryImage`, `uploadAvatar`)을 앱 업로드 입력 타입과 분리
+- [ ] `features/*/api.ts`에서 DOM/Next Router 의존성이 새로 들어오지 않도록 점검
+- [ ] Expo 전환 시 재사용할 핵심 타입 정리: Profile, FeedPost, StoryGroup, Message, Conversation
 
 ### 1단계 — SNS MVP
 1. **인증** — 학교 이메일 가입, 구글/카카오, 온보딩 (학교/학과/닉네임)

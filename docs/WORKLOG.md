@@ -7,6 +7,23 @@
 ## 2026-06-01
 
 ### 완료
+- 앱 전환 전 정리 항목 기록
+  - `features/` 레이어의 웹 전용 의존성 점검
+  - 정리 대상 확인:
+    - 채팅 API/hook의 `window.dispatchEvent`, `window` 이벤트
+    - Auth redirect의 `window.location.origin`
+    - 검색 기록의 `localStorage`
+    - 이미지 업로드 API의 브라우저 `File` 타입
+  - `docs/PLAN.md`에 앱 전환 전 정리 체크리스트 추가
+- 계정 탈퇴/복구 soft delete 정책 보강
+  - 기존 `delete_account()`가 게시글/스토리/댓글을 hard delete하던 문제 확인
+  - `delete_account()`를 작성 콘텐츠 soft delete 방식으로 변경
+    - `posts`, `stories`, `comments`, `messages`의 `deleted_at` 기록
+    - `users.deleted_at` 기록 및 `fcm_token` 제거
+  - `restore_account()`가 30일 내 계정과 작성 콘텐츠를 함께 복구하도록 변경
+  - 탈퇴 전 사용자가 직접 삭제한 콘텐츠는 복구하지 않도록 탈퇴 시각과 같은 `deleted_at`만 복구
+  - Supabase 원격 프로젝트(`qmslcvnuzjraphvnaqxx`)에 migration 적용 및 함수 본문 재조회 확인
+  - 주의: 실제 유저 플로우 테스트는 아직 미완료. 탈퇴/복구 관련 이상 발생 시 우선 `20260601100000_soft_delete_account_content.sql` 확인
 - 프로필 대표 링크 기능 구현
   - `profile_links` 테이블 migration 추가 (프로필당 여러 링크 확장 가능한 구조)
   - Supabase 원격 프로젝트(`qmslcvnuzjraphvnaqxx`)에 `profile_links` migration 적용

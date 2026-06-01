@@ -288,6 +288,21 @@ dismiss_report(report_id uuid)
 take_action_on_report(report_id uuid)
 ```
 
+**계정 탈퇴/복구 정책**
+- `delete_account()`
+  - `users.deleted_at = now()`, `fcm_token = null`
+  - 작성 콘텐츠는 hard delete하지 않고 soft delete:
+    - `posts.deleted_at`
+    - `stories.deleted_at`
+    - `comments.deleted_at`
+    - `messages.deleted_at`
+  - 복구해도 의미가 작거나 개인 상태에 가까운 데이터는 삭제:
+    - 알림, 북마크, 스토리 조회 기록, 친한친구, 차단, 유저 좋아요, 댓글 좋아요, 게시물/스토리 좋아요
+- `restore_account()`
+  - 30일 내 복구 가능
+  - 계정 탈퇴 시각과 같은 `deleted_at`을 가진 작성 콘텐츠만 복구
+  - 탈퇴 전 사용자가 직접 삭제한 콘텐츠는 복구하지 않음
+
 ---
 
 ### 2단계 — 채팅 2개
