@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
-import { Settings } from "lucide-react";
+import { ExternalLink, Settings } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -11,6 +11,7 @@ import { getOrCreateConversation } from "@/features/chat/api";
 import {
   acceptFriendRequest,
   getConnectionStatus,
+  getProfileLinks,
   getPostsCount,
   getProfile,
   getProfilePosts,
@@ -185,6 +186,19 @@ function ProfileHeader({
               <p className="mt-1 truncate text-sm font-medium text-zinc-500">
                 {profile.department}
               </p>
+              {profile.profile_links[0] ? (
+                <a
+                  href={profile.profile_links[0].url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-flex max-w-full items-center gap-1 truncate text-sm font-semibold text-blue-600"
+                >
+                  <span className="truncate">
+                    {profile.profile_links[0].label}
+                  </span>
+                  <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                </a>
+              ) : null}
             </div>
             <div className="shrink-0 text-right">
               <div className="flex items-start justify-end gap-3">
@@ -343,6 +357,7 @@ export default function ProfilePage() {
                 department: currentUser.department,
                 id: currentUser.id,
                 nickname: currentUser.nickname,
+                profile_links: await getProfileLinks(currentUser.id),
                 real_name: currentUser.real_name,
                 university_id: currentUser.university_id,
               }

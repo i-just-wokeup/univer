@@ -12,11 +12,13 @@ import {
 
 import { Avatar } from "@/components/common/Avatar";
 import { getCurrentUserProfile } from "@/features/auth/api";
+import { getProfileLinks } from "@/features/profile/api";
 import {
   checkNicknameDuplicate,
   updateProfile,
   uploadAvatar,
 } from "@/features/profile/mutations";
+import { normalizeProfileUrl } from "@/lib/utils/profile-links";
 
 type CurrentUserProfile = NonNullable<
   Awaited<ReturnType<typeof getCurrentUserProfile>>
@@ -55,13 +57,17 @@ export default function ProfileEditPage() {
   const [nicknameStatus, setNicknameStatus] =
     useState<NicknameStatus>("idle");
   const [profile, setProfile] = useState<CurrentUserProfile | null>(null);
+  const [profileLink, setProfileLink] = useState("");
 
   const isNicknameValid = isValidNickname(nickname);
+  const isProfileLinkValid =
+    !profileLink.trim() || Boolean(normalizeProfileUrl(profileLink));
   const isSaveDisabled =
     isLoading ||
     isSaving ||
     isUploadingAvatar ||
     !isNicknameValid ||
+    !isProfileLinkValid ||
     nicknameStatus === "checking" ||
     nicknameStatus === "duplicate";
 
@@ -103,14 +109,22 @@ export default function ProfileEditPage() {
   useEffect(() => {
     let isMounted = true;
 
-    getCurrentUserProfile()
-      .then((currentProfile) => {
+    async function loadProfile() {
+      try {
+        const currentProfile = await getCurrentUserProfile();
+
         if (!isMounted) {
           return;
         }
 
         if (!currentProfile) {
           router.replace("/auth/login");
+          return;
+        }
+
+        const profileLinks = await getProfileLinks(currentProfile.id);
+
+        if (!isMounted) {
           return;
         }
 
@@ -123,8 +137,8 @@ export default function ProfileEditPage() {
         setInitialNickname(currentNickname);
         setNickname(currentNickname);
         setNicknameStatus("available");
-      })
-      .catch((error: unknown) => {
+        setProfileLink(profileLinks[0]?.url ?? "");
+      } catch (error: unknown) {
         if (isMounted) {
           setErrorMessage(
             error instanceof Error
@@ -132,12 +146,14 @@ export default function ProfileEditPage() {
               : "프로필 정보를 불러오지 못했습니다.",
           );
         }
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) {
           setIsLoading(false);
         }
-      });
+      }
+    }
+
+    void loadProfile();
 
     return () => {
       isMounted = false;
@@ -195,6 +211,11 @@ export default function ProfileEditPage() {
     setErrorMessage("");
   }
 
+  function handleProfileLinkChange(event: ChangeEvent<HTMLInputElement>) {
+    setProfileLink(event.target.value.slice(0, 200));
+    setErrorMessage("");
+  }
+
   async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
@@ -243,6 +264,7 @@ export default function ProfileEditPage() {
         avatar_url: avatarUrl ?? "",
         bio,
         nickname: normalizedNickname,
+        profileLinks: profileLink.trim() ? [profileLink] : [],
       });
       router.push(`/profile/${encodeURIComponent(normalizedNickname)}`);
     } catch (error) {
@@ -357,6 +379,30 @@ export default function ProfileEditPage() {
               disabled={isLoading}
               className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-3 text-sm outline-none focus:border-zinc-950 disabled:bg-zinc-50"
             />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-bold text-zinc-950">대표 링크</span>
+            <input
+              value={profileLink}
+              onChange={handleProfileLinkChange}
+              maxLength={200}
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              disabled={isLoading}
+              placeholder="instagram.com/username"
+              className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-950 disabled:bg-zinc-50"
+            />
+            <p
+              className={`mt-2 text-xs font-medium ${
+                isProfileLinkValid ? "text-zinc-500" : "text-red-500"
+              }`}
+            >
+              {isProfileLinkValid
+                ? "인스타그램, 유튜브, 틱톡 등 외부 링크를 입력할 수 있습니다."
+                : "올바른 링크를 입력해주세요."}
+            </p>
           </label>
 
           <div>
