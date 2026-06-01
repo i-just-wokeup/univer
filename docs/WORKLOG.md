@@ -7,6 +7,13 @@
 ## 2026-06-01
 
 ### 완료
+- 프로필 대표 링크 기능 구현
+  - `profile_links` 테이블 migration 추가 (프로필당 여러 링크 확장 가능한 구조)
+  - Supabase 원격 프로젝트(`qmslcvnuzjraphvnaqxx`)에 `profile_links` migration 적용
+  - 프로필 편집 페이지에 대표 링크 입력칸 추가
+  - URL 정규화 유틸 추가 (`instagram.com/...`, `www...` 입력 시 `https://` 링크로 저장)
+  - 프로필 페이지에서 학과 아래에 대표 링크 표시
+  - 로컬(`localhost:3000`)에서 링크 저장 및 프로필 표시 동작 확인
 - 채팅 수신 메시지 자동 스크롤
   - 상대방 메시지가 Realtime으로 추가될 때 화면이 맨 아래로 자동 스크롤되지 않던 문제 수정
   - `previousLastMessageIdRef`로 마지막 메시지 ID를 추적해 새 메시지가 추가됐을 때만 하단 스크롤 실행

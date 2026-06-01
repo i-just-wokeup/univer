@@ -18,9 +18,9 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 
 ---
 
-## 개발 단계별 테이블 (총 23개)
+## 개발 단계별 테이블 (총 24개)
 
-### 1단계 MVP — 17개
+### 1단계 MVP — 18개
 
 **universities**
 ```sql
@@ -57,6 +57,19 @@ users (
 )
 -- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name,
 --   credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
+```
+
+**profile_links**
+```sql
+profile_links (
+  id          uuid PK default gen_random_uuid(),
+  user_id     uuid FK → users on delete cascade,
+  label       text not null,                  -- 표시명: instagram.com 등
+  url         text not null,                  -- http/https 링크만 허용
+  order_index int default 0,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+)
 ```
 
 **posts**
@@ -366,6 +379,7 @@ community_comments (
 |---|---|---|
 | universities | 전체 공개 | 관리자만 |
 | users | 같은 학교 유저 | 본인만 |
+| profile_links | 로그인 유저 | 본인만 |
 | posts | 같은 학교 + visibility 체크 | 본인만 |
 | post_media | 같은 학교 유저 | 본인만 |
 | stories | 같은 학교 + visibility 체크 | 본인만 |

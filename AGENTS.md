@@ -56,7 +56,8 @@ docs/             ← 운영 문서
 - 피드 (getFeed limit 20, 무한 스크롤, PostCard/FeedList, 이미지 슬라이드)
 - 피드 인터랙션 (좋아요/댓글/대댓글/댓글 좋아요/신고/토스트)
 - 스토리 (업로드/스토리바/뷰어/삭제/RLS, 크루 우선 정렬, 유저 간 이동, 3열 뷰어)
-- 프로필 페이지 + 편집 페이지 + 설정 페이지 + 크루 관리(`/profile/connections`)
+- 프로필 페이지 + 편집 페이지 + 설정 페이지 + 크루 관리(`/profile/connections`) + 대표 링크
+- 채팅 1:1 DM (`/messages`, Realtime, 낙관적 전송, 모바일 fullscreen 채팅방)
 - 유저 검색 + 최근 검색
 - 알림 API + 웹 알림 패널 + 모바일 알림 페이지 + 뱃지
 - 관리자 1차 페이지 (`/admin`, `/admin/reports`, `/admin/users`)
@@ -64,11 +65,11 @@ docs/             ← 운영 문서
 - NavItems 클라이언트 컴포넌트
 
 ## 다음 작업
-1. 채팅 (1:1 DM) 구현
+1. 배포 전 필수 항목 점검 (Cron Job, 이메일 인증, Storage 정책)
 2. 스토리 UI/UX 개선
 3. 좋아요 목록 모달
 4. 관리자 액션 확장 (차단/권한 변경/검색 필터 고도화)
-5. 배포 준비 (Cron Job, 이메일 인증)
+5. Expo 앱 전환 준비
 
 ## 작업 완료 후 필수 (Claude Code / Codex 모두 적용)
 1. `docs/WORKLOG.md` 날짜 + 완료 내용 추가
