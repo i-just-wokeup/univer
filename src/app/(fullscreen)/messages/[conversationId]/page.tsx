@@ -154,13 +154,10 @@ export default function MessageRoomPage() {
 
   async function handleSendMessage(content: string) {
     const tempId = addOptimisticMessage(content, currentUserProfile?.id ?? "");
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
 
     try {
       const realMessage = await sendMessage(params.conversationId, content);
       replaceOptimisticMessage(tempId, realMessage);
-      await reload();
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch {
       removeOptimisticMessage(tempId);
     }

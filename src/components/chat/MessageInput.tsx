@@ -28,9 +28,15 @@ export function MessageInput({ disabled = false, onSend }: Props) {
     }
   }
 
-  function focusTextarea() {
+  function focusTextareaIfNeeded() {
     requestAnimationFrame(() => {
-      textareaRef.current?.focus();
+      const textarea = textareaRef.current;
+
+      if (!textarea || document.activeElement === textarea) {
+        return;
+      }
+
+      textarea.focus();
     });
   }
 
@@ -43,9 +49,9 @@ export function MessageInput({ disabled = false, onSend }: Props) {
 
     setContent("");
     resetTextarea();
-    focusTextarea();
+    focusTextareaIfNeeded();
     void onSend(trimmedContent).catch(() => {
-      focusTextarea();
+      focusTextareaIfNeeded();
     });
   }
 

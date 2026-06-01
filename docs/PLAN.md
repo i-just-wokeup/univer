@@ -77,6 +77,7 @@
 - [x] 채팅 연속 전송 UX 개선 (전송 중 입력창 잠금 제거)
 - [x] 채팅 수신 메시지 자동 스크롤 (상대방 메시지 수신 시 하단 자동 이동)
 - [x] 채팅방 fullscreen route group 분리 (하단 탭바/사이드바 제거, `h-dvh` 전용 레이아웃)
+- [x] 채팅 전송 후 모바일 키보드 깜빡임 완화 (조건부 focus, 중복 스크롤/reload 제거)
 - [x] 채팅 Realtime 구독 필터 수정 및 publication 등록 migration 추가
 - [x] Supabase migration 로컬 파일 정리 (supabase/migrations/ 생성, 누락 4개 수동 추가)
 - [x] **users 테이블 RLS 활성화 + 민감 컬럼 보호 트리거** (자가 admin 승격 방지, 개인정보 노출 차단)
