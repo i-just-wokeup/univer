@@ -96,6 +96,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_links: {
+        Row: {
+          id: string
+          user_id: string
+          label: string
+          url: string
+          order_index: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          label: string
+          url: string
+          order_index?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          label?: string
+          url?: string
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           id: string
