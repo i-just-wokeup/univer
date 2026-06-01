@@ -68,7 +68,7 @@ features/     ← 로직/훅/API → 앱 전환 시 재사용
 /profile/connections       크루(친구) 관리
 /settings                  설정 (로그아웃, 계정 탈퇴)
 /messages                  채팅 목록
-/messages/[conversationId] 채팅방
+/messages/[conversationId] 채팅방 (fullscreen layout)
 /notifications             알림 (모바일)
 /story/[userId]            스토리 뷰어
 /story/create              스토리 작성
@@ -93,11 +93,13 @@ src/
     (main)/                    ← 메인 앱 (Header + NavItems 레이아웃)
       layout.tsx
       page.tsx                 ← 홈 피드
-      messages/
+      messages/                ← 채팅 목록
       notifications/
       profile/[nickname]/
       search/
       story/[userId]/
+    (fullscreen)/              ← 하단 탭바/사이드바 없는 전용 화면
+      messages/[conversationId]/
     (sub)/                     ← 자체 헤더 화면 (뒤로가기 헤더)
       layout.tsx
       posts/[postId]/

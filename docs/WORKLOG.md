@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-06-01
+
+### 완료
+- 채팅 수신 메시지 자동 스크롤
+  - 상대방 메시지가 Realtime으로 추가될 때 화면이 맨 아래로 자동 스크롤되지 않던 문제 수정
+  - `previousLastMessageIdRef`로 마지막 메시지 ID를 추적해 새 메시지가 추가됐을 때만 하단 스크롤 실행
+  - loadMore(이전 메시지 추가 로드) 시에는 스크롤 위치 보정 로직 그대로 유지
+- 채팅방 fullscreen route group 분리
+  - `/messages` 대화 목록은 `(main)` 레이아웃 유지
+  - `/messages/[conversationId]` 채팅방은 `(fullscreen)`으로 이동해 하단 탭바/사이드바 제거
+  - 채팅방 root를 `h-dvh` 기반 전용 화면으로 변경하고 메시지 영역만 스크롤되도록 조정
+  - 뒤로가기 버튼은 항상 `/messages`로 이동하도록 변경
+
 ## 2026-05-31
 
 ### 완료

@@ -176,12 +176,12 @@ export default function MessageRoomPage() {
     conversation?.initiated_by !== currentUserProfile?.id;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
+    <div className="flex h-dvh flex-col overflow-hidden bg-white text-zinc-950">
+      <header className="shrink-0 border-b border-zinc-200 bg-white">
         <div className="flex h-14 items-center gap-3 px-4">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push("/messages")}
             className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-700"
             aria-label="뒤로가기"
           >
@@ -222,7 +222,7 @@ export default function MessageRoomPage() {
       <main
         ref={scrollContainerRef}
         onScroll={handleMessagesScroll}
-        className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4"
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-4"
       >
         {isLoading ? (
           <p className="py-12 text-center text-sm font-medium text-zinc-500">
@@ -267,7 +267,7 @@ export default function MessageRoomPage() {
         )}
       </main>
 
-      <div className="sticky bottom-0 bg-white">
+      <div className="shrink-0 bg-white pb-[env(safe-area-inset-bottom)]">
         <MessageInput onSend={handleSendMessage} />
       </div>
     </div>
