@@ -88,6 +88,9 @@ export function MessageInput({ disabled = false, onSend }: Props) {
       <button
         type="submit"
         disabled={disabled || !content.trim()}
+        onPointerDown={(event) => {
+          event.preventDefault();
+        }}
         className="h-11 rounded-2xl bg-zinc-950 px-4 text-sm font-bold text-white transition hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400"
       >
         전송
