@@ -1,11 +1,14 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { normalizeProfileLinks } from "@/lib/utils/profile-links";
 import type { Database } from "@/types/database.types";
 
 type UserUpdate = Database["public"]["Tables"]["users"]["Update"];
+type ProfileLinkInsert = Database["public"]["Tables"]["profile_links"]["Insert"];
 
 type UpdateProfileParams = {
   avatar_url?: string;
   bio?: string;
+  profileLinks?: string[];
   nickname?: string;
 };
 
@@ -38,6 +41,10 @@ export async function updateProfile(
 ): Promise<void> {
   const { supabase, userId } = await requireCurrentUser();
   const updateValues: Pick<UserUpdate, "avatar_url" | "bio" | "nickname"> = {};
+  const normalizedProfileLinks =
+    params.profileLinks === undefined
+      ? null
+      : normalizeProfileLinks(params.profileLinks);
 
   if (params.nickname !== undefined) {
     const trimmedNickname = params.nickname.trim();
@@ -59,17 +66,65 @@ export async function updateProfile(
     updateValues.avatar_url = trimmedAvatarUrl || null;
   }
 
+  if (
+    params.profileLinks?.some(
+      (link) => link.trim() && normalizeProfileLinks([link]).length === 0,
+    )
+  ) {
+    throw new Error("올바른 링크를 입력해주세요.");
+  }
+
   if (Object.keys(updateValues).length === 0) {
+    if (params.profileLinks === undefined) {
+      return;
+    }
+  } else {
+    const { error } = await supabase
+      .from("users")
+      .update(updateValues)
+      .eq("id", userId);
+
+    if (error) {
+      throw new Error("프로필을 저장하지 못했습니다.");
+    }
+  }
+
+  if (params.profileLinks === undefined) {
     return;
   }
 
-  const { error } = await supabase
-    .from("users")
-    .update(updateValues)
-    .eq("id", userId);
+  const { error: deleteError } = await supabase
+    .from("profile_links")
+    .delete()
+    .eq("user_id", userId);
 
-  if (error) {
+  if (deleteError) {
+    if (deleteError.code === "42P01" && normalizedProfileLinks?.length === 0) {
+      return;
+    }
+
     throw new Error("프로필을 저장하지 못했습니다.");
+  }
+
+  if (!normalizedProfileLinks || normalizedProfileLinks.length === 0) {
+    return;
+  }
+
+  const profileLinkRows: ProfileLinkInsert[] = normalizedProfileLinks.map(
+    (link) => ({
+      label: link.label,
+      order_index: link.order_index,
+      url: link.url,
+      user_id: userId,
+    }),
+  );
+
+  const { error: insertError } = await supabase
+    .from("profile_links")
+    .insert(profileLinkRows);
+
+  if (insertError) {
+    throw new Error("프로필 링크를 저장하지 못했습니다.");
   }
 }
 

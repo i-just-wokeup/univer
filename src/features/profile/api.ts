@@ -5,6 +5,12 @@ import type { Database } from "@/types/database.types";
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
+type ProfileLinkRow = Database["public"]["Tables"]["profile_links"]["Row"];
+
+export type ProfileLink = Pick<
+  ProfileLinkRow,
+  "id" | "label" | "order_index" | "url"
+>;
 
 export type Profile = Pick<
   UserRow,
@@ -16,7 +22,9 @@ export type Profile = Pick<
   | "nickname"
   | "real_name"
   | "university_id"
->;
+> & {
+  profile_links: ProfileLink[];
+};
 
 export type ProfilePostImage = Pick<PostMediaRow, "order_index" | "url">;
 
@@ -94,7 +102,29 @@ export async function getProfile(nickname: string): Promise<Profile> {
     throw new Error("프로필을 찾을 수 없습니다.");
   }
 
-  return data satisfies Profile;
+  const profileLinks = await getProfileLinks(data.id);
+
+  return {
+    ...data,
+    profile_links: profileLinks,
+  } satisfies Profile;
+}
+
+export async function getProfileLinks(userId: string): Promise<ProfileLink[]> {
+  const supabase = requireSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("profile_links")
+    .select("id, label, order_index, url")
+    .eq("user_id", userId)
+    .order("order_index", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data;
 }
 
 export async function getProfilePosts(userId: string): Promise<ProfilePost[]> {
