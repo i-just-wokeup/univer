@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-06-05
+
+### 완료
+
+#### 보안 패치 (Supabase MCP 직접 적용 — migration 3개)
+- **anon 함수 실행 권한 전면 차단**
+  - 기존: 모든 public 함수가 비로그인 포함 누구나 호출 가능
+  - `REVOKE FROM PUBLIC` 후 `GRANT TO authenticated`만 선택 부여
+  - 트리거 전용 함수(notify_*, handle_new_user 등)는 authenticated에서도 제거
+- **Storage 버킷 파일 목록 노출 차단**
+  - avatars, post-images, post-videos, story-images 4개 버킷
+  - 기존 광범위 SELECT 정책 제거 → 로그인 유저 전용 정책으로 교체
+  - URL 직접 접근은 그대로, 전체 목록 조회만 차단
+- **함수 search_path 고정**
+  - 모든 public 함수에 `SET search_path = public` 추가
+  - search_path 조작을 통한 악성 함수 주입 경로 차단
+
+#### 런타임 버그 수정
+- `delete_account()` — 이미 삭제된 `user_likes` 테이블 참조 제거 (계정 탈퇴 시 오류 발생하던 버그)
+- `toggle_user_like()`, `get_user_like_status()` 함수 제거 (user_likes 삭제 후 방치된 dead code)
+
+#### Supabase Auth 설정 변경 (대시보드)
+- 최소 비밀번호 길이: 6자 → **8자**
+- 비밀번호 조건: **Letters and digits** (영문+숫자 조합 강제)
+
+#### Google OAuth 연동 (국민대 Google Workspace)
+- Google Cloud Console에서 OAuth 앱 생성 (웹 애플리케이션)
+- Supabase Google provider 활성화 (Client ID/Secret 등록)
+- `handle_new_user` 트리거 수정
+  - Google `full_name`(`심재성(학부생-자동차공학과)` 형식) 파싱
+  - `real_name`, `department` 자동 저장
+  - **프로필 사진(avatar_url)은 가져오지 않음** — 앱 자체 업로드만 사용
+- `prevent_sensitive_user_update` 트리거 수정
+  - `real_name` NULL → 값 최초 1회 설정 허용 (온보딩용)
+  - 이후 변경은 여전히 차단
+
+#### 실명 공개 범위 구현 (코드)
+- `features/profile/api.ts` `getProfile()` — 뷰어가 친구(accepted)이거나 본인일 때만 `real_name` 반환, 아니면 null
+- `app/(main)/profile/[nickname]/page.tsx` — `real_name` 있을 때만 닉네임 아래 표시
+
+#### 기존 계정 실명 수동 등록
+- `s2j_3.04` (simsim020304@kookmin.ac.kr) — `real_name: 심재성`, `department: 자동차공학과` 직접 입력
+
+### 남은 항목
+- [ ] 로그인/회원가입 UI — Google 버튼, 실명 입력칸, 비밀번호 찾기 (Codex)
+- [ ] 기존 유저 실명 입력 — 프로필 편집 페이지에 real_name 입력칸 추가 (Codex)
+- [ ] Resend 이메일 연동 + 이메일 인증 재활성화 (배포 전 필수)
+
 ## 2026-06-01
 
 ### 완료

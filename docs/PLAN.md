@@ -81,27 +81,32 @@
 - [x] 채팅 Realtime 구독 필터 수정 및 publication 등록 migration 추가
 - [x] 프로필 대표 링크 기능 구현 (`profile_links` 다중 확장 구조, 프로필 편집/표시)
 - [x] 계정 탈퇴/복구 RPC soft delete 정책 보강 (게시글/스토리/댓글/메시지 복구 가능)
+- [x] 국민대 Google 로그인/가입, 비밀번호 재설정, 친구 한정 실명 표시 구현
 - [x] Supabase migration 로컬 파일 정리 (supabase/migrations/ 생성, 누락 4개 수동 추가)
 - [x] **users 테이블 RLS 활성화 + 민감 컬럼 보호 트리거** (자가 admin 승격 방지, 개인정보 노출 차단)
+- [x] **보안 패치** — anon 함수 실행 차단, Storage 파일 목록 노출 차단, 함수 search_path 고정
+- [x] **Google OAuth 연동** — 국민대 Google Workspace, 이름+학과 자동 파싱 저장 (프로필 사진 제외)
+- [x] **실명 공개 범위** — 친구(accepted)이거나 본인일 때만 프로필에서 실명 노출
+- [x] **Supabase Auth 설정** — 최소 비밀번호 8자, Letters+digits 조합 강제
 
 ## 진행 중인 작업
-- [ ] 배포 전 필수 항목 점검 (Cron Job, 이메일 인증, Storage 정책, 핵심 플로우 실기기 테스트)
-- [ ] 앱 전환 전 `features/` 웹 의존성 정리
+- [ ] Google 인증/실명 저장 migration 원격 적용 및 OAuth 실사용 테스트
+- [ ] 배포 전 필수 항목 점검 (Cron Job, 이메일 인증 Resend 연동, Storage 정책)
 - [ ] 계정 탈퇴/복구 soft delete 실사용 테스트
 
 ## 다음 작업 (순서대로)
 
-1. 앱 전환 전 `features/` 웹 의존성 정리
-2. 계정 탈퇴/복구 soft delete 실사용 테스트
-3. 배포 전 필수 항목 점검 (Cron Job, 이메일 인증, Storage 정책)
-4. 스토리 UI/UX 개선 (남은 세부 인터랙션/시각 보정)
+1. Google 인증/실명 저장 migration 원격 적용 및 OAuth 실사용 테스트
+2. Resend 이메일 연동 + 이메일 인증 재활성화
+3. Cron Job 설정 (스토리 24시간 만료, 게시물 30일 완전 삭제)
+4. 계정 탈퇴/복구 실사용 테스트
 5. Expo 앱 전환 준비
 
 ### 검증 필요
+- [ ] Google OAuth 신규 가입 시 이름+학과 자동 저장 확인
+- [ ] 친구 아닌 유저 프로필에서 실명 안 뜨는지 확인
 - [ ] 계정 탈퇴 후 피드/프로필/채팅 목록에서 탈퇴 유저 콘텐츠가 정상적으로 숨겨지는지 확인
 - [ ] `restore_account()` 호출 시 30일 내 계정과 작성 콘텐츠가 정상 복구되는지 확인
-- [ ] 탈퇴 전에 사용자가 직접 삭제한 게시글/댓글/스토리가 복구되지 않는지 확인
-- [ ] 탈퇴/복구 관련 이상 발생 시 우선 `20260601100000_soft_delete_account_content.sql` migration과 RPC 본문 확인
 
 ### 앱 전환 전 정리 체크리스트
 - [ ] `features/chat/api.ts`의 `window.dispatchEvent` 제거 또는 hook 레이어로 이동

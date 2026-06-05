@@ -34,6 +34,9 @@ universities (
 ```
 
 **users** (RLS 활성화, 민감 컬럼 BEFORE UPDATE 트리거 보호)
+- `real_name` 공개 범위: 본인 또는 친구(accepted)만 조회 가능 — API(`getProfile`) 레벨 마스킹
+- Google OAuth 가입 시 `handle_new_user` 트리거가 `full_name`(`심재성(학부생-자동차공학과)` 형식) 파싱 → `real_name`, `department` 자동 저장 (avatar_url 제외)
+- `real_name`: NULL → 값 최초 1회 허용 (온보딩), 이후 변경 불가
 ```sql
 users (
   id            uuid PK references auth.users,
@@ -46,7 +49,7 @@ users (
   department    text not null,
   credit_balance int default 0,
   level         int default 1,
-  level_score   int default 0,
+  level_score   float8 default 0,
   role          text default 'user',          -- 'user' | 'official' | 'admin'
   is_onboarded  bool default false,
   is_active     bool default true,
@@ -55,8 +58,9 @@ users (
   deleted_at    timestamptz,
   created_at    timestamptz default now()
 )
--- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name,
+-- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name(값→값 변경),
 --   credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
+-- handle_new_user()는 auth metadata의 real_name/full_name/name, avatar_url, department를 반영
 ```
 
 **profile_links**
