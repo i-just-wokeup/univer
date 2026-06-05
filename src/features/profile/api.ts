@@ -102,11 +102,31 @@ export async function getProfile(nickname: string): Promise<Profile> {
     throw new Error("프로필을 찾을 수 없습니다.");
   }
 
-  const profileLinks = await getProfileLinks(data.id);
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser();
+  const profileUserId = data.id;
+  let canViewRealName = viewer?.id === profileUserId;
+
+  if (viewer && !canViewRealName) {
+    const { data: connection } = await supabase
+      .from("user_connections")
+      .select("status")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${viewer.id},receiver_id.eq.${profileUserId}),and(requester_id.eq.${profileUserId},receiver_id.eq.${viewer.id})`,
+      )
+      .maybeSingle();
+
+    canViewRealName = connection?.status === "accepted";
+  }
+
+  const profileLinks = await getProfileLinks(profileUserId);
 
   return {
     ...data,
     profile_links: profileLinks,
+    real_name: canViewRealName ? data.real_name : null,
   } satisfies Profile;
 }
 

@@ -183,6 +183,11 @@ function ProfileHeader({
               <h1 className="truncate text-xl font-bold text-zinc-950">
                 {profile.nickname}
               </h1>
+              {profile.real_name ? (
+                <p className="mt-1 truncate text-xs font-semibold text-zinc-400">
+                  {profile.real_name}
+                </p>
+              ) : null}
               <p className="mt-1 truncate text-sm font-medium text-zinc-500">
                 {profile.department}
               </p>
