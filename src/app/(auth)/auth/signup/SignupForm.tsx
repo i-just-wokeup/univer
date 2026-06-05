@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { signUpWithPassword } from "@/features/auth/api";
+import { Check } from "lucide-react";
+
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { signInWithGoogle, signUpWithPassword } from "@/features/auth/api";
 
 // 서버 페이지에서 전달한 초기 에러를 클라이언트 상태로 이어받는다.
 type SignupFormProps = {
@@ -14,9 +17,26 @@ export default function SignupForm({ initialError }: SignupFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [realName, setRealName] = useState("");
   const [error, setError] = useState<string | null>(initialError);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const passwordRules = [
+    {
+      isValid: password.length >= 8,
+      label: "8자 이상",
+    },
+    {
+      isValid: /[a-zA-Z]/.test(password),
+      label: "영문 포함",
+    },
+    {
+      isValid: /\d/.test(password),
+      label: "숫자 포함",
+    },
+  ];
+  const isPasswordValid = passwordRules.every((rule) => rule.isValid);
 
   // 비밀번호 일치 여부를 먼저 확인한 뒤 Supabase 회원가입을 호출한다.
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -28,12 +48,18 @@ export default function SignupForm({ initialError }: SignupFormProps) {
       return;
     }
 
+    if (!isPasswordValid) {
+      setError("비밀번호 조건을 모두 충족해주세요.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       await signUpWithPassword({
         email,
         password,
+        realName,
       });
 
       setIsEmailSent(true);
@@ -45,6 +71,22 @@ export default function SignupForm({ initialError }: SignupFormProps) {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSignup() {
+    setError(null);
+    setIsGoogleSubmitting(true);
+
+    try {
+      await signInWithGoogle();
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Google 가입 처리에 실패했습니다.",
+      );
+      setIsGoogleSubmitting(false);
     }
   }
 
@@ -93,6 +135,21 @@ export default function SignupForm({ initialError }: SignupFormProps) {
             </label>
 
             <label className="block">
+              <span className="text-sm font-medium text-zinc-700">실명</span>
+              <input
+                value={realName}
+                onChange={(event) => setRealName(event.target.value)}
+                type="text"
+                autoComplete="name"
+                pattern="[가-힣\s]+"
+                placeholder="홍길동"
+                title="한글 이름을 입력해주세요."
+                className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                required
+              />
+            </label>
+
+            <label className="block">
               <span className="text-sm font-medium text-zinc-700">비밀번호</span>
               <input
                 value={password}
@@ -102,6 +159,19 @@ export default function SignupForm({ initialError }: SignupFormProps) {
                 className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
                 required
               />
+              <div className="mt-2 flex flex-wrap gap-2">
+                {passwordRules.map((rule) => (
+                  <span
+                    key={rule.label}
+                    className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                      rule.isValid ? "text-green-600" : "text-zinc-400"
+                    }`}
+                  >
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    {rule.label}
+                  </span>
+                ))}
+              </div>
             </label>
 
             <label className="block">
@@ -126,11 +196,23 @@ export default function SignupForm({ initialError }: SignupFormProps) {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting}
               className="flex h-12 w-full items-center justify-center rounded-2xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
             >
               {isSubmitting ? "가입 중..." : "회원가입"}
             </button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-zinc-200" />
+              <span className="text-xs font-medium text-zinc-400">또는</span>
+              <div className="h-px flex-1 bg-zinc-200" />
+            </div>
+
+            <GoogleAuthButton
+              label="국민대 계정으로 가입"
+              onClick={handleGoogleSignup}
+              disabled={isSubmitting || isGoogleSubmitting}
+            />
           </form>
         )}
 

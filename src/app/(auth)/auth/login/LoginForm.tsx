@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { signInWithPassword } from "@/features/auth/api";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { signInWithGoogle, signInWithPassword } from "@/features/auth/api";
 
 // 서버 페이지가 searchParams에서 읽은 초기 에러를 그대로 내려준다.
 type LoginFormProps = {
@@ -16,6 +17,7 @@ export default function LoginForm({ initialError }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(initialError);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 제출 중 상태를 잠그고, 성공 시 홈으로 이동한다.
@@ -40,6 +42,22 @@ export default function LoginForm({ initialError }: LoginFormProps) {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    setError(null);
+    setIsGoogleSubmitting(true);
+
+    try {
+      await signInWithGoogle();
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Google 로그인 처리에 실패했습니다.",
+      );
+      setIsGoogleSubmitting(false);
     }
   }
 
@@ -79,6 +97,14 @@ export default function LoginForm({ initialError }: LoginFormProps) {
               className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
               required
             />
+            <div className="mt-2 text-right">
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs font-semibold text-zinc-500 hover:text-zinc-950"
+              >
+                비밀번호를 잊으셨나요?
+              </Link>
+            </div>
           </label>
 
           {error ? (
@@ -95,6 +121,18 @@ export default function LoginForm({ initialError }: LoginFormProps) {
             {isSubmitting ? "로그인 중..." : "로그인"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-zinc-200" />
+          <span className="text-xs font-medium text-zinc-400">또는</span>
+          <div className="h-px flex-1 bg-zinc-200" />
+        </div>
+
+        <GoogleAuthButton
+          label="국민대 계정으로 로그인"
+          onClick={handleGoogleLogin}
+          disabled={isSubmitting || isGoogleSubmitting}
+        />
 
         <p className="mt-6 text-center text-sm text-zinc-500">
           처음이신가요?{" "}
