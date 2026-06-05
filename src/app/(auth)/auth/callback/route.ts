@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserOnboardingStatus } from "@/features/auth/api";
+import { extractEmailDomain, getUserOnboardingStatus } from "@/features/auth/api";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 // redirectTo와 같은 외부 경로 주입을 막기 위한 내부 경로 정제 함수.
@@ -52,9 +52,23 @@ export async function GET(request: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
+  if (extractEmailDomain(user.email ?? "") !== "kookmin.ac.kr") {
+    await supabase.auth.signOut();
+    loginUrl.searchParams.set(
+      "error",
+      "국민대학교 Google 계정만 로그인할 수 있습니다.",
+    );
+    return NextResponse.redirect(loginUrl);
+  }
+
   // 신규 유저는 온보딩, 완료 유저는 원래 목적지 또는 홈으로 이동한다.
   const isOnboarded = await getUserOnboardingStatus(supabase, user.id);
-  const redirectPath = isOnboarded ? nextPath : "/onboarding";
+  const redirectPath =
+    nextPath === "/auth/reset-password"
+      ? nextPath
+      : isOnboarded
+        ? nextPath
+        : "/onboarding";
 
   return NextResponse.redirect(new URL(redirectPath, requestUrl.origin));
 }

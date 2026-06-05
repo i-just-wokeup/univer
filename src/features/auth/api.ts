@@ -72,12 +72,14 @@ type SignInWithPasswordParams = {
 type SignUpWithPasswordParams = {
   email: string;
   password: string;
+  realName: string;
 };
 
 // 온보딩 완료 시 저장할 프로필 필드.
 type UpdateOnboardingParams = {
   department: string;
   nickname: string;
+  realName: string;
 };
 
 // 이메일+비밀번호 로그인. 에러 메시지는 UI에 바로 노출 가능한 형태로 통일한다.
@@ -90,6 +92,53 @@ export async function signInWithPassword(params: SignInWithPasswordParams) {
 
   if (error) {
     throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+  }
+}
+
+export async function signInWithGoogle() {
+  const supabase = requireSupabaseClient();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      queryParams: {
+        hd: "kookmin.ac.kr",
+        prompt: "select_account",
+      },
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    throw new Error("Google 로그인에 실패했습니다.");
+  }
+}
+
+export async function resetPasswordForEmail(email: string): Promise<void> {
+  const supabase = requireSupabaseClient();
+  const domain = extractEmailDomain(email);
+
+  if (domain !== "kookmin.ac.kr") {
+    throw new Error("국민대학교 이메일(kookmin.ac.kr)만 사용할 수 있습니다.");
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    normalizeEmail(email),
+    {
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+    },
+  );
+
+  if (error) {
+    throw new Error("비밀번호 재설정 메일 발송에 실패했습니다.");
+  }
+}
+
+export async function updatePassword(password: string): Promise<void> {
+  const supabase = requireSupabaseClient();
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    throw new Error("비밀번호를 변경하지 못했습니다.");
   }
 }
 
@@ -116,15 +165,23 @@ export async function deleteAccount() {
 export async function signUpWithPassword(params: SignUpWithPasswordParams) {
   const supabase = requireSupabaseClient();
   const domain = extractEmailDomain(params.email);
+  const trimmedRealName = params.realName.trim();
 
   if (domain !== "kookmin.ac.kr") {
     throw new Error("국민대학교 이메일(kookmin.ac.kr)만 가입할 수 있습니다.");
+  }
+
+  if (!trimmedRealName) {
+    throw new Error("실명을 입력해주세요.");
   }
 
   const { error } = await supabase.auth.signUp({
     email: normalizeEmail(params.email),
     password: params.password,
     options: {
+      data: {
+        real_name: trimmedRealName,
+      },
       emailRedirectTo: `${window.location.origin}/auth/callback`,
     },
   });
@@ -158,6 +215,7 @@ export async function getUserOnboardingStatus(
 export async function updateOnboardingProfile({
   department,
   nickname,
+  realName,
 }: UpdateOnboardingParams) {
   const supabase = requireSupabaseClient();
   const {
@@ -171,9 +229,10 @@ export async function updateOnboardingProfile({
 
   const trimmedNickname = nickname.trim();
   const trimmedDepartment = department.trim();
+  const trimmedRealName = realName.trim();
 
-  if (!trimmedNickname || !trimmedDepartment) {
-    throw new Error("닉네임과 학과를 모두 입력해주세요.");
+  if (!trimmedNickname || !trimmedDepartment || !trimmedRealName) {
+    throw new Error("실명, 닉네임, 학과를 모두 입력해주세요.");
   }
 
   const { error } = await supabase
@@ -182,6 +241,7 @@ export async function updateOnboardingProfile({
       department: trimmedDepartment,
       is_onboarded: true,
       nickname: trimmedNickname,
+      real_name: trimmedRealName,
     })
     .eq("id", user.id);
 

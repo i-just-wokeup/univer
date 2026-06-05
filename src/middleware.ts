@@ -9,6 +9,8 @@ function isExcludedPath(pathname: string) {
     "/auth/login",
     "/auth/signup",
     "/auth/callback",
+    "/auth/forgot-password",
+    "/auth/reset-password",
     "/onboarding",
   ].includes(pathname);
 }
