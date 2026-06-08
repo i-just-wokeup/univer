@@ -8,6 +8,10 @@ import { CommentSheet } from "@/components/feed/CommentSheet";
 import { PostCard } from "@/components/feed/PostCard";
 import { StoryBar } from "@/components/story/StoryBar";
 import {
+  getBookmarkedPostIds,
+  togglePostBookmark,
+} from "@/features/activity/api";
+import {
   getFeed,
   getLikedPostIds,
   togglePostLike,
@@ -51,6 +55,7 @@ function MainPageContent() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState("");
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
@@ -136,12 +141,17 @@ function MainPageContent() {
         setPosts(result.posts);
         setNextCursor(result.nextCursor);
 
-        const likedIds = await getLikedPostIds(result.posts.map((post) => post.id));
+        const postIds = result.posts.map((post) => post.id);
+        const [bookmarkedIds, likedIds] = await Promise.all([
+          getBookmarkedPostIds(postIds),
+          getLikedPostIds(postIds),
+        ]);
 
         if (!isMounted) {
           return;
         }
 
+        setBookmarkedPostIds(new Set(bookmarkedIds));
         setLikedPostIds(new Set(likedIds));
       } catch (loadError) {
         if (!isMounted) {
@@ -179,10 +189,21 @@ function MainPageContent() {
       setError(null);
 
       const result = await getFeed({ cursor: nextCursor });
-      const likedIds = await getLikedPostIds(result.posts.map((post) => post.id));
+      const postIds = result.posts.map((post) => post.id);
+      const [bookmarkedIds, likedIds] = await Promise.all([
+        getBookmarkedPostIds(postIds),
+        getLikedPostIds(postIds),
+      ]);
 
       setPosts((currentPosts) => [...currentPosts, ...result.posts]);
       setNextCursor(result.nextCursor);
+      setBookmarkedPostIds((currentBookmarkedPostIds) => {
+        const nextBookmarkedPostIds = new Set(currentBookmarkedPostIds);
+        bookmarkedIds.forEach((postId) => {
+          nextBookmarkedPostIds.add(postId);
+        });
+        return nextBookmarkedPostIds;
+      });
       setLikedPostIds((currentLikedPostIds) => {
         const nextLikedPostIds = new Set(currentLikedPostIds);
         likedIds.forEach((postId) => {
@@ -313,6 +334,60 @@ function MainPageContent() {
     [likedPostIds, posts],
   );
 
+  const handleBookmark = useCallback(
+    async (postId: string) => {
+      const wasBookmarked = bookmarkedPostIds.has(postId);
+
+      setBookmarkedPostIds((currentBookmarkedPostIds) => {
+        const nextBookmarkedPostIds = new Set(currentBookmarkedPostIds);
+
+        if (wasBookmarked) {
+          nextBookmarkedPostIds.delete(postId);
+        } else {
+          nextBookmarkedPostIds.add(postId);
+        }
+
+        return nextBookmarkedPostIds;
+      });
+
+      try {
+        const result = await togglePostBookmark(postId);
+
+        setBookmarkedPostIds((currentBookmarkedPostIds) => {
+          const nextBookmarkedPostIds = new Set(currentBookmarkedPostIds);
+
+          if (result.bookmarked) {
+            nextBookmarkedPostIds.add(postId);
+          } else {
+            nextBookmarkedPostIds.delete(postId);
+          }
+
+          return nextBookmarkedPostIds;
+        });
+      } catch (bookmarkError) {
+        setBookmarkedPostIds((currentBookmarkedPostIds) => {
+          const nextBookmarkedPostIds = new Set(currentBookmarkedPostIds);
+
+          if (wasBookmarked) {
+            nextBookmarkedPostIds.add(postId);
+          } else {
+            nextBookmarkedPostIds.delete(postId);
+          }
+
+          return nextBookmarkedPostIds;
+        });
+
+        const message =
+          bookmarkError instanceof Error
+            ? bookmarkError.message
+            : "게시물 저장 처리에 실패했습니다.";
+
+        setError(message);
+      }
+    },
+    [bookmarkedPostIds],
+  );
+
   const handleCommentCountChange = useCallback(
     (postId: string, nextCount: number) => {
       setPosts((currentPosts) =>
@@ -361,15 +436,14 @@ function MainPageContent() {
                 key={post.id}
                 post={post}
                 currentUserId={currentUserId}
+                isBookmarked={bookmarkedPostIds.has(post.id)}
                 isLiked={likedPostIds.has(post.id)}
                 onLike={handleLike}
                 onComment={(postId) => {
                   router.push(`/posts/${postId}`);
                 }}
                 onDelete={handleDeletePost}
-                onBookmark={(postId) => {
-                  console.log("bookmark", postId);
-                }}
+                onBookmark={handleBookmark}
               />
             ))}
             {isLoadingMore ? (

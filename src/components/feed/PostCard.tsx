@@ -12,6 +12,7 @@ import { createReport } from "@/features/reports/api";
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
 type PostCardProps = {
   currentUserId?: string;
+  isBookmarked?: boolean;
   isLiked?: boolean;
   onBookmark?: (postId: string) => void;
   onComment?: (postId: string) => void;
@@ -70,9 +71,14 @@ function CommentIcon() {
   );
 }
 
-function BookmarkIcon() {
+function BookmarkIcon({ isBookmarked }: { isBookmarked: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill={isBookmarked ? "currentColor" : "none"}
+      className="h-6 w-6"
+      aria-hidden="true"
+    >
       <path
         d="M7 4.75h10a1 1 0 0 1 1 1v14.5L12 16.5l-6 3.75V5.75a1 1 0 0 1 1-1Z"
         stroke="currentColor"
@@ -137,6 +143,7 @@ function getRelativeTimeLabel(createdAt: string) {
 // 피드 단일 카드. 데이터 조회 없이 전달된 post만 렌더링한다.
 export function PostCard({
   currentUserId = "",
+  isBookmarked = false,
   isLiked = false,
   onBookmark,
   onComment,
@@ -430,10 +437,12 @@ export function PostCard({
           <button
             type="button"
             onClick={() => onBookmark?.(post.id)}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950"
-            aria-label="북마크"
+            className={`flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-zinc-100 hover:text-zinc-950 ${
+              isBookmarked ? "text-zinc-950" : "text-zinc-700"
+            }`}
+            aria-label={isBookmarked ? "저장 취소" : "게시물 저장"}
           >
-            <BookmarkIcon />
+            <BookmarkIcon isBookmarked={isBookmarked} />
           </button>
         </div>
 
