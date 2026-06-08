@@ -111,6 +111,7 @@ export default function SettingsPage() {
       <main>
         <Section label="계정">
           <Row label="프로필 편집" onClick={() => router.push("/profile/edit")} />
+          <Row label="내 활동" onClick={() => router.push("/settings/activity")} />
         </Section>
 
         <Section label="지원">

@@ -41,3 +41,33 @@ export function formatChatTime(isoString: string): string {
 
   return `${kst.getUTCMonth() + 1}월 ${kst.getUTCDate()}일 ${timeStr}`;
 }
+
+function getKstDateParts(isoString: string) {
+  const date = new Date(isoString);
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const hours = kst.getUTCHours();
+  const minutes = String(kst.getUTCMinutes()).padStart(2, "0");
+  const ampm = hours < 12 ? "오전" : "오후";
+  const hour = hours % 12 === 0 ? 12 : hours % 12;
+
+  return {
+    ampm,
+    day: kst.getUTCDate(),
+    hour,
+    minutes,
+    month: kst.getUTCMonth() + 1,
+    year: kst.getUTCFullYear(),
+  };
+}
+
+export function formatKoreanDateTime(isoString: string): string {
+  const parts = getKstDateParts(isoString);
+
+  return `${parts.year}년 ${parts.month}월 ${parts.day}일 ${parts.ampm} ${parts.hour}:${parts.minutes}`;
+}
+
+export function formatStoryArchiveDate(isoString: string): string {
+  const parts = getKstDateParts(isoString);
+
+  return `${parts.month}월 ${parts.day}일`;
+}

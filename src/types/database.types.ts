@@ -496,6 +496,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorites: {
+        Row: {
+          id: string
+          user_id: string
+          favorite_user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          favorite_user_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          favorite_user_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           id: string
