@@ -36,6 +36,9 @@ universities (
 **users** (RLS 활성화, 민감 컬럼 BEFORE UPDATE 트리거 보호)
 - `real_name` 공개 범위: 본인 또는 친구(accepted)만 조회 가능 — API(`getProfile`) 레벨 마스킹
 - Google OAuth 가입 시 `handle_new_user` 트리거가 `full_name`(`심재성(학부생-자동차공학과)` 형식) 파싱 → `real_name`, `department` 자동 저장 (avatar_url 제외)
+- 신규 가입 기본 `nickname`은 `user_랜덤값` 임시값으로 생성 — 온보딩에서 사용자가 직접 입력해야 시작 가능
+- 활성 유저(`deleted_at IS NULL`) 기준 `lower(nickname)` 고유 인덱스로 중복 닉네임 방지
+- 탈퇴 유저의 닉네임은 점유 해제되어 다른 사용자가 재사용 가능
 - `real_name`: NULL → 값 최초 1회 허용 (온보딩), 이후 변경 불가
 ```sql
 users (
@@ -61,6 +64,8 @@ users (
 -- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name(값→값 변경),
 --   credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
 -- handle_new_user()는 auth metadata의 real_name/full_name/name, avatar_url, department를 반영
+-- nickname은 이메일 앞부분을 사용하지 않고 user_랜덤값으로 생성
+-- unique index: users_active_nickname_lower_unique on lower(nickname) where deleted_at is null
 ```
 
 **profile_links**
@@ -219,6 +224,20 @@ bookmarks (
   created_at timestamptz default now(),
   UNIQUE(user_id, post_id)
 )
+```
+
+**user_favorites** (즐겨찾기 계정)
+```sql
+user_favorites (
+  id               uuid PK default gen_random_uuid(),
+  user_id          uuid FK → users on delete cascade,
+  favorite_user_id uuid FK → users on delete cascade,
+  created_at       timestamptz default now(),
+  UNIQUE(user_id, favorite_user_id),
+  CHECK(user_id <> favorite_user_id)
+)
+-- RLS: 본인(user_id = auth.uid()) 즐겨찾기만 조회/추가/삭제 가능
+-- 계정 탈퇴 시 user_id 또는 favorite_user_id가 탈퇴 유저인 행은 즉시 삭제
 ```
 
 **notifications**
@@ -409,6 +428,7 @@ community_comments (
 | close_friends | 본인만 | 본인만 |
 | comments | 같은 학교 유저 | 본인만 |
 | bookmarks | 본인만 | 본인만 |
+| user_favorites | 본인만 | 본인만 |
 | notifications | 본인만 | 시스템 |
 | blocks | 본인만 | 본인만 |
 | reports | 본인만 | 로그인 유저 |
