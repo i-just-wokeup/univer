@@ -7,6 +7,10 @@ import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
 import { getCurrentUserProfile } from "@/features/auth/api";
+import {
+  getFavoriteUserStatus,
+  toggleUserFavorite,
+} from "@/features/activity/api";
 import { getOrCreateConversation } from "@/features/chat/api";
 import {
   acceptFriendRequest,
@@ -26,6 +30,7 @@ import {
 type ProfilePageState = {
   connectionStatus: ConnectionStatus;
   currentUserId: string | null;
+  isFavorite: boolean;
   posts: ProfilePost[];
   postsCount: number;
   profile: Profile | null;
@@ -328,6 +333,7 @@ export default function ProfilePage() {
       status: "none",
     },
     currentUserId: null,
+    isFavorite: false,
     posts: [],
     postsCount: 0,
     profile: null,
@@ -368,10 +374,17 @@ export default function ProfilePage() {
               }
             : await getProfile(profileNickname);
 
-        const [loadedPosts, loadedPostsCount, connectionStatus] = await Promise.all([
+        const isMine = currentUser?.id === loadedProfile.id;
+        const [
+          loadedPosts,
+          loadedPostsCount,
+          connectionStatus,
+          isFavorite,
+        ] = await Promise.all([
           getProfilePosts(loadedProfile.id),
           getPostsCount(loadedProfile.id),
           getConnectionStatus(loadedProfile.id),
+          isMine ? Promise.resolve(false) : getFavoriteUserStatus(loadedProfile.id),
         ]);
 
         if (!isMounted) {
@@ -385,6 +398,7 @@ export default function ProfilePage() {
         setState({
           connectionStatus,
           currentUserId: currentUser?.id ?? null,
+          isFavorite,
           posts: loadedPosts,
           postsCount: loadedPostsCount,
           profile: loadedProfile,
@@ -531,6 +545,33 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleToggleFavorite() {
+    if (!state.profile || state.currentUserId === state.profile.id) {
+      return;
+    }
+
+    const previousIsFavorite = state.isFavorite;
+
+    setState((currentState) => ({
+      ...currentState,
+      isFavorite: !currentState.isFavorite,
+    }));
+
+    try {
+      const result = await toggleUserFavorite(state.profile.id);
+
+      setState((currentState) => ({
+        ...currentState,
+        isFavorite: result.favorited,
+      }));
+    } catch {
+      setState((currentState) => ({
+        ...currentState,
+        isFavorite: previousIsFavorite,
+      }));
+    }
+  }
+
   async function handleSendMessage() {
     if (!state.profile || state.currentUserId === state.profile.id) {
       return;
@@ -541,6 +582,12 @@ export default function ProfilePage() {
   }
 
   const connectionMenuItems: ActionSheetItem[] = [
+    {
+      label: state.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가",
+      onClick: () => {
+        void handleToggleFavorite();
+      },
+    },
     {
       danger: true,
       label: "친구 삭제",
