@@ -5,8 +5,31 @@ import {
   getCurrentUserProfile,
   updateOnboardingProfile,
 } from "@/features/auth/api";
+import {
+  isTemporaryNickname,
+  isValidNickname,
+  normalizeNickname,
+} from "@/lib/utils/nickname";
 
 // 최초 로그인 후 닉네임과 학과를 채우는 온보딩 페이지.
+function shouldRequireNicknameInput(profile: {
+  email: string | null;
+  is_onboarded: boolean;
+  nickname: string;
+}) {
+  if (profile.is_onboarded) {
+    return false;
+  }
+
+  const emailLocalPart = profile.email?.split("@")[0]?.toLowerCase();
+  const normalizedNickname = profile.nickname.toLowerCase();
+
+  return (
+    isTemporaryNickname(profile.nickname) ||
+    Boolean(emailLocalPart && normalizedNickname === emailLocalPart)
+  );
+}
+
 export default function OnboardingPage() {
   const [nickname, setNickname] = useState("");
   const [department, setDepartment] = useState("");
@@ -16,6 +39,7 @@ export default function OnboardingPage() {
   const [realName, setRealName] = useState("");
   const [isDepartmentReadOnly, setIsDepartmentReadOnly] = useState(false);
   const [isRealNameReadOnly, setIsRealNameReadOnly] = useState(false);
+  const isNicknameValid = isValidNickname(nickname);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,7 +57,9 @@ export default function OnboardingPage() {
           return;
         }
 
-        setNickname(profile.nickname ?? "");
+        setNickname(
+          shouldRequireNicknameInput(profile) ? "" : profile.nickname ?? "",
+        );
         setDepartment(profile.department ?? "");
         setRealName(profile.real_name ?? "");
         setIsDepartmentReadOnly(Boolean(profile.department));
@@ -66,6 +92,12 @@ export default function OnboardingPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (!isNicknameValid) {
+      setError("닉네임은 영문, 숫자, 마침표, 밑줄만 사용할 수 있습니다.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -120,12 +152,17 @@ export default function OnboardingPage() {
             <span className="text-sm font-medium text-zinc-700">닉네임</span>
             <input
               value={nickname}
-              onChange={(event) => setNickname(event.target.value)}
+              onChange={(event) =>
+                setNickname(normalizeNickname(event.target.value))
+              }
               type="text"
               disabled={isLoading}
               className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 disabled:bg-zinc-50"
               required
             />
+            <p className="mt-2 text-xs font-medium text-zinc-500">
+              영문 소문자, 숫자, 마침표(.), 밑줄(_)만 사용할 수 있습니다.
+            </p>
           </label>
 
           <label className="block">
@@ -149,7 +186,7 @@ export default function OnboardingPage() {
 
           <button
             type="submit"
-            disabled={isLoading || isSubmitting}
+            disabled={isLoading || isSubmitting || !isNicknameValid}
             className="flex h-12 w-full items-center justify-center rounded-2xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
             {isSubmitting ? "저장 중..." : "완료"}

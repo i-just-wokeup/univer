@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { isValidNickname, normalizeNickname } from "@/lib/utils/nickname";
 import { normalizeProfileLinks } from "@/lib/utils/profile-links";
 import type { Database } from "@/types/database.types";
 
@@ -47,13 +48,17 @@ export async function updateProfile(
       : normalizeProfileLinks(params.profileLinks);
 
   if (params.nickname !== undefined) {
-    const trimmedNickname = params.nickname.trim();
+    const normalizedNickname = normalizeNickname(params.nickname);
 
-    if (!trimmedNickname) {
+    if (!normalizedNickname) {
       throw new Error("닉네임을 입력해주세요.");
     }
 
-    updateValues.nickname = trimmedNickname;
+    if (!isValidNickname(normalizedNickname)) {
+      throw new Error("닉네임은 영문, 숫자, 마침표, 밑줄만 사용할 수 있습니다.");
+    }
+
+    updateValues.nickname = normalizedNickname;
   }
 
   if (params.bio !== undefined) {
@@ -132,16 +137,16 @@ export async function checkNicknameDuplicate(
   nickname: string,
 ): Promise<boolean> {
   const { supabase, userId } = await requireCurrentUser();
-  const trimmedNickname = nickname.trim();
+  const normalizedNickname = normalizeNickname(nickname);
 
-  if (!trimmedNickname) {
+  if (!normalizedNickname) {
     throw new Error("닉네임을 입력해주세요.");
   }
 
   const { data, error } = await supabase
     .from("users")
     .select("id")
-    .eq("nickname", trimmedNickname)
+    .eq("nickname", normalizedNickname)
     .neq("id", userId)
     .maybeSingle();
 

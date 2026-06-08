@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { isValidNickname, normalizeNickname } from "@/lib/utils/nickname";
 import type { Database } from "@/types/database.types";
 
 // 인증 관련 API에서 공통으로 쓰는 Supabase 타입 별칭.
@@ -227,12 +228,31 @@ export async function updateOnboardingProfile({
     throw new Error("로그인이 필요합니다.");
   }
 
-  const trimmedNickname = nickname.trim();
+  const normalizedNickname = normalizeNickname(nickname);
   const trimmedDepartment = department.trim();
   const trimmedRealName = realName.trim();
 
-  if (!trimmedNickname || !trimmedDepartment || !trimmedRealName) {
+  if (!normalizedNickname || !trimmedDepartment || !trimmedRealName) {
     throw new Error("실명, 닉네임, 학과를 모두 입력해주세요.");
+  }
+
+  if (!isValidNickname(normalizedNickname)) {
+    throw new Error("닉네임은 영문, 숫자, 마침표, 밑줄만 사용할 수 있습니다.");
+  }
+
+  const { data: existingNickname, error: nicknameError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("nickname", normalizedNickname)
+    .neq("id", user.id)
+    .maybeSingle();
+
+  if (nicknameError) {
+    throw new Error("닉네임 중복 확인에 실패했습니다.");
+  }
+
+  if (existingNickname) {
+    throw new Error("이미 사용 중인 닉네임입니다.");
   }
 
   const { error } = await supabase
@@ -240,7 +260,7 @@ export async function updateOnboardingProfile({
     .update({
       department: trimmedDepartment,
       is_onboarded: true,
-      nickname: trimmedNickname,
+      nickname: normalizedNickname,
       real_name: trimmedRealName,
     })
     .eq("id", user.id);
