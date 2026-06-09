@@ -242,6 +242,137 @@ function UserPreviewCard({
   );
 }
 
+function StoryTopOverlay({
+  currentIndex,
+  currentStory,
+  isPaused,
+  onOpenActions,
+  onOpenProfile,
+  progress,
+  stories,
+}: {
+  currentIndex: number;
+  currentStory: Story;
+  isPaused: boolean;
+  onOpenActions: () => void;
+  onOpenProfile: () => void;
+  progress: number;
+  stories: Story[];
+}) {
+  return (
+    <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
+      <div className="mb-4 flex gap-1">
+        {stories.map((story, index) => (
+          <div
+            key={story.id}
+            className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/30"
+          >
+            <div
+              className="h-full rounded-full bg-white transition-[width] duration-75"
+              style={{
+                width:
+                  index < currentIndex
+                    ? "100%"
+                    : index === currentIndex
+                      ? `${progress}%`
+                      : "0%",
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onOpenProfile}
+          className="flex min-w-0 items-center gap-3"
+          aria-label={`${currentStory.user.nickname} 프로필 보기`}
+        >
+          <Avatar
+            src={currentStory.user.avatar_url}
+            nickname={currentStory.user.nickname}
+            size="sm"
+          />
+          <div className="min-w-0 text-left">
+            <p className="truncate text-sm font-bold">
+              {currentStory.user.nickname}
+            </p>
+            <p className="text-xs text-white/70">
+              {formatRelativeTime(currentStory.created_at)}
+            </p>
+          </div>
+        </button>
+
+        <div className="flex shrink-0 items-center gap-3">
+          {isPaused ? (
+            <span className="text-white" aria-label="스토리 일시정지됨">
+              <PauseIcon />
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={onOpenActions}
+            className="text-white"
+            aria-label="스토리 메뉴 열기"
+          >
+            <MoreIcon />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function StoryBottomActions({
+  className = "",
+  currentStory,
+  isLikeLoading,
+  isStoryLiked,
+  onLike,
+  onOpenViewers,
+}: {
+  className?: string;
+  currentStory: Story;
+  isLikeLoading: boolean;
+  isStoryLiked: boolean;
+  onLike: () => void;
+  onOpenViewers: () => void;
+}) {
+  if (currentStory.isMine) {
+    return (
+      <div className={className}>
+        <button
+          type="button"
+          onClick={onOpenViewers}
+          className="inline-flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-sm font-bold text-white backdrop-blur"
+        >
+          <EyeIcon />
+          <span>{currentStory.views_count}명 봄</span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      <button
+        type="button"
+        onClick={onLike}
+        disabled={isLikeLoading}
+        className={`p-2 transition disabled:opacity-60 ${
+          isStoryLiked ? "text-red-500" : "text-white"
+        }`}
+        aria-label={isStoryLiked ? "스토리 좋아요 취소" : "스토리 좋아요"}
+      >
+        <span className="[&>svg]:h-7 [&>svg]:w-7">
+          <HeartIcon filled={isStoryLiked} />
+        </span>
+      </button>
+    </div>
+  );
+}
+
 export default function StoryViewerPage() {
   const params = useParams<{ userId: string }>();
   const router = useRouter();
@@ -677,65 +808,20 @@ export default function StoryViewerPage() {
         </div>
 
         <div className="relative aspect-[9/16] w-full max-w-[56.25dvh] overflow-hidden bg-black sm:h-[calc(100vh-4rem)] sm:w-auto sm:max-w-full sm:rounded-lg">
-          <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
-            <div className="mb-4 flex gap-1">
-              {stories.map((story, index) => (
-                <div key={story.id} className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/30">
-                  <div
-                    className="h-full rounded-full bg-white transition-[width] duration-75"
-                    style={{
-                      width:
-                        index < currentIndex
-                          ? "100%"
-                          : index === currentIndex
-                            ? `${progress}%`
-                            : "0%",
-                    }}
-                  />
-                </div>
-              ))}
-              </div>
-
-            <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => router.push(`/profile/${currentStory.user.nickname}`)}
-              className="flex min-w-0 items-center gap-3"
-              aria-label={`${currentStory.user.nickname} 프로필 보기`}
-            >
-              <Avatar
-                src={currentStory.user.avatar_url}
-                nickname={currentStory.user.nickname}
-                size="sm"
-              />
-              <div className="min-w-0 text-left">
-                <p className="truncate text-sm font-bold">{currentStory.user.nickname}</p>
-                <p className="text-xs text-white/70">
-                  {formatRelativeTime(currentStory.created_at)}
-                </p>
-              </div>
-            </button>
-
-            <div className="flex shrink-0 items-center gap-3">
-              {isPaused ? (
-                <span className="text-white" aria-label="스토리 일시정지됨">
-                  <PauseIcon />
-                </span>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsPaused(true);
-                  setIsActionSheetOpen(true);
-                }}
-                className="text-white"
-                aria-label="스토리 메뉴 열기"
-              >
-                <MoreIcon />
-              </button>
-            </div>
-          </div>
-          </header>
+          <StoryTopOverlay
+            currentIndex={currentIndex}
+            currentStory={currentStory}
+            isPaused={isPaused}
+            onOpenActions={() => {
+              setIsPaused(true);
+              setIsActionSheetOpen(true);
+            }}
+            onOpenProfile={() => {
+              router.push(`/profile/${currentStory.user.nickname}`);
+            }}
+            progress={progress}
+            stories={stories}
+          />
 
           <button
             type="button"
@@ -787,34 +873,18 @@ export default function StoryViewerPage() {
           <div className="pointer-events-none absolute inset-x-0 top-0 z-[15] h-36 bg-gradient-to-b from-black/50 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-36 bg-gradient-to-b from-transparent to-black/50" />
 
-          {currentStory.isMine ? (
-            <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-8">
-              <button
-                type="button"
-                onClick={openViewerSheet}
-                className="inline-flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-sm font-bold text-white backdrop-blur"
-              >
-                <EyeIcon />
-                <span>{currentStory.views_count}명 봄</span>
-              </button>
-            </div>
-          ) : (
-            <div className="absolute bottom-0 right-0 z-20 px-5 pb-6">
-              <button
-                type="button"
-                onClick={handleStoryLike}
-                disabled={isLikeLoading}
-                className={`p-2 transition disabled:opacity-60 ${
-                  isStoryLiked ? "text-red-500" : "text-white"
-                }`}
-                aria-label={isStoryLiked ? "스토리 좋아요 취소" : "스토리 좋아요"}
-              >
-                <span className="[&>svg]:h-7 [&>svg]:w-7">
-                  <HeartIcon filled={isStoryLiked} />
-                </span>
-              </button>
-            </div>
-          )}
+          <StoryBottomActions
+            className={`absolute bottom-0 z-20 hidden px-5 pb-6 sm:flex ${
+              currentStory.isMine ? "left-0 right-0 justify-start" : "right-0 justify-end"
+            }`}
+            currentStory={currentStory}
+            isLikeLoading={isLikeLoading}
+            isStoryLiked={isStoryLiked}
+            onLike={handleStoryLike}
+            onOpenViewers={() => {
+              void openViewerSheet();
+            }}
+          />
         </div>
 
         <div className="hidden items-center justify-start gap-3 sm:flex">
@@ -836,6 +906,20 @@ export default function StoryViewerPage() {
           ) : null}
         </div>
       </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-36 bg-gradient-to-t from-black/80 to-transparent sm:hidden" />
+      <StoryBottomActions
+        className={`absolute inset-x-0 bottom-0 z-30 flex px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:hidden ${
+          currentStory.isMine ? "justify-start" : "justify-end"
+        }`}
+        currentStory={currentStory}
+        isLikeLoading={isLikeLoading}
+        isStoryLiked={isStoryLiked}
+        onLike={handleStoryLike}
+        onOpenViewers={() => {
+          void openViewerSheet();
+        }}
+      />
 
       <ViewerSheet
         isOpen={isViewerSheetOpen}
