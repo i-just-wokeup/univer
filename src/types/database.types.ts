@@ -614,7 +614,35 @@ export type Database = {
         }
         Returns: Json
       }
+      block_user: {
+        Args: {
+          target_user_id: string
+        }
+        Returns: Json
+      }
       get_connection_status: {
+        Args: {
+          target_user_id: string
+        }
+        Returns: Json
+      }
+      get_block_related_user_ids: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          user_id: string
+        }>
+      }
+      get_blocked_users: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          id: string
+          nickname: string
+          avatar_url: string | null
+          department: string
+          created_at: string
+        }>
+      }
+      unblock_user: {
         Args: {
           target_user_id: string
         }

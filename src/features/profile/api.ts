@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { isBlockRelatedUser } from "@/features/blocks/api";
 import type { Json } from "@/types/database.types";
 import type { Database } from "@/types/database.types";
 
@@ -109,6 +110,12 @@ export async function getProfile(nickname: string): Promise<Profile> {
   let canViewRealName = viewer?.id === profileUserId;
 
   if (viewer && !canViewRealName) {
+    const isBlocked = await isBlockRelatedUser(profileUserId);
+
+    if (isBlocked) {
+      throw new Error("차단 관계인 프로필은 볼 수 없습니다.");
+    }
+
     const { data: connection } = await supabase
       .from("user_connections")
       .select("status")

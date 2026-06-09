@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getBlockRelatedUserIds } from "@/features/blocks/api";
 
 export type SearchUser = {
   avatar_url: string | null;
@@ -32,5 +33,10 @@ export async function searchUsers(query: string): Promise<SearchUser[]> {
     return [];
   }
 
-  return data as SearchUser[];
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  const blockRelatedUserIdSet = new Set(blockRelatedUserIds);
+
+  return (data as SearchUser[]).filter(
+    (user) => !blockRelatedUserIdSet.has(user.id),
+  );
 }

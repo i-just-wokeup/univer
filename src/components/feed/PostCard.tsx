@@ -14,6 +14,7 @@ type PostCardProps = {
   currentUserId?: string;
   isBookmarked?: boolean;
   isLiked?: boolean;
+  onBlockUser?: (userId: string) => Promise<void> | void;
   onBookmark?: (postId: string) => void;
   onComment?: (postId: string) => void;
   onDelete?: (postId: string) => void;
@@ -145,6 +146,7 @@ export function PostCard({
   currentUserId = "",
   isBookmarked = false,
   isLiked = false,
+  onBlockUser,
   onBookmark,
   onComment,
   onDelete,
@@ -159,6 +161,8 @@ export function PostCard({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [isContentOverflowing, setIsContentOverflowing] = useState(false);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({
     isVisible: false,
@@ -213,6 +217,28 @@ export function PostCard({
     }
   }
 
+  async function handleConfirmBlockUser() {
+    if (!onBlockUser || isBlocking) {
+      return;
+    }
+
+    try {
+      setIsBlocking(true);
+      await onBlockUser(post.user.id);
+      setIsBlockConfirmOpen(false);
+      showToast("사용자를 차단했습니다.");
+    } catch (blockError) {
+      showToast(
+        blockError instanceof Error
+          ? blockError.message
+          : "사용자 차단에 실패했습니다.",
+        "error",
+      );
+    } finally {
+      setIsBlocking(false);
+    }
+  }
+
   const actionSheetItems: ActionSheetItem[] = isOwnPost
     ? [
         {
@@ -248,9 +274,10 @@ export function PostCard({
           },
         },
         {
+          danger: true,
           label: "차단",
           onClick: () => {
-            console.log("차단", post.user.id);
+            setIsBlockConfirmOpen(true);
           },
         },
         {
@@ -511,6 +538,20 @@ export function PostCard({
           void handleConfirmReportPost();
         }}
         title="신고하시겠습니까?"
+      />
+      <ConfirmDialog
+        confirmLabel={isBlocking ? "차단 중..." : "차단"}
+        description="이 사용자와 서로의 게시물 및 프로필이 보이지 않습니다. 기존 친구 관계도 삭제됩니다."
+        isOpen={isBlockConfirmOpen}
+        onCancel={() => {
+          if (!isBlocking) {
+            setIsBlockConfirmOpen(false);
+          }
+        }}
+        onConfirm={() => {
+          void handleConfirmBlockUser();
+        }}
+        title="사용자를 차단할까요?"
       />
       <Toast
         isVisible={toast.isVisible}

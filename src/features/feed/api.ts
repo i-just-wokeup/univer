@@ -1,5 +1,6 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Database } from "@/types/database.types";
+import { getBlockRelatedUserIds } from "@/features/blocks/api";
 
 // 게시물 공개 범위는 현재 MVP 기준 두 가지로 제한한다.
 type Visibility = "public" | "close_friends";
@@ -102,6 +103,10 @@ function normalizeHashtag(tag: string) {
 function getFileExtension(fileName: string) {
   const parts = fileName.split(".");
   return parts.length > 1 ? parts.at(-1)?.toLowerCase() ?? "jpg" : "jpg";
+}
+
+function toPostgrestInFilter(values: string[]) {
+  return `(${values.join(",")})`;
 }
 
 // 게시물 저장/조회 모두 현재 로그인 유저의 학교 범위를 알아야 하므로 공통으로 분리한다.
@@ -273,6 +278,7 @@ export async function createPost({
 // 수정 화면과 상세 화면에서 필요한 게시물 정보를 조회한다.
 export async function getPost(postId: string): Promise<PostDetail> {
   const supabase = requireSupabaseClient();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
 
   const { data: post, error: postError } = await supabase
     .from("posts")
@@ -282,6 +288,10 @@ export async function getPost(postId: string): Promise<PostDetail> {
     .single();
 
   if (postError || !post) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  if (blockRelatedUserIds.includes(post.user_id)) {
     throw new Error("게시물을 찾을 수 없습니다.");
   }
 
@@ -568,6 +578,7 @@ export async function getFeed({
 }: GetFeedParams = {}): Promise<GetFeedResult> {
   const supabase = requireSupabaseClient();
   const { universityId } = await getCurrentUserUniversityId();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
   const fetchLimit = limit + 1;
 
   let postsQuery = supabase
@@ -579,6 +590,14 @@ export async function getFeed({
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(fetchLimit);
+
+  if (blockRelatedUserIds.length > 0) {
+    postsQuery = postsQuery.not(
+      "user_id",
+      "in",
+      toPostgrestInFilter(blockRelatedUserIds),
+    );
+  }
 
   if (cursor) {
     postsQuery = postsQuery.lt("created_at", cursor);

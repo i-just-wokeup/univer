@@ -7,6 +7,7 @@ import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionShe
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
 import { ImageCarousel } from "@/components/feed/ImageCarousel";
+import { blockUser } from "@/features/blocks/api";
 import {
   addReply,
   CommentInput,
@@ -64,6 +65,8 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
     () => new Set(),
   );
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
   const [isCommentsLoading, setIsCommentsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -181,6 +184,35 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
         reportError instanceof Error ? reportError.message : "신고에 실패했습니다.",
         "error",
       );
+    }
+  }
+
+  async function handleConfirmBlockUser() {
+    if (!post || isBlocking) {
+      return;
+    }
+
+    try {
+      setIsBlocking(true);
+      await blockUser(post.user.id);
+      setIsBlockConfirmOpen(false);
+      showToast("사용자를 차단했습니다.");
+      window.setTimeout(() => {
+        if (onClose) {
+          onClose();
+        } else {
+          router.replace("/");
+        }
+      }, 300);
+    } catch (blockError) {
+      showToast(
+        blockError instanceof Error
+          ? blockError.message
+          : "사용자 차단에 실패했습니다.",
+        "error",
+      );
+    } finally {
+      setIsBlocking(false);
     }
   }
 
@@ -469,9 +501,10 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
           },
         },
         {
+          danger: true,
           label: "차단",
           onClick: () => {
-            console.log("차단", post.user.id);
+            setIsBlockConfirmOpen(true);
           },
         },
         {
@@ -629,6 +662,20 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
           void handleConfirmReportPost();
         }}
         title="신고하시겠습니까?"
+      />
+      <ConfirmDialog
+        confirmLabel={isBlocking ? "차단 중..." : "차단"}
+        description="이 사용자와 서로의 게시물 및 프로필이 보이지 않습니다. 기존 친구 관계도 삭제됩니다."
+        isOpen={isBlockConfirmOpen}
+        onCancel={() => {
+          if (!isBlocking) {
+            setIsBlockConfirmOpen(false);
+          }
+        }}
+        onConfirm={() => {
+          void handleConfirmBlockUser();
+        }}
+        title="사용자를 차단할까요?"
       />
       <Toast
         isVisible={toast.isVisible}

@@ -11,6 +11,7 @@ import {
   getBookmarkedPostIds,
   togglePostBookmark,
 } from "@/features/activity/api";
+import { blockUser } from "@/features/blocks/api";
 import {
   getFeed,
   getLikedPostIds,
@@ -397,6 +398,13 @@ function MainPageContent() {
     [bookmarkedPostIds],
   );
 
+  const handleBlockUser = useCallback(async (userId: string) => {
+    await blockUser(userId);
+    setPosts((currentPosts) =>
+      currentPosts.filter((post) => post.user.id !== userId),
+    );
+  }, []);
+
   const handleCommentCountChange = useCallback(
     (postId: string, nextCount: number) => {
       setPosts((currentPosts) =>
@@ -447,6 +455,7 @@ function MainPageContent() {
                 currentUserId={currentUserId}
                 isBookmarked={bookmarkedPostIds.has(post.id)}
                 isLiked={likedPostIds.has(post.id)}
+                onBlockUser={handleBlockUser}
                 onLike={handleLike}
                 onComment={(postId) => {
                   router.push(`/posts/${postId}`);
