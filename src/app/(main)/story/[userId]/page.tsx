@@ -644,7 +644,7 @@ export default function StoryViewerPage() {
       ];
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-black py-8 text-white">
+    <main className="relative flex h-dvh w-screen items-center justify-center overflow-hidden bg-black text-white sm:min-h-screen sm:py-8">
       <button
         type="button"
         onClick={() => router.replace(FEED_REFRESH_URL)}
@@ -654,8 +654,8 @@ export default function StoryViewerPage() {
         <CloseIcon />
       </button>
 
-      <div className="grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4">
-        <div className="flex items-center justify-end gap-3">
+      <div className="relative flex h-full w-full items-center justify-center sm:grid sm:h-auto sm:max-w-5xl sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4 sm:px-4">
+        <div className="hidden items-center justify-end gap-3 sm:flex">
           {prevUserPreview && prevUserId ? (
             <UserPreviewCard
               preview={prevUserPreview}
@@ -676,7 +676,7 @@ export default function StoryViewerPage() {
           ) : null}
         </div>
 
-        <div className="relative h-[calc(100vh-4rem)] w-auto max-w-full aspect-[9/16] overflow-hidden rounded-lg bg-black">
+        <div className="relative aspect-[9/16] w-full max-w-[56.25dvh] overflow-hidden bg-black sm:h-[calc(100vh-4rem)] sm:w-auto sm:max-w-full sm:rounded-lg">
           <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
             <div className="mb-4 flex gap-1">
               {stories.map((story, index) => (
@@ -762,6 +762,28 @@ export default function StoryViewerPage() {
             />
           </button>
 
+          {currentIndex > 0 || prevUserId ? (
+            <button
+              type="button"
+              onClick={goPrevious}
+              className="absolute left-0 top-24 z-20 h-[calc(100%-12rem)] w-1/3 sm:hidden"
+              aria-label="이전 스토리"
+            >
+              <span className="sr-only">이전 스토리</span>
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={goNext}
+            className="absolute right-0 top-24 z-20 h-[calc(100%-12rem)] w-1/3 sm:hidden"
+            aria-label={currentIndex >= stories.length - 1 ? "피드로 이동" : "다음 스토리"}
+          >
+            <span className="sr-only">
+              {currentIndex >= stories.length - 1 ? "피드로 이동" : "다음 스토리"}
+            </span>
+          </button>
+
           <div className="pointer-events-none absolute inset-x-0 top-0 z-[15] h-36 bg-gradient-to-b from-black/50 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-36 bg-gradient-to-b from-transparent to-black/50" />
 
@@ -795,7 +817,7 @@ export default function StoryViewerPage() {
           )}
         </div>
 
-        <div className="flex items-center justify-start gap-3">
+        <div className="hidden items-center justify-start gap-3 sm:flex">
           <button
             type="button"
             onClick={goNext}
