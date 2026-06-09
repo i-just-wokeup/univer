@@ -269,9 +269,17 @@ blocks (
   blocker_id uuid FK → users,
   blocked_id uuid FK → users,
   created_at timestamptz default now(),
-  UNIQUE(blocker_id, blocked_id)
+  UNIQUE(blocker_id, blocked_id),
+  CHECK(blocker_id <> blocked_id)
 )
 ```
+
+차단 RPC:
+- `block_user(target_user_id uuid)` — 현재 유저가 대상 유저를 차단하고, 두 유저 사이의 `user_connections`와 `user_favorites`를 정리
+- `get_block_related_user_ids()` — 현재 유저가 차단한 유저와 현재 유저를 차단한 유저 id를 모두 반환
+- `get_blocked_users()` — 현재 유저가 차단한 유저 목록 반환 (id, nickname, avatar_url, department, 차단 시각)
+- `unblock_user(target_user_id uuid)` — 현재 유저가 특정 유저를 차단 해제 (친구 관계 자동 복구 없음)
+- 앱 반영 범위: 피드, 게시물 상세, 유저 검색, 프로필 조회, 채팅 대화 목록, 메시지 전송에서 차단 관계 유저 숨김/차단
 
 **reports**
 ```sql
@@ -430,7 +438,7 @@ community_comments (
 | bookmarks | 본인만 | 본인만 |
 | user_favorites | 본인만 | 본인만 |
 | notifications | 본인만 | 시스템 |
-| blocks | 본인만 | 본인만 |
+| blocks | 본인 차단 목록 | 본인 차단 생성/삭제 |
 | reports | 본인만 | 로그인 유저 |
 | conversations | 참여자만 | 로그인 유저 |
 | messages | 참여자만 | 참여자만 |
