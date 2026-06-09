@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -54,6 +54,7 @@ type ToastState = {
 export function PostDetail({ onClose, postId }: PostDetailProps) {
   const router = useRouter();
   const isModal = Boolean(onClose);
+  const isLikePendingRef = useRef(false);
   const [commentContent, setCommentContent] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -184,10 +185,11 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
   }
 
   async function handleLike() {
-    if (!post) {
+    if (!post || isLikePendingRef.current) {
       return;
     }
 
+    isLikePendingRef.current = true;
     const previousPost = post;
     const previousIsLiked = isLiked;
     const nextIsLiked = !isLiked;
@@ -217,6 +219,8 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
           ? likeError.message
           : "좋아요 처리에 실패했습니다.",
       );
+    } finally {
+      isLikePendingRef.current = false;
     }
   }
 

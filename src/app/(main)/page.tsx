@@ -66,6 +66,7 @@ function MainPageContent() {
     type: "success",
   });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
   const isLoadingMoreRef = useRef(false);
 
   useEffect(() => {
@@ -251,12 +252,18 @@ function MainPageContent() {
 
   const handleLike = useCallback(
     async (postId: string) => {
+      if (pendingLikePostIdsRef.current.has(postId)) {
+        return;
+      }
+
       const wasLiked = likedPostIds.has(postId);
       const previousPost = posts.find((post) => post.id === postId);
 
       if (!previousPost) {
         return;
       }
+
+      pendingLikePostIdsRef.current.add(postId);
 
       const optimisticLikesCount = Math.max(
         0,
@@ -329,6 +336,8 @@ function MainPageContent() {
             : "좋아요 처리에 실패했습니다.";
 
         setError(message);
+      } finally {
+        pendingLikePostIdsRef.current.delete(postId);
       }
     },
     [likedPostIds, posts],
