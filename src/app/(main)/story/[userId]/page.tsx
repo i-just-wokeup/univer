@@ -260,7 +260,7 @@ function StoryTopOverlay({
   stories: Story[];
 }) {
   return (
-    <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-4">
+    <header className="absolute left-0 right-0 top-0 z-20 px-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:pt-4">
       <div className="mb-4 flex gap-1">
         {stories.map((story, index) => (
           <div
@@ -779,13 +779,13 @@ export default function StoryViewerPage() {
       <button
         type="button"
         onClick={() => router.replace(FEED_REFRESH_URL)}
-        className="fixed right-4 top-4 z-30 rounded-full bg-black/30 p-2 text-white backdrop-blur"
+        className="fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30 rounded-full bg-black/30 p-2 text-white backdrop-blur sm:top-4"
         aria-label="스토리 닫기"
       >
         <CloseIcon />
       </button>
 
-      <div className="relative flex h-full w-full items-center justify-center sm:grid sm:h-auto sm:max-w-5xl sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4 sm:px-4">
+      <div className="relative flex h-full w-full items-start justify-center sm:grid sm:h-auto sm:max-w-5xl sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4 sm:px-4">
         <div className="hidden items-center justify-end gap-3 sm:flex">
           {prevUserPreview && prevUserId ? (
             <UserPreviewCard
