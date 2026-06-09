@@ -100,7 +100,10 @@ export async function uploadStoryImage(file: File): Promise<string> {
   return data.publicUrl;
 }
 
-export async function createStory(imageUrl: string): Promise<void> {
+export async function createStory(
+  imageUrl: string,
+  visibility: "public" | "close_friends" = "public",
+): Promise<void> {
   const supabase = requireSupabaseClient();
   const { universityId, userId } = await getCurrentUserUniversityId();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -110,7 +113,7 @@ export async function createStory(imageUrl: string): Promise<void> {
     image_url: imageUrl,
     university_id: universityId,
     user_id: userId,
-    visibility: "public",
+    visibility,
   });
 
   if (error) {

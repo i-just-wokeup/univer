@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import {
+  VisibilityPicker,
+  type Visibility,
+} from "@/components/common/VisibilityPicker";
 import { createStory, uploadStoryImage } from "@/features/stories/api";
 
 export default function StoryCreatePage() {
@@ -10,6 +14,7 @@ export default function StoryCreatePage() {
   const previewUrlRef = useRef<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [visibility, setVisibility] = useState<Visibility>("public");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,7 +55,7 @@ export default function StoryCreatePage() {
       setError(null);
 
       const imageUrl = await uploadStoryImage(selectedImage);
-      await createStory(imageUrl);
+      await createStory(imageUrl, visibility);
 
       router.replace("/?toast=story_posted");
     } catch (shareError) {
@@ -112,6 +117,14 @@ export default function StoryCreatePage() {
           className="hidden"
           onChange={handleImageChange}
         />
+
+        <div className="mt-4">
+          <VisibilityPicker
+            theme="dark"
+            value={visibility}
+            onChange={setVisibility}
+          />
+        </div>
 
         {error ? (
           <p className="mt-4 rounded-2xl bg-red-500/15 px-4 py-3 text-sm font-medium text-red-200">

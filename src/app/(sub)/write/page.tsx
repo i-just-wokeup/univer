@@ -4,6 +4,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { PostImageUploader } from "@/components/feed/PostImageUploader";
 import {
+  VisibilityPicker,
+  type Visibility,
+} from "@/components/common/VisibilityPicker";
+import {
   createPost,
   getCurrentUserUniversityId,
   getPost,
@@ -11,9 +15,6 @@ import {
   uploadPostImages,
   type PostMedia,
 } from "@/features/feed/api";
-
-// MVP에서는 공개/친한친구 두 범위만 고려하지만 현재 UI는 public으로 고정한다.
-type Visibility = "public" | "close_friends";
 
 // 입력된 해시태그 문자열을 저장 가능한 기본 형태로 정리한다.
 function normalizeHashtag(value: string) {
@@ -29,7 +30,7 @@ function PostWriteContent() {
   const [images, setImages] = useState<File[]>([]);
   const [readonlyImages, setReadonlyImages] = useState<PostMedia[]>([]);
   const [content, setContent] = useState("");
-  const [visibility] = useState<Visibility>("public");
+  const [visibility, setVisibility] = useState<Visibility>("public");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -271,33 +272,9 @@ function PostWriteContent() {
           />
         </section>
 
-        {/* <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-zinc-950">공개 범위</h2>
-          <div className="grid grid-cols-2 gap-2 rounded-3xl bg-zinc-100 p-1">
-            <button
-              type="button"
-              onClick={() => setVisibility("public")}
-              className={`rounded-[20px] px-4 py-3 text-sm font-medium transition ${
-                visibility === "public"
-                  ? "bg-white text-zinc-950 shadow-sm"
-                  : "text-zinc-500"
-              }`}
-            >
-              전체공개
-            </button>
-            <button
-              type="button"
-              onClick={() => setVisibility("close_friends")}
-              className={`rounded-[20px] px-4 py-3 text-sm font-medium transition ${
-                visibility === "close_friends"
-                  ? "bg-white text-zinc-950 shadow-sm"
-                  : "text-zinc-500"
-              }`}
-            >
-              친한친구만
-            </button>
-          </div>
-        </section> */}
+        {isEditMode ? null : (
+          <VisibilityPicker value={visibility} onChange={setVisibility} />
+        )}
 
         <section className="flex flex-col gap-3">
           <div>
