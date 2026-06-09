@@ -186,7 +186,7 @@ user_connections (
 )
 ```
 
-**close_friends** (친한친구 — 일방적)
+**close_friends** (레거시 — 미사용)
 ```sql
 close_friends (
   id         uuid PK default gen_random_uuid(),
@@ -196,6 +196,7 @@ close_friends (
   UNIQUE(user_id, friend_id)
 )
 ```
+> ⚠️ 현재 코드에서 INSERT하지 않는 빈 테이블. 크루 관계는 `user_connections(status='accepted')`로 관리하며, posts/stories의 `close_friends`(크루공개) RLS도 `user_connections` 기준으로 판별한다(2026-06-09 변경).
 
 **hashtags**
 ```sql
@@ -426,9 +427,9 @@ community_comments (
 | universities | 전체 공개 | 관리자만 |
 | users | 같은 학교 유저 | 본인만 |
 | profile_links | 로그인 유저 | 본인만 |
-| posts | 같은 학교 + visibility 체크 | 본인만 |
+| posts | 같은 학교 + visibility 체크 (크루공개는 user_connections accepted) | 본인만 |
 | post_media | 같은 학교 유저 | 본인만 |
-| stories | 같은 학교 + visibility 체크 | 본인만 |
+| stories | 같은 학교 + visibility 체크 (크루공개는 user_connections accepted) | 본인만 |
 | story_views | 본인만 | 로그인 유저 |
 | post_likes | 공개 | 로그인 유저 |
 | comment_likes | 공개 | 로그인 유저 |

@@ -34,10 +34,17 @@
   - `features/chat/api.ts` `sendMessage`에서 차단 관계 상대에게 메시지 전송 차단
   - `/settings/blocked` 페이지 추가: 차단한 계정 목록, 차단 해제 확인 다이얼로그
   - 설정 페이지에 "차단한 계정" 메뉴 추가
+  - 채팅방 헤더 `...` 메뉴에 차단 버튼 추가, 차단 후 `/messages`로 이동
+
+- **게시물/스토리 공개범위 정리**
+  - posts/stories SELECT RLS의 `close_friends` 판별을 `close_friends` 테이블 → `user_connections(status='accepted')` 크루 관계로 교체 (양방향)
+  - 빈 `close_friends` 테이블로 인해 크루공개 콘텐츠가 작성자에게만 보이던 버그 수정
+  - `VisibilityPicker` 공통 컴포넌트 신규 생성 (전체공개/크루공개, light·dark 테마, 게시물·스토리 재사용)
+  - `/write` 작성 화면에 공개범위 선택 UI 복구 (기존 주석 처리 + `public` 고정 상태 해제, 수정 모드에서는 숨김)
+  - `/story/create` 작성 화면에 다크 테마 공개범위 선택 UI 추가
+  - `features/stories/api.ts` `createStory(imageUrl, visibility)` 파라미터 추가
 
 ### 다음 작업
-- [ ] 게시물/스토리 공개범위 정리 (`public` / `close_friends` → 전체공개 / 크루공개)
-- [ ] 게시물/스토리 공개범위 정리 (`public` / `close_friends` → 전체공개 / 크루공개)
 - [ ] 하단 탭 `카테고리` → `탐색` 교체 및 같은 학교 public 게시물 그리드 구현
 
 ---
