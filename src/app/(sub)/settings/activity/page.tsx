@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ActivityEmptyState } from "@/components/activity/ActivityEmptyState";
 import { ActivityFavoriteUsersList } from "@/components/activity/ActivityFavoriteUsersList";
@@ -25,6 +25,7 @@ import {
 
 type ActivityTab = "stories" | "saved" | "liked" | "comments" | "favorites";
 type ActivityTabErrors = Partial<Record<ActivityTab, string>>;
+type ActivityTabLoadState = Partial<Record<ActivityTab, boolean>>;
 
 const tabs: Array<{ id: ActivityTab; label: string }> = [
   { id: "stories", label: "스토리" },
@@ -49,9 +50,13 @@ function getLoadErrorMessage(error: unknown, fallbackMessage: string) {
 export default function ActivityPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ActivityTab>("stories");
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingViewers, setIsLoadingViewers] = useState(false);
+  const [loadedTabs, setLoadedTabs] = useState<ActivityTabLoadState>({});
+  const [loadingTabs, setLoadingTabs] = useState<ActivityTabLoadState>({});
   const [tabErrors, setTabErrors] = useState<ActivityTabErrors>({});
+  const loadedTabsRef = useRef<ActivityTabLoadState>({});
+  const loadingTabsRef = useRef<ActivityTabLoadState>({});
+  const isPageMountedRef = useRef(false);
   const [commentedPosts, setCommentedPosts] = useState<ActivityPost[]>([]);
   const [favoriteUsers, setFavoriteUsers] = useState<ActivityFavoriteUser[]>([]);
   const [likedPosts, setLikedPosts] = useState<ActivityPost[]>([]);
@@ -61,95 +66,96 @@ export default function ActivityPage() {
   const [storyViewers, setStoryViewers] = useState<ActivityStoryViewer[]>([]);
 
   useEffect(() => {
-    let isMounted = true;
+    isPageMountedRef.current = true;
 
-    async function loadActivity() {
-      setIsLoading(true);
-      setTabErrors({});
+    return () => {
+      isPageMountedRef.current = false;
+    };
+  }, []);
 
-      const [
-        storiesResult,
-        savedPostsResult,
-        likedPostsResult,
-        commentedPostsResult,
-        favoriteUsersResult,
-      ] = await Promise.allSettled([
-        getMyStories(),
-        getSavedPosts(),
-        getLikedPosts(),
-        getCommentedPosts(),
-        getFavoriteUsers(),
-      ]);
+  useEffect(() => {
+    if (loadedTabsRef.current[activeTab] || loadingTabsRef.current[activeTab]) {
+      return;
+    }
 
-      if (!isMounted) {
-        return;
-      }
+    async function loadActiveTab() {
+      const nextLoadingTabs = {
+        ...loadingTabsRef.current,
+        [activeTab]: true,
+      };
+      loadingTabsRef.current = nextLoadingTabs;
+      setLoadingTabs(nextLoadingTabs);
+      setTabErrors((currentTabErrors) => {
+        const nextTabErrors = { ...currentTabErrors };
+        delete nextTabErrors[activeTab];
+        return nextTabErrors;
+      });
 
-      const nextTabErrors: ActivityTabErrors = {};
+      try {
+        if (activeTab === "stories") {
+          const nextStories = await getMyStories();
 
-      if (storiesResult.status === "fulfilled") {
-        setStories(storiesResult.value);
-      } else {
-        nextTabErrors.stories = getLoadErrorMessage(
-          storiesResult.reason,
-          activityLoadErrorMessages.stories,
-        );
-      }
+          if (isPageMountedRef.current) {
+            setStories(nextStories);
+          }
+        } else if (activeTab === "saved") {
+          const nextSavedPosts = await getSavedPosts();
 
-      if (savedPostsResult.status === "fulfilled") {
-        setSavedPosts(savedPostsResult.value);
-      } else {
-        nextTabErrors.saved = getLoadErrorMessage(
-          savedPostsResult.reason,
-          activityLoadErrorMessages.saved,
-        );
-      }
+          if (isPageMountedRef.current) {
+            setSavedPosts(nextSavedPosts);
+          }
+        } else if (activeTab === "liked") {
+          const nextLikedPosts = await getLikedPosts();
 
-      if (likedPostsResult.status === "fulfilled") {
-        setLikedPosts(likedPostsResult.value);
-      } else {
-        nextTabErrors.liked = getLoadErrorMessage(
-          likedPostsResult.reason,
-          activityLoadErrorMessages.liked,
-        );
-      }
+          if (isPageMountedRef.current) {
+            setLikedPosts(nextLikedPosts);
+          }
+        } else if (activeTab === "comments") {
+          const nextCommentedPosts = await getCommentedPosts();
 
-      if (commentedPostsResult.status === "fulfilled") {
-        setCommentedPosts(commentedPostsResult.value);
-      } else {
-        nextTabErrors.comments = getLoadErrorMessage(
-          commentedPostsResult.reason,
-          activityLoadErrorMessages.comments,
-        );
-      }
+          if (isPageMountedRef.current) {
+            setCommentedPosts(nextCommentedPosts);
+          }
+        } else {
+          const nextFavoriteUsers = await getFavoriteUsers();
 
-      if (favoriteUsersResult.status === "fulfilled") {
-        setFavoriteUsers(favoriteUsersResult.value);
-      } else {
-        nextTabErrors.favorites = getLoadErrorMessage(
-          favoriteUsersResult.reason,
-          activityLoadErrorMessages.favorites,
-        );
-      }
+          if (isPageMountedRef.current) {
+            setFavoriteUsers(nextFavoriteUsers);
+          }
+        }
 
-      setTabErrors(nextTabErrors);
-
-      if (isMounted) {
-        setIsLoading(false);
+        if (isPageMountedRef.current) {
+          const nextLoadedTabs = {
+            ...loadedTabsRef.current,
+            [activeTab]: true,
+          };
+          loadedTabsRef.current = nextLoadedTabs;
+          setLoadedTabs(nextLoadedTabs);
+        }
+      } catch (loadError) {
+        if (isPageMountedRef.current) {
+          setTabErrors((currentTabErrors) => ({
+            ...currentTabErrors,
+            [activeTab]: getLoadErrorMessage(
+              loadError,
+              activityLoadErrorMessages[activeTab],
+            ),
+          }));
+        }
+      } finally {
+        if (isPageMountedRef.current) {
+          const nextLoadingTabs = {
+            ...loadingTabsRef.current,
+            [activeTab]: false,
+          };
+          loadingTabsRef.current = nextLoadingTabs;
+          setLoadingTabs(nextLoadingTabs);
+        }
       }
     }
 
-    void loadActivity().catch(() => {
-      if (isMounted) {
-        setTabErrors(activityLoadErrorMessages);
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    void loadActiveTab();
+  }, [activeTab]);
 
   useEffect(() => {
     if (!selectedStory) {
@@ -194,11 +200,14 @@ export default function ActivityPage() {
   }
 
   function renderActiveTab() {
-    if (isLoading) {
+    const activeTabError = tabErrors[activeTab];
+    const isActiveTabLoading =
+      Boolean(loadingTabs[activeTab]) ||
+      (!loadedTabs[activeTab] && !activeTabError);
+
+    if (isActiveTabLoading) {
       return <ActivityLoadingGrid />;
     }
-
-    const activeTabError = tabErrors[activeTab];
 
     if (activeTabError) {
       return <ActivityEmptyState message={activeTabError} />;
