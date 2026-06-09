@@ -112,6 +112,7 @@ export default function SettingsPage() {
         <Section label="계정">
           <Row label="프로필 편집" onClick={() => router.push("/profile/edit")} />
           <Row label="내 활동" onClick={() => router.push("/settings/activity")} />
+          <Row label="차단한 계정" onClick={() => router.push("/settings/blocked")} />
         </Section>
 
         <Section label="지원">

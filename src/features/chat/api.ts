@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getBlockRelatedUserIds, isBlockRelatedUser } from "@/features/blocks/api";
 import type { Database } from "@/types/database.types";
 
 type ConversationRow = Database["public"]["Tables"]["conversations"]["Row"];
@@ -158,7 +159,21 @@ export async function getConversations(): Promise<{
     return { active: [], pending: [] };
   }
 
-  const conversationRows = conversations as ConversationRow[];
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  const blockRelatedUserIdSet = new Set(blockRelatedUserIds);
+
+  const conversationRows = (conversations as ConversationRow[]).filter((conversation) => {
+    const otherUserId =
+      conversation.participant_1_id === userId
+        ? conversation.participant_2_id
+        : conversation.participant_1_id;
+    return !blockRelatedUserIdSet.has(otherUserId);
+  });
+
+  if (conversationRows.length === 0) {
+    return { active: [], pending: [] };
+  }
+
   const otherUserIds = Array.from(
     new Set(
       conversationRows.map((conversation) =>
@@ -287,6 +302,27 @@ export async function sendMessage(
 
   if (!trimmedContent) {
     throw new Error("메시지를 입력해주세요.");
+  }
+
+  const { data: conversationRow, error: conversationError } = await supabase
+    .from("conversations")
+    .select("participant_1_id, participant_2_id")
+    .eq("id", conversationId)
+    .single();
+
+  if (conversationError || !conversationRow) {
+    throw new Error("대화방을 찾을 수 없습니다.");
+  }
+
+  const otherUserId =
+    conversationRow.participant_1_id === userId
+      ? conversationRow.participant_2_id
+      : conversationRow.participant_1_id;
+
+  const blocked = await isBlockRelatedUser(otherUserId);
+
+  if (blocked) {
+    throw new Error("차단 관계에서는 메시지를 보낼 수 없습니다.");
   }
 
   const messageInsert: MessageInsert = {

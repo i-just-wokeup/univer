@@ -6,6 +6,8 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { MessageInput } from "@/components/chat/MessageInput";
+import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { UserInfo } from "@/components/common/UserInfo";
 import { getCurrentUserProfile } from "@/features/auth/api";
 import {
@@ -15,6 +17,7 @@ import {
   type Message,
 } from "@/features/chat/api";
 import { useConversations, useMessages } from "@/features/chat/hooks";
+import { blockUser } from "@/features/blocks/api";
 import { formatChatTime } from "@/lib/utils/time";
 
 type CurrentUserProfile = Pick<
@@ -57,6 +60,9 @@ export default function MessageRoomPage() {
   const [currentUserProfile, setCurrentUserProfile] =
     useState<CurrentUserProfile | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
 
   const conversation = useMemo(
     () =>
@@ -152,6 +158,21 @@ export default function MessageRoomPage() {
     }
   }
 
+  async function handleBlockUser() {
+    if (!conversation || isBlocking) {
+      return;
+    }
+
+    try {
+      setIsBlocking(true);
+      await blockUser(conversation.other_user.id);
+      router.push("/messages");
+    } catch {
+      setIsBlocking(false);
+      setIsBlockConfirmOpen(false);
+    }
+  }
+
   async function handleSendMessage(content: string) {
     const tempId = addOptimisticMessage(content, currentUserProfile?.id ?? "");
 
@@ -184,15 +205,31 @@ export default function MessageRoomPage() {
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
-          {conversation ? (
-            <UserInfo
-              avatarUrl={conversation.other_user.avatar_url}
-              nickname={conversation.other_user.nickname}
-              size="md"
-            />
-          ) : (
-            <h1 className="text-base font-bold">메시지</h1>
-          )}
+          <div className="flex flex-1 items-center justify-between">
+            {conversation ? (
+              <UserInfo
+                avatarUrl={conversation.other_user.avatar_url}
+                nickname={conversation.other_user.nickname}
+                size="md"
+              />
+            ) : (
+              <h1 className="text-base font-bold">메시지</h1>
+            )}
+            {conversation ? (
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500"
+                aria-label="더보기"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true">
+                  <circle cx="5" cy="12" r="1.75" />
+                  <circle cx="12" cy="12" r="1.75" />
+                  <circle cx="19" cy="12" r="1.75" />
+                </svg>
+              </button>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -267,6 +304,34 @@ export default function MessageRoomPage() {
       <div className="shrink-0 bg-white pb-[env(safe-area-inset-bottom)]">
         <MessageInput onSend={handleSendMessage} />
       </div>
+
+      <ActionSheet
+        isOpen={isMenuOpen}
+        items={[
+          {
+            danger: true,
+            label: "차단하기",
+            onClick: () => {
+              setIsMenuOpen(false);
+              setIsBlockConfirmOpen(true);
+            },
+          },
+          {
+            label: "취소",
+            onClick: () => setIsMenuOpen(false),
+          },
+        ] satisfies ActionSheetItem[]}
+        onClose={() => setIsMenuOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={isBlockConfirmOpen}
+        title={`${conversation?.other_user.nickname ?? ""}을(를) 차단할까요?`}
+        description="차단하면 서로의 게시물과 채팅이 숨겨집니다."
+        confirmLabel={isBlocking ? "차단 중..." : "차단"}
+        onCancel={() => setIsBlockConfirmOpen(false)}
+        onConfirm={handleBlockUser}
+      />
     </div>
   );
 }
