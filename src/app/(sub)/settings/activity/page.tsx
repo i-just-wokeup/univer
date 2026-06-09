@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ActivityEmptyState } from "@/components/activity/ActivityEmptyState";
 import { ActivityFavoriteUsersList } from "@/components/activity/ActivityFavoriteUsersList";
@@ -43,6 +43,8 @@ const activityLoadErrorMessages: Record<ActivityTab, string> = {
   stories: "스토리 보관함을 불러오지 못했습니다.",
 };
 
+const backgroundPrefetchTabs: ActivityTab[] = ["saved", "liked", "comments"];
+
 function getLoadErrorMessage(error: unknown, fallbackMessage: string) {
   return error instanceof Error ? error.message : fallbackMessage;
 }
@@ -57,6 +59,7 @@ export default function ActivityPage() {
   const loadedTabsRef = useRef<ActivityTabLoadState>({});
   const loadingTabsRef = useRef<ActivityTabLoadState>({});
   const isPageMountedRef = useRef(false);
+  const hasStartedBackgroundPrefetchRef = useRef(false);
   const [commentedPosts, setCommentedPosts] = useState<ActivityPost[]>([]);
   const [favoriteUsers, setFavoriteUsers] = useState<ActivityFavoriteUser[]>([]);
   const [likedPosts, setLikedPosts] = useState<ActivityPost[]>([]);
@@ -73,89 +76,116 @@ export default function ActivityPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (loadedTabsRef.current[activeTab] || loadingTabsRef.current[activeTab]) {
+  const loadTab = useCallback(async (tab: ActivityTab, options?: { silent?: boolean }) => {
+    if (loadedTabsRef.current[tab] || loadingTabsRef.current[tab]) {
       return;
     }
 
-    async function loadActiveTab() {
-      const nextLoadingTabs = {
-        ...loadingTabsRef.current,
-        [activeTab]: true,
-      };
-      loadingTabsRef.current = nextLoadingTabs;
+    const nextLoadingTabs = {
+      ...loadingTabsRef.current,
+      [tab]: true,
+    };
+    loadingTabsRef.current = nextLoadingTabs;
+
+    if (!options?.silent) {
       setLoadingTabs(nextLoadingTabs);
-      setTabErrors((currentTabErrors) => {
-        const nextTabErrors = { ...currentTabErrors };
-        delete nextTabErrors[activeTab];
-        return nextTabErrors;
-      });
+    }
 
-      try {
-        if (activeTab === "stories") {
-          const nextStories = await getMyStories();
+    setTabErrors((currentTabErrors) => {
+      const nextTabErrors = { ...currentTabErrors };
+      delete nextTabErrors[tab];
+      return nextTabErrors;
+    });
 
-          if (isPageMountedRef.current) {
-            setStories(nextStories);
-          }
-        } else if (activeTab === "saved") {
-          const nextSavedPosts = await getSavedPosts();
-
-          if (isPageMountedRef.current) {
-            setSavedPosts(nextSavedPosts);
-          }
-        } else if (activeTab === "liked") {
-          const nextLikedPosts = await getLikedPosts();
-
-          if (isPageMountedRef.current) {
-            setLikedPosts(nextLikedPosts);
-          }
-        } else if (activeTab === "comments") {
-          const nextCommentedPosts = await getCommentedPosts();
-
-          if (isPageMountedRef.current) {
-            setCommentedPosts(nextCommentedPosts);
-          }
-        } else {
-          const nextFavoriteUsers = await getFavoriteUsers();
-
-          if (isPageMountedRef.current) {
-            setFavoriteUsers(nextFavoriteUsers);
-          }
-        }
+    try {
+      if (tab === "stories") {
+        const nextStories = await getMyStories();
 
         if (isPageMountedRef.current) {
-          const nextLoadedTabs = {
-            ...loadedTabsRef.current,
-            [activeTab]: true,
-          };
-          loadedTabsRef.current = nextLoadedTabs;
-          setLoadedTabs(nextLoadedTabs);
+          setStories(nextStories);
         }
-      } catch (loadError) {
+      } else if (tab === "saved") {
+        const nextSavedPosts = await getSavedPosts();
+
         if (isPageMountedRef.current) {
-          setTabErrors((currentTabErrors) => ({
-            ...currentTabErrors,
-            [activeTab]: getLoadErrorMessage(
-              loadError,
-              activityLoadErrorMessages[activeTab],
-            ),
-          }));
+          setSavedPosts(nextSavedPosts);
         }
-      } finally {
+      } else if (tab === "liked") {
+        const nextLikedPosts = await getLikedPosts();
+
         if (isPageMountedRef.current) {
-          const nextLoadingTabs = {
-            ...loadingTabsRef.current,
-            [activeTab]: false,
-          };
-          loadingTabsRef.current = nextLoadingTabs;
+          setLikedPosts(nextLikedPosts);
+        }
+      } else if (tab === "comments") {
+        const nextCommentedPosts = await getCommentedPosts();
+
+        if (isPageMountedRef.current) {
+          setCommentedPosts(nextCommentedPosts);
+        }
+      } else {
+        const nextFavoriteUsers = await getFavoriteUsers();
+
+        if (isPageMountedRef.current) {
+          setFavoriteUsers(nextFavoriteUsers);
+        }
+      }
+
+      if (isPageMountedRef.current) {
+        const nextLoadedTabs = {
+          ...loadedTabsRef.current,
+          [tab]: true,
+        };
+        loadedTabsRef.current = nextLoadedTabs;
+        setLoadedTabs(nextLoadedTabs);
+      }
+    } catch (loadError) {
+      if (isPageMountedRef.current) {
+        setTabErrors((currentTabErrors) => ({
+          ...currentTabErrors,
+          [tab]: getLoadErrorMessage(
+            loadError,
+            activityLoadErrorMessages[tab],
+          ),
+        }));
+      }
+    } finally {
+      if (isPageMountedRef.current) {
+        const nextLoadingTabs = {
+          ...loadingTabsRef.current,
+          [tab]: false,
+        };
+        loadingTabsRef.current = nextLoadingTabs;
+
+        if (!options?.silent) {
           setLoadingTabs(nextLoadingTabs);
         }
       }
     }
+  }, []);
 
-    void loadActiveTab();
-  }, [activeTab]);
+  useEffect(() => {
+    void loadTab(activeTab);
+  }, [activeTab, loadTab]);
+
+  useEffect(() => {
+    if (
+      !loadedTabs.stories ||
+      hasStartedBackgroundPrefetchRef.current
+    ) {
+      return;
+    }
+
+    hasStartedBackgroundPrefetchRef.current = true;
+    const timerId = window.setTimeout(() => {
+      backgroundPrefetchTabs.forEach((tab) => {
+        void loadTab(tab, { silent: true });
+      });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [loadedTabs.stories, loadTab]);
 
   useEffect(() => {
     if (!selectedStory) {
