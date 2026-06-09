@@ -49,6 +49,7 @@ export default function MessageRoomPage() {
   const { active, pending, reload } = useConversations();
   const {
     addOptimisticMessage,
+    error: messagesError,
     hasMore,
     isLoading,
     isLoadingMore,
@@ -262,6 +263,21 @@ export default function MessageRoomPage() {
           <p className="py-12 text-center text-sm font-medium text-zinc-500">
             메시지를 불러오는 중...
           </p>
+        ) : messagesError ? (
+          <div className="flex min-h-full items-center justify-center px-6 text-center">
+            <div>
+              <p className="text-sm font-semibold text-zinc-700">
+                {messagesError}
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push("/messages")}
+                className="mt-4 rounded-2xl bg-zinc-950 px-4 py-2 text-sm font-bold text-white"
+              >
+                메시지 목록으로
+              </button>
+            </div>
+          </div>
         ) : messages.length === 0 ? (
           <p className="py-16 text-center text-sm font-medium text-zinc-500">
             아직 메시지가 없습니다.
@@ -302,7 +318,7 @@ export default function MessageRoomPage() {
       </main>
 
       <div className="shrink-0 bg-white pb-[env(safe-area-inset-bottom)]">
-        <MessageInput onSend={handleSendMessage} />
+        <MessageInput onSend={handleSendMessage} disabled={Boolean(messagesError)} />
       </div>
 
       <ActionSheet

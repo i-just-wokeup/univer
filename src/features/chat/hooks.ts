@@ -19,6 +19,7 @@ type ChatMessage = Message & {
 
 export function useMessages(conversationId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -30,6 +31,7 @@ export function useMessages(conversationId: string) {
       async function loadMessages() {
         try {
           setIsLoading(true);
+          setError(null);
           const nextMessages = await getMessages(conversationId, {
             limit: MESSAGE_PAGE_SIZE,
           });
@@ -37,6 +39,16 @@ export function useMessages(conversationId: string) {
           if (isMounted) {
             setMessages(nextMessages);
             setHasMore(nextMessages.length === MESSAGE_PAGE_SIZE);
+          }
+        } catch (loadError) {
+          if (isMounted) {
+            setMessages([]);
+            setHasMore(false);
+            setError(
+              loadError instanceof Error
+                ? loadError.message
+                : "메시지를 불러오지 못했습니다.",
+            );
           }
         } finally {
           if (isMounted) {
@@ -61,6 +73,7 @@ export function useMessages(conversationId: string) {
 
     try {
       setIsLoadingMore(true);
+      setError(null);
       const olderMessages = await getMessages(conversationId, {
         before: messages[0].created_at,
         limit: MESSAGE_PAGE_SIZE,
@@ -68,6 +81,12 @@ export function useMessages(conversationId: string) {
 
       setMessages((currentMessages) => [...olderMessages, ...currentMessages]);
       setHasMore(olderMessages.length === MESSAGE_PAGE_SIZE);
+    } catch (loadMoreError) {
+      setError(
+        loadMoreError instanceof Error
+          ? loadMoreError.message
+          : "이전 메시지를 불러오지 못했습니다.",
+      );
     } finally {
       setIsLoadingMore(false);
     }
@@ -114,7 +133,7 @@ export function useMessages(conversationId: string) {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
-    if (!supabase) {
+    if (!supabase || error) {
       return;
     }
 
@@ -159,10 +178,11 @@ export function useMessages(conversationId: string) {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, error]);
 
   return {
     addOptimisticMessage,
+    error,
     hasMore,
     isLoading,
     isLoadingMore,

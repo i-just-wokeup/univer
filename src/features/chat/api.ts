@@ -72,6 +72,44 @@ function toMessage(row: MessageRow): Message {
   };
 }
 
+async function getConversationAccessContext(
+  conversationId: string,
+  blockedMessage = "차단 관계인 대화는 볼 수 없습니다.",
+) {
+  const supabase = requireSupabaseClient();
+  const userId = await getCurrentUserId();
+
+  const { data: conversation, error } = await supabase
+    .from("conversations")
+    .select("id, participant_1_id, participant_2_id")
+    .eq("id", conversationId)
+    .single();
+
+  if (error || !conversation) {
+    throw new Error("대화방을 찾을 수 없습니다.");
+  }
+
+  if (
+    conversation.participant_1_id !== userId &&
+    conversation.participant_2_id !== userId
+  ) {
+    throw new Error("대화방을 찾을 수 없습니다.");
+  }
+
+  const otherUserId =
+    conversation.participant_1_id === userId
+      ? conversation.participant_2_id
+      : conversation.participant_1_id;
+
+  const isBlocked = await isBlockRelatedUser(otherUserId);
+
+  if (isBlocked) {
+    throw new Error(blockedMessage);
+  }
+
+  return { otherUserId, supabase, userId };
+}
+
 export async function getOrCreateConversation(
   targetUserId: string,
 ): Promise<string> {
@@ -80,6 +118,12 @@ export async function getOrCreateConversation(
 
   if (userId === targetUserId) {
     throw new Error("본인과는 메시지를 시작할 수 없습니다.");
+  }
+
+  const isBlocked = await isBlockRelatedUser(targetUserId);
+
+  if (isBlocked) {
+    throw new Error("차단 관계에서는 메시지를 시작할 수 없습니다.");
   }
 
   const { participant1Id, participant2Id } = getParticipantIds(
@@ -266,7 +310,7 @@ export async function getMessages(
   conversationId: string,
   options: { before?: string; limit?: number } = {},
 ): Promise<Message[]> {
-  const supabase = requireSupabaseClient();
+  const { supabase } = await getConversationAccessContext(conversationId);
   const limit = options.limit ?? 50;
 
   let query = supabase
@@ -296,34 +340,16 @@ export async function sendMessage(
   conversationId: string,
   content: string,
 ): Promise<Message> {
-  const supabase = requireSupabaseClient();
-  const userId = await getCurrentUserId();
   const trimmedContent = content.trim();
 
   if (!trimmedContent) {
     throw new Error("메시지를 입력해주세요.");
   }
 
-  const { data: conversationRow, error: conversationError } = await supabase
-    .from("conversations")
-    .select("participant_1_id, participant_2_id")
-    .eq("id", conversationId)
-    .single();
-
-  if (conversationError || !conversationRow) {
-    throw new Error("대화방을 찾을 수 없습니다.");
-  }
-
-  const otherUserId =
-    conversationRow.participant_1_id === userId
-      ? conversationRow.participant_2_id
-      : conversationRow.participant_1_id;
-
-  const blocked = await isBlockRelatedUser(otherUserId);
-
-  if (blocked) {
-    throw new Error("차단 관계에서는 메시지를 보낼 수 없습니다.");
-  }
+  const { supabase, userId } = await getConversationAccessContext(
+    conversationId,
+    "차단 관계에서는 메시지를 보낼 수 없습니다.",
+  );
 
   const messageInsert: MessageInsert = {
     content: trimmedContent,
@@ -350,7 +376,7 @@ export async function sendMessage(
 }
 
 export async function markMessagesRead(conversationId: string): Promise<void> {
-  const supabase = requireSupabaseClient();
+  const { supabase } = await getConversationAccessContext(conversationId);
 
   const { error } = await supabase.rpc("mark_messages_read", {
     p_conversation_id: conversationId,
@@ -383,7 +409,7 @@ export async function getChatUnreadCount(): Promise<number> {
 
   const { data: conversations, error: conversationsError } = await supabase
     .from("conversations")
-    .select("id")
+    .select("id, participant_1_id, participant_2_id")
     .or(`participant_1_id.eq.${userId},participant_2_id.eq.${userId}`);
 
   if (conversationsError || !conversations) {
@@ -394,7 +420,23 @@ export async function getChatUnreadCount(): Promise<number> {
     return 0;
   }
 
-  const conversationIds = conversations.map((conversation) => conversation.id);
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  const blockRelatedUserIdSet = new Set(blockRelatedUserIds);
+  const conversationIds = conversations
+    .filter((conversation) => {
+      const otherUserId =
+        conversation.participant_1_id === userId
+          ? conversation.participant_2_id
+          : conversation.participant_1_id;
+
+      return !blockRelatedUserIdSet.has(otherUserId);
+    })
+    .map((conversation) => conversation.id);
+
+  if (conversationIds.length === 0) {
+    return 0;
+  }
+
   const { count, error } = await supabase
     .from("messages")
     .select("id", { count: "exact", head: true })
