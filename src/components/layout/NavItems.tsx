@@ -88,44 +88,15 @@ function PlusIcon({ className = "h-6 w-6" }: IconProps) {
   );
 }
 
-function CategoryIcon({ className = "h-6 w-6" }: IconProps) {
+function ExploreIcon({ className = "h-6 w-6" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <rect
-        x="4"
-        y="4"
-        width="7"
-        height="7"
-        rx="1.5"
+      <circle cx="12" cy="12" r="8.25" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M14.8 9.2l-1.6 4-4 1.6 1.6-4 4-1.6Z"
         stroke="currentColor"
         strokeWidth="1.8"
-      />
-      <rect
-        x="13"
-        y="4"
-        width="7"
-        height="7"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <rect
-        x="4"
-        y="13"
-        width="7"
-        height="7"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <rect
-        x="13"
-        y="13"
-        width="7"
-        height="7"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -282,10 +253,10 @@ export function NavItems(props: NavItemsProps) {
       isPrimary: true,
     },
     {
-      href: "/category",
-      label: "카테고리",
-      icon: <CategoryIcon />,
-      isActive: pathname.startsWith("/category"),
+      href: "/explore",
+      label: "탐색",
+      icon: <ExploreIcon />,
+      isActive: pathname.startsWith("/explore"),
     },
     {
       href: "/profile/me",
