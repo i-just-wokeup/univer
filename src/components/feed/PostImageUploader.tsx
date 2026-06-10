@@ -187,10 +187,10 @@ export function PostImageUploader({
           {previewImages.map((previewImage, index) => (
             <div
               key={`${previewImage.fileName}-${index}`}
-              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 ring-offset-2 transition ${
+              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 outline outline-offset-[-3px] transition ${
                 index === activePreviewIndex
-                  ? "ring-2 ring-zinc-950"
-                  : "ring-1 ring-zinc-200"
+                  ? "outline-[3px] outline-zinc-950"
+                  : "outline-1 outline-zinc-200"
               }`}
             >
               <button
