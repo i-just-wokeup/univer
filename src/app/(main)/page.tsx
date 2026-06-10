@@ -425,9 +425,9 @@ function MainPageContent() {
   return (
     <>
       <StoryBar />
-      <section className="flex flex-1 flex-col px-4 py-4 sm:px-6">
+      <section className="flex flex-1 flex-col px-0 py-4 sm:px-6">
         {error ? (
-          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+          <div className="mx-4 mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600 sm:mx-0">
             {error}
           </div>
         ) : null}
