@@ -133,6 +133,7 @@ export type Database = {
           comments_count: number
           university_id: string
           visibility: 'public' | 'close_friends'
+          aspect_ratio: 'square' | 'portrait' | 'landscape'
           deleted_at: string | null
           created_at: string
         }
@@ -145,6 +146,7 @@ export type Database = {
           comments_count?: number
           university_id: string
           visibility?: 'public' | 'close_friends'
+          aspect_ratio?: 'square' | 'portrait' | 'landscape'
           deleted_at?: string | null
           created_at?: string
         }
@@ -157,6 +159,7 @@ export type Database = {
           comments_count?: number
           university_id?: string
           visibility?: 'public' | 'close_friends'
+          aspect_ratio?: 'square' | 'portrait' | 'landscape'
           deleted_at?: string | null
           created_at?: string
         }
