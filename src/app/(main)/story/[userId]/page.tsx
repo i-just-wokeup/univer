@@ -31,10 +31,6 @@ type ToastState = {
   type: "success" | "error";
 };
 
-function getInitial(name: string) {
-  return name.trim().charAt(0) || "?";
-}
-
 function formatRelativeTime(dateText: string) {
   const diffMs = new Date(dateText).getTime() - Date.now();
   const diffMinutes = Math.round(diffMs / 60000);
@@ -139,10 +135,12 @@ function HeartIcon({ filled }: { filled: boolean }) {
 function ViewerSheet({
   isOpen,
   onClose,
+  onViewerClick,
   viewers,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onViewerClick: (viewer: Viewer) => void;
   viewers: Viewer[];
 }) {
   if (!isOpen) {
@@ -176,25 +174,26 @@ function ViewerSheet({
           ) : (
             <ul className="space-y-3">
               {viewers.map((viewer) => (
-                <li key={viewer.id} className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    {viewer.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                <li key={viewer.id}>
+                  <button
+                    type="button"
+                    onClick={() => onViewerClick(viewer)}
+                    className="flex w-full items-center justify-between gap-3 rounded-2xl py-1 text-left transition hover:bg-zinc-50"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar
                         src={viewer.avatar_url}
-                        alt={viewer.nickname}
-                        className="h-10 w-10 rounded-full object-cover"
+                        nickname={viewer.nickname}
+                        size="md"
                       />
-                    ) : (
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700">
-                        {getInitial(viewer.nickname)}
+                      <span className="truncate text-sm font-semibold">
+                        {viewer.nickname}
                       </span>
-                    )}
-                    <span className="truncate text-sm font-semibold">{viewer.nickname}</span>
-                  </div>
-                  <span className={viewer.isLiked ? "text-red-500" : "text-zinc-300"}>
-                    <HeartIcon filled={viewer.isLiked} />
-                  </span>
+                    </div>
+                    <span className={viewer.isLiked ? "text-red-500" : "text-zinc-300"}>
+                      <HeartIcon filled={viewer.isLiked} />
+                    </span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -926,6 +925,11 @@ export default function StoryViewerPage() {
         onClose={() => {
           setIsViewerSheetOpen(false);
           setIsPaused(false);
+        }}
+        onViewerClick={(viewer) => {
+          setIsViewerSheetOpen(false);
+          setIsPaused(false);
+          router.push(`/profile/${encodeURIComponent(viewer.nickname)}`);
         }}
         viewers={viewers}
       />

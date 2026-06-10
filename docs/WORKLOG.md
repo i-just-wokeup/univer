@@ -40,6 +40,9 @@
   - 로컬 누락 version 51개, 로컬에만 있는 version 18개 확인
   - `supabase migration repair`는 보류하고 원격 이력을 기준으로 SQL 원문 확보 후 보강하기로 정리
   - `docs/MIGRATION_SYNC.md`에 mismatch 목록과 정리 원칙 추가
+- **스토리 조회자 시트 UX 수정**
+  - 조회자 목록의 프로필 표시를 공용 `Avatar` 컴포넌트로 통일
+  - 조회자 row 클릭 시 해당 유저 프로필(`/profile/[nickname]`)로 이동하도록 연결
 
 ### 다음 작업
 - [ ] Expo 앱 전환 준비 (1순위)
