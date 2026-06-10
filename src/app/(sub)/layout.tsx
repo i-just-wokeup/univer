@@ -1,4 +1,5 @@
 import { NavItems } from "@/components/layout/NavItems";
+import { SubLayoutBottomNav } from "@/components/layout/SubLayoutBottomNav";
 
 type SubLayoutProps = {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export default function SubLayout({ children }: SubLayoutProps) {
                 {children}
               </div>
             </main>
-            <NavItems variant="bottom" />
+            <SubLayoutBottomNav />
           </div>
 
           <aside className="hidden w-80 shrink-0 lg:block">
