@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { PostAspectRatioPicker } from "@/components/feed/PostAspectRatioPicker";
 import { PostImageUploader } from "@/components/feed/PostImageUploader";
 import {
   VisibilityPicker,
@@ -13,6 +14,7 @@ import {
   getPost,
   updatePost,
   uploadPostImages,
+  type PostAspectRatio,
   type PostMedia,
 } from "@/features/feed/api";
 
@@ -29,6 +31,7 @@ function PostWriteContent() {
   const isEditMode = Boolean(postId);
   const [images, setImages] = useState<File[]>([]);
   const [readonlyImages, setReadonlyImages] = useState<PostMedia[]>([]);
+  const [aspectRatio, setAspectRatio] = useState<PostAspectRatio>("portrait");
   const [content, setContent] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -177,6 +180,7 @@ function PostWriteContent() {
         const imageUrls = await uploadPostImages(images);
 
         await createPost({
+          aspectRatio,
           content,
           hashtags,
           imageUrls,
@@ -211,8 +215,8 @@ function PostWriteContent() {
             onClick={() => router.back()}
             className="text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
           >
-              취소
-            </button>
+            취소
+          </button>
           <h1 className="text-base font-semibold text-zinc-950">
             {isEditMode ? "게시물 수정" : "새 게시물"}
           </h1>
@@ -259,7 +263,17 @@ function PostWriteContent() {
             )}
           </section>
         ) : (
-          <PostImageUploader images={images} onImagesChange={setImages} />
+          <>
+            <PostImageUploader
+              aspectRatio={aspectRatio}
+              images={images}
+              onImagesChange={setImages}
+            />
+            <PostAspectRatioPicker
+              value={aspectRatio}
+              onChange={setAspectRatio}
+            />
+          </>
         )}
 
         <section className="flex flex-col gap-3">
