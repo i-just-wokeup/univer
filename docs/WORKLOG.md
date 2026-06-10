@@ -14,6 +14,7 @@
   - `/story/create`를 fullscreen route group으로 이동해 모바일 Header/BottomTabBar 없이 표시
   - 스토리 작성 프리뷰를 `h-dvh` 기준 남은 영역에 맞춰 공개범위/공유 버튼까지 한 화면에 들어오도록 보정
   - `/write`를 fullscreen route group으로 이동해 게시물 작성 화면에서 하단 탭바 제거
+  - 보완: `/write`는 데스크톱 사이드바를 유지하도록 `(sub)` route group으로 복구하고, 모바일 하단 탭바만 숨기도록 분리
 - **게시물 비율 선택 1단계 기반 작업**
   - `posts.aspect_ratio` 컬럼 추가 migration 작성 (`square`/`portrait`/`landscape`, 기본 `portrait`)
   - `database.types.ts`와 `features/feed/api.ts`에 게시물 비율 타입/저장/조회 경로 반영
@@ -23,9 +24,14 @@
   - 선택된 사진을 큰 미리보기로 확인하고, 썸네일을 눌러 최대 10장 중 원하는 사진을 전환 확인할 수 있도록 개선
   - 게시 저장 시 선택한 비율을 `createPost`에 전달하도록 연결
   - 실제 DB에 `posts.aspect_ratio` migration이 적용되기 전에도 피드/상세/게시가 죽지 않도록 `portrait` fallback 처리 추가
+  - 썸네일 선택 테두리가 이미지 영역에 가려지지 않도록 내부 outline 방식으로 보정
+- **게시물 비율 선택 3단계 표시 적용**
+  - 홈 피드 `PostCard` 이미지 프레임을 `aspect_ratio` 기준으로 고정하고 `object-cover`로 표시
+  - 게시물 상세 `ImageCarousel` 모바일/일반 표시도 같은 비율 프레임을 사용하도록 보정
+  - 다중 이미지 현재 위치 배지(예: `1/2`)를 이미지 오른쪽 위에 표시
+  - 현재 위치 배지는 모바일에서만 표시하고, 스크롤 종료 후 인덱스를 갱신해 스와이프 중 숫자 떨림을 줄이도록 보정
 
 ### 다음 작업
-- [ ] `/write` 데스크톱 레이아웃은 사이드바를 유지하고 모바일에서만 하단 탭바를 숨기도록 재분리
 - [ ] Expo 앱 전환 준비 (1순위)
 - [ ] 모바일 웹 기준 주요 화면 체감 속도 점검
 
