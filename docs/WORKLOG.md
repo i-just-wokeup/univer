@@ -14,8 +14,18 @@
   - `/story/create`를 fullscreen route group으로 이동해 모바일 Header/BottomTabBar 없이 표시
   - 스토리 작성 프리뷰를 `h-dvh` 기준 남은 영역에 맞춰 공개범위/공유 버튼까지 한 화면에 들어오도록 보정
   - `/write`를 fullscreen route group으로 이동해 게시물 작성 화면에서 하단 탭바 제거
+- **게시물 비율 선택 1단계 기반 작업**
+  - `posts.aspect_ratio` 컬럼 추가 migration 작성 (`square`/`portrait`/`landscape`, 기본 `portrait`)
+  - `database.types.ts`와 `features/feed/api.ts`에 게시물 비율 타입/저장/조회 경로 반영
+  - 기존 작성 UI가 비율을 넘기지 않아도 `portrait` 기본값으로 저장되도록 API 기본값 설정
+- **게시물 비율 선택 2단계 작성 화면 UI**
+  - `/write`에 `square`/`portrait`/`landscape` 비율 선택 UI 추가
+  - 선택된 사진을 큰 미리보기로 확인하고, 썸네일을 눌러 최대 10장 중 원하는 사진을 전환 확인할 수 있도록 개선
+  - 게시 저장 시 선택한 비율을 `createPost`에 전달하도록 연결
+  - 실제 DB에 `posts.aspect_ratio` migration이 적용되기 전에도 피드/상세/게시가 죽지 않도록 `portrait` fallback 처리 추가
 
 ### 다음 작업
+- [ ] `/write` 데스크톱 레이아웃은 사이드바를 유지하고 모바일에서만 하단 탭바를 숨기도록 재분리
 - [ ] Expo 앱 전환 준비 (1순위)
 - [ ] 모바일 웹 기준 주요 화면 체감 속도 점검
 

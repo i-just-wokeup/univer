@@ -92,6 +92,7 @@ posts (
   comments_count int default 0,
   university_id  uuid FK → universities not null,
   visibility     text default 'public',       -- 'public' | 'close_friends'
+  aspect_ratio   text default 'portrait',     -- 'square' | 'portrait' | 'landscape'
   deleted_at     timestamptz,
   created_at     timestamptz default now()
 )
