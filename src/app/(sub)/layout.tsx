@@ -1,4 +1,5 @@
 import { NavItems } from "@/components/layout/NavItems";
+import { SubLayoutContent } from "@/components/layout/SubLayoutContent";
 import { SubLayoutBottomNav } from "@/components/layout/SubLayoutBottomNav";
 
 type SubLayoutProps = {
@@ -16,9 +17,7 @@ export default function SubLayout({ children }: SubLayoutProps) {
         <div className="flex min-h-screen flex-1 flex-col lg:flex-row lg:items-stretch">
           <div className="flex min-h-screen flex-1 flex-col">
             <main className="flex flex-1 flex-col">
-              <div className="mx-auto flex w-full max-w-[470px] flex-1 flex-col bg-white">
-                {children}
-              </div>
+              <SubLayoutContent>{children}</SubLayoutContent>
             </main>
             <SubLayoutBottomNav />
           </div>

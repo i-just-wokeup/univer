@@ -136,7 +136,7 @@ export function PostImageUploader({
 
       {selectedPreviewImage ? (
         <div
-          className={`relative overflow-hidden rounded-3xl bg-zinc-100 ${aspectRatioClass}`}
+          className={`relative mx-auto w-full max-w-[430px] overflow-hidden rounded-3xl bg-zinc-100 sm:max-w-[440px] ${aspectRatioClass}`}
         >
           <Image
             src={selectedPreviewImage.url}
@@ -154,7 +154,7 @@ export function PostImageUploader({
       ) : (
         <label
           htmlFor={inputId}
-          className={`flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed px-5 py-8 text-center transition ${
+          className={`mx-auto flex min-h-52 w-full max-w-[430px] cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed px-5 py-8 text-center transition sm:max-w-[440px] ${
             isMaxReached
               ? "border-zinc-200 bg-zinc-100 text-zinc-400"
               : "border-zinc-300 bg-zinc-50 text-zinc-600 hover:border-zinc-950 hover:bg-white hover:text-zinc-950"
@@ -187,7 +187,7 @@ export function PostImageUploader({
           {previewImages.map((previewImage, index) => (
             <div
               key={`${previewImage.fileName}-${index}`}
-              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 outline outline-offset-[-3px] transition ${
+              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 outline outline-offset-[-3px] transition sm:h-24 sm:w-24 ${
                 index === activePreviewIndex
                   ? "outline-[3px] outline-zinc-950"
                   : "outline-1 outline-zinc-200"
@@ -227,7 +227,7 @@ export function PostImageUploader({
           {isMaxReached ? null : (
             <label
               htmlFor={inputId}
-              className="flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-500 transition hover:border-zinc-950 hover:bg-white hover:text-zinc-950"
+              className="flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-500 transition hover:border-zinc-950 hover:bg-white hover:text-zinc-950 sm:h-24 sm:w-24"
               aria-label="사진 추가"
             >
               <PlusIcon />

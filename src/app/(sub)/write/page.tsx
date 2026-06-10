@@ -209,7 +209,7 @@ function PostWriteContent() {
   return (
     <div className="flex min-h-full flex-col bg-white">
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white">
-        <div className="flex h-14 items-center justify-between px-4">
+        <div className="flex h-14 items-center justify-between px-4 lg:px-8">
           <button
             type="button"
             onClick={() => router.back()}
@@ -231,7 +231,7 @@ function PostWriteContent() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 px-4 py-5">
+      <div className="flex flex-1 flex-col gap-6 px-4 py-5 sm:px-6 lg:gap-7 lg:px-8">
         {isEditMode ? (
           <section className="flex flex-col gap-3">
             <div>
