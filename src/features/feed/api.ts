@@ -4,6 +4,7 @@ import { getBlockRelatedUserIds } from "@/features/blocks/api";
 
 // 게시물 공개 범위는 현재 MVP 기준 두 가지로 제한한다.
 type Visibility = "public" | "close_friends";
+export type PostAspectRatio = "square" | "portrait" | "landscape";
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
 type PostHashtagRow = Database["public"]["Tables"]["post_hashtags"]["Row"];
@@ -11,9 +12,37 @@ type HashtagRow = Database["public"]["Tables"]["hashtags"]["Row"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type PostLikeRow = Database["public"]["Tables"]["post_likes"]["Row"];
 type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
+type SupabaseMaybeError = {
+  code?: string;
+  message?: string;
+};
+
+type PostBaseRow = Pick<
+  PostRow,
+  "comments_count" | "content" | "created_at" | "id" | "likes_count" | "user_id"
+> & {
+  aspect_ratio?: PostAspectRatio;
+};
+
+type FeedPostRow = Pick<
+  PostRow,
+  | "comments_count"
+  | "content"
+  | "created_at"
+  | "deleted_at"
+  | "id"
+  | "likes_count"
+  | "university_id"
+  | "user_id"
+  | "views_count"
+  | "visibility"
+> & {
+  aspect_ratio?: PostAspectRatio;
+};
 
 // 게시물 작성 시 페이지 레이어에서 조합한 값을 그대로 전달받는다.
 type CreatePostParams = {
+  aspectRatio?: PostAspectRatio;
   content: string;
   hashtags: string[];
   imageUrls: string[];
@@ -47,6 +76,7 @@ export type FeedUser = {
 
 // 피드 렌더링용으로 posts/users/images/hashtags를 조합한 최종 구조.
 export type FeedPost = {
+  aspect_ratio: PostAspectRatio;
   comments_count: number;
   content: string | null;
   created_at: string;
@@ -68,6 +98,7 @@ export type GetFeedResult = {
 };
 
 export type PostDetail = {
+  aspect_ratio: PostAspectRatio;
   comments_count: number;
   content: string | null;
   created_at: string;
@@ -92,6 +123,15 @@ function requireSupabaseClient() {
   }
 
   return supabase;
+}
+
+function isMissingAspectRatioError(error: SupabaseMaybeError | null) {
+  return Boolean(
+    error &&
+      (error.message?.includes("aspect_ratio") ||
+        error.message?.includes("Could not find") ||
+        error.code === "PGRST204"),
+  );
 }
 
 // 해시태그는 중복 비교를 위해 # 제거, 공백 제거, 소문자화까지 한 번에 정규화한다.
@@ -222,6 +262,7 @@ async function replacePostHashtags(postId: string, hashtags: string[]) {
 
 // 게시물 본문, 이미지, 해시태그를 posts 관련 테이블에 순서대로 저장한다.
 export async function createPost({
+  aspectRatio = "portrait",
   content,
   hashtags,
   imageUrls,
@@ -240,16 +281,32 @@ export async function createPost({
 
   const trimmedContent = content.trim();
 
-  const { data: post, error: postError } = await supabase
+  const postInsert = {
+    content: trimmedContent.length > 0 ? trimmedContent : null,
+    university_id: universityId,
+    user_id: user.id,
+    visibility,
+  };
+
+  let { data: post, error: postError } = await supabase
     .from("posts")
     .insert({
-      content: trimmedContent.length > 0 ? trimmedContent : null,
-      university_id: universityId,
-      user_id: user.id,
-      visibility,
+      ...postInsert,
+      aspect_ratio: aspectRatio,
     })
     .select("id")
     .single();
+
+  if (isMissingAspectRatioError(postError)) {
+    const fallbackResult = await supabase
+      .from("posts")
+      .insert(postInsert)
+      .select("id")
+      .single();
+
+    post = fallbackResult.data;
+    postError = fallbackResult.error;
+  }
 
   if (postError || !post) {
     throw new Error("게시물 저장에 실패했습니다.");
@@ -280,12 +337,26 @@ export async function getPost(postId: string): Promise<PostDetail> {
   const supabase = requireSupabaseClient();
   const blockRelatedUserIds = await getBlockRelatedUserIds();
 
-  const { data: post, error: postError } = await supabase
+  const postResult = await supabase
     .from("posts")
-    .select("id, content, created_at, likes_count, comments_count, user_id")
+    .select("id, aspect_ratio, content, created_at, likes_count, comments_count, user_id")
     .eq("id", postId)
     .is("deleted_at", null)
     .single();
+  let post = postResult.data as PostBaseRow | null;
+  let postError = postResult.error;
+
+  if (isMissingAspectRatioError(postError)) {
+    const fallbackResult = await supabase
+      .from("posts")
+      .select("id, content, created_at, likes_count, comments_count, user_id")
+      .eq("id", postId)
+      .is("deleted_at", null)
+      .single();
+
+    post = fallbackResult.data as PostBaseRow | null;
+    postError = fallbackResult.error;
+  }
 
   if (postError || !post) {
     throw new Error("게시물을 찾을 수 없습니다.");
@@ -355,6 +426,7 @@ export async function getPost(postId: string): Promise<PostDetail> {
   }
 
   return {
+    aspect_ratio: post.aspect_ratio ?? "portrait",
     comments_count: post.comments_count,
     content: post.content,
     created_at: post.created_at,
@@ -581,37 +653,55 @@ export async function getFeed({
   const blockRelatedUserIds = await getBlockRelatedUserIds();
   const fetchLimit = limit + 1;
 
-  let postsQuery = supabase
-    .from("posts")
-    .select(
+  function buildPostsQuery(selectColumns: string) {
+    let postsQuery = supabase
+      .from("posts")
+      .select(selectColumns)
+      .eq("university_id", universityId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(fetchLimit);
+
+    if (blockRelatedUserIds.length > 0) {
+      postsQuery = postsQuery.not(
+        "user_id",
+        "in",
+        toPostgrestInFilter(blockRelatedUserIds),
+      );
+    }
+
+    if (cursor) {
+      postsQuery = postsQuery.lt("created_at", cursor);
+    }
+
+    return postsQuery;
+  }
+
+  const postsResult = await buildPostsQuery(
+    "id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, university_id, visibility, deleted_at, views_count",
+  );
+  let postsData = postsResult.data as FeedPostRow[] | null;
+  let postsError: SupabaseMaybeError | null = postsResult.error;
+
+  if (isMissingAspectRatioError(postsError)) {
+    const fallbackResult = await buildPostsQuery(
       "id, content, created_at, likes_count, comments_count, user_id, university_id, visibility, deleted_at, views_count",
-    )
-    .eq("university_id", universityId)
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false })
-    .limit(fetchLimit);
-
-  if (blockRelatedUserIds.length > 0) {
-    postsQuery = postsQuery.not(
-      "user_id",
-      "in",
-      toPostgrestInFilter(blockRelatedUserIds),
     );
-  }
 
-  if (cursor) {
-    postsQuery = postsQuery.lt("created_at", cursor);
+    postsData = fallbackResult.data as FeedPostRow[] | null;
+    postsError = fallbackResult.error;
   }
-
-  const { data: postsData, error: postsError } = await postsQuery;
 
   if (postsError) {
     throw new Error("피드를 불러오지 못했습니다.");
   }
 
   // 커서 기반 다음 페이지 계산을 위해 한 개 더 가져온다.
-  const hasMore = postsData.length > limit;
-  const slicedPosts = hasMore ? postsData.slice(0, limit) : postsData;
+  const normalizedPostsData = (postsData ?? []) as FeedPostRow[];
+  const hasMore = normalizedPostsData.length > limit;
+  const slicedPosts = hasMore
+    ? normalizedPostsData.slice(0, limit)
+    : normalizedPostsData;
 
   if (slicedPosts.length === 0) {
     return {
@@ -723,7 +813,7 @@ export async function getFeed({
   });
 
   // 최종 반환 시 UI가 바로 렌더링할 수 있는 FeedPost 구조로 평탄화한다.
-  const posts: FeedPost[] = slicedPosts.map((post: PostRow) => {
+  const posts: FeedPost[] = slicedPosts.map((post: FeedPostRow) => {
     const user = usersById.get(post.user_id);
 
     if (!user) {
@@ -731,6 +821,7 @@ export async function getFeed({
     }
 
     return {
+      aspect_ratio: post.aspect_ratio ?? "portrait",
       comments_count: post.comments_count,
       content: post.content,
       created_at: post.created_at,
