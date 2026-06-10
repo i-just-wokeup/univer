@@ -7,9 +7,9 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type UIEvent,
 } from "react";
 
+import { getPostAspectRatioClass } from "@/components/feed/postAspectRatio";
 import type { PostDetail as FeedPostDetail } from "@/features/feed/api";
 
 export function ImageCarousel({
@@ -21,6 +21,7 @@ export function ImageCarousel({
 }) {
   const carouselId = useId();
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const scrollEndTimerRef = useRef<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageDimensions, setImageDimensions] = useState<
     Record<string, { height: number; width: number }>
@@ -30,6 +31,7 @@ export function ImageCarousel({
     width: number;
   } | null>(null);
   const hasMultipleImages = post.media.length > 1;
+  const aspectRatioClass = getPostAspectRatioClass(post.aspect_ratio);
   const currentMedia = post.media[currentImageIndex] ?? null;
   const currentDimensions = currentMedia ? imageDimensions[currentMedia.id] : null;
   const availableModalImageWidth = viewportSize
@@ -48,14 +50,27 @@ export function ImageCarousel({
       } as CSSProperties)
     : undefined;
 
-  function handleImageScroll(event: UIEvent<HTMLDivElement>) {
-    const element = event.currentTarget;
-
-    if (element.clientWidth === 0) {
-      return;
+  function updateCurrentImageIndexAfterScrollEnd() {
+    if (scrollEndTimerRef.current !== null) {
+      window.clearTimeout(scrollEndTimerRef.current);
     }
 
-    setCurrentImageIndex(Math.round(element.scrollLeft / element.clientWidth));
+    scrollEndTimerRef.current = window.setTimeout(() => {
+      scrollEndTimerRef.current = null;
+      const element = carouselRef.current;
+
+      if (!element || element.clientWidth === 0) {
+        return;
+      }
+
+      const nextIndex = Math.min(
+        post.media.length - 1,
+        Math.max(0, Math.round(element.scrollLeft / element.clientWidth)),
+      );
+      setCurrentImageIndex((currentIndex) =>
+        currentIndex === nextIndex ? currentIndex : nextIndex,
+      );
+    }, 120);
   }
 
   function moveToImage(nextIndex: number) {
@@ -71,6 +86,14 @@ export function ImageCarousel({
     });
     setCurrentImageIndex(nextIndex);
   }
+
+  useEffect(() => {
+    return () => {
+      if (scrollEndTimerRef.current !== null) {
+        window.clearTimeout(scrollEndTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!isModal) {
@@ -98,16 +121,18 @@ export function ImageCarousel({
 
   return (
     <div
-      className={`relative flex h-full min-h-0 w-full flex-col bg-black ${
-        isModal ? "lg:w-[var(--desktop-carousel-width)] lg:max-w-[600px]" : ""
+      className={`relative flex min-h-0 w-full flex-col bg-black ${
+        isModal
+          ? "h-full lg:w-[var(--desktop-carousel-width)] lg:max-w-[600px]"
+          : aspectRatioClass
       }`}
       style={carouselStyle}
     >
       <div
         id={carouselId}
         ref={carouselRef}
-        onScroll={handleImageScroll}
-        className={`flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+        onScroll={updateCurrentImageIndexAfterScrollEnd}
+        className={`flex h-full min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
           isModal ? "lg:w-[var(--desktop-carousel-width)] lg:max-w-[600px]" : ""
         }`}
       >
@@ -147,12 +172,18 @@ export function ImageCarousel({
               className={
                 isModal
                   ? "h-full w-full object-contain"
-                  : "max-h-full w-full object-contain lg:w-auto lg:max-w-full"
+                  : "h-full w-full object-cover"
               }
             />
           </div>
         ))}
       </div>
+
+      {hasMultipleImages ? (
+        <div className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-bold text-white sm:hidden">
+          {currentImageIndex + 1}/{post.media.length}
+        </div>
+      ) : null}
 
       {hasMultipleImages && currentImageIndex > 0 ? (
         <button

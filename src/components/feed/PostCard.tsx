@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
 import { UserInfo } from "@/components/common/UserInfo";
+import { getPostAspectRatioClass } from "@/components/feed/postAspectRatio";
 import { deletePost, type FeedPost } from "@/features/feed/api";
 import { createReport } from "@/features/reports/api";
 
@@ -156,6 +157,7 @@ export function PostCard({
   const router = useRouter();
   const carouselId = useId();
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const scrollEndTimerRef = useRef<number | null>(null);
   const contentRef = useRef<HTMLParagraphElement | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
@@ -171,6 +173,7 @@ export function PostCard({
   });
   const hasMultipleImages = post.media.length > 1;
   const isOwnPost = post.user.id === currentUserId;
+  const aspectRatioClass = getPostAspectRatioClass(post.aspect_ratio);
 
   function showToast(message: string, type: ToastState["type"] = "success") {
     setToast({
@@ -313,16 +316,28 @@ export function PostCard({
     });
   }
 
-  // 스크롤 위치를 카드 폭으로 나눠 현재 보고 있는 이미지 인덱스를 계산한다.
-  function handleImageScroll(event: React.UIEvent<HTMLDivElement>) {
-    const element = event.currentTarget;
-
-    if (element.clientWidth === 0) {
-      return;
+  // 스크롤이 멈춘 뒤에만 현재 이미지 인덱스를 갱신해 모바일 스와이프 중 배지 떨림을 줄인다.
+  function updateCurrentImageIndexAfterScrollEnd() {
+    if (scrollEndTimerRef.current !== null) {
+      window.clearTimeout(scrollEndTimerRef.current);
     }
 
-    const nextIndex = Math.round(element.scrollLeft / element.clientWidth);
-    setCurrentImageIndex(nextIndex);
+    scrollEndTimerRef.current = window.setTimeout(() => {
+      scrollEndTimerRef.current = null;
+      const element = carouselRef.current;
+
+      if (!element || element.clientWidth === 0) {
+        return;
+      }
+
+      const nextIndex = Math.min(
+        post.media.length - 1,
+        Math.max(0, Math.round(element.scrollLeft / element.clientWidth)),
+      );
+      setCurrentImageIndex((currentIndex) =>
+        currentIndex === nextIndex ? currentIndex : nextIndex,
+      );
+    }, 120);
   }
 
   function moveToImage(nextIndex: number) {
@@ -338,6 +353,14 @@ export function PostCard({
     });
     setCurrentImageIndex(nextIndex);
   }
+
+  useEffect(() => {
+    return () => {
+      if (scrollEndTimerRef.current !== null) {
+        window.clearTimeout(scrollEndTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <article className="bg-white">
@@ -371,24 +394,33 @@ export function PostCard({
       </header>
 
       {post.media.length > 0 ? (
-        <div className="relative bg-white">
+        <div className={`relative bg-black ${aspectRatioClass}`}>
           <div
             id={carouselId}
             ref={carouselRef}
-            onScroll={handleImageScroll}
-            className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            onScroll={updateCurrentImageIndexAfterScrollEnd}
+            className="flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {post.media.map((image) => (
-              <div key={image.id} className="relative w-full shrink-0 snap-start bg-black">
+              <div
+                key={image.id}
+                className="relative h-full w-full shrink-0 snap-start bg-black"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={image.url}
                   alt={`${post.user.nickname} 게시물 이미지`}
-                  className="h-auto w-full object-contain"
+                  className="h-full w-full object-cover"
                 />
               </div>
             ))}
           </div>
+
+          {hasMultipleImages ? (
+            <div className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-bold text-white sm:hidden">
+              {currentImageIndex + 1}/{post.media.length}
+            </div>
+          ) : null}
 
           {hasMultipleImages && currentImageIndex > 0 ? (
             <button
