@@ -35,6 +35,11 @@
   - `/write` 모바일 하단 탭바 숨김은 유지하면서 데스크톱 사이드바는 유지
   - 게시물 이미지 미리보기는 모바일/데스크톱 모두 과하게 커지지 않도록 최대 폭 제한
   - 데스크톱 썸네일 크기와 작성 화면 좌우 여백을 보정
+- **Supabase migration 정리 현황 문서화**
+  - 원격 Supabase migration 이력 60개와 로컬 migration 파일 27개를 대조
+  - 로컬 누락 version 51개, 로컬에만 있는 version 18개 확인
+  - `supabase migration repair`는 보류하고 원격 이력을 기준으로 SQL 원문 확보 후 보강하기로 정리
+  - `docs/MIGRATION_SYNC.md`에 mismatch 목록과 정리 원칙 추가
 
 ### 다음 작업
 - [ ] Expo 앱 전환 준비 (1순위)
