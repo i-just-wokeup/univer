@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { UserInfo } from "@/components/common/UserInfo";
+import { CommentContent } from "@/components/feed/PostComments";
 import {
   createComment,
   deleteComment,
@@ -140,6 +141,7 @@ export function CommentSheet({
   const [likedCommentIds, setLikedCommentIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [viewportFrame, setViewportFrame] = useState<ViewportFrame>({
     height: 0,
@@ -442,9 +444,19 @@ export function CommentSheet({
       nickname: comment.user.nickname,
     });
     setContent(`@${comment.user.nickname} `);
+    window.requestAnimationFrame(() => {
+      const input = inputRef.current;
+
+      input?.focus();
+      input?.setSelectionRange(input.value.length, input.value.length);
+    });
   };
 
-  const renderComment = (comment: Comment, isReply = false) => (
+  const renderComment = (
+    comment: Comment,
+    isReply = false,
+    mentionNickname?: string,
+  ) => (
     <article
       key={comment.id}
       className={`flex gap-3 px-4 py-2 ${isReply ? "ml-11" : ""}`}
@@ -459,9 +471,11 @@ export function CommentSheet({
             {getRelativeTimeLabel(comment.created_at)}
           </span>
         </div>
-        <p className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700">
-          {comment.content}
-        </p>
+        <CommentContent
+          className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700"
+          content={comment.content}
+          mentionNickname={isReply ? mentionNickname : undefined}
+        />
 
         {!isReply ? (
           <button
@@ -574,7 +588,9 @@ export function CommentSheet({
                     <div>
                       {expandedReplyIds.has(comment.id) ? (
                         <>
-                          {comment.replies.map((reply) => renderComment(reply, true))}
+                          {comment.replies.map((reply) =>
+                            renderComment(reply, true, comment.user.nickname),
+                          )}
                           <button
                             type="button"
                             onClick={() => {
@@ -632,6 +648,7 @@ export function CommentSheet({
 
           <div className="flex items-center gap-2 rounded-full bg-zinc-100 px-4 py-2">
             <input
+              ref={inputRef}
               value={content}
               onChange={(event) => {
                 setContent(event.target.value);

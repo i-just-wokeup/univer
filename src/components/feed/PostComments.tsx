@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect, useRef } from "react";
+
 import { UserInfo } from "@/components/common/UserInfo";
 import type { Comment } from "@/features/comments/api";
 import { getRelativeTimeLabel } from "@/lib/utils/time";
@@ -66,6 +69,41 @@ export function CommentHeartIcon({ isLiked }: { isLiked: boolean }) {
   );
 }
 
+export function CommentContent({
+  className,
+  content,
+  mentionNickname,
+}: {
+  className?: string;
+  content: string;
+  mentionNickname?: string;
+}) {
+  const mentionPrefix = mentionNickname ? `@${mentionNickname}` : "";
+  const mentionSuffix = mentionPrefix ? content.slice(mentionPrefix.length) : "";
+  const hasReplyMention =
+    mentionPrefix.length > 0 &&
+    content.startsWith(mentionPrefix) &&
+    (mentionSuffix.length === 0 || /^\s/.test(mentionSuffix));
+
+  return (
+    <p className={className}>
+      {hasReplyMention && mentionNickname ? (
+        <>
+          <Link
+            href={`/profile/${encodeURIComponent(mentionNickname)}`}
+            className="font-semibold text-zinc-950 transition hover:text-zinc-600"
+          >
+            {mentionPrefix}
+          </Link>
+          {mentionSuffix}
+        </>
+      ) : (
+        content
+      )}
+    </p>
+  );
+}
+
 export function CommentsList({
   comments,
   currentUserId,
@@ -89,7 +127,11 @@ export function CommentsList({
   onToggleReplies: (commentId: string) => void;
   likedCommentIds: Set<string>;
 }) {
-  function renderComment(comment: Comment, isReply = false) {
+  function renderComment(
+    comment: Comment,
+    isReply = false,
+    mentionNickname?: string,
+  ) {
     const isCommentLiked = likedCommentIds.has(comment.id);
 
     return (
@@ -107,9 +149,11 @@ export function CommentsList({
               {getRelativeTimeLabel(comment.created_at)}
             </span>
           </div>
-          <p className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700">
-            {comment.content}
-          </p>
+          <CommentContent
+            className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700"
+            content={comment.content}
+            mentionNickname={isReply ? mentionNickname : undefined}
+          />
 
           {!isReply ? (
             <button
@@ -193,7 +237,9 @@ export function CommentsList({
             <div>
               {expandedReplyIds.has(comment.id) ? (
                 <>
-                  {comment.replies.map((reply) => renderComment(reply, true))}
+                  {comment.replies.map((reply) =>
+                    renderComment(reply, true, comment.user.nickname),
+                  )}
                   <button
                     type="button"
                     onClick={() => {
@@ -238,7 +284,21 @@ export function CommentInput({
   onSubmit: () => void;
   replyTarget: ReplyTarget | null;
 }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const canSubmit = content.trim().length > 0 && !isSubmitting;
+
+  useEffect(() => {
+    if (!replyTarget) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      const input = inputRef.current;
+
+      input?.focus();
+      input?.setSelectionRange(input.value.length, input.value.length);
+    });
+  }, [replyTarget]);
 
   return (
     <div>
@@ -257,6 +317,7 @@ export function CommentInput({
 
       <div className="flex items-center gap-2 rounded-full bg-zinc-100 px-4 py-2">
         <input
+          ref={inputRef}
           value={content}
           onChange={(event) => {
             onChange(event.target.value);
