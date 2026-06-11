@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import {
   useEffect,
   useId,
@@ -139,14 +140,19 @@ export function ImageCarousel({
         {post.media.map((image) => (
           <div
             key={image.id}
-            className={`flex h-full w-full shrink-0 snap-start items-center justify-center bg-black ${
+            className={`relative flex h-full w-full shrink-0 snap-start items-center justify-center bg-black ${
               isModal ? "lg:w-[var(--desktop-carousel-width)] lg:max-w-[600px]" : ""
             }`}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={image.url}
               alt={`${post.user.nickname} 게시물 이미지`}
+              fill
+              sizes={
+                isModal
+                  ? "(max-width: 1024px) 100vw, 600px"
+                  : "(max-width: 640px) 100vw, 600px"
+              }
               onLoad={(event) => {
                 const element = event.currentTarget;
 
@@ -171,8 +177,8 @@ export function ImageCarousel({
               }}
               className={
                 isModal
-                  ? "h-full w-full object-contain"
-                  : "h-full w-full object-cover"
+                  ? "object-contain"
+                  : "object-cover"
               }
             />
           </div>

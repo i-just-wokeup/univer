@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -218,12 +219,13 @@ function UserPreviewCard({
       className="relative hidden h-56 w-32 shrink-0 overflow-hidden rounded-xl bg-zinc-900 text-left opacity-70 transition hover:opacity-100 sm:block"
       aria-label={`${preview.user.nickname} 스토리 보기`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={preview.imageUrl}
         alt=""
         aria-hidden="true"
-        className="h-full w-full object-cover"
+        fill
+        sizes="128px"
+        className="object-cover"
       />
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -828,18 +830,20 @@ export default function StoryViewerPage() {
             className="absolute inset-0 z-10 overflow-hidden"
             aria-label={isPaused ? "스토리 재생" : "스토리 일시정지"}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={currentStory.image_url}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+              fill
+              sizes="100vw"
+              className="scale-110 object-cover blur-xl"
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={currentStory.image_url}
               alt="스토리 이미지"
-              className={`relative z-10 h-full w-full ${isPortrait ? "object-cover" : "object-contain"}`}
+              fill
+              sizes="(max-width: 640px) 100vw, 470px"
+              className={`z-10 ${isPortrait ? "object-cover" : "object-contain"}`}
               onLoad={(e) => {
                 const img = e.currentTarget;
                 setIsPortrait(img.naturalHeight > img.naturalWidth);

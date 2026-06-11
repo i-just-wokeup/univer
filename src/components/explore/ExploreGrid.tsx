@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart, MessageCircle } from "lucide-react";
+import Image from "next/image";
 
 import type { ExplorePost } from "@/features/explore/api";
 
@@ -19,11 +20,12 @@ export function ExploreGrid({ onOpenPost, posts }: ExploreGridProps) {
           onClick={() => onOpenPost(post.id)}
           className="group relative aspect-square overflow-hidden bg-zinc-100"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={post.thumbnail_url}
             alt="탐색 게시물 썸네일"
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 640px) 33vw, 160px"
+            className="object-cover"
           />
           <span className="absolute inset-0 hidden items-center justify-center gap-4 bg-black/40 text-sm font-bold text-white group-hover:flex">
             <span className="inline-flex items-center gap-1">

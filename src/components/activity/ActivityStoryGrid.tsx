@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import type { ActivityStory } from "@/features/activity/api";
 import { formatStoryArchiveDate } from "@/lib/utils/time";
 
@@ -29,11 +31,12 @@ export function ActivityStoryGrid({
             onClick={() => onSelectStory(story)}
             className="group relative aspect-square overflow-hidden bg-zinc-100 text-left"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={story.image_url}
               alt="내 스토리"
-              className="h-full w-full object-cover transition group-hover:scale-105"
+              fill
+              sizes="(max-width: 640px) 33vw, 160px"
+              className="object-cover transition group-hover:scale-105"
             />
             <span className="absolute left-2 top-2 rounded-lg bg-black/80 px-2 py-1 text-[11px] font-bold text-white">
               {formatStoryArchiveDate(story.created_at)}

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
@@ -406,11 +407,12 @@ export function PostCard({
                 key={image.id}
                 className="relative h-full w-full shrink-0 snap-start bg-black"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={image.url}
                   alt={`${post.user.nickname} 게시물 이미지`}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 470px"
+                  className="object-cover"
                 />
               </div>
             ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { PostAspectRatioPicker } from "@/components/feed/PostAspectRatioPicker";
@@ -245,13 +246,14 @@ function PostWriteContent() {
                 {readonlyImages.map((image) => (
                   <div
                     key={image.id}
-                    className="aspect-square overflow-hidden rounded-2xl bg-zinc-100"
+                    className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={image.url}
                       alt="게시물 이미지"
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 33vw, 160px"
+                      className="object-cover"
                     />
                   </div>
                 ))}

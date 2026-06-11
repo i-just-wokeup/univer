@@ -1,4 +1,5 @@
 import { Eye, Heart, X } from "lucide-react";
+import Image from "next/image";
 
 import { Avatar } from "@/components/common/Avatar";
 import type {
@@ -37,11 +38,12 @@ export function ActivityStoryPreviewModal({
 
       <div className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-zinc-950">
         <div className="relative aspect-[9/16] bg-black">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={story.image_url}
             alt="내 스토리 크게 보기"
-            className="h-full w-full object-contain"
+            fill
+            sizes="(max-width: 640px) 100vw, 384px"
+            className="object-contain"
           />
           <div className="absolute left-4 top-4 rounded-xl bg-black/55 px-3 py-2 text-sm font-bold">
             {formatKoreanDateTime(story.created_at)}

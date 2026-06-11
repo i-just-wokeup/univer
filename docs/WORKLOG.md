@@ -7,6 +7,13 @@
 ## 2026-06-11
 
 ### 완료
+- **이미지 표시 최적화 (성능 최적화 Phase 2)**
+  - `next.config.ts`에 Supabase Storage public 이미지 remote pattern 등록
+  - 홈 피드 `PostCard`와 게시물 상세 `ImageCarousel`을 `next/image`로 전환
+  - 탐색/프로필/내 활동 3열 그리드 썸네일을 `next/image` + `sizes`로 전환
+  - 스토리 뷰어, 스토리 유저 프리뷰, 보관함 스토리 미리보기 이미지를 `next/image`로 전환
+  - `/write` 수정 모드 기존 게시물 이미지도 `next/image`로 전환
+  - 제외: Avatar, 알림/관리자 소형 이미지, 로컬 `blob:` 미리보기
 - **이미지 업로드 압축 (성능 최적화 Phase 1)**
   - `browser-image-compression` 설치
   - `src/lib/image/compress.ts` 추가 — `compressImageFile(file, options)`: 업로드 전 브라우저 압축, GIF/비이미지/실패 시 원본 fallback, 압축본이 더 크면 원본 사용
@@ -36,6 +43,7 @@
 ### 다음 작업
 - [ ] 탐색 상세 흐름 고도화 (탐색 게시물 연속 피드)
 - [ ] 모바일 댓글 바텀시트 키보드/답글 포커스 보정 후 실제 기기 재확인
+- [ ] 이미지 표시 최적화 배포 후 모바일 피드/탐색/프로필 그리드 체감 확인
 
 ---
 

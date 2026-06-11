@@ -1,4 +1,5 @@
 import { Heart, MessageCircle } from "lucide-react";
+import Image from "next/image";
 
 import type { ActivityPost } from "@/features/activity/api";
 
@@ -32,14 +33,13 @@ export function ActivitySavedPostsGrid({
             className="group relative aspect-square overflow-hidden bg-zinc-100 text-left"
           >
             {thumbnail ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={thumbnail.thumbnail_url ?? thumbnail.url}
-                  alt={`${post.user.nickname} 게시물`}
-                  className="h-full w-full object-cover transition group-hover:scale-105"
-                />
-              </>
+              <Image
+                src={thumbnail.thumbnail_url ?? thumbnail.url}
+                alt={`${post.user.nickname} 게시물`}
+                fill
+                sizes="(max-width: 640px) 33vw, 160px"
+                className="object-cover transition group-hover:scale-105"
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center px-2 text-center text-xs font-semibold text-zinc-400">
                 텍스트 게시물

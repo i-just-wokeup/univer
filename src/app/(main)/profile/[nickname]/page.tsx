@@ -2,6 +2,7 @@
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { ExternalLink, Settings } from "lucide-react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -302,17 +303,16 @@ function PostsGrid({
             key={post.id}
             type="button"
             onClick={() => onPostClick(post.id)}
-            className="aspect-square bg-zinc-100"
+            className="relative aspect-square overflow-hidden bg-zinc-100"
           >
             {thumbnail ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={thumbnail.url}
-                  alt="게시물 썸네일"
-                  className="h-full w-full object-cover"
-                />
-              </>
+              <Image
+                src={thumbnail.url}
+                alt="게시물 썸네일"
+                fill
+                sizes="(max-width: 640px) 33vw, 160px"
+                className="object-cover"
+              />
             ) : (
               <div className="h-full w-full bg-zinc-100" />
             )}
