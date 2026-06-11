@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 import { UserInfo } from "@/components/common/UserInfo";
 import {
@@ -23,6 +23,11 @@ type CommentSheetProps = {
 type ReplyTarget = {
   parentId: string;
   nickname: string;
+};
+
+type ViewportFrame = {
+  height: number;
+  top: number;
 };
 
 function getRelativeTimeLabel(createdAt: string) {
@@ -136,6 +141,62 @@ export function CommentSheet({
     () => new Set(),
   );
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
+  const [viewportFrame, setViewportFrame] = useState<ViewportFrame>({
+    height: 0,
+    top: 0,
+  });
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const scrollY = window.scrollY;
+    const { left, overflow, position, right, top, width } = document.body.style;
+
+    document.body.style.left = "0";
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.right = "0";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
+    return () => {
+      document.body.style.left = left;
+      document.body.style.overflow = overflow;
+      document.body.style.position = position;
+      document.body.style.right = right;
+      document.body.style.top = top;
+      document.body.style.width = width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const updateViewportFrame = () => {
+      const visualViewport = window.visualViewport;
+
+      setViewportFrame({
+        height: Math.round(visualViewport?.height ?? window.innerHeight),
+        top: Math.round(visualViewport?.offsetTop ?? 0),
+      });
+    };
+
+    updateViewportFrame();
+    window.visualViewport?.addEventListener("resize", updateViewportFrame);
+    window.visualViewport?.addEventListener("scroll", updateViewportFrame);
+    window.addEventListener("resize", updateViewportFrame);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateViewportFrame);
+      window.visualViewport?.removeEventListener("scroll", updateViewportFrame);
+      window.removeEventListener("resize", updateViewportFrame);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !postId) {
@@ -195,6 +256,21 @@ export function CommentSheet({
   }
 
   const canSubmit = content.trim().length > 0 && !isSubmitting;
+  const sheetHeight =
+    viewportFrame.height > 0
+      ? Math.min(640, Math.round(viewportFrame.height * 0.78))
+      : 640;
+  const overlayStyle: CSSProperties =
+    viewportFrame.height > 0
+      ? {
+          bottom: "auto",
+          height: `${viewportFrame.height}px`,
+          top: `${viewportFrame.top}px`,
+        }
+      : {};
+  const sheetStyle = {
+    "--comment-sheet-height": `${sheetHeight}px`,
+  } as CSSProperties;
 
   const handleClose = () => {
     setContent("");
@@ -434,7 +510,10 @@ export function CommentSheet({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center overscroll-contain sm:items-center"
+      style={overlayStyle}
+    >
       <button
         type="button"
         className="absolute inset-0 bg-black/45"
@@ -442,8 +521,13 @@ export function CommentSheet({
         onClick={handleClose}
       />
 
-      <section className="relative flex h-[78vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-[640px] sm:rounded-3xl">
-        <header className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
+      <section
+        className="relative flex h-[var(--comment-sheet-height)] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-[640px] sm:rounded-3xl"
+        style={sheetStyle}
+      >
+        <header className="shrink-0 border-b border-zinc-100 px-5 py-3">
+          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-zinc-300 sm:hidden" />
+          <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-zinc-950">
             댓글 {comments.length}개
           </h2>
@@ -455,6 +539,7 @@ export function CommentSheet({
           >
             ×
           </button>
+          </div>
         </header>
 
         {error ? (
@@ -463,7 +548,7 @@ export function CommentSheet({
           </div>
         ) : null}
 
-        <div className="flex-1 overflow-y-auto py-2">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2">
           {isLoading ? (
             <>
               <CommentSkeleton />
@@ -526,7 +611,7 @@ export function CommentSheet({
             : null}
         </div>
 
-        <footer className="border-t border-zinc-100 bg-white px-4 py-3">
+        <footer className="shrink-0 border-t border-zinc-100 bg-white px-4 py-3">
           {replyTarget ? (
             <div className="mb-2 flex items-center justify-between rounded-2xl bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
               <span>
@@ -557,7 +642,7 @@ export function CommentSheet({
                   void handleSubmit();
                 }
               }}
-              className="min-w-0 flex-1 bg-transparent text-sm text-zinc-950 outline-none placeholder:text-zinc-400"
+              className="min-w-0 flex-1 bg-transparent text-base text-zinc-950 outline-none placeholder:text-zinc-400 sm:text-sm"
               placeholder="댓글 달기..."
             />
             <button
