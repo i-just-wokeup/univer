@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart, MessageCircle, MoreHorizontal, X } from "lucide-react";
+import { useState } from "react";
 
 import { UserInfo } from "@/components/common/UserInfo";
 import type { PostDetail as FeedPostDetail } from "@/features/feed/api";
@@ -87,13 +88,22 @@ export function PostActions({
   commentsCount,
   isLiked,
   likesCount,
+  onComment,
   onLike,
 }: {
   commentsCount: number;
   isLiked: boolean;
   likesCount: number;
+  onComment?: () => void;
   onLike: () => void;
 }) {
+  const commentContent = (
+    <>
+      <MessageCircle className="h-6 w-6" aria-hidden="true" />
+      <span className="text-sm font-medium">{commentsCount}</span>
+    </>
+  );
+
   return (
     <div className="flex items-center gap-4">
       <button
@@ -112,25 +122,66 @@ export function PostActions({
         <span className="text-sm font-medium">{likesCount}</span>
       </button>
 
-      <div className="flex items-center gap-1.5 text-zinc-700" aria-label="댓글 수">
-        <MessageCircle className="h-6 w-6" aria-hidden="true" />
-        <span className="text-sm font-medium">{commentsCount}</span>
-      </div>
+      {onComment ? (
+        <button
+          type="button"
+          onClick={onComment}
+          className="flex items-center gap-1.5 text-zinc-700 transition hover:text-zinc-950"
+          aria-label="댓글 보기"
+        >
+          {commentContent}
+        </button>
+      ) : (
+        <div className="flex items-center gap-1.5 text-zinc-700" aria-label="댓글 수">
+          {commentContent}
+        </div>
+      )}
     </div>
   );
 }
 
-export function PostBody({ post }: { post: FeedPostDetail }) {
+export function PostBody({
+  isCollapsible = false,
+  post,
+}: {
+  isCollapsible?: boolean;
+  post: FeedPostDetail;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!post.content && post.hashtags.length === 0) {
     return null;
   }
 
+  const contentLineCount = post.content?.split(/\r\n|\r|\n/).length ?? 0;
+  const shouldShowToggle =
+    isCollapsible &&
+    Boolean(post.content) &&
+    ((post.content?.length ?? 0) > 140 || contentLineCount > 3);
+
   return (
     <div className="mt-3 space-y-3">
       {post.content ? (
-        <p className="whitespace-pre-wrap break-words text-sm leading-6 text-zinc-950">
-          {post.content}
-        </p>
+        <div>
+          <p
+            className={`whitespace-pre-wrap break-words text-sm leading-6 text-zinc-950 ${
+              shouldShowToggle && !isExpanded ? "line-clamp-3" : ""
+            }`}
+          >
+            {post.content}
+          </p>
+          {shouldShowToggle ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsExpanded((currentIsExpanded) => !currentIsExpanded);
+              }}
+              className="mt-1 text-sm font-semibold text-zinc-500 transition hover:text-zinc-950"
+            >
+              {isExpanded ? "접기" : "더보기"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       {post.hashtags.length > 0 ? (

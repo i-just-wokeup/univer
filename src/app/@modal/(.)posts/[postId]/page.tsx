@@ -19,7 +19,7 @@ export default function PostDetailModalPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-2 py-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-0 lg:px-2 lg:py-2">
       <button
         type="button"
         className="absolute inset-0"
@@ -27,7 +27,7 @@ export default function PostDetailModalPage() {
         aria-label="게시물 상세 닫기"
       />
 
-      <section className="relative h-[96vh] w-full max-w-[calc(100vw-1rem)] overflow-hidden rounded-sm bg-white shadow-2xl lg:w-fit lg:max-w-[1100px]">
+      <section className="relative h-dvh w-full overflow-hidden bg-white shadow-2xl lg:h-[96vh] lg:w-fit lg:max-w-[1100px] lg:rounded-sm">
         <PostDetail postId={postId} onClose={handleClose} />
       </section>
     </div>

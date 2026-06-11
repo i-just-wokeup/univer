@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
+import { CommentSheet } from "@/components/feed/CommentSheet";
 import { ImageCarousel } from "@/components/feed/ImageCarousel";
 import { blockUser } from "@/features/blocks/api";
 import {
@@ -70,6 +71,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
   const [isCommentsLoading, setIsCommentsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileCommentSheetOpen, setIsMobileCommentSheetOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [likedCommentIds, setLikedCommentIds] = useState<Set<string>>(
@@ -117,6 +119,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
         setExpandedReplyIds(new Set());
         setLikedCommentIds(new Set(loadedLikedCommentIds));
         setReplyTarget(null);
+        setIsMobileCommentSheetOpen(false);
       } catch (loadError) {
         if (!isMounted) {
           return;
@@ -443,6 +446,28 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
     });
   }
 
+  const handleMobileCommentCountChange = useCallback(
+    (_postId: string, nextCount: number) => {
+      setPost((currentPost) => {
+        if (!currentPost) {
+          return currentPost;
+        }
+
+        const normalizedCount = Math.max(0, nextCount);
+
+        if (currentPost.comments_count === normalizedCount) {
+          return currentPost;
+        }
+
+        return {
+          ...currentPost,
+          comments_count: normalizedCount,
+        };
+      });
+    },
+    [],
+  );
+
   if (isLoading) {
     return <PostDetailSkeleton />;
   }
@@ -554,7 +579,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
   );
 
   return (
-    <article className="h-full bg-white">
+    <article className="h-full overflow-y-auto bg-white lg:overflow-hidden">
       <div
         className={
           isModal
@@ -597,11 +622,14 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
               commentsCount={post.comments_count}
               isLiked={isLiked}
               likesCount={post.likes_count}
+              onComment={() => {
+                setIsMobileCommentSheetOpen(true);
+              }}
               onLike={() => {
                 void handleLike();
               }}
             />
-            <PostBody post={post} />
+            <PostBody post={post} isCollapsible />
 
             {error ? (
               <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
@@ -609,11 +637,15 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
               </p>
             ) : null}
 
-            <div className="mt-4">{commentInput}</div>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto lg:hidden">
-            {commentList}
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileCommentSheetOpen(true);
+              }}
+              className="mt-4 flex w-full items-center rounded-full bg-zinc-100 px-4 py-3 text-left text-sm font-medium text-zinc-400"
+            >
+              댓글 달기...
+            </button>
           </div>
 
           <div className="hidden min-h-0 flex-1 overflow-y-auto lg:block">
@@ -687,6 +719,14 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
             isVisible: false,
           }));
         }}
+      />
+      <CommentSheet
+        isOpen={isMobileCommentSheetOpen}
+        onClose={() => {
+          setIsMobileCommentSheetOpen(false);
+        }}
+        onCommentCountChange={handleMobileCommentCountChange}
+        postId={post.id}
       />
     </article>
   );
