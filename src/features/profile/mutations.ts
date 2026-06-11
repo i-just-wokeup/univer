@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { compressImageFile } from "@/lib/image/compress";
 import { isValidNickname, normalizeNickname } from "@/lib/utils/nickname";
 import { normalizeProfileLinks } from "@/lib/utils/profile-links";
 import type { Database } from "@/types/database.types";
@@ -159,12 +160,18 @@ export async function checkNicknameDuplicate(
 
 export async function uploadAvatar(file: File): Promise<string> {
   const { supabase, userId } = await requireCurrentUser();
+  // 아바타는 작게 표시되므로 더 강하게 압축한다. 확장자/경로는 원본 기준 유지.
+  const compressedFile = await compressImageFile(file, {
+    initialQuality: 0.8,
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 512,
+  });
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const filePath = `${userId}/${crypto.randomUUID()}.${extension}`;
 
   const { error } = await supabase.storage
     .from("avatars")
-    .upload(filePath, file, {
+    .upload(filePath, compressedFile, {
       cacheControl: "3600",
       upsert: true,
     });

@@ -1,5 +1,6 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Database } from "@/types/database.types";
+import { compressImageFile } from "@/lib/image/compress";
 import { getBlockRelatedUserIds } from "@/features/blocks/api";
 
 // 게시물 공개 범위는 현재 MVP 기준 두 가지로 제한한다.
@@ -183,12 +184,18 @@ export async function uploadPostImages(images: File[]) {
 
   const uploadResults = await Promise.all(
     images.map(async (image) => {
+      // 업로드 전에 압축해 저장 용량과 전송량을 줄인다. 확장자는 원본 기준 유지.
+      const compressedImage = await compressImageFile(image, {
+        initialQuality: 0.8,
+        maxSizeMB: 2,
+        maxWidthOrHeight: 1600,
+      });
       const fileExtension = getFileExtension(image.name);
       const filePath = `posts/${crypto.randomUUID()}.${fileExtension}`;
 
       const { error: uploadError } = await supabase.storage
         .from("post-images")
-        .upload(filePath, image, {
+        .upload(filePath, compressedImage, {
           cacheControl: "3600",
           upsert: false,
         });

@@ -7,6 +7,14 @@
 ## 2026-06-11
 
 ### 완료
+- **이미지 업로드 압축 (성능 최적화 Phase 1)**
+  - `browser-image-compression` 설치
+  - `src/lib/image/compress.ts` 추가 — `compressImageFile(file, options)`: 업로드 전 브라우저 압축, GIF/비이미지/실패 시 원본 fallback, 압축본이 더 크면 원본 사용
+  - `features/feed/api.ts` `uploadPostImages` 압축 적용 (maxSizeMB 2, maxWidthOrHeight 1600, quality 0.8)
+  - `features/stories/api.ts` `uploadStoryImage` 압축 적용 (maxSizeMB 2, maxWidthOrHeight 1920, quality 0.75)
+  - `features/profile/mutations.ts` `uploadAvatar` 압축 적용 (maxSizeMB 0.5, maxWidthOrHeight 512, quality 0.8)
+  - 확장자/업로드 경로 기존 방식 유지, Supabase Storage에는 압축본 저장
+  - 범위 제한: 표시 렌더링(`<img>`→next/image)·`next.config.ts`·쿼리 최적화는 이번 작업에서 제외 (Phase 2는 Codex가 이어서 진행)
 - **답글 멘션 링크 및 입력 포커스 보정**
   - 답글 작성으로 자동 삽입되는 첫 `@닉네임`만 프로필 링크(`/profile/[nickname]`)로 표시
   - 직접 입력한 일반 댓글의 `@텍스트`는 멘션 기능으로 처리하지 않도록 MVP 범위 제한

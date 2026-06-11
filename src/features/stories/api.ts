@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { compressImageFile } from "@/lib/image/compress";
 import type { Database } from "@/types/database.types";
 
 type StoryRow = Database["public"]["Tables"]["stories"]["Row"];
@@ -82,12 +83,18 @@ async function getCurrentUserId() {
 
 export async function uploadStoryImage(file: File): Promise<string> {
   const supabase = requireSupabaseClient();
+  // 업로드 전에 압축한다. 확장자/경로는 원본 기준 유지.
+  const compressedFile = await compressImageFile(file, {
+    initialQuality: 0.75,
+    maxSizeMB: 2,
+    maxWidthOrHeight: 1920,
+  });
   const fileExtension = getFileExtension(file.name);
   const filePath = `stories/${crypto.randomUUID()}.${fileExtension}`;
 
   const { error: uploadError } = await supabase.storage
     .from("story-images")
-    .upload(filePath, file, {
+    .upload(filePath, compressedFile, {
       cacheControl: "3600",
       upsert: false,
     });
