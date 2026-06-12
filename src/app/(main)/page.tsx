@@ -18,6 +18,10 @@ import {
   togglePostLike,
   type FeedPost,
 } from "@/features/feed/api";
+import {
+  getFeedPageCache,
+  setFeedPageCache,
+} from "@/features/feed/page-cache";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // 실제 데이터가 오기 전 카드 높이를 유지해 레이아웃 점프를 줄인다.
@@ -52,12 +56,22 @@ type ToastState = {
 function MainPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [posts, setPosts] = useState<FeedPost[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPosts] = useState<FeedPost[]>(
+    () => getFeedPageCache()?.posts ?? [],
+  );
+  const [nextCursor, setNextCursor] = useState<string | null>(
+    () => getFeedPageCache()?.nextCursor ?? null,
+  );
+  const [isLoading, setIsLoading] = useState(
+    () => getFeedPageCache() === null,
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
-  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
+  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(
+    () => new Set(getFeedPageCache()?.bookmarkedPostIds ?? []),
+  );
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(
+    () => new Set(getFeedPageCache()?.likedPostIds ?? []),
+  );
   const [currentUserId, setCurrentUserId] = useState("");
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -127,14 +141,20 @@ function MainPageContent() {
 
   useEffect(() => {
     let isMounted = true;
+    const shouldUseCache = !searchParams.get("toast");
 
     // 언마운트 이후 상태 업데이트를 막기 위해 isMounted 플래그를 둔다.
     const loadFeed = async () => {
+      if (shouldUseCache && getFeedPageCache()) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
 
-        const result = await getFeed();
+        const result = await getFeed({ includeHashtags: false });
 
         if (!isMounted) {
           return;
@@ -142,6 +162,13 @@ function MainPageContent() {
 
         setPosts(result.posts);
         setNextCursor(result.nextCursor);
+        setIsLoading(false);
+        setFeedPageCache({
+          bookmarkedPostIds: [],
+          likedPostIds: [],
+          nextCursor: result.nextCursor,
+          posts: result.posts,
+        });
 
         const postIds = result.posts.map((post) => post.id);
         const [bookmarkedIds, likedIds] = await Promise.all([
@@ -155,6 +182,12 @@ function MainPageContent() {
 
         setBookmarkedPostIds(new Set(bookmarkedIds));
         setLikedPostIds(new Set(likedIds));
+        setFeedPageCache({
+          bookmarkedPostIds: bookmarkedIds,
+          likedPostIds: likedIds,
+          nextCursor: result.nextCursor,
+          posts: result.posts,
+        });
       } catch (loadError) {
         if (!isMounted) {
           return;
@@ -178,7 +211,20 @@ function MainPageContent() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    setFeedPageCache({
+      bookmarkedPostIds: Array.from(bookmarkedPostIds),
+      likedPostIds: Array.from(likedPostIds),
+      nextCursor,
+      posts,
+    });
+  }, [bookmarkedPostIds, isLoading, likedPostIds, nextCursor, posts]);
 
   const loadMorePosts = useCallback(async () => {
     if (!nextCursor || isLoadingMoreRef.current) {
@@ -190,29 +236,29 @@ function MainPageContent() {
       setIsLoadingMore(true);
       setError(null);
 
-      const result = await getFeed({ cursor: nextCursor });
+      const result = await getFeed({
+        cursor: nextCursor,
+        includeHashtags: false,
+      });
       const postIds = result.posts.map((post) => post.id);
       const [bookmarkedIds, likedIds] = await Promise.all([
         getBookmarkedPostIds(postIds),
         getLikedPostIds(postIds),
       ]);
+      const nextPosts = [...posts, ...result.posts];
+      const nextBookmarkedPostIds = new Set(bookmarkedPostIds);
+      bookmarkedIds.forEach((postId) => {
+        nextBookmarkedPostIds.add(postId);
+      });
+      const nextLikedPostIds = new Set(likedPostIds);
+      likedIds.forEach((postId) => {
+        nextLikedPostIds.add(postId);
+      });
 
-      setPosts((currentPosts) => [...currentPosts, ...result.posts]);
+      setPosts(nextPosts);
       setNextCursor(result.nextCursor);
-      setBookmarkedPostIds((currentBookmarkedPostIds) => {
-        const nextBookmarkedPostIds = new Set(currentBookmarkedPostIds);
-        bookmarkedIds.forEach((postId) => {
-          nextBookmarkedPostIds.add(postId);
-        });
-        return nextBookmarkedPostIds;
-      });
-      setLikedPostIds((currentLikedPostIds) => {
-        const nextLikedPostIds = new Set(currentLikedPostIds);
-        likedIds.forEach((postId) => {
-          nextLikedPostIds.add(postId);
-        });
-        return nextLikedPostIds;
-      });
+      setBookmarkedPostIds(nextBookmarkedPostIds);
+      setLikedPostIds(nextLikedPostIds);
     } catch (loadError) {
       const message =
         loadError instanceof Error
@@ -224,7 +270,7 @@ function MainPageContent() {
       isLoadingMoreRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [nextCursor]);
+  }, [bookmarkedPostIds, likedPostIds, nextCursor, posts]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -422,6 +468,18 @@ function MainPageContent() {
     setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
   }, []);
 
+  const handleOpenComments = useCallback(
+    (postId: string) => {
+      if (window.matchMedia("(max-width: 1023px)").matches) {
+        setCommentSheetPostId(postId);
+        return;
+      }
+
+      router.push(`/posts/${postId}`);
+    },
+    [router],
+  );
+
   return (
     <>
       <StoryBar />
@@ -457,9 +515,7 @@ function MainPageContent() {
                 isLiked={likedPostIds.has(post.id)}
                 onBlockUser={handleBlockUser}
                 onLike={handleLike}
-                onComment={(postId) => {
-                  router.push(`/posts/${postId}`);
-                }}
+                onComment={handleOpenComments}
                 onDelete={handleDeletePost}
                 onBookmark={handleBookmark}
               />
@@ -474,7 +530,7 @@ function MainPageContent() {
         ) : null}
         <div ref={loadMoreRef} className="h-px w-full" aria-hidden="true" />
       </section>
-      {/* [앱 재사용 예정] Expo 전환 시 댓글 바텀시트로 사용. 웹에서는 commentSheetPostId가 항상 null이라 열리지 않으며, 댓글은 /posts/[postId] 모달로 처리한다. */}
+      {/* [앱 재사용 예정] Expo 전환 시 댓글 바텀시트로 사용. 모바일 피드에서는 상세 페이지 이동 없이 댓글만 빠르게 연다. */}
       <CommentSheet
         postId={commentSheetPostId}
         isOpen={commentSheetPostId !== null}

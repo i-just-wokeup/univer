@@ -2,10 +2,8 @@
 
 import { Bell, MessageCircleMore } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-import { getChatUnreadCount } from "@/features/chat/api";
-import { getUnreadCount } from "@/features/notifications/api";
+import { useAppSession } from "@/features/session/AppSessionProvider";
 
 // 모바일 헤더 우측 액션 링크 정의.
 type HeaderAction = {
@@ -22,60 +20,7 @@ type HeaderProps = {
 
 // 모바일 상단 고정 헤더. 웹에서는 사이드바를 쓰므로 숨긴다.
 export function Header({ logo, actions }: HeaderProps) {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [chatUnreadCount, setChatUnreadCount] = useState(0);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadUnreadCount() {
-      try {
-        const count = await getUnreadCount();
-
-        if (isMounted) {
-          setUnreadCount(count);
-        }
-      } catch {
-        if (isMounted) {
-          setUnreadCount(0);
-        }
-      }
-    }
-
-    void loadUnreadCount();
-    window.addEventListener("notifications:refresh", loadUnreadCount);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("notifications:refresh", loadUnreadCount);
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadChatUnreadCount() {
-      try {
-        const count = await getChatUnreadCount();
-
-        if (isMounted) {
-          setChatUnreadCount(count);
-        }
-      } catch {
-        if (isMounted) {
-          setChatUnreadCount(0);
-        }
-      }
-    }
-
-    void loadChatUnreadCount();
-    window.addEventListener("chat:refresh", loadChatUnreadCount);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("chat:refresh", loadChatUnreadCount);
-    };
-  }, []);
+  const { chatUnreadCount, unreadCount } = useAppSession();
 
   const icons: Record<HeaderAction["iconName"], React.ReactNode> = {
     bell: (

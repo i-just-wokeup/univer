@@ -10,6 +10,20 @@ function requireSupabaseClient() {
   return supabase;
 }
 
+const BLOCK_RELATED_USER_IDS_TTL_MS = 30_000;
+
+let blockRelatedUserIdsCache:
+  | {
+      expiresAt: number;
+      promise: Promise<string[]> | null;
+      value: string[] | null;
+    }
+  | null = null;
+
+function clearBlockRelatedUserIdsCache() {
+  blockRelatedUserIdsCache = null;
+}
+
 export async function blockUser(userId: string): Promise<void> {
   const supabase = requireSupabaseClient();
 
@@ -20,20 +34,56 @@ export async function blockUser(userId: string): Promise<void> {
   if (error) {
     throw new Error("사용자 차단에 실패했습니다.");
   }
+
+  clearBlockRelatedUserIdsCache();
 }
 
 export async function getBlockRelatedUserIds(): Promise<string[]> {
-  const supabase = requireSupabaseClient();
+  const now = Date.now();
 
-  const { data, error } = await supabase.rpc("get_block_related_user_ids");
-
-  if (error || !Array.isArray(data)) {
-    throw new Error("차단 관계를 불러오지 못했습니다.");
+  if (
+    blockRelatedUserIdsCache?.value &&
+    blockRelatedUserIdsCache.expiresAt > now
+  ) {
+    return blockRelatedUserIdsCache.value;
   }
 
-  return data
-    .map((row) => row.user_id)
-    .filter((userId): userId is string => typeof userId === "string");
+  if (blockRelatedUserIdsCache?.promise) {
+    return blockRelatedUserIdsCache.promise;
+  }
+
+  const supabase = requireSupabaseClient();
+
+  const promise = Promise.resolve(supabase.rpc("get_block_related_user_ids")).then(
+    ({ data, error }) => {
+      if (error || !Array.isArray(data)) {
+        clearBlockRelatedUserIdsCache();
+        throw new Error("차단 관계를 불러오지 못했습니다.");
+      }
+
+      const value = data
+        .map((row) => row.user_id)
+        .filter(
+          (rowUserId): rowUserId is string => typeof rowUserId === "string",
+        );
+
+      blockRelatedUserIdsCache = {
+        expiresAt: Date.now() + BLOCK_RELATED_USER_IDS_TTL_MS,
+        promise: null,
+        value,
+      };
+
+      return value;
+    },
+  );
+
+  blockRelatedUserIdsCache = {
+    expiresAt: 0,
+    promise,
+    value: null,
+  };
+
+  return promise;
 }
 
 export async function isBlockRelatedUser(userId: string): Promise<boolean> {
@@ -78,4 +128,6 @@ export async function unblockUser(userId: string): Promise<void> {
   if (error) {
     throw new Error("차단 해제에 실패했습니다.");
   }
+
+  clearBlockRelatedUserIdsCache();
 }

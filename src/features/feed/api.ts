@@ -90,6 +90,7 @@ export type FeedPost = {
 
 export type GetFeedParams = {
   cursor?: string;
+  includeHashtags?: boolean;
   limit?: number;
 };
 
@@ -653,6 +654,7 @@ export async function togglePostLike(postId: string): Promise<TogglePostLikeResu
 // 같은 학교 게시물만 최신순으로 불러오고, 피드 카드에 필요한 조인 데이터를 조립한다.
 export async function getFeed({
   cursor,
+  includeHashtags = true,
   limit = 20,
 }: GetFeedParams = {}): Promise<GetFeedResult> {
   const supabase = requireSupabaseClient();
@@ -741,36 +743,38 @@ export async function getFeed({
     throw new Error("게시물 미디어를 불러오지 못했습니다.");
   }
 
-  // 해시태그는 연결 테이블과 실제 이름 테이블을 나눠서 읽어야 한다.
-  const {
-    data: postHashtagsData,
-    error: postHashtagsError,
-  } = await supabase
-    .from("post_hashtags")
-    .select("post_id, hashtag_id")
-    .in("post_id", postIds);
-
-  if (postHashtagsError || !postHashtagsData) {
-    throw new Error("게시물 해시태그를 불러오지 못했습니다.");
-  }
-
-  const hashtagIds = Array.from(
-    new Set(postHashtagsData.map((postHashtag) => postHashtag.hashtag_id)),
-  );
-
+  let postHashtagsData: PostHashtagRow[] = [];
   let hashtagsData: HashtagRow[] = [];
 
-  if (hashtagIds.length > 0) {
+  if (includeHashtags) {
+    // 해시태그는 피드 첫 렌더에 필수는 아니라 호출자가 생략할 수 있게 둔다.
     const { data, error } = await supabase
-      .from("hashtags")
-      .select("id, name, created_at")
-      .in("id", hashtagIds);
+      .from("post_hashtags")
+      .select("post_id, hashtag_id")
+      .in("post_id", postIds);
 
     if (error || !data) {
-      throw new Error("해시태그 정보를 불러오지 못했습니다.");
+      throw new Error("게시물 해시태그를 불러오지 못했습니다.");
     }
 
-    hashtagsData = data;
+    postHashtagsData = data as PostHashtagRow[];
+
+    const hashtagIds = Array.from(
+      new Set(postHashtagsData.map((postHashtag) => postHashtag.hashtag_id)),
+    );
+
+    if (hashtagIds.length > 0) {
+      const { data: hashtags, error: hashtagsError } = await supabase
+        .from("hashtags")
+        .select("id, name, created_at")
+        .in("id", hashtagIds);
+
+      if (hashtagsError || !hashtags) {
+        throw new Error("해시태그 정보를 불러오지 못했습니다.");
+      }
+
+      hashtagsData = hashtags;
+    }
   }
 
   const usersById = new Map<string, FeedUser>(

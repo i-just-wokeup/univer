@@ -2,15 +2,12 @@
 
 import { Bell, MessageCircleMore, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { SideBar } from "@/components/layout/SideBar";
-import { getCurrentUserProfile } from "@/features/auth/api";
-import { getChatUnreadCount } from "@/features/chat/api";
-import { getUnreadCount } from "@/features/notifications/api";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useAppSession } from "@/features/session/AppSessionProvider";
 
 type IconProps = {
   className?: string;
@@ -35,11 +32,6 @@ type NavItemsProps =
       logo?: never;
       variant: "bottom";
     };
-
-type CurrentUserProfile = Pick<
-  NonNullable<Awaited<ReturnType<typeof getCurrentUserProfile>>>,
-  "avatar_url" | "nickname" | "role"
->;
 
 function HomeIcon({ className = "h-6 w-6" }: IconProps) {
   return (
@@ -104,106 +96,10 @@ function ExploreIcon({ className = "h-6 w-6" }: IconProps) {
 
 export function NavItems(props: NavItemsProps) {
   const pathname = usePathname();
-  const [currentUserProfile, setCurrentUserProfile] =
-    useState<CurrentUserProfile | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [chatUnreadCount, setChatUnreadCount] = useState(0);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    getCurrentUserProfile()
-      .then((profile) => {
-        if (!isMounted) {
-          return;
-        }
-
-        setCurrentUserProfile(
-          profile
-            ? {
-                avatar_url: profile.avatar_url,
-                nickname: profile.nickname,
-                role: profile.role,
-              }
-            : null,
-        );
-      })
-      .catch(() => {
-        if (isMounted) {
-          setCurrentUserProfile(null);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadChatUnreadCount() {
-      try {
-        const count = await getChatUnreadCount();
-
-        if (isMounted) {
-          setChatUnreadCount(count);
-        }
-      } catch {
-        if (isMounted) {
-          setChatUnreadCount(0);
-        }
-      }
-    }
-
-    void loadChatUnreadCount();
-    window.addEventListener("chat:refresh", loadChatUnreadCount);
-    const supabase = getSupabaseBrowserClient();
-    const channel = supabase
-      ?.channel(`nav:conversations:${crypto.randomUUID()}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "conversations" },
-        () => {
-          void loadChatUnreadCount();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("chat:refresh", loadChatUnreadCount);
-      if (channel) {
-        void supabase?.removeChannel(channel);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadUnreadCount() {
-      try {
-        const count = await getUnreadCount();
-
-        if (isMounted) {
-          setUnreadCount(count);
-        }
-      } catch {
-        if (isMounted) {
-          setUnreadCount(0);
-        }
-      }
-    }
-
-    void loadUnreadCount();
-    window.addEventListener("notifications:refresh", loadUnreadCount);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("notifications:refresh", loadUnreadCount);
-    };
-  }, []);
+  const { chatUnreadCount, currentUserProfile, unreadCount } = useAppSession();
+  const profileHref = currentUserProfile?.nickname
+    ? `/profile/${encodeURIComponent(currentUserProfile.nickname)}`
+    : "/profile/me";
 
   const profileAvatar = (
     <Avatar
@@ -259,7 +155,7 @@ export function NavItems(props: NavItemsProps) {
       isActive: pathname.startsWith("/explore"),
     },
     {
-      href: "/profile/me",
+      href: profileHref,
       label: "프로필",
       icon: profileAvatar,
       isActive: currentUserProfile?.nickname

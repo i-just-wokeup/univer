@@ -27,6 +27,10 @@ import {
   type Profile,
   type ProfilePost,
 } from "@/features/profile/api";
+import {
+  getProfilePageCache,
+  setProfilePageCache,
+} from "@/features/profile/page-cache";
 
 type ProfilePageState = {
   connectionStatus: ConnectionStatus;
@@ -326,7 +330,22 @@ function PostsGrid({
 export default function ProfilePage() {
   const params = useParams<{ nickname: string }>();
   const router = useRouter();
-  const [state, setState] = useState<ProfilePageState>({
+  const requestedNickname = decodeURIComponent(params.nickname);
+  const [state, setState] = useState<ProfilePageState>(() => {
+    const cachedProfilePage = getProfilePageCache(requestedNickname);
+
+    if (cachedProfilePage) {
+      return {
+        connectionStatus: cachedProfilePage.connectionStatus,
+        currentUserId: cachedProfilePage.currentUserId,
+        isFavorite: cachedProfilePage.isFavorite,
+        posts: cachedProfilePage.posts,
+        postsCount: cachedProfilePage.postsCount,
+        profile: cachedProfilePage.profile,
+      };
+    }
+
+    return {
     connectionStatus: {
       friends_count: 0,
       is_requester: false,
@@ -337,8 +356,11 @@ export default function ProfilePage() {
     posts: [],
     postsCount: 0,
     profile: null,
+    };
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(
+    () => getProfilePageCache(requestedNickname) === null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isConnectionMenuOpen, setIsConnectionMenuOpen] = useState(false);
 
@@ -346,11 +368,26 @@ export default function ProfilePage() {
     let isMounted = true;
 
     async function loadProfile() {
+      const cachedProfilePage = getProfilePageCache(requestedNickname);
+
+      if (cachedProfilePage) {
+        setState({
+          connectionStatus: cachedProfilePage.connectionStatus,
+          currentUserId: cachedProfilePage.currentUserId,
+          isFavorite: cachedProfilePage.isFavorite,
+          posts: cachedProfilePage.posts,
+          postsCount: cachedProfilePage.postsCount,
+          profile: cachedProfilePage.profile,
+        });
+        setIsLoading(false);
+        setError(null);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
 
-        const requestedNickname = decodeURIComponent(params.nickname);
         const currentUser = await getCurrentUserProfile();
         const profileNickname =
           requestedNickname === "me" ? currentUser?.nickname : requestedNickname;
@@ -375,6 +412,29 @@ export default function ProfilePage() {
             : await getProfile(profileNickname);
 
         const isMine = currentUser?.id === loadedProfile.id;
+
+        if (!isMounted) {
+          return;
+        }
+
+        setState({
+          connectionStatus: {
+            friends_count: 0,
+            is_requester: false,
+            status: "none",
+          },
+          currentUserId: currentUser?.id ?? null,
+          isFavorite: false,
+          posts: [],
+          postsCount: 0,
+          profile: loadedProfile,
+        });
+        setIsLoading(false);
+
+        if (requestedNickname === "me") {
+          router.replace(`/profile/${encodeURIComponent(profileNickname)}`);
+        }
+
         const [
           loadedPosts,
           loadedPostsCount,
@@ -391,18 +451,18 @@ export default function ProfilePage() {
           return;
         }
 
-        if (requestedNickname === "me") {
-          router.replace(`/profile/${encodeURIComponent(profileNickname)}`);
-        }
-
-        setState({
+        const nextState = {
           connectionStatus,
           currentUserId: currentUser?.id ?? null,
           isFavorite,
           posts: loadedPosts,
           postsCount: loadedPostsCount,
           profile: loadedProfile,
-        });
+        };
+
+        setState(nextState);
+        setProfilePageCache(profileNickname, nextState);
+        setProfilePageCache(requestedNickname, nextState);
       } catch (loadError) {
         if (!isMounted) {
           return;
@@ -425,7 +485,25 @@ export default function ProfilePage() {
     return () => {
       isMounted = false;
     };
-  }, [params.nickname, router]);
+  }, [requestedNickname, router]);
+
+  useEffect(() => {
+    if (isLoading || !state.profile) {
+      return;
+    }
+
+    const cacheValue = {
+      connectionStatus: state.connectionStatus,
+      currentUserId: state.currentUserId,
+      isFavorite: state.isFavorite,
+      posts: state.posts,
+      postsCount: state.postsCount,
+      profile: state.profile,
+    };
+
+    setProfilePageCache(state.profile.nickname, cacheValue);
+    setProfilePageCache(requestedNickname, cacheValue);
+  }, [isLoading, requestedNickname, state]);
 
   if (isLoading) {
     return <ProfileSkeleton />;

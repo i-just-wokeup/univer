@@ -8,6 +8,10 @@ import {
   getExplorePosts,
   type ExplorePost,
 } from "@/features/explore/api";
+import {
+  getExplorePageCache,
+  setExplorePageCache,
+} from "@/features/explore/page-cache";
 
 const PAGE_SIZE = 24;
 
@@ -23,18 +27,29 @@ function ExploreSkeleton() {
 
 export default function ExplorePage() {
   const router = useRouter();
-  const [posts, setPosts] = useState<ExplorePost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPosts] = useState<ExplorePost[]>(
+    () => getExplorePageCache()?.posts ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(
+    () => getExplorePageCache() === null,
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
+  const [hasMore, setHasMore] = useState(
+    () => getExplorePageCache()?.hasMore ?? false,
+  );
   const [error, setError] = useState<string | null>(null);
-  const offsetRef = useRef(0);
+  const offsetRef = useRef(getExplorePageCache()?.offset ?? 0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadInitial() {
+      if (getExplorePageCache()) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -47,6 +62,11 @@ export default function ExplorePage() {
         setPosts(result.posts);
         setHasMore(result.hasMore);
         offsetRef.current = PAGE_SIZE;
+        setExplorePageCache({
+          hasMore: result.hasMore,
+          offset: offsetRef.current,
+          posts: result.posts,
+        });
       } catch (loadError) {
         if (isMounted) {
           setError(
@@ -69,6 +89,18 @@ export default function ExplorePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    setExplorePageCache({
+      hasMore,
+      offset: offsetRef.current,
+      posts,
+    });
+  }, [hasMore, isLoading, posts]);
+
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) {
       return;
@@ -81,15 +113,23 @@ export default function ExplorePage() {
         limit: PAGE_SIZE,
         offset: offsetRef.current,
       });
-      setPosts((current) => [...current, ...result.posts]);
+      const nextPosts = [...posts, ...result.posts];
+      const nextOffset = offsetRef.current + PAGE_SIZE;
+
+      setPosts(nextPosts);
       setHasMore(result.hasMore);
-      offsetRef.current += PAGE_SIZE;
+      offsetRef.current = nextOffset;
+      setExplorePageCache({
+        hasMore: result.hasMore,
+        offset: nextOffset,
+        posts: nextPosts,
+      });
     } catch {
       setHasMore(false);
     } finally {
       setIsLoadingMore(false);
     }
-  }, [hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, posts]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
