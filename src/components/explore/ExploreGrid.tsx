@@ -5,11 +5,20 @@ import Image from "next/image";
 
 import { getPostAspectRatioClass } from "@/components/feed/postAspectRatio";
 import type { ExplorePost } from "@/features/explore/api";
+import type { PostAspectRatio } from "@/features/feed/api";
 
 type ExploreGridProps = {
   onOpenPost: (postId: string) => void;
   posts: ExplorePost[];
 };
+
+function getExploreTileAspectRatioClass(aspectRatio: PostAspectRatio) {
+  if (aspectRatio === "landscape") {
+    return "aspect-square";
+  }
+
+  return getPostAspectRatioClass(aspectRatio);
+}
 
 export function ExploreGrid({ onOpenPost, posts }: ExploreGridProps) {
   return (
@@ -19,7 +28,7 @@ export function ExploreGrid({ onOpenPost, posts }: ExploreGridProps) {
           key={post.id}
           type="button"
           onClick={() => onOpenPost(post.id)}
-          className={`group relative mb-2 block w-full break-inside-avoid overflow-hidden rounded-[20px] bg-zinc-100 shadow-[0_12px_26px_rgba(66,43,102,0.09)] ${getPostAspectRatioClass(post.aspect_ratio)}`}
+          className={`group relative mb-2 block w-full break-inside-avoid overflow-hidden rounded-[20px] bg-zinc-100 shadow-[0_12px_26px_rgba(66,43,102,0.09)] ${getExploreTileAspectRatioClass(post.aspect_ratio)}`}
         >
           <Image
             src={post.thumbnail_url}
