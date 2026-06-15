@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import Image from "next/image";
 
+import { getPostAspectRatioClass } from "@/components/feed/postAspectRatio";
 import type { ExplorePost } from "@/features/explore/api";
 
 type ExploreGridProps = {
@@ -10,22 +11,15 @@ type ExploreGridProps = {
   posts: ExplorePost[];
 };
 
-const tileShapeClassNames = [
-  "aspect-[4/5]",
-  "aspect-square",
-  "aspect-[3/4]",
-  "aspect-[5/7]",
-] as const;
-
 export function ExploreGrid({ onOpenPost, posts }: ExploreGridProps) {
   return (
     <section className="columns-2 gap-2 [column-fill:_balance]">
-      {posts.map((post, index) => (
+      {posts.map((post) => (
         <button
           key={post.id}
           type="button"
           onClick={() => onOpenPost(post.id)}
-          className={`group relative mb-2 block w-full break-inside-avoid overflow-hidden rounded-[20px] bg-zinc-100 shadow-[0_12px_26px_rgba(66,43,102,0.09)] ${tileShapeClassNames[index % tileShapeClassNames.length]}`}
+          className={`group relative mb-2 block w-full break-inside-avoid overflow-hidden rounded-[20px] bg-zinc-100 shadow-[0_12px_26px_rgba(66,43,102,0.09)] ${getPostAspectRatioClass(post.aspect_ratio)}`}
         >
           <Image
             src={post.thumbnail_url}

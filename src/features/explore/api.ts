@@ -1,9 +1,13 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getBlockRelatedUserIds } from "@/features/blocks/api";
-import { getCurrentUserUniversityId } from "@/features/feed/api";
+import {
+  getCurrentUserUniversityId,
+  type PostAspectRatio,
+} from "@/features/feed/api";
 
 // 탐색 그리드 한 칸에 필요한 최소 정보. 썸네일과 지표만 노출한다.
 export type ExplorePost = {
+  aspect_ratio: PostAspectRatio;
   comments_count: number;
   id: string;
   likes_count: number;
@@ -47,7 +51,7 @@ export async function getExplorePosts({
   // 이미지 없는 글을 걸러내면 페이지 크기가 줄어들 수 있어 한 칸 더 받아 hasMore를 판단한다.
   let postsQuery = supabase
     .from("posts")
-    .select("id, user_id, likes_count, comments_count, created_at")
+    .select("id, user_id, aspect_ratio, likes_count, comments_count, created_at")
     .eq("university_id", universityId)
     .eq("visibility", "public")
     .is("deleted_at", null)
@@ -106,6 +110,7 @@ export async function getExplorePosts({
       }
 
       items.push({
+        aspect_ratio: post.aspect_ratio ?? "portrait",
         comments_count: post.comments_count,
         id: post.id,
         likes_count: post.likes_count,
