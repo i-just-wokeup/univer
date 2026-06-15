@@ -269,6 +269,7 @@ function PostWriteContent() {
             <PostImageUploader
               aspectRatio={aspectRatio}
               images={images}
+              onAspectRatioDetected={setAspectRatio}
               onImagesChange={setImages}
             />
             <PostAspectRatioPicker

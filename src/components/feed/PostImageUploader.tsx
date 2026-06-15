@@ -10,6 +10,7 @@ import type { PostAspectRatio } from "@/features/feed/api";
 type PostImageUploaderProps = {
   aspectRatio: PostAspectRatio;
   images: File[];
+  onAspectRatioDetected?: (aspectRatio: PostAspectRatio) => void;
   onImagesChange: (images: File[]) => void;
 };
 
@@ -21,6 +22,40 @@ type PreviewImage = {
 
 // MVP 기준 최대 업로드 개수 제한.
 const MAX_IMAGE_COUNT = 10;
+
+function getAspectRatioFromDimensions(
+  width: number,
+  height: number,
+): PostAspectRatio {
+  const ratio = width / height;
+
+  if (ratio >= 1.1) {
+    return "landscape";
+  }
+
+  if (ratio <= 0.9) {
+    return "portrait";
+  }
+
+  return "square";
+}
+
+function detectImageAspectRatio(file: File): Promise<PostAspectRatio> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new window.Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(getAspectRatioFromDimensions(image.naturalWidth, image.naturalHeight));
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("이미지 비율을 확인하지 못했습니다."));
+    };
+    image.src = objectUrl;
+  });
+}
 
 // 업로드 추가 버튼 아이콘.
 function PlusIcon() {
@@ -54,6 +89,7 @@ function CloseIcon() {
 export function PostImageUploader({
   aspectRatio,
   images,
+  onAspectRatioDetected,
   onImagesChange,
 }: PostImageUploaderProps) {
   const inputId = useId();
@@ -85,10 +121,21 @@ export function PostImageUploader({
       return;
     }
 
+    const shouldDetectAspectRatio = images.length === 0;
     const nextImages = [...images, ...selectedImages].slice(0, MAX_IMAGE_COUNT);
     onImagesChange(nextImages);
     setSelectedPreviewIndex(images.length === 0 ? 0 : selectedPreviewIndex);
     event.target.value = "";
+
+    if (shouldDetectAspectRatio && selectedImages[0]) {
+      void detectImageAspectRatio(selectedImages[0])
+        .then((detectedAspectRatio) => {
+          onAspectRatioDetected?.(detectedAspectRatio);
+        })
+        .catch(() => {
+          // 비율 감지 실패 시 기존 선택값을 유지한다.
+        });
+    }
   }
 
   // 선택된 이미지 중 한 장만 제거한다.
