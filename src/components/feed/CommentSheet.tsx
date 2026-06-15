@@ -467,12 +467,12 @@ export function CommentSheet({
             avatarUrl={comment.user.avatar_url}
             nickname={comment.user.nickname}
           />
-          <span className="shrink-0 text-xs text-zinc-400">
+          <span className="shrink-0 text-xs font-medium text-krew-faint">
             {getRelativeTimeLabel(comment.created_at)}
           </span>
         </div>
         <CommentContent
-          className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700"
+          className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-foreground"
           content={comment.content}
           mentionNickname={isReply ? mentionNickname : undefined}
         />
@@ -483,7 +483,7 @@ export function CommentSheet({
             onClick={() => {
               handleReply(comment);
             }}
-            className="ml-11 mt-2 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+            className="ml-11 mt-2 text-xs font-semibold text-krew-faint transition hover:text-krew-accent"
           >
             답글 달기
           </button>
@@ -498,8 +498,8 @@ export function CommentSheet({
           }}
           className={`flex shrink-0 items-center gap-1 text-xs font-semibold transition ${
             likedCommentIds.has(comment.id)
-              ? "text-red-500"
-              : "text-zinc-400 hover:text-zinc-700"
+              ? "text-krew-like"
+              : "text-krew-faint hover:text-krew-accent"
           }`}
           aria-label="댓글 좋아요"
         >
@@ -514,7 +514,7 @@ export function CommentSheet({
               void handleDelete(comment.id);
             }}
             disabled={deletingCommentId === comment.id}
-            className="shrink-0 text-xs font-medium text-zinc-400 transition hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="shrink-0 text-xs font-semibold text-krew-faint transition hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             삭제
           </button>
@@ -536,23 +536,23 @@ export function CommentSheet({
       />
 
       <section
-        className="relative flex h-[var(--comment-sheet-height)] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-[640px] sm:rounded-3xl"
+        className="relative flex h-[var(--comment-sheet-height)] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] border border-white/70 bg-white/95 shadow-[0_24px_70px_rgba(20,22,30,0.2)] backdrop-blur sm:h-[640px] sm:rounded-[28px]"
         style={sheetStyle}
       >
-        <header className="shrink-0 border-b border-zinc-100 px-5 py-3">
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-zinc-300 sm:hidden" />
+        <header className="shrink-0 border-b border-krew-border px-5 py-3">
+          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-krew-accent-ring sm:hidden" />
           <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-zinc-950">
-            댓글 {comments.length}개
-          </h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
-            aria-label="닫기"
-          >
-            ×
-          </button>
+            <h2 className="text-base font-black tracking-[-0.01em] text-foreground">
+              댓글 {comments.length}개
+            </h2>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex h-9 w-9 items-center justify-center rounded-2xl text-krew-muted transition hover:bg-krew-accent-soft hover:text-krew-accent"
+              aria-label="닫기"
+            >
+              ×
+            </button>
           </div>
         </header>
 
@@ -573,7 +573,7 @@ export function CommentSheet({
 
           {!isLoading && comments.length === 0 ? (
             <div className="flex h-full items-center justify-center px-6 py-16">
-              <p className="text-sm font-medium text-zinc-500">
+              <p className="text-sm font-semibold text-krew-muted">
                 첫 댓글을 남겨보세요
               </p>
             </div>
@@ -600,7 +600,7 @@ export function CommentSheet({
                                 return nextExpandedIds;
                               });
                             }}
-                            className="ml-[88px] py-1 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+                            className="ml-[88px] py-1 text-xs font-semibold text-krew-faint transition hover:text-krew-accent"
                           >
                             답글 숨기기
                           </button>
@@ -615,7 +615,7 @@ export function CommentSheet({
                               return nextExpandedIds;
                             });
                           }}
-                          className="ml-[88px] py-1 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+                          className="ml-[88px] py-1 text-xs font-semibold text-krew-faint transition hover:text-krew-accent"
                         >
                           답글 {comment.replies.length}개 보기
                         </button>
@@ -627,9 +627,9 @@ export function CommentSheet({
             : null}
         </div>
 
-        <footer className="shrink-0 border-t border-zinc-100 bg-white px-4 py-3">
+        <footer className="shrink-0 border-t border-krew-border bg-white/95 px-4 py-3">
           {replyTarget ? (
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-krew-accent-soft px-3 py-2 text-xs font-semibold text-krew-muted">
               <span>
                 {replyTarget.nickname}에게 답글 달기
               </span>
@@ -639,14 +639,14 @@ export function CommentSheet({
                   setReplyTarget(null);
                   setContent("");
                 }}
-                className="font-semibold text-zinc-700 transition hover:text-zinc-950"
+                className="font-bold text-krew-accent transition hover:text-zinc-950"
               >
                 취소
               </button>
             </div>
           ) : null}
 
-          <div className="flex items-center gap-2 rounded-full bg-zinc-100 px-4 py-2">
+          <div className="flex items-center gap-2 rounded-full bg-krew-accent-soft px-4 py-2">
             <input
               ref={inputRef}
               value={content}
@@ -659,7 +659,7 @@ export function CommentSheet({
                   void handleSubmit();
                 }
               }}
-              className="min-w-0 flex-1 bg-transparent text-base text-zinc-950 outline-none placeholder:text-zinc-400 sm:text-sm"
+              className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground outline-none placeholder:text-krew-faint sm:text-sm"
               placeholder="댓글 달기..."
             />
             <button
@@ -668,7 +668,7 @@ export function CommentSheet({
                 void handleSubmit();
               }}
               disabled={!canSubmit}
-              className="shrink-0 text-sm font-semibold text-zinc-950 transition disabled:cursor-not-allowed disabled:text-zinc-300"
+              className="shrink-0 text-sm font-extrabold text-krew-accent transition disabled:cursor-not-allowed disabled:text-krew-faint"
             >
               {isSubmitting ? "게시 중" : "게시"}
             </button>

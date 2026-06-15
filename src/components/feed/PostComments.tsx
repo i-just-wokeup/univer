@@ -91,7 +91,7 @@ export function CommentContent({
         <>
           <Link
             href={`/profile/${encodeURIComponent(mentionNickname)}`}
-            className="font-semibold text-zinc-950 transition hover:text-zinc-600"
+            className="font-semibold text-foreground transition hover:text-krew-accent"
           >
             {mentionPrefix}
           </Link>
@@ -145,12 +145,12 @@ export function CommentsList({
               avatarUrl={comment.user.avatar_url}
               nickname={comment.user.nickname}
             />
-            <span className="shrink-0 text-xs text-zinc-400">
+            <span className="shrink-0 text-xs font-medium text-krew-faint">
               {getRelativeTimeLabel(comment.created_at)}
             </span>
           </div>
           <CommentContent
-            className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-700"
+            className="mt-1 pl-11 whitespace-pre-wrap break-words text-sm leading-5 text-foreground"
             content={comment.content}
             mentionNickname={isReply ? mentionNickname : undefined}
           />
@@ -161,7 +161,7 @@ export function CommentsList({
               onClick={() => {
                 onReply(comment);
               }}
-              className="ml-11 mt-2 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+              className="ml-11 mt-2 text-xs font-semibold text-krew-faint transition hover:text-krew-accent"
             >
               답글 달기
             </button>
@@ -176,8 +176,8 @@ export function CommentsList({
             }}
             className={`flex shrink-0 items-center gap-1 text-xs font-semibold transition ${
               isCommentLiked
-                ? "text-red-500"
-                : "text-zinc-400 hover:text-zinc-700"
+                ? "text-krew-like"
+                : "text-krew-faint hover:text-krew-accent"
             }`}
             aria-label="댓글 좋아요"
           >
@@ -192,7 +192,7 @@ export function CommentsList({
                 onDelete(comment.id);
               }}
               disabled={deletingCommentId === comment.id}
-              className="shrink-0 text-xs font-medium text-zinc-400 transition hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="shrink-0 text-xs font-semibold text-krew-faint transition hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               삭제
             </button>
@@ -221,7 +221,7 @@ export function CommentsList({
   if (comments.length === 0) {
     return (
       <div className="flex min-h-36 items-center justify-center px-6 py-10">
-        <p className="text-sm font-medium text-zinc-500">
+        <p className="text-sm font-semibold text-krew-muted">
           첫 댓글을 남겨보세요
         </p>
       </div>
@@ -245,7 +245,7 @@ export function CommentsList({
                     onClick={() => {
                       onToggleReplies(comment.id);
                     }}
-                    className="ml-[88px] py-1 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+                    className="ml-[88px] py-1 text-xs font-semibold text-krew-faint transition hover:text-krew-accent"
                   >
                     답글 숨기기
                   </button>
@@ -256,7 +256,7 @@ export function CommentsList({
                   onClick={() => {
                     onToggleReplies(comment.id);
                   }}
-                  className="ml-[88px] py-1 text-xs font-semibold text-zinc-400 transition hover:text-zinc-700"
+                  className="ml-[88px] py-1 text-xs font-semibold text-krew-faint transition hover:text-krew-accent"
                 >
                   답글 {comment.replies.length}개 보기
                 </button>
@@ -303,19 +303,19 @@ export function CommentInput({
   return (
     <div>
       {replyTarget ? (
-        <div className="mb-2 flex items-center justify-between rounded-2xl bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+        <div className="mb-2 flex items-center justify-between rounded-2xl bg-krew-accent-soft px-3 py-2 text-xs font-semibold text-krew-muted">
           <span>{replyTarget.nickname}에게 답글 달기</span>
           <button
             type="button"
             onClick={onCancelReply}
-            className="font-semibold text-zinc-700 transition hover:text-zinc-950"
+            className="font-bold text-krew-accent transition hover:text-zinc-950"
           >
             취소
           </button>
         </div>
       ) : null}
 
-      <div className="flex items-center gap-2 rounded-full bg-zinc-100 px-4 py-2">
+      <div className="flex items-center gap-2 rounded-full bg-krew-accent-soft px-4 py-2">
         <input
           ref={inputRef}
           value={content}
@@ -328,14 +328,14 @@ export function CommentInput({
               onSubmit();
             }
           }}
-          className="min-w-0 flex-1 bg-transparent text-sm text-zinc-950 outline-none placeholder:text-zinc-400"
+          className="min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-krew-faint"
           placeholder="댓글 달기..."
         />
         <button
           type="button"
           onClick={onSubmit}
           disabled={!canSubmit}
-          className="shrink-0 text-sm font-semibold text-zinc-950 transition disabled:cursor-not-allowed disabled:text-zinc-300"
+          className="shrink-0 text-sm font-extrabold text-krew-accent transition disabled:cursor-not-allowed disabled:text-krew-faint"
         >
           {isSubmitting ? "게시 중" : "게시"}
         </button>

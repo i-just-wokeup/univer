@@ -3,16 +3,16 @@
 import { Heart, MessageCircle, MoreHorizontal, X } from "lucide-react";
 import { useState } from "react";
 
-import { UserInfo } from "@/components/common/UserInfo";
+import { ProfileNicknameLink, UserInfo } from "@/components/common/UserInfo";
 import type { PostDetail as FeedPostDetail } from "@/features/feed/api";
 import { getRelativeTimeLabel } from "@/lib/utils/time";
 
 export function PostDetailSkeleton() {
   return (
-    <div className="grid animate-pulse bg-white lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+    <div className="grid animate-pulse bg-background lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
       <div className="aspect-square bg-zinc-100" />
-      <div className="flex min-h-[520px] flex-col border-zinc-100 lg:border-l">
-        <div className="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
+      <div className="flex min-h-[520px] flex-col border-krew-border bg-white/82 lg:border-l">
+        <div className="flex items-center gap-3 border-b border-krew-border px-4 py-3">
           <div className="h-9 w-9 rounded-full bg-zinc-100" />
           <div className="min-w-0 flex-1">
             <div className="h-3 w-24 rounded-full bg-zinc-100" />
@@ -43,7 +43,7 @@ export function PostHeader({
   const isOwnPost = currentUserId === post.user.id;
 
   return (
-    <header className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+    <header className="flex items-center justify-between border-b border-krew-border bg-white/82 px-4 py-3">
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <UserInfo
@@ -55,7 +55,7 @@ export function PostHeader({
           <span className="truncate text-zinc-500">{post.user.department}</span>
           */}
         </div>
-        <p className="mt-0.5 pl-11 text-xs text-zinc-400">
+        <p className="mt-0.5 pl-11 text-xs font-semibold text-krew-faint">
           {getRelativeTimeLabel(post.created_at)}
         </p>
       </div>
@@ -64,7 +64,7 @@ export function PostHeader({
         <button
           type="button"
           onClick={onOpenActions}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+          className="flex h-9 w-9 items-center justify-center rounded-2xl text-krew-muted transition hover:bg-krew-accent-soft hover:text-krew-accent"
           aria-label={isOwnPost ? "내 게시물 메뉴" : "게시물 메뉴"}
         >
           <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
@@ -73,7 +73,7 @@ export function PostHeader({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+            className="flex h-9 w-9 items-center justify-center rounded-2xl text-krew-muted transition hover:bg-krew-accent-soft hover:text-krew-accent"
             aria-label="닫기"
           >
             <X className="h-5 w-5" aria-hidden="true" />
@@ -109,8 +109,8 @@ export function PostActions({
       <button
         type="button"
         onClick={onLike}
-        className={`flex items-center gap-1.5 transition hover:text-zinc-950 ${
-          isLiked ? "text-red-500" : "text-zinc-700"
+        className={`flex items-center gap-1.5 text-sm font-extrabold transition hover:text-zinc-950 ${
+          isLiked ? "text-krew-like" : "text-zinc-800"
         }`}
         aria-label="좋아요"
       >
@@ -119,20 +119,20 @@ export function PostActions({
           fill={isLiked ? "currentColor" : "none"}
           aria-hidden="true"
         />
-        <span className="text-sm font-medium">{likesCount}</span>
+        <span>{likesCount}</span>
       </button>
 
       {onComment ? (
         <button
           type="button"
           onClick={onComment}
-          className="flex items-center gap-1.5 text-zinc-700 transition hover:text-zinc-950"
+          className="flex items-center gap-1.5 text-sm font-bold text-zinc-800 transition hover:text-zinc-950"
           aria-label="댓글 보기"
         >
           {commentContent}
         </button>
       ) : (
-        <div className="flex items-center gap-1.5 text-zinc-700" aria-label="댓글 수">
+        <div className="flex items-center gap-1.5 text-sm font-bold text-zinc-800" aria-label="댓글 수">
           {commentContent}
         </div>
       )}
@@ -168,6 +168,9 @@ export function PostBody({
               shouldShowToggle && !isExpanded ? "line-clamp-3" : ""
             }`}
           >
+            <ProfileNicknameLink nickname={post.user.nickname}>
+              {post.user.nickname}{" "}
+            </ProfileNicknameLink>
             {post.content}
           </p>
           {shouldShowToggle ? (
@@ -176,7 +179,7 @@ export function PostBody({
               onClick={() => {
                 setIsExpanded((currentIsExpanded) => !currentIsExpanded);
               }}
-              className="mt-1 text-sm font-semibold text-zinc-500 transition hover:text-zinc-950"
+              className="mt-1 text-sm font-semibold text-krew-muted transition hover:text-zinc-950"
             >
               {isExpanded ? "접기" : "더보기"}
             </button>
@@ -185,11 +188,11 @@ export function PostBody({
       ) : null}
 
       {post.hashtags.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-x-2 gap-y-1">
           {post.hashtags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700"
+              className="text-sm font-bold text-krew-accent"
             >
               #{tag}
             </span>

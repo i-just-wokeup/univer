@@ -474,7 +474,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
 
   if (error && !post) {
     return (
-      <section className="flex min-h-80 items-center justify-center bg-white px-6 text-center">
+      <section className="flex min-h-80 items-center justify-center bg-background px-6 text-center">
         <p className="text-sm font-semibold text-red-500">{error}</p>
       </section>
     );
@@ -482,8 +482,8 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
 
   if (!post) {
     return (
-      <section className="flex min-h-80 items-center justify-center bg-white px-6 text-center">
-        <p className="text-sm font-medium text-zinc-500">
+      <section className="flex min-h-80 items-center justify-center bg-background px-6 text-center">
+        <p className="text-sm font-semibold text-krew-muted">
           게시물을 찾을 수 없습니다.
         </p>
       </section>
@@ -579,7 +579,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
   );
 
   return (
-    <article className="h-full overflow-y-auto bg-white lg:overflow-hidden">
+    <article className="h-full overflow-y-auto bg-background lg:overflow-hidden">
       <div
         className={
           isModal
@@ -600,8 +600,8 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
         <div
           className={
             isModal
-              ? "flex min-h-0 flex-col border-zinc-100 lg:h-full lg:w-[500px] lg:shrink-0 lg:border-l"
-              : "flex min-h-0 flex-col border-zinc-100 lg:h-full lg:border-l"
+              ? "flex min-h-0 flex-col border-krew-border bg-white/82 lg:h-full lg:w-[500px] lg:shrink-0 lg:border-l"
+              : "flex min-h-0 flex-col border-krew-border bg-white/82 lg:h-full lg:border-l"
           }
         >
           <PostHeader
@@ -617,7 +617,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
             <ImageCarousel post={post} />
           </div>
 
-          <div className="border-b border-zinc-100 px-4 py-4 lg:hidden">
+          <div className="border-b border-krew-border bg-white/82 px-4 py-4 lg:hidden">
             <PostActions
               commentsCount={post.comments_count}
               isLiked={isLiked}
@@ -642,20 +642,20 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
               onClick={() => {
                 setIsMobileCommentSheetOpen(true);
               }}
-              className="mt-4 flex w-full items-center rounded-full bg-zinc-100 px-4 py-3 text-left text-sm font-medium text-zinc-400"
+              className="mt-4 flex w-full items-center rounded-full bg-krew-accent-soft px-4 py-3 text-left text-sm font-semibold text-krew-muted"
             >
               댓글 달기...
             </button>
           </div>
 
           <div className="hidden min-h-0 flex-1 overflow-y-auto lg:block">
-            <div className="border-b border-zinc-100 px-4 py-4">
+            <div className="border-b border-krew-border px-4 py-4">
               <PostBody post={post} />
             </div>
             {commentList}
           </div>
 
-          <div className="hidden shrink-0 border-t border-zinc-100 px-4 py-4 lg:block">
+          <div className="hidden shrink-0 border-t border-krew-border px-4 py-4 lg:block">
             <PostActions
               commentsCount={post.comments_count}
               isLiked={isLiked}

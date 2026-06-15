@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
+import { KrewSurface } from "@/components/common/KrewLayout";
 import { getCurrentUserProfile } from "@/features/auth/api";
 import {
   getFavoriteUserStatus,
@@ -43,19 +44,21 @@ type ProfilePageState = {
 
 function ProfileSkeleton() {
   return (
-    <div className="animate-pulse px-4 py-6">
-      <section className="flex gap-5">
-        <div className="h-20 w-20 shrink-0 rounded-full bg-zinc-100" />
-        <div className="flex flex-1 flex-col justify-center">
-          <div className="h-5 w-32 rounded-full bg-zinc-100" />
-          <div className="mt-3 h-4 w-24 rounded-full bg-zinc-100" />
-          <div className="mt-5 h-8 w-28 rounded-2xl bg-zinc-100" />
+    <div className="animate-pulse bg-background px-4 py-4">
+      <section className="rounded-[22px] border border-white/70 bg-white/70 p-4 shadow-[var(--krew-card-shadow)]">
+        <div className="flex gap-5">
+          <div className="h-20 w-20 shrink-0 rounded-full bg-zinc-100" />
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="h-5 w-32 rounded-full bg-zinc-100" />
+            <div className="mt-3 h-4 w-24 rounded-full bg-zinc-100" />
+            <div className="mt-5 h-8 w-28 rounded-2xl bg-zinc-100" />
+          </div>
         </div>
       </section>
       <div className="mt-6 h-4 w-3/4 rounded-full bg-zinc-100" />
-      <div className="mt-8 grid grid-cols-3 gap-1">
+      <div className="mt-5 grid grid-cols-3 gap-2">
         {Array.from({ length: 9 }).map((_, index) => (
-          <div key={index} className="aspect-square bg-zinc-100" />
+          <div key={index} className="aspect-square rounded-2xl bg-white/70" />
         ))}
       </div>
     </div>
@@ -97,7 +100,7 @@ function ProfileHeader({
         <button
           type="button"
           onClick={onEditProfile}
-          className="h-9 min-w-32 cursor-pointer rounded-lg bg-zinc-100 px-5 text-sm font-bold text-zinc-950"
+          className="h-10 min-w-32 cursor-pointer rounded-2xl bg-white px-5 text-sm font-extrabold text-foreground shadow-sm transition hover:text-krew-accent"
         >
           프로필 편집
         </button>
@@ -109,7 +112,7 @@ function ProfileHeader({
         <button
           type="button"
           onClick={onSendFriendRequest}
-          className="h-9 min-w-32 rounded-lg bg-zinc-950 px-5 text-sm font-bold text-white"
+          className="h-10 min-w-32 rounded-2xl bg-krew-accent px-5 text-sm font-extrabold text-white"
         >
           친구 신청
         </button>
@@ -122,14 +125,14 @@ function ProfileHeader({
           <button
             type="button"
             disabled
-            className="h-9 min-w-24 rounded-lg bg-zinc-100 px-4 text-sm font-bold text-zinc-500"
+            className="h-10 min-w-24 rounded-2xl bg-white px-4 text-sm font-extrabold text-krew-muted"
           >
             요청됨
           </button>
           <button
             type="button"
             onClick={onWithdrawFriendRequest}
-            className="h-9 min-w-20 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700"
+            className="h-10 min-w-20 rounded-2xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted"
           >
             취소
           </button>
@@ -143,14 +146,14 @@ function ProfileHeader({
           <button
             type="button"
             onClick={onRespondFriendRequest}
-            className="h-9 min-w-20 rounded-lg bg-zinc-950 px-4 text-sm font-bold text-white"
+            className="h-10 min-w-20 rounded-2xl bg-krew-accent px-4 text-sm font-extrabold text-white"
           >
             수락
           </button>
           <button
             type="button"
             onClick={onRejectFriendRequest}
-            className="h-9 min-w-20 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700"
+            className="h-10 min-w-20 rounded-2xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted"
           >
             거절
           </button>
@@ -162,14 +165,14 @@ function ProfileHeader({
       <div className="flex gap-2">
         <button
           type="button"
-          className="h-9 min-w-24 rounded-lg bg-zinc-100 px-4 text-sm font-bold text-zinc-950"
+          className="h-10 min-w-24 rounded-2xl bg-krew-accent-soft px-4 text-sm font-extrabold text-krew-accent"
         >
           친구 ✓
         </button>
         <button
           type="button"
           onClick={onOpenConnectionMenu}
-          className="h-9 w-9 rounded-lg border border-zinc-200 text-sm font-bold text-zinc-700"
+          className="h-10 w-10 rounded-2xl border border-krew-border bg-white text-sm font-extrabold text-krew-muted"
           aria-label="친구 옵션"
         >
           ⋯
@@ -179,7 +182,7 @@ function ProfileHeader({
   }
 
   return (
-    <section className="px-4 py-6">
+    <KrewSurface className="mx-4 mt-4 p-4">
       <div className="flex gap-5">
         <Avatar
           src={profile.avatar_url}
@@ -190,15 +193,15 @@ function ProfileHeader({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="truncate text-xl font-bold text-zinc-950">
+              <h1 className="truncate text-xl font-black tracking-[-0.02em] text-foreground">
                 {profile.nickname}
               </h1>
               {profile.real_name ? (
-                <p className="mt-1 truncate text-xs font-semibold text-zinc-400">
+                <p className="mt-1 truncate text-xs font-semibold text-krew-faint">
                   {profile.real_name}
                 </p>
               ) : null}
-              <p className="mt-1 truncate text-sm font-medium text-zinc-500">
+              <p className="mt-1 truncate text-sm font-semibold text-krew-muted">
                 {profile.department}
               </p>
               {profile.profile_links[0] ? (
@@ -206,7 +209,7 @@ function ProfileHeader({
                   href={profile.profile_links[0].url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 inline-flex max-w-full items-center gap-1 truncate text-sm font-semibold text-blue-600"
+                  className="mt-2 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-krew-border bg-white px-3 py-1.5 text-xs font-extrabold text-foreground transition hover:text-krew-accent"
                 >
                   <span className="truncate">
                     {profile.profile_links[0].label}
@@ -218,8 +221,8 @@ function ProfileHeader({
             <div className="shrink-0 text-right">
               <div className="flex items-start justify-end gap-3">
                 <div>
-                  <p className="text-lg font-bold text-zinc-950">{postsCount}</p>
-                  <p className="text-xs font-medium text-zinc-500">게시물</p>
+                  <p className="text-lg font-black text-foreground">{postsCount}</p>
+                  <p className="text-xs font-semibold text-krew-muted">게시물</p>
                 </div>
                 {isMine ? (
                   <button
@@ -227,26 +230,26 @@ function ProfileHeader({
                     onClick={onOpenConnections}
                     className="text-center"
                   >
-                    <span className="block text-lg font-bold text-zinc-950">
+                    <span className="block text-lg font-black text-foreground">
                       {connectionStatus.friends_count}
                     </span>
-                    <span className="block text-xs font-medium text-zinc-500">
+                    <span className="block text-xs font-semibold text-krew-muted">
                       크루
                     </span>
                   </button>
                 ) : (
                   <div>
-                    <p className="text-lg font-bold text-zinc-950">
+                    <p className="text-lg font-black text-foreground">
                       {connectionStatus.friends_count}
                     </p>
-                    <p className="text-xs font-medium text-zinc-500">크루</p>
+                    <p className="text-xs font-semibold text-krew-muted">크루</p>
                   </div>
                 )}
                 {isMine ? (
                   <button
                     type="button"
                     onClick={onOpenSettings}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-700"
+                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-700 shadow-sm transition hover:text-krew-accent"
                     aria-label="설정"
                   >
                     <Settings className="h-5 w-5" aria-hidden="true" />
@@ -262,7 +265,7 @@ function ProfileHeader({
               <button
                 type="button"
                 onClick={onSendMessage}
-                className="mt-2 h-9 min-w-32 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white"
+                className="mt-2 h-10 min-w-32 rounded-2xl bg-krew-accent px-5 text-sm font-extrabold text-white"
               >
                 메시지 보내기
               </button>
@@ -272,11 +275,11 @@ function ProfileHeader({
       </div>
 
       {profile.bio ? (
-        <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-800">
+        <p className="mt-5 whitespace-pre-wrap text-sm font-medium leading-6 text-foreground">
           {profile.bio}
         </p>
       ) : null}
-    </section>
+    </KrewSurface>
   );
 }
 
@@ -289,8 +292,8 @@ function PostsGrid({
 }) {
   if (posts.length === 0) {
     return (
-      <section className="flex min-h-56 items-center justify-center px-6">
-        <p className="text-sm font-medium text-zinc-500">
+      <section className="mx-4 flex min-h-56 items-center justify-center rounded-[22px] border border-white/70 bg-white/70 px-6 shadow-[var(--krew-card-shadow)]">
+        <p className="text-sm font-semibold text-krew-muted">
           아직 게시물이 없습니다
         </p>
       </section>
@@ -298,7 +301,7 @@ function PostsGrid({
   }
 
   return (
-    <section className="grid grid-cols-3 gap-px bg-white">
+    <section className="grid grid-cols-3 gap-2 px-4 pb-6">
       {posts.map((post) => {
         const thumbnail = post.images[0];
 
@@ -307,7 +310,7 @@ function PostsGrid({
             key={post.id}
             type="button"
             onClick={() => onPostClick(post.id)}
-            className="relative aspect-square overflow-hidden bg-zinc-100"
+            className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 shadow-[0_10px_22px_rgba(66,43,102,0.08)]"
           >
             {thumbnail ? (
               <Image
@@ -346,16 +349,16 @@ export default function ProfilePage() {
     }
 
     return {
-    connectionStatus: {
-      friends_count: 0,
-      is_requester: false,
-      status: "none",
-    },
-    currentUserId: null,
-    isFavorite: false,
-    posts: [],
-    postsCount: 0,
-    profile: null,
+      connectionStatus: {
+        friends_count: 0,
+        is_requester: false,
+        status: "none",
+      },
+      currentUserId: null,
+      isFavorite: false,
+      posts: [],
+      postsCount: 0,
+      profile: null,
     };
   });
   const [isLoading, setIsLoading] = useState(
@@ -511,8 +514,8 @@ export default function ProfilePage() {
 
   if (error || !state.profile) {
     return (
-      <section className="flex min-h-80 items-center justify-center px-6 text-center">
-        <p className="text-sm font-medium text-zinc-500">
+      <section className="flex min-h-80 items-center justify-center bg-background px-6 text-center">
+        <p className="text-sm font-semibold text-krew-muted">
           {error ?? "프로필을 찾을 수 없습니다."}
         </p>
       </section>
@@ -680,7 +683,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col bg-white">
+    <div className="flex flex-1 flex-col bg-background">
       <ProfileHeader
         connectionStatus={state.connectionStatus}
         isMine={state.currentUserId === state.profile.id}
@@ -708,12 +711,12 @@ export default function ProfilePage() {
         postsCount={state.postsCount}
         profile={state.profile}
       />
-      <div className="relative left-1/2 w-screen -translate-x-1/2 lg:w-[calc(100vw-36rem)] lg:max-w-[832px] xl:w-[calc(100vw-38rem)]">
-        <section className="border-y border-zinc-200">
+      <div className="relative left-1/2 mt-4 w-screen -translate-x-1/2 lg:w-[calc(100vw-36rem)] lg:max-w-[832px] xl:w-[calc(100vw-38rem)]">
+        <section className="mx-4 mb-3 rounded-[20px] border border-white/70 bg-white/70">
           <div className="mx-auto flex h-11 w-full items-center justify-around">
             <button
               type="button"
-              className="flex h-full w-24 items-center justify-center border-b-2 border-zinc-950 text-zinc-950"
+              className="flex h-full w-24 items-center justify-center text-krew-accent"
               aria-label="게시물 그리드"
             >
               <svg
