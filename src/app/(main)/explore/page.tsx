@@ -166,10 +166,7 @@ export default function ExplorePage() {
 
   return (
     <KrewPage className="px-3 sm:px-4">
-      <KrewPageHeader
-        title="탐색"
-        description="같은 학교에서 반응이 좋은 게시물"
-      />
+      <KrewPageHeader title="탐색" />
       {isLoading ? (
         <ExploreSkeleton />
       ) : error ? (
