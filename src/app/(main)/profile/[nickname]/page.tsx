@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
-import { ExternalLink, Settings } from "lucide-react";
+import { ChevronLeft, ExternalLink, MoreHorizontal, Settings } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -65,13 +65,56 @@ function ProfileSkeleton() {
   );
 }
 
+function ProfileMobileHeader({
+  isMine,
+  nickname,
+  onBack,
+  onOpenActions,
+  onOpenSettings,
+}: {
+  isMine: boolean;
+  nickname: string;
+  onBack: () => void;
+  onOpenActions: () => void;
+  onOpenSettings: () => void;
+}) {
+  return (
+    <header className="sticky top-0 z-20 bg-background/95 px-4 pb-2 pt-3 backdrop-blur lg:hidden">
+      <div className="flex h-11 items-center justify-between">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-800 shadow-[0_5px_16px_rgba(20,22,30,0.07)] transition hover:text-krew-accent"
+          aria-label="뒤로가기"
+        >
+          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <h1 className="min-w-0 flex-1 truncate px-3 text-left text-lg font-black tracking-[-0.02em] text-foreground">
+          {nickname}
+        </h1>
+        <button
+          type="button"
+          onClick={isMine ? onOpenSettings : onOpenActions}
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-800 shadow-[0_5px_16px_rgba(20,22,30,0.07)] transition hover:text-krew-accent"
+          aria-label={isMine ? "설정" : "프로필 옵션"}
+        >
+          {isMine ? (
+            <Settings className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
+          )}
+        </button>
+      </div>
+    </header>
+  );
+}
+
 function ProfileHeader({
   connectionStatus,
   isMine,
   onEditProfile,
   onOpenConnections,
   onOpenConnectionMenu,
-  onOpenSettings,
   onSendMessage,
   onRejectFriendRequest,
   onRespondFriendRequest,
@@ -85,7 +128,6 @@ function ProfileHeader({
   onEditProfile: () => void;
   onOpenConnections: () => void;
   onOpenConnectionMenu: () => void;
-  onOpenSettings: () => void;
   onSendMessage: () => void;
   onRejectFriendRequest: () => void;
   onRespondFriendRequest: () => void;
@@ -183,95 +225,54 @@ function ProfileHeader({
 
   return (
     <KrewSurface className="mx-4 mt-4 p-4">
-      <div className="flex gap-5">
+      <div className="flex items-center gap-5">
         <Avatar
           src={profile.avatar_url}
           nickname={profile.nickname}
           size="xl"
         />
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="truncate text-xl font-black tracking-[-0.02em] text-foreground">
-                {profile.nickname}
-              </h1>
-              {profile.real_name ? (
-                <p className="mt-1 truncate text-xs font-semibold text-krew-faint">
-                  {profile.real_name}
-                </p>
-              ) : null}
-              <p className="mt-1 truncate text-sm font-semibold text-krew-muted">
-                {profile.department}
+        <div className="grid min-w-0 flex-1 grid-cols-2 gap-3 text-center">
+          <div>
+            <p className="text-lg font-black text-foreground">{postsCount}</p>
+            <p className="text-xs font-semibold text-krew-muted">게시물</p>
+          </div>
+          {isMine ? (
+            <button
+              type="button"
+              onClick={onOpenConnections}
+              className="text-center"
+            >
+              <span className="block text-lg font-black text-foreground">
+                {connectionStatus.friends_count}
+              </span>
+              <span className="block text-xs font-semibold text-krew-muted">
+                크루
+              </span>
+            </button>
+          ) : (
+            <div>
+              <p className="text-lg font-black text-foreground">
+                {connectionStatus.friends_count}
               </p>
-              {profile.profile_links[0] ? (
-                <a
-                  href={profile.profile_links[0].url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-krew-border bg-white px-3 py-1.5 text-xs font-extrabold text-foreground transition hover:text-krew-accent"
-                >
-                  <span className="truncate">
-                    {profile.profile_links[0].label}
-                  </span>
-                  <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                </a>
-              ) : null}
+              <p className="text-xs font-semibold text-krew-muted">크루</p>
             </div>
-            <div className="shrink-0 text-right">
-              <div className="flex items-start justify-end gap-3">
-                <div>
-                  <p className="text-lg font-black text-foreground">{postsCount}</p>
-                  <p className="text-xs font-semibold text-krew-muted">게시물</p>
-                </div>
-                {isMine ? (
-                  <button
-                    type="button"
-                    onClick={onOpenConnections}
-                    className="text-center"
-                  >
-                    <span className="block text-lg font-black text-foreground">
-                      {connectionStatus.friends_count}
-                    </span>
-                    <span className="block text-xs font-semibold text-krew-muted">
-                      크루
-                    </span>
-                  </button>
-                ) : (
-                  <div>
-                    <p className="text-lg font-black text-foreground">
-                      {connectionStatus.friends_count}
-                    </p>
-                    <p className="text-xs font-semibold text-krew-muted">크루</p>
-                  </div>
-                )}
-                {isMine ? (
-                  <button
-                    type="button"
-                    onClick={onOpenSettings}
-                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-700 shadow-sm transition hover:text-krew-accent"
-                    aria-label="설정"
-                  >
-                    <Settings className="h-5 w-5" aria-hidden="true" />
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {renderConnectionActions()}
-            {!isMine ? (
-              <button
-                type="button"
-                onClick={onSendMessage}
-                className="h-9 min-w-24 rounded-xl bg-krew-accent px-4 text-xs font-extrabold text-white"
-              >
-                메시지 보내기
-              </button>
-            ) : null}
-          </div>
+          )}
         </div>
+      </div>
+
+      <div className="mt-4 min-w-0">
+        <h2 className="truncate text-xl font-black tracking-[-0.02em] text-foreground">
+          {profile.nickname}
+        </h2>
+        {profile.real_name ? (
+          <p className="mt-1 truncate text-xs font-semibold text-krew-faint">
+            실명 {profile.real_name}
+          </p>
+        ) : null}
+        <p className="mt-1 truncate text-sm font-semibold text-krew-muted">
+          {profile.department}
+        </p>
       </div>
 
       {profile.bio ? (
@@ -279,6 +280,36 @@ function ProfileHeader({
           {profile.bio}
         </p>
       ) : null}
+
+      {profile.profile_links.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {profile.profile_links.map((profileLink) => (
+            <a
+              key={profileLink.id}
+              href={profileLink.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-krew-border bg-white px-3 py-1.5 text-xs font-extrabold text-foreground transition hover:text-krew-accent"
+            >
+              <span className="truncate">{profileLink.label}</span>
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            </a>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {renderConnectionActions()}
+        {!isMine ? (
+          <button
+            type="button"
+            onClick={onSendMessage}
+            className="h-9 min-w-24 rounded-xl bg-krew-accent px-4 text-xs font-extrabold text-white"
+          >
+            메시지
+          </button>
+        ) : null}
+      </div>
     </KrewSurface>
   );
 }
@@ -669,13 +700,17 @@ export default function ProfilePage() {
         void handleToggleFavorite();
       },
     },
-    {
-      danger: true,
-      label: "친구 삭제",
-      onClick: () => {
-        void handleRemoveFriend();
-      },
-    },
+    ...(state.connectionStatus.status === "accepted"
+      ? [
+          {
+            danger: true,
+            label: "친구 삭제",
+            onClick: () => {
+              void handleRemoveFriend();
+            },
+          } satisfies ActionSheetItem,
+        ]
+      : []),
     {
       label: "취소",
       onClick: () => {},
@@ -684,6 +719,15 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-1 flex-col bg-background">
+      <ProfileMobileHeader
+        isMine={state.currentUserId === state.profile.id}
+        nickname={state.profile.nickname}
+        onBack={() => router.back()}
+        onOpenActions={() => {
+          setIsConnectionMenuOpen(true);
+        }}
+        onOpenSettings={() => router.push("/settings")}
+      />
       <ProfileHeader
         connectionStatus={state.connectionStatus}
         isMine={state.currentUserId === state.profile.id}
@@ -692,7 +736,6 @@ export default function ProfilePage() {
         onOpenConnectionMenu={() => {
           setIsConnectionMenuOpen(true);
         }}
-        onOpenSettings={() => router.push("/settings")}
         onSendMessage={() => {
           void handleSendMessage();
         }}
@@ -712,28 +755,6 @@ export default function ProfilePage() {
         profile={state.profile}
       />
       <div className="relative left-1/2 mt-4 w-screen -translate-x-1/2 lg:w-[calc(100vw-36rem)] lg:max-w-[832px] xl:w-[calc(100vw-38rem)]">
-        <section className="mx-4 mb-3 rounded-[20px] border border-white/70 bg-white/70">
-          <div className="mx-auto flex h-11 w-full items-center justify-around">
-            <button
-              type="button"
-              className="flex h-full w-24 items-center justify-center text-krew-accent"
-              aria-label="게시물 그리드"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 5h4v4H5V5Zm5 0h4v4h-4V5Zm5 0h4v4h-4V5ZM5 10h4v4H5v-4Zm5 0h4v4h-4v-4Zm5 0h4v4h-4v-4ZM5 15h4v4H5v-4Zm5 0h4v4h-4v-4Zm5 0h4v4h-4v-4Z"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                />
-              </svg>
-            </button>
-          </div>
-        </section>
         <PostsGrid
           posts={state.posts}
           onPostClick={(postId) => router.push(`/posts/${postId}`)}

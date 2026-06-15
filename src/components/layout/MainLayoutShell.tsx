@@ -18,6 +18,7 @@ export function MainLayoutShell({ children }: MainLayoutShellProps) {
     string | null
   >(null);
   const isNotificationPanelOpen = notificationPanelPathname === pathname;
+  const shouldHideMobileHeader = pathname.startsWith("/profile/");
 
   const logo = <span>KREW</span>;
 
@@ -46,7 +47,9 @@ export function MainLayoutShell({ children }: MainLayoutShellProps) {
 
           <div className="flex min-h-screen flex-1 flex-col lg:flex-row lg:items-stretch">
             <div className="flex min-h-screen flex-1 flex-col">
-              <Header logo={logo} actions={headerActions} />
+              {shouldHideMobileHeader ? null : (
+                <Header logo={logo} actions={headerActions} />
+              )}
               <main className="flex flex-1 flex-col">
                 {/* 가운데 피드 컬럼 폭은 인스타그램 비슷한 밀도를 기준으로 제한한다. */}
                 <div className="mx-auto flex w-full max-w-[470px] flex-1 flex-col bg-background">
