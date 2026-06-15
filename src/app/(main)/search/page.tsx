@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import {
+  KrewPage,
+  KrewPageHeader,
+  KrewSectionHeader,
+  KrewSurface,
+} from "@/components/common/KrewLayout";
 import { RecentSearchList } from "@/components/search/RecentSearchList";
 import { SearchInput } from "@/components/search/SearchInput";
 import { UserSearchList } from "@/components/search/UserSearchList";
@@ -47,19 +53,30 @@ export default function SearchPage() {
   function moveToProfile(nickname: string) {
     addSearchHistory(nickname);
     setRecentSearches(getSearchHistory());
-    router.push(`/profile/${nickname}`);
+    router.push(`/profile/${encodeURIComponent(nickname)}`);
   }
 
   return (
-    <div className="min-h-full bg-white px-4 py-4">
+    <KrewPage>
+      <KrewPageHeader
+        title="검색"
+        description="닉네임과 해시태그를 찾아보세요"
+      />
       <SearchInput value={query} onChange={setQuery} />
       <div className="mt-5">
         {query.trim() ? (
-          <UserSearchList
-            users={results}
-            isLoading={isLoading}
-            onSelect={(user) => moveToProfile(user.nickname)}
-          />
+          <KrewSurface className="p-2">
+            <KrewSectionHeader
+              className="px-2 pb-1 pt-2"
+              title="검색 결과"
+              eyebrow={query.trim()}
+            />
+            <UserSearchList
+              users={results}
+              isLoading={isLoading}
+              onSelect={(user) => moveToProfile(user.nickname)}
+            />
+          </KrewSurface>
         ) : (
           <RecentSearchList
             items={recentSearches}
@@ -75,6 +92,6 @@ export default function SearchPage() {
           />
         )}
       </div>
-    </div>
+    </KrewPage>
   );
 }

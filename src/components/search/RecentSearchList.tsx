@@ -2,6 +2,11 @@
 
 import { X } from "lucide-react";
 
+import {
+  KrewSectionHeader,
+  KrewSurface,
+} from "@/components/common/KrewLayout";
+
 type RecentSearchListProps = {
   items: string[];
   onClear: () => void;
@@ -16,39 +21,48 @@ export function RecentSearchList({
   onSelect,
 }: RecentSearchListProps) {
   if (items.length === 0) {
-    return null;
+    return (
+      <KrewSurface className="p-5 text-center">
+        <p className="text-sm font-semibold text-krew-muted">
+          최근 검색 항목이 없습니다.
+        </p>
+      </KrewSurface>
+    );
   }
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-sm font-bold text-zinc-950">최근 검색 항목</h2>
-        <button
-          type="button"
-          onClick={onClear}
-          className="text-xs font-semibold text-zinc-400 transition hover:text-zinc-600"
-        >
-          모두 지우기
-        </button>
-      </div>
+    <KrewSurface className="p-2">
+      <KrewSectionHeader
+        className="px-2 pb-1 pt-2"
+        title="최근 검색"
+        action={
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-xs font-bold text-krew-muted transition hover:text-krew-accent"
+          >
+            모두 지우기
+          </button>
+        }
+      />
 
       <div className="space-y-1">
         {items.map((item) => (
           <div
             key={item}
-            className="flex items-center justify-between rounded-2xl px-4 py-3 transition hover:bg-zinc-50"
+            className="flex items-center justify-between rounded-2xl px-3 py-2.5 transition hover:bg-krew-accent-soft"
           >
             <button
               type="button"
               onClick={() => onSelect(item)}
-              className="min-w-0 flex-1 text-left text-sm font-semibold text-zinc-700"
+              className="min-w-0 flex-1 text-left text-sm font-bold text-foreground"
             >
               <span className="truncate">{item}</span>
             </button>
             <button
               type="button"
               onClick={() => onRemove(item)}
-              className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+              className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-50 text-krew-muted transition hover:bg-krew-accent-soft hover:text-krew-accent"
               aria-label={`${item} 최근 검색 삭제`}
             >
               <X className="h-4 w-4" />
@@ -56,6 +70,6 @@ export function RecentSearchList({
           </div>
         ))}
       </div>
-    </section>
+    </KrewSurface>
   );
 }

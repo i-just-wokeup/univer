@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import {
+  KrewPage,
+  KrewPageHeader,
+  KrewSurface,
+} from "@/components/common/KrewLayout";
 import { ExploreGrid } from "@/components/explore/ExploreGrid";
 import {
   getExplorePosts,
@@ -17,9 +22,14 @@ const PAGE_SIZE = 24;
 
 function ExploreSkeleton() {
   return (
-    <section className="grid animate-pulse grid-cols-3 gap-px bg-white">
-      {Array.from({ length: 12 }).map((_, index) => (
-        <div key={index} className="aspect-square bg-zinc-100" />
+    <section className="columns-2 gap-2">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div
+          key={index}
+          className={`mb-2 break-inside-avoid animate-pulse rounded-[20px] bg-white/70 ${
+            index % 3 === 0 ? "aspect-[4/5]" : "aspect-square"
+          }`}
+        />
       ))}
     </section>
   );
@@ -155,19 +165,23 @@ export default function ExplorePage() {
   }, [hasMore, loadMore]);
 
   return (
-    <div className="min-h-full bg-white">
+    <KrewPage className="px-3 sm:px-4">
+      <KrewPageHeader
+        title="탐색"
+        description="같은 학교에서 반응이 좋은 게시물"
+      />
       {isLoading ? (
         <ExploreSkeleton />
       ) : error ? (
-        <section className="flex min-h-60 items-center justify-center px-6 text-center">
-          <p className="text-sm font-medium text-zinc-500">{error}</p>
-        </section>
+        <KrewSurface className="flex min-h-60 items-center justify-center px-6 text-center">
+          <p className="text-sm font-semibold text-krew-muted">{error}</p>
+        </KrewSurface>
       ) : posts.length === 0 ? (
-        <section className="flex min-h-60 items-center justify-center px-6 text-center">
-          <p className="text-sm font-medium text-zinc-500">
+        <KrewSurface className="flex min-h-60 items-center justify-center px-6 text-center">
+          <p className="text-sm font-semibold text-krew-muted">
             아직 둘러볼 게시물이 없습니다.
           </p>
-        </section>
+        </KrewSurface>
       ) : (
         <>
           <ExploreGrid
@@ -175,13 +189,13 @@ export default function ExplorePage() {
             onOpenPost={(postId) => router.push(`/posts/${postId}`)}
           />
           {isLoadingMore ? (
-            <p className="py-4 text-center text-xs text-zinc-400">
+            <p className="py-4 text-center text-xs font-semibold text-krew-muted">
               불러오는 중...
             </p>
           ) : null}
           <div ref={sentinelRef} className="h-px" />
         </>
       )}
-    </div>
+    </KrewPage>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart } from "lucide-react";
 import Image from "next/image";
 
 import type { ExplorePost } from "@/features/explore/api";
@@ -10,32 +10,36 @@ type ExploreGridProps = {
   posts: ExplorePost[];
 };
 
+const tileShapeClassNames = [
+  "aspect-[4/5]",
+  "aspect-square",
+  "aspect-[3/4]",
+  "aspect-[5/7]",
+] as const;
+
 export function ExploreGrid({ onOpenPost, posts }: ExploreGridProps) {
   return (
-    <section className="grid grid-cols-3 gap-px bg-white">
-      {posts.map((post) => (
+    <section className="columns-2 gap-2 [column-fill:_balance]">
+      {posts.map((post, index) => (
         <button
           key={post.id}
           type="button"
           onClick={() => onOpenPost(post.id)}
-          className="group relative aspect-square overflow-hidden bg-zinc-100"
+          className={`group relative mb-2 block w-full break-inside-avoid overflow-hidden rounded-[20px] bg-zinc-100 shadow-[0_12px_26px_rgba(66,43,102,0.09)] ${tileShapeClassNames[index % tileShapeClassNames.length]}`}
         >
           <Image
             src={post.thumbnail_url}
             alt="탐색 게시물 썸네일"
             fill
-            sizes="(max-width: 640px) 33vw, 160px"
-            className="object-cover"
+            sizes="(max-width: 640px) 50vw, 230px"
+            className="object-cover transition duration-300 group-hover:scale-[1.03]"
           />
-          <span className="absolute inset-0 hidden items-center justify-center gap-4 bg-black/40 text-sm font-bold text-white group-hover:flex">
-            <span className="inline-flex items-center gap-1">
-              <Heart className="h-4 w-4 fill-white" aria-hidden="true" />
-              {post.likes_count}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <MessageCircle className="h-4 w-4 fill-white" aria-hidden="true" />
-              {post.comments_count}
-            </span>
+          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-white/86 px-2 py-1 text-xs font-extrabold text-foreground shadow-sm backdrop-blur">
+            <Heart
+              className="h-3.5 w-3.5 fill-krew-like text-krew-like"
+              aria-hidden="true"
+            />
+            {post.likes_count}
           </span>
         </button>
       ))}

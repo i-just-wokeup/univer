@@ -12,8 +12,8 @@ type UserSearchListProps = {
 
 function SearchSkeleton() {
   return (
-    <div className="flex items-center gap-3 rounded-2xl px-4 py-3">
-      <div className="h-8 w-8 animate-pulse rounded-full bg-zinc-100" />
+    <div className="flex items-center gap-3 rounded-2xl px-3 py-2.5">
+      <div className="h-9 w-9 animate-pulse rounded-full bg-zinc-100" />
       <div className="min-w-0 flex-1">
         <div className="h-4 w-28 animate-pulse rounded-full bg-zinc-100" />
         <div className="mt-2 h-4 w-20 animate-pulse rounded-full bg-zinc-100" />
@@ -39,7 +39,7 @@ export function UserSearchList({
 
   if (users.length === 0) {
     return (
-      <p className="px-4 py-10 text-center text-sm font-medium text-zinc-500">
+      <p className="px-4 py-10 text-center text-sm font-semibold text-krew-muted">
         검색 결과가 없습니다.
       </p>
     );

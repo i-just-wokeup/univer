@@ -13,12 +13,16 @@ export function UserSearchResult({ onClick, user }: UserSearchResultProps) {
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-zinc-50"
+      className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:bg-krew-accent-soft"
     >
       <Avatar src={user.avatar_url} nickname={user.nickname} size="sm" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold text-zinc-950">{user.nickname}</p>
-        <p className="truncate text-sm text-zinc-500">{user.department}</p>
+        <p className="truncate text-sm font-extrabold text-foreground">
+          {user.nickname}
+        </p>
+        <p className="truncate text-xs font-medium text-krew-muted">
+          {user.department}
+        </p>
       </div>
     </button>
   );
