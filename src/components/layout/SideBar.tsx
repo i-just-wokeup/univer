@@ -30,9 +30,9 @@ type SideBarProps = {
 // 데스크톱에서만 보이는 고정 사이드바. 메뉴와 작성 버튼을 분리해 유지한다.
 export function SideBar({ logo, items, postAction, secondaryAction }: SideBarProps) {
   return (
-    <aside className="hidden h-screen bg-white lg:sticky lg:top-0 lg:flex lg:w-64 lg:self-start lg:flex-col lg:justify-between lg:px-6 lg:py-8 xl:w-72">
+    <aside className="hidden h-screen bg-white/70 lg:sticky lg:top-0 lg:flex lg:w-64 lg:self-start lg:flex-col lg:justify-between lg:px-6 lg:py-8 xl:w-72">
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="px-4 text-2xl font-semibold tracking-[-0.03em] text-zinc-950">
+        <div className="px-4 text-2xl font-black tracking-[-0.04em] text-krew-accent">
           {logo}
         </div>
         {/* 항목 수가 늘어나도 작성 버튼은 하단에 남도록 nav만 스크롤되게 둔다. */}
@@ -40,8 +40,8 @@ export function SideBar({ logo, items, postAction, secondaryAction }: SideBarPro
           {items.map((item) => {
             const className = `flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left text-base transition ${
               item.isActive
-                ? "bg-zinc-950 text-white"
-                : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
+                ? "bg-krew-accent text-white shadow-[0_8px_18px_rgba(124,58,237,0.22)]"
+                : "text-zinc-700 hover:bg-white hover:text-krew-accent"
             }`;
 
             if (item.onClick) {
@@ -79,8 +79,8 @@ export function SideBar({ logo, items, postAction, secondaryAction }: SideBarPro
             href={secondaryAction.href}
             className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-base font-semibold transition ${
               secondaryAction.isActive
-                ? "border-zinc-950 bg-zinc-950 text-white"
-                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
+                ? "border-krew-accent bg-krew-accent text-white"
+                : "border-krew-border bg-white text-zinc-700 hover:text-krew-accent"
             }`}
           >
             <span>{secondaryAction.icon}</span>
@@ -92,8 +92,8 @@ export function SideBar({ logo, items, postAction, secondaryAction }: SideBarPro
           href={postAction.href}
           className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition ${
             postAction.isActive
-              ? "bg-zinc-800 text-white"
-              : "bg-zinc-950 text-white hover:bg-zinc-800"
+              ? "bg-krew-accent text-white"
+              : "bg-krew-accent text-white hover:brightness-95"
           }`}
         >
           <span>{postAction.icon}</span>

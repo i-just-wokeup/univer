@@ -17,7 +17,7 @@ type BottomTabBarProps = {
 // 모바일 전용 하단 탭바. 가운데 작성 버튼도 같은 구조 안에서 처리한다.
 export function BottomTabBar({ items }: BottomTabBarProps) {
   return (
-    <nav className="sticky bottom-0 z-20 border-t border-zinc-200 bg-white lg:hidden">
+    <nav className="sticky bottom-0 z-20 border-t border-krew-border bg-white/95 backdrop-blur lg:hidden">
       <ul className="mx-auto grid h-16 w-full max-w-screen-sm grid-cols-5 px-2">
         {items.map((item) => (
           <li key={item.label} className="flex">
@@ -29,13 +29,15 @@ export function BottomTabBar({ items }: BottomTabBarProps) {
                 item.isPrimary
                   ? "text-white"
                   : item.isActive
-                    ? "text-zinc-950"
-                    : "text-zinc-500 hover:text-zinc-950"
+                    ? "text-krew-accent"
+                    : "text-krew-faint hover:text-zinc-950"
               }`}
             >
               <span
-                className={`flex h-11 w-11 items-center justify-center ${
-                  item.isPrimary ? "rounded-2xl bg-zinc-950 shadow-sm" : ""
+                className={`flex items-center justify-center ${
+                  item.isPrimary
+                    ? "h-11 w-11 rounded-2xl bg-krew-accent text-white"
+                    : "h-10 w-10"
                 }`}
               >
                 {item.icon}

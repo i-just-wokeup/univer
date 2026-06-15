@@ -1,6 +1,14 @@
 "use client";
 
-import { Bell, MessageCircleMore, ShieldCheck } from "lucide-react";
+import {
+  Bell,
+  Home,
+  MessageCircleMore,
+  Plus,
+  Search,
+  ShieldCheck,
+  SquarePlay,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
 
@@ -8,10 +16,6 @@ import { Avatar } from "@/components/common/Avatar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { SideBar } from "@/components/layout/SideBar";
 import { useAppSession } from "@/features/session/AppSessionProvider";
-
-type IconProps = {
-  className?: string;
-};
 
 type NavigationItem = {
   href: string;
@@ -32,67 +36,6 @@ type NavItemsProps =
       logo?: never;
       variant: "bottom";
     };
-
-function HomeIcon({ className = "h-6 w-6" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M3.75 9.75L12 3l8.25 6.75V20.25H14.25v-5.5h-4.5v5.5H3.75V9.75Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SearchIcon({ className = "h-6 w-6" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <circle
-        cx="11"
-        cy="11"
-        r="6.25"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M16 16L20 20"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function PlusIcon({ className = "h-6 w-6" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ExploreIcon({ className = "h-6 w-6" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8.25" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        d="M14.8 9.2l-1.6 4-4 1.6 1.6-4 4-1.6Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function NavItems(props: NavItemsProps) {
   const pathname = usePathname();
@@ -133,30 +76,30 @@ export function NavItems(props: NavItemsProps) {
     {
       href: "/",
       label: "홈",
-      icon: <HomeIcon />,
+      icon: <Home className="h-6 w-6" strokeWidth={1.9} />,
       isActive: pathname === "/",
     },
     {
       href: "/search",
       label: "검색",
-      icon: <SearchIcon />,
+      icon: <Search className="h-6 w-6" strokeWidth={1.9} />,
       isActive: pathname.startsWith("/search"),
     },
     {
       href: "/write",
       label: "+",
-      icon: <PlusIcon />,
+      icon: <Plus className="h-6 w-6" strokeWidth={2.2} />,
       isPrimary: true,
     },
     {
       href: "/explore",
       label: "탐색",
-      icon: <ExploreIcon />,
+      icon: <SquarePlay className="h-6 w-6" strokeWidth={1.9} />,
       isActive: pathname.startsWith("/explore"),
     },
     {
       href: profileHref,
-      label: "프로필",
+      label: "마이",
       icon: profileAvatar,
       isActive: currentUserProfile?.nickname
         ? pathname === `/profile/${currentUserProfile.nickname}` ||
@@ -188,7 +131,7 @@ export function NavItems(props: NavItemsProps) {
   const sideBarPostAction = {
     href: "/write",
     label: "새 게시물",
-    icon: <PlusIcon className="h-5 w-5" />,
+    icon: <Plus className="h-5 w-5" strokeWidth={2.2} />,
     isActive: pathname === "/write",
   };
   const sideBarAdminAction =

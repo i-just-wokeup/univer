@@ -35,7 +35,7 @@ export function Header({ logo, actions }: HeaderProps) {
       <span className="relative inline-flex">
         <MessageCircleMore className="h-6 w-6" />
         {chatUnreadCount > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
             {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
           </span>
         ) : null}
@@ -44,9 +44,9 @@ export function Header({ logo, actions }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white lg:hidden">
+    <header className="sticky top-0 z-20 bg-background/95 backdrop-blur lg:hidden">
       <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
-        <div className="text-lg font-semibold tracking-[-0.02em] text-zinc-950">
+        <div className="text-2xl font-black tracking-[-0.04em] text-krew-accent">
           {logo}
         </div>
         <div className="flex items-center gap-1">
@@ -55,7 +55,7 @@ export function Header({ logo, actions }: HeaderProps) {
               key={action.label}
               href={action.href}
               aria-label={action.label}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-800 shadow-[0_5px_16px_rgba(20,22,30,0.07)] transition hover:text-krew-accent"
             >
               {icons[action.iconName]}
             </Link>

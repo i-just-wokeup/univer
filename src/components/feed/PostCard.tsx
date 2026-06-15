@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ActionSheet, type ActionSheetItem } from "@/components/common/ActionSheet";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
-import { UserInfo } from "@/components/common/UserInfo";
+import { ProfileNicknameLink, UserInfo } from "@/components/common/UserInfo";
 import { getPostAspectRatioClass } from "@/components/feed/postAspectRatio";
 import { deletePost, type FeedPost } from "@/features/feed/api";
 import { createReport } from "@/features/reports/api";
@@ -364,22 +364,21 @@ export function PostCard({
   }, []);
 
   return (
-    <article className="bg-white">
-      <header className="flex items-center justify-between px-4 py-3">
+    <article className="mx-3 mb-3 rounded-[22px] border border-white/65 bg-white/82 p-2 shadow-[var(--krew-card-shadow)] sm:mx-0">
+      <header className="flex items-center justify-between px-1 pb-2.5 pt-0.5">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-1.5">
             <UserInfo
               avatarUrl={post.user.avatar_url}
               nickname={post.user.nickname}
             />
-            {/*
-            <span className="text-zinc-300">·</span>
-            <span className="truncate text-zinc-500">{post.user.department}</span>
-            */}
+            <span className="shrink-0 text-xs font-normal text-krew-faint">
+              ·
+            </span>
+            <span className="truncate text-xs font-normal text-krew-faint">
+              {post.user.department} · {getRelativeTimeLabel(post.created_at)}
+            </span>
           </div>
-          <p className="mt-0.5 pl-11 text-xs text-zinc-400">
-            {getRelativeTimeLabel(post.created_at)}
-          </p>
         </div>
 
         <button
@@ -387,7 +386,7 @@ export function PostCard({
           onClick={() => {
             setIsActionSheetOpen(true);
           }}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-krew-muted transition hover:bg-krew-accent-soft hover:text-krew-accent"
           aria-label="게시물 더보기"
         >
           <MoreIcon />
@@ -395,7 +394,7 @@ export function PostCard({
       </header>
 
       {post.media.length > 0 ? (
-        <div className={`relative bg-black ${aspectRatioClass}`}>
+        <div className={`relative overflow-hidden rounded-2xl bg-black ${aspectRatioClass}`}>
           <div
             id={carouselId}
             ref={carouselRef}
@@ -405,7 +404,7 @@ export function PostCard({
             {post.media.map((image) => (
               <div
                 key={image.id}
-                className="relative h-full w-full shrink-0 snap-start bg-black"
+                className="relative h-full w-full shrink-0 snap-start bg-zinc-200"
               >
                 <Image
                   src={image.url}
@@ -469,29 +468,29 @@ export function PostCard({
         </div>
       ) : null}
 
-      <div className="px-4 py-4">
+      <div className="px-1 pb-1 pt-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => onLike?.(post.id)}
-              className={`flex items-center gap-1.5 transition hover:text-zinc-950 ${
-                isLiked ? "text-red-500" : "text-zinc-700"
+              className={`flex items-center gap-1.5 text-sm font-extrabold transition hover:text-zinc-950 ${
+                isLiked ? "text-krew-like" : "text-zinc-800"
               }`}
               aria-label="좋아요"
             >
               <HeartIcon isLiked={isLiked} />
-              <span className="text-sm font-medium">{post.likes_count}</span>
+              <span>{post.likes_count}</span>
             </button>
 
             <button
               type="button"
               onClick={() => onComment?.(post.id)}
-              className="flex items-center gap-1.5 text-zinc-700 transition hover:text-zinc-950"
+              className="flex items-center gap-1.5 text-sm font-bold text-zinc-800 transition hover:text-zinc-950"
               aria-label="댓글"
             >
               <CommentIcon />
-              <span className="text-sm font-medium">{post.comments_count}</span>
+              <span>{post.comments_count}</span>
             </button>
           </div>
 
@@ -499,7 +498,7 @@ export function PostCard({
             type="button"
             onClick={() => onBookmark?.(post.id)}
             className={`flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-zinc-100 hover:text-zinc-950 ${
-              isBookmarked ? "text-zinc-950" : "text-zinc-700"
+              isBookmarked ? "text-zinc-950" : "text-zinc-800"
             }`}
             aria-label={isBookmarked ? "저장 취소" : "게시물 저장"}
           >
@@ -508,7 +507,7 @@ export function PostCard({
         </div>
 
         {post.content ? (
-          <div className="mt-3">
+          <div className="mt-0.5">
             <p
               ref={handleContentRef}
               className="whitespace-pre-wrap break-words text-sm leading-6 text-zinc-950"
@@ -523,6 +522,9 @@ export function PostCard({
                     }
               }
             >
+              <ProfileNicknameLink nickname={post.user.nickname}>
+                {post.user.nickname}{" "}
+              </ProfileNicknameLink>
               {post.content}
             </p>
 
@@ -532,7 +534,7 @@ export function PostCard({
                 onClick={() => {
                   setIsContentExpanded((currentIsExpanded) => !currentIsExpanded);
                 }}
-                className="mt-1 text-sm font-medium text-zinc-500 transition hover:text-zinc-950"
+                className="mt-0.5 text-sm font-semibold text-krew-muted transition hover:text-zinc-950"
               >
                 {isContentExpanded ? "접기" : "...더보기"}
               </button>
@@ -541,11 +543,11 @@ export function PostCard({
         ) : null}
 
         {post.hashtags.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
             {post.hashtags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700"
+                className="text-sm font-bold text-krew-accent"
               >
                 #{tag}
               </span>

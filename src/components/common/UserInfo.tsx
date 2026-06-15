@@ -1,5 +1,6 @@
 "use client";
 
+import type { PropsWithChildren } from "react";
 import { useRouter } from "next/navigation";
 
 import { Avatar } from "@/components/common/Avatar";
@@ -8,6 +9,11 @@ type UserInfoProps = {
   avatarUrl: string | null;
   nickname: string;
   size?: "sm" | "md";
+};
+
+type ProfileNicknameLinkProps = {
+  className?: string;
+  nickname: string;
 };
 
 const textClassName: Record<NonNullable<UserInfoProps["size"]>, string> = {
@@ -20,18 +26,33 @@ export function UserInfo({
   nickname,
   size = "sm",
 }: UserInfoProps) {
+  return (
+    <ProfileNicknameLink
+      className={`flex min-w-0 items-center gap-2 ${textClassName[size]}`}
+      nickname={nickname}
+    >
+      <Avatar src={avatarUrl} nickname={nickname} size={size} />
+      <span className="truncate">{nickname}</span>
+    </ProfileNicknameLink>
+  );
+}
+
+export function ProfileNicknameLink({
+  children,
+  className,
+  nickname,
+}: PropsWithChildren<ProfileNicknameLinkProps>) {
   const router = useRouter();
 
   return (
     <button
       type="button"
       onClick={() => {
-        router.push(`/profile/${nickname}`);
+        router.push(`/profile/${encodeURIComponent(nickname)}`);
       }}
-      className={`flex min-w-0 items-center gap-3 font-semibold text-zinc-950 transition hover:text-zinc-700 ${textClassName[size]}`}
+      className={`font-semibold text-zinc-950 transition hover:text-krew-accent ${className ?? ""}`}
     >
-      <Avatar src={avatarUrl} nickname={nickname} size={size} />
-      <span className="truncate">{nickname}</span>
+      {children}
     </button>
   );
 }

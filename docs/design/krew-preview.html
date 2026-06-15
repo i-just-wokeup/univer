@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KREW Preview - UNIVER MVP</title>
+  <style>
+    :root {
+      --accent: #7C3AED;
+      --ink: #15161B;
+      --ink-2: #6B6E7B;
+      --ink-3: #9A9DA8;
+      --line: rgba(20, 22, 30, .08);
+      --like: #FF3B4E;
+      --page: #F5F6F8;
+      --card: #FFFFFF;
+      --soft: #F1F2F6;
+      --shadow: 0 14px 36px rgba(20, 22, 30, .10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #E7E9EF;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -.015em;
+    }
+
+    button,
+    input,
+    textarea {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
+
+    .board {
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+      min-width: max-content;
+      padding: 32px;
+    }
+
+    .frame {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .frame-title {
+      padding-left: 8px;
+      color: var(--ink-2);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .phone {
+      position: relative;
+      width: 393px;
+      height: 852px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-radius: 42px;
+      background: var(--page);
+      box-shadow: 0 24px 70px rgba(20, 22, 30, .22);
+    }
+
+    .status {
+      height: 42px;
+      display: flex;
+      flex: 0 0 auto;
+      align-items: end;
+      justify-content: space-between;
+      padding: 0 24px 8px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .screen {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding-bottom: 92px;
+      scrollbar-width: none;
+    }
+
+    .screen::-webkit-scrollbar,
+    .x-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .topbar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .wordmark,
+    .page-title {
+      color: var(--accent);
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: -.035em;
+    }
+
+    .page-title {
+      color: var(--ink);
+    }
+
+    .sub {
+      color: var(--ink-2);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .icon-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 5px 16px rgba(20, 22, 30, .07);
+    }
+
+    .red-dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--like);
+      box-shadow: 0 0 0 2px #fff;
+    }
+
+    .toolbar {
+      padding: 8px 14px 10px;
+    }
+
+    .palette,
+    .badge-row,
+    .x-scroll {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .chip,
+    .badge,
+    .visibility {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 24px;
+      flex: 0 0 auto;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink-2);
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--color);
+    }
+
+    .badge-row {
+      margin-top: 8px;
+    }
+
+    .badge.official {
+      border-color: #DED8FF;
+      background: #F0EDFF;
+      color: var(--accent);
+    }
+
+    .crew-mark {
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--accent);
+      vertical-align: -2px;
+    }
+
+    .crew-mark::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    .section-kicker {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 18px 8px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .section-kicker::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .section-kicker span {
+      color: var(--ink-2);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .moments {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 0 14px 14px;
+      scrollbar-width: none;
+    }
+
+    .moment {
+      width: 82px;
+      flex: 0 0 auto;
+      text-align: center;
+    }
+
+    .moment-photo {
+      position: relative;
+      width: 82px;
+      height: 112px;
+      overflow: hidden;
+      border: 2px solid #E1E4EB;
+      border-radius: 20px;
+      background-color: #E7E9EF;
+      background-size: cover;
+      box-shadow: 0 8px 18px rgba(20, 22, 30, .08);
+    }
+
+    .moment.unseen .moment-photo {
+      border-color: var(--accent);
+    }
+
+    .moment-add .moment-photo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F0EDFF;
+      border-color: #DED8FF;
+    }
+
+    .plus-pill {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .moment-name {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--ink-2);
+      font-size: 11px;
+      font-weight: 750;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .feed,
+    .padded {
+      padding: 0 12px 10px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .post-card {
+      margin-bottom: 14px;
+      padding: 10px;
+    }
+
+    .post-head,
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .post-head {
+      padding: 4px 4px 10px;
+    }
+
+    .avatar {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      overflow: hidden;
+      border-radius: 999px;
+      background-color: #D8DBE5;
+      background-size: cover;
+      box-shadow: inset 0 0 0 1px rgba(20, 22, 30, .05);
+    }
+
+    .avatar.lg {
+      width: 74px;
+      height: 74px;
+    }
+
+    .user-block {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .name-line {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .name {
+      overflow: hidden;
+      font-size: 14px;
+      font-weight: 850;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .meta {
+      margin-top: 1px;
+      color: var(--ink-2);
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .more {
+      width: 32px;
+      height: 32px;
+      color: var(--ink-2);
+      font-size: 22px;
+    }
+
+    .photo,
+    .tile,
+    .grid-photo {
+      position: relative;
+      overflow: hidden;
+      background-color: #E7E9EF;
+      background-size: cover;
+    }
+
+    .photo {
+      width: 100%;
+      border-radius: 18px;
+    }
+
+    .photo.square {
+      aspect-ratio: 4 / 4.4;
+    }
+
+    .photo.wide {
+      aspect-ratio: 4 / 3;
+    }
+
+    .moment-photo::after,
+    .photo::after,
+    .tile::after,
+    .grid-photo::after,
+    .avatar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 28% 16%, rgba(255,255,255,.34), transparent 38%);
+      pointer-events: none;
+    }
+
+    .pill {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 25px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(21, 22, 27, .70);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 850;
+      z-index: 1;
+    }
+
+    .count {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: rgba(21, 22, 27, .70);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 850;
+      z-index: 1;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 11px 4px 4px;
+    }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .action.like-on {
+      color: var(--like);
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .copy {
+      padding: 2px 4px 5px;
+    }
+
+    .likes {
+      margin-bottom: 5px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .caption {
+      font-size: 13.5px;
+      line-height: 1.48;
+    }
+
+    .caption b {
+      font-weight: 850;
+    }
+
+    .tags {
+      margin-top: 4px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .comments {
+      margin-top: 6px;
+      color: var(--ink-2);
+      font-size: 12.5px;
+      font-weight: 650;
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      margin: 0 14px 14px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #fff;
+      box-shadow: 0 7px 18px rgba(20, 22, 30, .05);
+      color: var(--ink-3);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px 10px;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .account-list {
+      margin: 0 12px 12px;
+      padding: 6px 12px;
+    }
+
+    .account-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .account-row:first-child {
+      border-top: 0;
+    }
+
+    .crew-cards {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 0 14px 14px;
+      scrollbar-width: none;
+    }
+
+    .crew-card {
+      width: 150px;
+      flex: 0 0 auto;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .crew-card .avatar {
+      margin: 0 auto 9px;
+      width: 58px;
+      height: 58px;
+    }
+
+    .crew-card .name-line {
+      justify-content: center;
+    }
+
+    .rising-list {
+      margin: 0 12px 12px;
+      padding: 4px 12px;
+    }
+
+    .rank {
+      width: 22px;
+      color: var(--accent);
+      text-align: center;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .cta,
+    .soft-btn,
+    .seg-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 38px;
+      border-radius: 13px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .cta {
+      padding: 0 16px;
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(124, 58, 237, .22);
+    }
+
+    .soft-btn {
+      padding: 0 15px;
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .explore-grid {
+      column-count: 2;
+      column-gap: 10px;
+      padding: 0 12px 16px;
+    }
+
+    .tile {
+      display: block;
+      width: 100%;
+      break-inside: avoid;
+      margin-bottom: 10px;
+      border-radius: 20px;
+      box-shadow: 0 10px 24px rgba(20, 22, 30, .10);
+    }
+
+    .tile.tall {
+      height: 266px;
+    }
+
+    .tile.mid {
+      height: 208px;
+    }
+
+    .tile.short {
+      height: 166px;
+    }
+
+    .tile-like {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 25px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: rgba(21, 22, 27, .66);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 850;
+      z-index: 1;
+    }
+
+    .write-preview {
+      margin: 0 14px 14px;
+      padding: 10px;
+    }
+
+    .write-photo {
+      height: 310px;
+      border-radius: 19px;
+    }
+
+    .ratio-row,
+    .scope-row {
+      display: flex;
+      gap: 8px;
+      padding: 0 14px 14px;
+    }
+
+    .seg-btn {
+      flex: 1;
+      background: #fff;
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+    }
+
+    .seg-btn.active,
+    .visibility.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .text-card {
+      margin: 0 14px 14px;
+      padding: 14px;
+    }
+
+    .textarea {
+      width: 100%;
+      min-height: 96px;
+      resize: none;
+      outline: none;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .profile-card {
+      margin: 8px 14px 14px;
+      padding: 18px;
+    }
+
+    .profile-top {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .stats {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 1px;
+      color: var(--ink-2);
+      font-size: 11.5px;
+      font-weight: 650;
+    }
+
+    .profile-name {
+      margin-top: 14px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .profile-id {
+      color: var(--ink-2);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .bio {
+      margin-top: 8px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .link-row,
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .outline-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 12px;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: #fff;
+      font-size: 12.5px;
+      font-weight: 850;
+    }
+
+    .profile-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 14px 12px;
+    }
+
+    .profile-tabs .seg-btn {
+      height: 36px;
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 0 14px 16px;
+    }
+
+    .grid-photo {
+      aspect-ratio: 1;
+      border-radius: 14px;
+    }
+
+    .tabs {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 84px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: start;
+      padding: 8px 8px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+    }
+
+    .tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--ink-3);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .tab.active {
+      color: var(--accent);
+    }
+
+    .tab-icon {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 11px;
+    }
+
+    .tab.primary .tab-icon {
+      width: 48px;
+      height: 48px;
+      margin-top: -12px;
+      border-radius: 18px;
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 9px 20px rgba(124, 58, 237, .30);
+    }
+
+    .tab.primary span:last-child {
+      display: none;
+    }
+
+    .home-indicator {
+      position: absolute;
+      bottom: 7px;
+      left: 50%;
+      width: 134px;
+      height: 5px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: #000;
+      opacity: .82;
+    }
+
+    svg {
+      display: block;
+    }
+
+    .seed-p1a { background-image: linear-gradient(150deg, #A7C7E7, #5B7DB1); }
+    .seed-p2a { background-image: linear-gradient(150deg, #C2C7D9, #7B829E); }
+    .seed-p3a { background-image: linear-gradient(150deg, #F3D9A7, #D9A24E); }
+    .seed-p4a { background-image: linear-gradient(150deg, #9FD3D1, #4E9B97); }
+    .seed-p5a { background-image: linear-gradient(150deg, #E7B8C9, #C06A8C); }
+    .seed-p6a { background-image: linear-gradient(150deg, #D6C2E9, #8E6AC0); }
+    .seed-p7a { background-image: linear-gradient(150deg, #E9C2A7, #B5764E); }
+    .seed-p8a { background-image: linear-gradient(150deg, #C9E2B6, #7CA350); }
+    .seed-m1 { background-image: linear-gradient(150deg, #F4C7B8, #D98A6A); }
+    .seed-m2 { background-image: linear-gradient(150deg, #B0C4E7, #6478B1); }
+    .seed-m3 { background-image: linear-gradient(150deg, #C8B6E2, #7E63B8); }
+    .seed-m4 { background-image: linear-gradient(150deg, #B7D9C4, #5BA37C); }
+    .seed-jiwoo { background-image: linear-gradient(150deg, #A7C7E7, #5B7DB1); }
+    .seed-minseo { background-image: linear-gradient(150deg, #F4C7B8, #D98A6A); }
+    .seed-hayul { background-image: linear-gradient(150deg, #C8B6E2, #7E63B8); }
+    .seed-council { background-image: linear-gradient(150deg, #B7D9C4, #7CA350); }
+    .seed-me { background-image: linear-gradient(150deg, #E9C2A7, #B5764E); }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <section class="frame">
+      <div class="frame-title">홈 / 피드</div>
+      <main class="phone" aria-label="홈 미리보기">
+        <div class="status"><span>9:41</span><span>5G 100%</span></div>
+        <div class="screen">
+          <section class="toolbar">
+            <div class="palette">
+              <span class="chip"><span class="swatch" style="--color:#7C3AED"></span>#7C3AED</span>
+              <span class="chip"><span class="swatch" style="--color:#15161B"></span>#15161B</span>
+              <span class="chip"><span class="swatch" style="--color:#6B6E7B"></span>#6B6E7B</span>
+              <span class="chip"><span class="swatch" style="--color:#9A9DA8"></span>#9A9DA8</span>
+              <span class="chip"><span class="swatch" style="--color:rgba(20,22,30,.08)"></span>line</span>
+              <span class="chip"><span class="swatch" style="--color:#FF3B4E"></span>#FF3B4E</span>
+            </div>
+            <div class="badge-row">
+              <span class="badge official">공식</span>
+              <span class="chip"><span class="crew-mark"></span>크루마크</span>
+            </div>
+          </section>
+
+          <header class="topbar">
+            <div class="wordmark">KREW</div>
+            <div class="icon-row">
+              <button class="icon-btn" type="button" aria-label="알림">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1 1 12 0c0 5 1.5 6.5 2 7H4c.5-.5 2-2 2-7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span class="red-dot"></span>
+              </button>
+              <button class="icon-btn" type="button" aria-label="메시지">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H8l-4 3.5V6.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="red-dot"></span>
+              </button>
+            </div>
+          </header>
+
+          <div class="section-kicker">지금 <span>방금 올라온 모멘트</span></div>
+          <section class="moments">
+            <button class="moment moment-add" type="button"><div class="moment-photo"><span class="plus-pill">+</span></div><span class="moment-name">추가</span></button>
+            <button class="moment unseen" type="button"><div class="moment-photo seed-m1"></div><span class="moment-name">jiwoo_p</span></button>
+            <button class="moment unseen" type="button"><div class="moment-photo seed-m2"></div><span class="moment-name">minseo.k</span></button>
+            <button class="moment" type="button"><div class="moment-photo seed-m3"></div><span class="moment-name">yul.studio</span></button>
+            <button class="moment" type="button"><div class="moment-photo seed-m4"></div><span class="moment-name">seoyeon__</span></button>
+          </section>
+
+          <section class="feed">
+            <article class="card post-card">
+              <header class="post-head">
+                <div class="avatar seed-jiwoo"></div>
+                <div class="user-block">
+                  <div class="name-line"><span class="name">jiwoo_p</span><span class="crew-mark"></span></div>
+                  <div class="meta">경영학부 · 1시간 전</div>
+                </div>
+                <button class="more" type="button">⋯</button>
+              </header>
+              <div class="photo square seed-p1a"><span class="pill">🔒 크루 공개</span><span class="count">1/3</span></div>
+              <div class="actions">
+                <button class="action like-on" type="button">♥ 142</button>
+                <button class="action" type="button">□ 18</button>
+                <button class="action" type="button">↗</button>
+                <span class="spacer"></span>
+                <button class="action" type="button">▱</button>
+              </div>
+              <div class="copy">
+                <div class="likes">좋아요 142개</div>
+                <div class="caption"><b>jiwoo_p</b> 시험 끝나고 다 같이 성북동 산책 🍃 다음엔 더 일찍 모이자</div>
+                <div class="tags">#국민대 #성북동</div>
+                <div class="comments">댓글 18개 모두 보기</div>
+              </div>
+            </article>
+
+            <article class="card post-card">
+              <header class="post-head">
+                <div class="avatar seed-council"></div>
+                <div class="user-block">
+                  <div class="name-line"><span class="name">kookmin_council</span><span class="badge official">공식</span></div>
+                  <div class="meta">총학생회 · 3시간 전</div>
+                </div>
+                <button class="more" type="button">⋯</button>
+              </header>
+              <div class="photo wide seed-p2a"></div>
+              <div class="actions">
+                <button class="action" type="button">♡ 503</button>
+                <button class="action" type="button">□ 64</button>
+                <button class="action" type="button">↗</button>
+                <span class="spacer"></span>
+                <button class="action" type="button">▰</button>
+              </div>
+              <div class="copy">
+                <div class="likes">좋아요 503개</div>
+                <div class="caption"><b>kookmin_council</b> 2학기 축제 라인업 1차 공개! 자세한 일정은 프로필 링크에서 확인하세요.</div>
+                <div class="tags">#국민대축제 #FESTA</div>
+                <div class="comments">댓글 64개 모두 보기</div>
+              </div>
+            </article>
+          </section>
+        </div>
+        <nav class="tabs">
+          <button class="tab active" type="button"><span class="tab-icon">⌂</span><span>홈</span></button>
+          <button class="tab" type="button"><span class="tab-icon">⌕</span><span>검색</span></button>
+          <button class="tab primary" type="button"><span class="tab-icon">+</span><span>작성</span></button>
+          <button class="tab" type="button"><span class="tab-icon">▷</span><span>탐색</span></button>
+          <button class="tab" type="button"><span class="tab-icon">♙</span><span>마이</span></button>
+          <span class="home-indicator"></span>
+        </nav>
+      </main>
+    </section>
+
+    <section class="frame">
+      <div class="frame-title">검색 / 발견 MVP</div>
+      <main class="phone" aria-label="검색 미리보기">
+        <div class="status"><span>9:41</span><span>5G 100%</span></div>
+        <div class="screen">
+          <header class="topbar"><div><div class="page-title">발견</div></div></header>
+          <div class="search-wrap">⌕ 닉네임, 해시태그 검색</div>
+          <div class="section-title"><span>추천 크루</span><span class="sub">›</span></div>
+          <section class="crew-cards">
+            <article class="card crew-card">
+              <div class="avatar seed-minseo"></div>
+              <div class="name-line"><span class="name">minseo.k</span><span class="crew-mark"></span></div>
+              <div class="meta">함께 아는 크루 4</div>
+              <button class="soft-btn" style="margin-top:11px">크루</button>
+            </article>
+            <article class="card crew-card">
+              <div class="avatar seed-hayul"></div>
+              <div class="name-line"><span class="name">yul.studio</span></div>
+              <div class="meta">함께 아는 크루 7</div>
+              <button class="cta" style="margin-top:11px">+ 크루 신청</button>
+            </article>
+          </section>
+
+          <div class="section-title"><span>공식 · 동아리 추천</span><span class="sub">›</span></div>
+          <section class="card account-list">
+            <div class="account-row"><div class="avatar seed-council"></div><div class="user-block"><div class="name-line"><span class="name">kookmin_council</span><span class="badge official">공식</span></div><div class="meta">총학생회</div></div><button class="soft-btn">구독중</button></div>
+            <div class="account-row"><div class="avatar seed-hayul"></div><div class="user-block"><div class="name-line"><span class="name">kmu_zoom</span><span class="badge official">공식</span></div><div class="meta">중앙동아리</div></div><button class="cta">구독</button></div>
+          </section>
+
+          <div class="section-title"><span>실시간 급상승 TOP 10</span><span class="sub">›</span></div>
+          <section class="card rising-list">
+            <div class="account-row"><span class="rank">1</span><div class="avatar seed-p5a"></div><div class="user-block"><div class="name-line"><span class="name">jiho.creates</span><span class="crew-mark"></span></div><div class="meta">좋아요 4.2천</div></div><button class="cta">구독</button></div>
+            <div class="account-row"><span class="rank">2</span><div class="avatar seed-jiwoo"></div><div class="user-block"><div class="name-line"><span class="name">jiwoo_p</span><span class="crew-mark"></span></div><div class="meta">크루 +38</div></div><button class="soft-btn">크루</button></div>
+          </section>
+        </div>
+        <nav class="tabs">
+          <button class="tab" type="button"><span class="tab-icon">⌂</span><span>홈</span></button>
+          <button class="tab active" type="button"><span class="tab-icon">⌕</span><span>검색</span></button>
+          <button class="tab primary" type="button"><span class="tab-icon">+</span><span>작성</span></button>
+          <button class="tab" type="button"><span class="tab-icon">▷</span><span>탐색</span></button>
+          <button class="tab" type="button"><span class="tab-icon">♙</span><span>마이</span></button>
+          <span class="home-indicator"></span>
+        </nav>
+      </main>
+    </section>
+
+    <section class="frame">
+      <div class="frame-title">게시물 작성</div>
+      <main class="phone" aria-label="게시물 작성 미리보기">
+        <div class="status"><span>9:41</span><span>5G 100%</span></div>
+        <div class="screen">
+          <header class="topbar"><button class="icon-btn" type="button">‹</button><div class="page-title">새 게시물</div><button class="cta" type="button">게시</button></header>
+          <section class="card write-preview">
+            <div class="photo write-photo seed-p4a"><span class="count">1/4</span></div>
+          </section>
+          <div class="section-title"><span>비율</span><span class="sub">기존 선택 유지</span></div>
+          <div class="ratio-row">
+            <button class="seg-btn active">4:5</button>
+            <button class="seg-btn">1:1</button>
+            <button class="seg-btn">4:3</button>
+            <button class="seg-btn">원본</button>
+          </div>
+          <section class="card text-card">
+            <textarea class="textarea">캠퍼스 골든아워 필름 사진 모음. 학교가 이렇게 예뻤나 싶은 날.</textarea>
+            <div class="tags">#필름카메라 #골든아워</div>
+          </section>
+          <div class="section-title"><span>공개 범위</span></div>
+          <div class="scope-row">
+            <span class="visibility active">전체 공개</span>
+            <span class="visibility">🔒 크루 공개</span>
+          </div>
+        </div>
+        <nav class="tabs">
+          <button class="tab" type="button"><span class="tab-icon">⌂</span><span>홈</span></button>
+          <button class="tab" type="button"><span class="tab-icon">⌕</span><span>검색</span></button>
+          <button class="tab primary" type="button"><span class="tab-icon">+</span><span>작성</span></button>
+          <button class="tab" type="button"><span class="tab-icon">▷</span><span>탐색</span></button>
+          <button class="tab" type="button"><span class="tab-icon">♙</span><span>마이</span></button>
+          <span class="home-indicator"></span>
+        </nav>
+      </main>
+    </section>
+
+    <section class="frame">
+      <div class="frame-title">탐색 / 같은 학교</div>
+      <main class="phone" aria-label="탐색 미리보기">
+        <div class="status"><span>9:41</span><span>5G 100%</span></div>
+        <div class="screen">
+          <header class="topbar"><div><div class="page-title">탐색</div><div class="sub">국민대 인기 게시물 · 사진 중심</div></div></header>
+          <section class="explore-grid">
+            <button class="tile tall seed-p1a" type="button"><span class="tile-like">♥ 142</span></button>
+            <button class="tile mid seed-p2a" type="button"><span class="tile-like">♥ 503</span></button>
+            <button class="tile short seed-p3a" type="button"><span class="tile-like">♥ 1,280</span></button>
+            <button class="tile tall seed-p4a" type="button"><span class="tile-like">♥ 77</span></button>
+            <button class="tile mid seed-p5a" type="button"><span class="tile-like">♥ 64</span></button>
+            <button class="tile short seed-p6a" type="button"><span class="tile-like">♥ 231</span></button>
+            <button class="tile tall seed-p7a" type="button"><span class="tile-like">♥ 89</span></button>
+            <button class="tile mid seed-p8a" type="button"><span class="tile-like">♥ 318</span></button>
+          </section>
+        </div>
+        <nav class="tabs">
+          <button class="tab" type="button"><span class="tab-icon">⌂</span><span>홈</span></button>
+          <button class="tab" type="button"><span class="tab-icon">⌕</span><span>검색</span></button>
+          <button class="tab primary" type="button"><span class="tab-icon">+</span><span>작성</span></button>
+          <button class="tab active" type="button"><span class="tab-icon">▷</span><span>탐색</span></button>
+          <button class="tab" type="button"><span class="tab-icon">♙</span><span>마이</span></button>
+          <span class="home-indicator"></span>
+        </nav>
+      </main>
+    </section>
+
+    <section class="frame">
+      <div class="frame-title">마이프로필</div>
+      <main class="phone" aria-label="마이프로필 미리보기">
+        <div class="status"><span>9:41</span><span>5G 100%</span></div>
+        <div class="screen">
+          <header class="topbar"><div class="page-title">doyoon</div><button class="icon-btn" type="button">☷</button></header>
+          <section class="card profile-card">
+            <div class="profile-top">
+              <div class="avatar lg seed-me"></div>
+              <div class="stats">
+                <div class="stat"><strong>12</strong><span>게시물</span></div>
+                <div class="stat"><strong>34</strong><span>크루</span></div>
+                <div class="stat"><strong>1.2천</strong><span>받은 ♥</span></div>
+              </div>
+            </div>
+            <div class="profile-name">김도윤 <span class="profile-id">@doyoon</span></div>
+            <div class="meta">시각디자인학과 · 국민대</div>
+            <div class="bio">시디과 23 · 폰트랑 필름카메라 좋아해요 📷</div>
+            <div class="link-row">
+              <span class="outline-chip">◎ Instagram</span>
+              <span class="outline-chip">Bē Behance</span>
+            </div>
+            <div class="button-row">
+              <button class="soft-btn" style="flex:1">프로필 편집</button>
+              <button class="soft-btn">☷</button>
+            </div>
+          </section>
+          <div class="profile-tabs">
+            <button class="seg-btn active">게시물</button>
+            <button class="seg-btn">저장</button>
+          </div>
+          <section class="grid3">
+            <button class="grid-photo seed-p1a" type="button"></button>
+            <button class="grid-photo seed-p3a" type="button"></button>
+            <button class="grid-photo seed-p5a" type="button"></button>
+            <button class="grid-photo seed-p7a" type="button"></button>
+            <button class="grid-photo seed-p4a" type="button"></button>
+            <button class="grid-photo seed-p2a" type="button"></button>
+            <button class="grid-photo seed-p6a" type="button"></button>
+            <button class="grid-photo seed-p8a" type="button"></button>
+            <button class="grid-photo seed-m3" type="button"></button>
+          </section>
+        </div>
+        <nav class="tabs">
+          <button class="tab" type="button"><span class="tab-icon">⌂</span><span>홈</span></button>
+          <button class="tab" type="button"><span class="tab-icon">⌕</span><span>검색</span></button>
+          <button class="tab primary" type="button"><span class="tab-icon">+</span><span>작성</span></button>
+          <button class="tab" type="button"><span class="tab-icon">▷</span><span>탐색</span></button>
+          <button class="tab active" type="button"><span class="tab-icon">♙</span><span>마이</span></button>
+          <span class="home-indicator"></span>
+        </nav>
+      </main>
+    </section>
+  </div>
+</body>
+</html>

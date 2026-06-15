@@ -27,7 +27,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 // 실제 데이터가 오기 전 카드 높이를 유지해 레이아웃 점프를 줄인다.
 function FeedCardSkeleton() {
   return (
-    <div className="animate-pulse border-b border-zinc-200 bg-white px-4 py-4">
+    <div className="mx-3 mb-3 animate-pulse rounded-[22px] border border-white/65 bg-white/82 p-3 shadow-[0_22px_54px_rgba(66,43,102,0.11)] sm:mx-0">
       <div className="flex items-center gap-3">
         <div className="h-11 w-11 rounded-full bg-zinc-200" />
         <div className="flex-1">
@@ -35,7 +35,7 @@ function FeedCardSkeleton() {
           <div className="mt-2 h-3 w-20 rounded-full bg-zinc-100" />
         </div>
       </div>
-      <div className="mt-4 aspect-square rounded-3xl bg-zinc-100" />
+      <div className="mt-4 aspect-square rounded-[18px] bg-zinc-100" />
       <div className="mt-4 flex gap-3">
         <div className="h-5 w-16 rounded-full bg-zinc-100" />
         <div className="h-5 w-16 rounded-full bg-zinc-100" />
@@ -483,7 +483,7 @@ function MainPageContent() {
   return (
     <>
       <StoryBar />
-      <section className="flex flex-1 flex-col px-0 py-4 sm:px-6">
+      <section className="flex flex-1 flex-col px-0 pb-2 pt-0 sm:px-6">
         {error ? (
           <div className="mx-4 mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600 sm:mx-0">
             {error}
