@@ -100,7 +100,7 @@ function ProfileHeader({
         <button
           type="button"
           onClick={onEditProfile}
-          className="h-10 min-w-32 cursor-pointer rounded-2xl bg-white px-5 text-sm font-extrabold text-foreground shadow-sm transition hover:text-krew-accent"
+          className="h-9 min-w-28 cursor-pointer rounded-xl bg-white px-4 text-xs font-extrabold text-foreground shadow-sm transition hover:text-krew-accent"
         >
           프로필 편집
         </button>
@@ -112,7 +112,7 @@ function ProfileHeader({
         <button
           type="button"
           onClick={onSendFriendRequest}
-          className="h-10 min-w-32 rounded-2xl bg-krew-accent px-5 text-sm font-extrabold text-white"
+          className="h-9 min-w-24 rounded-xl bg-krew-accent px-4 text-xs font-extrabold text-white"
         >
           친구 신청
         </button>
@@ -125,14 +125,14 @@ function ProfileHeader({
           <button
             type="button"
             disabled
-            className="h-10 min-w-24 rounded-2xl bg-white px-4 text-sm font-extrabold text-krew-muted"
+            className="h-9 min-w-20 rounded-xl bg-white px-4 text-xs font-extrabold text-krew-muted"
           >
             요청됨
           </button>
           <button
             type="button"
             onClick={onWithdrawFriendRequest}
-            className="h-10 min-w-20 rounded-2xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted"
+            className="h-9 min-w-16 rounded-xl border border-krew-border bg-white px-4 text-xs font-extrabold text-krew-muted"
           >
             취소
           </button>
@@ -146,14 +146,14 @@ function ProfileHeader({
           <button
             type="button"
             onClick={onRespondFriendRequest}
-            className="h-10 min-w-20 rounded-2xl bg-krew-accent px-4 text-sm font-extrabold text-white"
+            className="h-9 min-w-16 rounded-xl bg-krew-accent px-4 text-xs font-extrabold text-white"
           >
             수락
           </button>
           <button
             type="button"
             onClick={onRejectFriendRequest}
-            className="h-10 min-w-20 rounded-2xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted"
+            className="h-9 min-w-16 rounded-xl border border-krew-border bg-white px-4 text-xs font-extrabold text-krew-muted"
           >
             거절
           </button>
@@ -165,14 +165,14 @@ function ProfileHeader({
       <div className="flex gap-2">
         <button
           type="button"
-          className="h-10 min-w-24 rounded-2xl bg-krew-accent-soft px-4 text-sm font-extrabold text-krew-accent"
+          className="h-9 min-w-20 rounded-xl bg-krew-accent-soft px-4 text-xs font-extrabold text-krew-accent"
         >
           친구 ✓
         </button>
         <button
           type="button"
           onClick={onOpenConnectionMenu}
-          className="h-10 w-10 rounded-2xl border border-krew-border bg-white text-sm font-extrabold text-krew-muted"
+          className="h-9 w-9 rounded-xl border border-krew-border bg-white text-xs font-extrabold text-krew-muted"
           aria-label="친구 옵션"
         >
           ⋯
@@ -259,13 +259,13 @@ function ProfileHeader({
             </div>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             {renderConnectionActions()}
             {!isMine ? (
               <button
                 type="button"
                 onClick={onSendMessage}
-                className="mt-2 h-10 min-w-32 rounded-2xl bg-krew-accent px-5 text-sm font-extrabold text-white"
+                className="h-9 min-w-24 rounded-xl bg-krew-accent px-4 text-xs font-extrabold text-white"
               >
                 메시지 보내기
               </button>
