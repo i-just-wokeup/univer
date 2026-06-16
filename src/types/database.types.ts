@@ -741,6 +741,30 @@ export type Database = {
         }
         Returns: Json
       }
+      recount_comment_likes: {
+        Args: {
+          p_comment_id: string
+        }
+        Returns: number
+      }
+      recount_post_comments: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: number
+      }
+      recount_post_likes: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: number
+      }
+      recount_story_views: {
+        Args: {
+          p_story_id: string
+        }
+        Returns: number
+      }
       search_users: {
         Args: {
           search_query: string

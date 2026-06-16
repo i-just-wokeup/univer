@@ -568,7 +568,7 @@ export async function getLikedPostIds(postIds: string[]) {
   return data.map((like: Pick<PostLikeRow, "target_id">) => like.target_id);
 }
 
-// 게시물 좋아요 레코드와 posts.likes_count를 함께 갱신한다.
+// 게시물 좋아요 레코드를 토글하고 RPC로 posts.likes_count를 재계산한다.
 export async function togglePostLike(postId: string): Promise<TogglePostLikeResult> {
   const supabase = requireSupabaseClient();
   const {
@@ -582,7 +582,7 @@ export async function togglePostLike(postId: string): Promise<TogglePostLikeResu
 
   const { data: post, error: postError } = await supabase
     .from("posts")
-    .select("id, likes_count")
+    .select("id")
     .eq("id", postId)
     .is("deleted_at", null)
     .single();
@@ -604,10 +604,6 @@ export async function togglePostLike(postId: string): Promise<TogglePostLikeResu
   }
 
   const nextLiked = !existingLike;
-  const nextLikesCount = Math.max(
-    0,
-    post.likes_count + (nextLiked ? 1 : -1),
-  );
 
   if (existingLike) {
     const { error: deleteError } = await supabase
@@ -634,20 +630,18 @@ export async function togglePostLike(postId: string): Promise<TogglePostLikeResu
     }
   }
 
-  const { data: updatedPost, error: updateError } = await supabase
-    .from("posts")
-    .update({ likes_count: nextLikesCount })
-    .eq("id", postId)
-    .select("likes_count")
-    .single();
+  const { data: likesCount, error: recountError } = await supabase.rpc(
+    "recount_post_likes",
+    { p_post_id: post.id },
+  );
 
-  if (updateError || !updatedPost) {
+  if (recountError || typeof likesCount !== "number") {
     throw new Error("좋아요 수 업데이트에 실패했습니다.");
   }
 
   return {
     liked: nextLiked,
-    likesCount: updatedPost.likes_count,
+    likesCount,
   };
 }
 

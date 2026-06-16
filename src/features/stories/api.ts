@@ -333,24 +333,12 @@ export async function recordStoryView(storyId: string): Promise<void> {
     return;
   }
 
-  const { data: story, error: storyError } = await supabase
-    .from("stories")
-    .select("views_count")
-    .eq("id", storyId)
-    .maybeSingle();
+  const { error: recountError } = await supabase.rpc(
+    "recount_story_views",
+    { p_story_id: storyId },
+  );
 
-  if (storyError || !story) {
-    throw new Error("스토리 조회수를 불러오지 못했습니다.");
-  }
-
-  const { error: updateError } = await supabase
-    .from("stories")
-    .update({
-      views_count: story.views_count + 1,
-    })
-    .eq("id", storyId);
-
-  if (updateError) {
+  if (recountError) {
     throw new Error("스토리 조회수 업데이트에 실패했습니다.");
   }
 }

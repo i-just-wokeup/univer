@@ -79,30 +79,15 @@ async function getUsersById(userIds: string[]) {
   );
 }
 
-async function updatePostCommentsCount(postId: string, delta: 1 | -1) {
+async function updatePostCommentsCount(postId: string) {
   const supabase = requireSupabaseClient();
 
-  const { data: post, error: postError } = await supabase
-    .from("posts")
-    .select("id, comments_count")
-    .eq("id", postId)
-    .single();
-
-  if (postError || !post) {
-    throw new Error("게시물을 찾을 수 없습니다.");
-  }
-
-  const nextCommentsCount = Math.max(
-    0,
-    post.comments_count + delta,
+  const { error } = await supabase.rpc(
+    "recount_post_comments",
+    { p_post_id: postId },
   );
 
-  const { error: updateError } = await supabase
-    .from("posts")
-    .update({ comments_count: nextCommentsCount })
-    .eq("id", post.id);
-
-  if (updateError) {
+  if (error) {
     throw new Error("댓글 수 업데이트에 실패했습니다.");
   }
 }
@@ -227,7 +212,7 @@ export async function createComment(
   }
 
   if (!parentId) {
-    await updatePostCommentsCount(postId, 1);
+    await updatePostCommentsCount(postId);
   }
 
   const usersById = await getUsersById([user.id]);
@@ -276,7 +261,7 @@ export async function deleteComment(commentId: string) {
   }
 
   if (!comment.parent_id) {
-    await updatePostCommentsCount(comment.post_id, -1);
+    await updatePostCommentsCount(comment.post_id);
   }
 }
 
@@ -309,7 +294,7 @@ export async function getLikedCommentIds(commentIds: string[]) {
   return data.map((like: Pick<CommentLikeRow, "comment_id">) => like.comment_id);
 }
 
-// 댓글 좋아요 레코드와 comments.likes_count를 함께 갱신한다.
+// 댓글 좋아요 레코드를 토글하고 RPC로 comments.likes_count를 재계산한다.
 export async function toggleCommentLike(
   commentId: string,
 ): Promise<ToggleCommentLikeResult> {
@@ -325,7 +310,7 @@ export async function toggleCommentLike(
 
   const { data: comment, error: commentError } = await supabase
     .from("comments")
-    .select("id, likes_count")
+    .select("id")
     .eq("id", commentId)
     .single();
 
@@ -345,10 +330,6 @@ export async function toggleCommentLike(
   }
 
   const nextLiked = !existingLike;
-  const nextLikesCount = Math.max(
-    0,
-    comment.likes_count + (nextLiked ? 1 : -1),
-  );
 
   if (existingLike) {
     const { error: deleteError } = await supabase
@@ -374,19 +355,17 @@ export async function toggleCommentLike(
     }
   }
 
-  const { data: updatedComment, error: updateError } = await supabase
-    .from("comments")
-    .update({ likes_count: nextLikesCount })
-    .eq("id", commentId)
-    .select("likes_count")
-    .single();
+  const { data: likesCount, error: recountError } = await supabase.rpc(
+    "recount_comment_likes",
+    { p_comment_id: comment.id },
+  );
 
-  if (updateError || !updatedComment) {
+  if (recountError || typeof likesCount !== "number") {
     throw new Error("댓글 좋아요 수 업데이트에 실패했습니다.");
   }
 
   return {
     liked: nextLiked,
-    likesCount: updatedComment.likes_count,
+    likesCount,
   };
 }
