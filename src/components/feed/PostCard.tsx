@@ -394,7 +394,7 @@ export function PostCard({
       </header>
 
       {post.media.length > 0 ? (
-        <div className={`relative overflow-hidden rounded-2xl bg-black ${aspectRatioClass}`}>
+        <div className={`relative overflow-hidden bg-black ${aspectRatioClass}`}>
           <div
             id={carouselId}
             ref={carouselRef}

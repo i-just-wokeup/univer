@@ -341,7 +341,7 @@ function PostsGrid({
             key={post.id}
             type="button"
             onClick={() => onPostClick(post.id)}
-            className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 shadow-[0_10px_22px_rgba(66,43,102,0.08)]"
+            className="relative aspect-square overflow-hidden bg-zinc-100 shadow-[0_10px_22px_rgba(66,43,102,0.08)]"
           >
             {thumbnail ? (
               <Image
