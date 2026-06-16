@@ -292,7 +292,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 text-zinc-950">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
       <ActivityHeader
         activeTab={activeTab}
         tabs={tabs}

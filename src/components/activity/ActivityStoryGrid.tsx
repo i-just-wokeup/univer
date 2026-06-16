@@ -20,7 +20,7 @@ export function ActivityStoryGrid({
   }
 
   return (
-    <section className="grid grid-cols-3 gap-px bg-white px-4 py-4">
+    <section className="grid grid-cols-3 gap-2 px-4 py-4">
       {stories.map((story) => {
         const status = getStoryStatus(story);
 
@@ -29,7 +29,7 @@ export function ActivityStoryGrid({
             key={story.id}
             type="button"
             onClick={() => onSelectStory(story)}
-            className="group relative aspect-square overflow-hidden bg-zinc-100 text-left"
+            className="group relative aspect-square overflow-hidden rounded-[14px] bg-white/70 text-left shadow-sm"
           >
             <Image
               src={story.image_url}

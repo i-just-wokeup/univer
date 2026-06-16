@@ -26,17 +26,17 @@ export function ActivityStoryPreviewModal({
   const likedViewers = viewers.filter((viewer) => viewer.isLiked);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-8 text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 px-4 py-8 text-white backdrop-blur-sm">
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15"
+        className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 transition hover:bg-white/25"
         aria-label="닫기"
       >
         <X className="h-5 w-5" aria-hidden="true" />
       </button>
 
-      <div className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-zinc-950">
+      <div className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-[24px] bg-zinc-950 shadow-2xl">
         <div className="relative aspect-[9/16] bg-black">
           <Image
             src={story.image_url}
@@ -45,7 +45,7 @@ export function ActivityStoryPreviewModal({
             sizes="(max-width: 640px) 100vw, 384px"
             className="object-contain"
           />
-          <div className="absolute left-4 top-4 rounded-xl bg-black/55 px-3 py-2 text-sm font-bold">
+          <div className="absolute left-4 top-4 rounded-xl bg-black/55 px-3 py-2 text-sm font-bold backdrop-blur">
             {formatKoreanDateTime(story.created_at)}
           </div>
         </div>
@@ -101,7 +101,7 @@ export function ActivityStoryPreviewModal({
                     </div>
                   </div>
                   {viewer.isLiked ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-pink-500/15 px-2 py-1 text-xs font-bold text-pink-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-krew-like/15 px-2 py-1 text-xs font-bold text-red-200">
                       <Heart
                         className="h-3 w-3 fill-current"
                         aria-hidden="true"

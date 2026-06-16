@@ -6,23 +6,38 @@ import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { getBlockedUsers, unblockUser, type BlockedUser } from "@/features/blocks/api";
+import {
+  getBlockedUsers,
+  unblockUser,
+  type BlockedUser,
+} from "@/features/blocks/api";
 import { formatKoreanDateTime } from "@/lib/utils/time";
 
 function BlockedUserSkeleton() {
   return (
-    <div className="animate-pulse divide-y divide-zinc-100 px-4">
+    <div className="mx-4 mt-4 animate-pulse rounded-[22px] border border-white/70 bg-white/82 p-2 shadow-[var(--krew-card-shadow)]">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="flex items-center gap-3 py-4">
-          <div className="h-11 w-11 shrink-0 rounded-full bg-zinc-100" />
+        <div
+          key={index}
+          className="flex items-center gap-3 rounded-2xl px-3 py-3"
+        >
+          <div className="h-11 w-11 shrink-0 rounded-full bg-krew-accent-soft" />
           <div className="flex-1">
-            <div className="h-4 w-28 rounded-full bg-zinc-100" />
-            <div className="mt-2 h-3 w-20 rounded-full bg-zinc-100" />
+            <div className="h-4 w-28 rounded-full bg-krew-accent-soft" />
+            <div className="mt-2 h-3 w-20 rounded-full bg-krew-accent-soft" />
           </div>
-          <div className="h-8 w-16 rounded-lg bg-zinc-100" />
+          <div className="h-8 w-16 rounded-xl bg-krew-accent-soft" />
         </div>
       ))}
     </div>
+  );
+}
+
+function BlockedEmptyState({ message }: { message: string }) {
+  return (
+    <section className="mx-4 mt-4 flex min-h-60 items-center justify-center rounded-[22px] border border-white/70 bg-white/82 px-6 text-center shadow-[var(--krew-card-shadow)]">
+      <p className="text-sm font-semibold text-krew-muted">{message}</p>
+    </section>
   );
 }
 
@@ -87,21 +102,24 @@ export default function BlockedPage() {
     }
   }
 
-  const unblockTarget = blockedUsers.find((user) => user.id === unblockTargetId) ?? null;
+  const unblockTarget =
+    blockedUsers.find((user) => user.id === unblockTargetId) ?? null;
 
   return (
-    <div className="min-h-screen bg-white pb-24 text-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
+      <header className="sticky top-0 z-20 border-b border-krew-line bg-background/95 backdrop-blur">
         <div className="grid h-14 grid-cols-3 items-center px-4">
           <button
             type="button"
             onClick={() => router.back()}
-            className="justify-self-start"
+            className="flex h-10 w-10 items-center justify-center justify-self-start rounded-2xl bg-white text-foreground shadow-sm transition hover:text-krew-accent"
             aria-label="뒤로가기"
           >
-            <ChevronLeft className="h-6 w-6 text-zinc-800" aria-hidden="true" />
+            <ChevronLeft className="h-6 w-6" aria-hidden="true" />
           </button>
-          <h1 className="justify-self-center text-base font-bold">차단한 계정</h1>
+          <h1 className="justify-self-center text-base font-black tracking-[-0.02em]">
+            차단한 계정
+          </h1>
           <div aria-hidden="true" />
         </div>
       </header>
@@ -110,37 +128,36 @@ export default function BlockedPage() {
         {isLoading ? (
           <BlockedUserSkeleton />
         ) : error ? (
-          <section className="flex min-h-60 items-center justify-center px-6 text-center">
-            <p className="text-sm font-medium text-zinc-500">{error}</p>
-          </section>
+          <BlockedEmptyState message={error} />
         ) : blockedUsers.length === 0 ? (
-          <section className="flex min-h-60 items-center justify-center px-6 text-center">
-            <p className="text-sm font-medium text-zinc-500">
-              차단한 계정이 없습니다.
-            </p>
-          </section>
+          <BlockedEmptyState message="차단한 계정이 없습니다." />
         ) : (
-          <ul className="divide-y divide-zinc-100 px-4">
+          <ul className="mx-4 mt-4 rounded-[22px] border border-white/70 bg-white/82 p-2 shadow-[var(--krew-card-shadow)]">
             {blockedUsers.map((user) => (
-              <li key={user.id} className="flex items-center gap-3 py-4">
+              <li
+                key={user.id}
+                className="flex items-center gap-3 rounded-2xl px-3 py-3 transition hover:bg-krew-accent-soft"
+              >
                 <Avatar
                   src={user.avatar_url}
                   nickname={user.nickname}
                   size="md"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold">{user.nickname}</p>
-                  <p className="truncate text-xs font-medium text-zinc-500">
+                  <p className="truncate text-sm font-extrabold text-foreground">
+                    {user.nickname}
+                  </p>
+                  <p className="truncate text-xs font-semibold text-krew-muted">
                     {user.department}
                   </p>
-                  <p className="mt-0.5 text-xs text-zinc-400">
+                  <p className="mt-0.5 text-xs font-medium text-krew-faint">
                     {formatKoreanDateTime(user.created_at)} 차단
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setUnblockTargetId(user.id)}
-                  className="shrink-0 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-700"
+                  className="shrink-0 rounded-xl border border-krew-border bg-white px-3 py-1.5 text-xs font-extrabold text-krew-muted transition hover:text-krew-accent"
                 >
                   차단 해제
                 </button>

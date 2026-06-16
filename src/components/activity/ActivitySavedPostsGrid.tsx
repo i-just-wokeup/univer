@@ -21,7 +21,7 @@ export function ActivitySavedPostsGrid({
   }
 
   return (
-    <section className="grid grid-cols-3 gap-px bg-white px-4 py-4">
+    <section className="grid grid-cols-3 gap-2 px-4 py-4">
       {posts.map((post) => {
         const thumbnail = post.media[0];
 
@@ -30,7 +30,7 @@ export function ActivitySavedPostsGrid({
             key={post.id}
             type="button"
             onClick={() => onOpenPost(post.id)}
-            className="group relative aspect-square overflow-hidden bg-zinc-100 text-left"
+            className="group relative aspect-square overflow-hidden rounded-[14px] bg-white/70 text-left shadow-sm"
           >
             {thumbnail ? (
               <Image
@@ -41,7 +41,7 @@ export function ActivitySavedPostsGrid({
                 className="object-cover transition group-hover:scale-105"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center px-2 text-center text-xs font-semibold text-zinc-400">
+              <div className="flex h-full w-full items-center justify-center px-2 text-center text-xs font-semibold text-krew-faint">
                 텍스트 게시물
               </div>
             )}

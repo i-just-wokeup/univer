@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  AUTH_INPUT_CLASS,
+  AUTH_LABEL_CLASS,
+  AUTH_PRIMARY_BUTTON_CLASS,
+  AuthErrorMessage,
+  AuthKrewMark,
+  AuthShell,
+} from "@/components/auth/AuthLayout";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { signInWithGoogle, signInWithPassword } from "@/features/auth/api";
 
@@ -62,85 +70,93 @@ export default function LoginForm({ initialError }: LoginFormProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10">
-      <div className="w-full max-w-sm rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-zinc-950">
-            학교 이메일 로그인
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">
-            이메일과 비밀번호로 로그인하세요.
-          </p>
-        </div>
+    <AuthShell>
+      <AuthKrewMark subtitle="우리 학교 사람들과 연결되는 대학생 비주얼 SNS" />
 
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-          <label className="block">
-            <span className="text-sm font-medium text-zinc-700">학교 이메일</span>
-            <input
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              type="email"
-              autoComplete="email"
-              placeholder="example@kookmin.ac.kr"
-              className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
-              required
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-zinc-700">비밀번호</span>
-            <input
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              type="password"
-              autoComplete="current-password"
-              className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
-              required
-            />
-            <div className="mt-2 text-right">
-              <Link
-                href="/auth/forgot-password"
-                className="text-xs font-semibold text-zinc-500 hover:text-zinc-950"
-              >
-                비밀번호를 잊으셨나요?
-              </Link>
-            </div>
-          </label>
-
-          {error ? (
-            <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
+      <section className="pb-2">
+        <form
+          className="rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-sm"
+          onSubmit={handleSubmit}
+        >
+          <div className="mb-4">
+            <h2 className="text-sm font-black text-foreground">
+              이메일로 로그인
+            </h2>
+            <p className="mt-1 text-xs font-semibold text-krew-muted">
+              가입한 학교 이메일과 비밀번호를 입력하세요.
             </p>
-          ) : null}
+          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex h-12 w-full items-center justify-center rounded-2xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
-          >
-            {isSubmitting ? "로그인 중..." : "로그인"}
-          </button>
+          <div className="space-y-4">
+            <label className="block">
+              <span className={AUTH_LABEL_CLASS}>학교 이메일</span>
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                autoComplete="email"
+                placeholder="example@kookmin.ac.kr"
+                className={AUTH_INPUT_CLASS}
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className={AUTH_LABEL_CLASS}>비밀번호</span>
+              <input
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                type="password"
+                autoComplete="current-password"
+                className={AUTH_INPUT_CLASS}
+                required
+              />
+              <div className="mt-2 text-right">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs font-bold text-krew-muted transition hover:text-krew-accent"
+                >
+                  비밀번호를 잊으셨나요?
+                </Link>
+              </div>
+            </label>
+
+            {error ? <AuthErrorMessage message={error} /> : null}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={AUTH_PRIMARY_BUTTON_CLASS}
+            >
+              {isSubmitting ? "로그인 중..." : "로그인"}
+            </button>
+          </div>
         </form>
 
-        <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-zinc-200" />
-          <span className="text-xs font-medium text-zinc-400">또는</span>
-          <div className="h-px flex-1 bg-zinc-200" />
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-krew-line" />
+          <span className="text-xs font-semibold text-krew-faint">또는</span>
+          <div className="h-px flex-1 bg-krew-line" />
         </div>
 
         <GoogleAuthButton
-          label="국민대 계정으로 로그인"
+          label={
+            isGoogleSubmitting ? "연결 중..." : "학교 Google 계정으로 시작하기"
+          }
           onClick={handleGoogleLogin}
           disabled={isSubmitting || isGoogleSubmitting}
         />
 
-        <p className="mt-6 text-center text-sm text-zinc-500">
+        <p className="mt-5 text-center text-sm font-semibold text-krew-muted">
           처음이신가요?{" "}
-          <Link href="/auth/signup" className="font-semibold text-zinc-950">
+          <Link href="/auth/signup" className="font-extrabold text-krew-accent">
             회원가입
           </Link>
         </p>
-      </div>
-    </div>
+        <p className="mt-5 text-center text-[11px] font-medium leading-5 text-krew-faint">
+          계속 진행하면 KREW 이용약관과 개인정보 처리방침에 동의하게 됩니다.
+        </p>
+      </section>
+    </AuthShell>
   );
 }

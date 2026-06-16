@@ -4,6 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check } from "lucide-react";
 
+import {
+  AUTH_INPUT_CLASS,
+  AUTH_LABEL_CLASS,
+  AUTH_PRIMARY_BUTTON_CLASS,
+  AuthCard,
+  AuthErrorMessage,
+  AuthHeader,
+  AuthShell,
+} from "@/components/auth/AuthLayout";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { signInWithGoogle, signUpWithPassword } from "@/features/auth/api";
 
@@ -91,51 +100,46 @@ export default function SignupForm({ initialError }: SignupFormProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10">
-      <div className="w-full max-w-sm rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-zinc-950">
-            {isEmailSent ? "인증 메일 발송 완료" : "회원가입"}
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">
-            {isEmailSent
-              ? "인증 메일을 발송했습니다. 메일을 확인해주세요."
-              : "국민대학교 이메일로 계정을 만들 수 있습니다."}
-          </p>
-        </div>
+    <AuthShell>
+      <AuthHeader
+        title={isEmailSent ? "인증 메일을 보냈어요" : "학교 이메일로 시작해볼까요?"}
+        description={
+          isEmailSent
+            ? "메일을 확인한 뒤 다시 로그인해주세요."
+            : "국민대학교 이메일로 가입하면 같은 학교 사람들과 연결됩니다."
+        }
+      />
 
-        {isEmailSent ? (
-          <div className="mt-8 space-y-4">
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 text-sm leading-6 text-zinc-600">
-              <p>{email}</p>
-              <p className="mt-2">
-                메일의 인증 링크를 눌러 가입을 완료한 뒤 다시 로그인해주세요.
-              </p>
-            </div>
-            <Link
-              href="/auth/login"
-              className="flex h-12 w-full items-center justify-center rounded-2xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800"
-            >
-              로그인으로 이동
-            </Link>
+      {isEmailSent ? (
+        <AuthCard className="mt-8 space-y-4">
+          <div className="rounded-[18px] border border-white/80 bg-white/75 px-4 py-4 text-sm font-semibold leading-6 text-krew-muted">
+            <p>{email}</p>
+            <p className="mt-2">
+              메일의 인증 링크를 눌러 가입을 완료한 뒤 다시 로그인해주세요.
+            </p>
           </div>
-        ) : (
-          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+          <Link href="/auth/login" className={AUTH_PRIMARY_BUTTON_CLASS}>
+            로그인으로 이동
+          </Link>
+        </AuthCard>
+      ) : (
+        <AuthCard className="mt-8">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="text-sm font-medium text-zinc-700">학교 이메일</span>
+              <span className={AUTH_LABEL_CLASS}>학교 이메일</span>
               <input
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 type="email"
                 autoComplete="email"
                 placeholder="example@kookmin.ac.kr"
-                className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                className={AUTH_INPUT_CLASS}
                 required
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-zinc-700">실명</span>
+              <span className={AUTH_LABEL_CLASS}>실명</span>
               <input
                 value={realName}
                 onChange={(event) => setRealName(event.target.value)}
@@ -144,19 +148,19 @@ export default function SignupForm({ initialError }: SignupFormProps) {
                 pattern="[가-힣\s]+"
                 placeholder="홍길동"
                 title="한글 이름을 입력해주세요."
-                className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                className={AUTH_INPUT_CLASS}
                 required
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-zinc-700">비밀번호</span>
+              <span className={AUTH_LABEL_CLASS}>비밀번호</span>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 type="password"
                 autoComplete="new-password"
-                className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                className={AUTH_INPUT_CLASS}
                 required
               />
               <div className="mt-2 flex flex-wrap gap-2">
@@ -164,7 +168,7 @@ export default function SignupForm({ initialError }: SignupFormProps) {
                   <span
                     key={rule.label}
                     className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                      rule.isValid ? "text-green-600" : "text-zinc-400"
+                      rule.isValid ? "text-krew-accent" : "text-krew-faint"
                     }`}
                   >
                     <Check className="h-3.5 w-3.5" aria-hidden="true" />
@@ -175,37 +179,31 @@ export default function SignupForm({ initialError }: SignupFormProps) {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-zinc-700">
-                비밀번호 확인
-              </span>
+              <span className={AUTH_LABEL_CLASS}>비밀번호 확인</span>
               <input
                 value={passwordConfirm}
                 onChange={(event) => setPasswordConfirm(event.target.value)}
                 type="password"
                 autoComplete="new-password"
-                className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                className={AUTH_INPUT_CLASS}
                 required
               />
             </label>
 
-            {error ? (
-              <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </p>
-            ) : null}
+            {error ? <AuthErrorMessage message={error} /> : null}
 
             <button
               type="submit"
               disabled={isSubmitting || isGoogleSubmitting}
-              className="flex h-12 w-full items-center justify-center rounded-2xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+              className={AUTH_PRIMARY_BUTTON_CLASS}
             >
               {isSubmitting ? "가입 중..." : "회원가입"}
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-zinc-200" />
-              <span className="text-xs font-medium text-zinc-400">또는</span>
-              <div className="h-px flex-1 bg-zinc-200" />
+              <div className="h-px flex-1 bg-krew-line" />
+              <span className="text-xs font-semibold text-krew-faint">또는</span>
+              <div className="h-px flex-1 bg-krew-line" />
             </div>
 
             <GoogleAuthButton
@@ -214,15 +212,15 @@ export default function SignupForm({ initialError }: SignupFormProps) {
               disabled={isSubmitting || isGoogleSubmitting}
             />
           </form>
-        )}
+        </AuthCard>
+      )}
 
-        <p className="mt-6 text-center text-sm text-zinc-500">
-          이미 계정이 있나요?{" "}
-          <Link href="/auth/login" className="font-semibold text-zinc-950">
-            로그인
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="mt-6 text-center text-sm font-semibold text-krew-muted">
+        이미 계정이 있나요?{" "}
+        <Link href="/auth/login" className="font-extrabold text-krew-accent">
+          로그인
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

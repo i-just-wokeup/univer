@@ -41,7 +41,7 @@ export function GoogleAuthButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-zinc-200 bg-white text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+      className="flex h-12 w-full items-center justify-center gap-3 rounded-[18px] border border-white/85 bg-white/90 text-sm font-extrabold text-foreground shadow-sm transition hover:text-krew-accent disabled:cursor-not-allowed disabled:opacity-60"
     >
       <GoogleLogo />
       <span>{label}</span>
