@@ -364,7 +364,7 @@ export function PostCard({
   }, []);
 
   return (
-    <article className="mx-3 mb-3 rounded-[22px] border border-white/65 bg-white/82 p-2 shadow-[var(--krew-card-shadow)] sm:mx-0">
+    <article className="mx-3 mb-3 rounded-xl border border-white/65 bg-white/82 p-2 shadow-[var(--krew-card-shadow)] sm:mx-0">
       <header className="flex items-center justify-between px-1 pb-2.5 pt-0.5">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-1.5">

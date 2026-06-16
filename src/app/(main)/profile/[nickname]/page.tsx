@@ -224,7 +224,7 @@ function ProfileHeader({
   }
 
   return (
-    <KrewSurface className="mx-4 mt-4 p-4">
+    <KrewSurface className="mx-4 mt-4 rounded-xl p-4">
       <div className="flex items-center gap-5">
         <Avatar
           src={profile.avatar_url}
@@ -341,7 +341,7 @@ function PostsGrid({
             key={post.id}
             type="button"
             onClick={() => onPostClick(post.id)}
-            className="relative aspect-square overflow-hidden bg-zinc-100 shadow-[0_10px_22px_rgba(66,43,102,0.08)]"
+            className="relative aspect-square overflow-hidden rounded-md bg-zinc-100 shadow-[0_10px_22px_rgba(66,43,102,0.08)]"
           >
             {thumbnail ? (
               <Image
