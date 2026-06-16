@@ -94,7 +94,7 @@ export async function getProfile(nickname: string): Promise<Profile> {
   const { data, error } = await supabase
     .from("users")
     .select(
-      "id, nickname, real_name, bio, avatar_url, department, university_id, created_at",
+      "id, nickname, bio, avatar_url, department, university_id, created_at",
     )
     .eq("nickname", trimmedNickname)
     .maybeSingle();
@@ -107,25 +107,22 @@ export async function getProfile(nickname: string): Promise<Profile> {
     data: { user: viewer },
   } = await supabase.auth.getUser();
   const profileUserId = data.id;
-  let canViewRealName = viewer?.id === profileUserId;
 
-  if (viewer && !canViewRealName) {
+  if (viewer && viewer.id !== profileUserId) {
     const isBlocked = await isBlockRelatedUser(profileUserId);
 
     if (isBlocked) {
       throw new Error("차단 관계인 프로필은 볼 수 없습니다.");
     }
+  }
 
-    const { data: connection } = await supabase
-      .from("user_connections")
-      .select("status")
-      .eq("status", "accepted")
-      .or(
-        `and(requester_id.eq.${viewer.id},receiver_id.eq.${profileUserId}),and(requester_id.eq.${profileUserId},receiver_id.eq.${viewer.id})`,
-      )
-      .maybeSingle();
+  const { data: realName, error: realNameError } = await supabase.rpc(
+    "get_user_real_name",
+    { p_user_id: profileUserId },
+  );
 
-    canViewRealName = connection?.status === "accepted";
+  if (realNameError) {
+    throw new Error("실명 정보를 불러오지 못했습니다.");
   }
 
   const profileLinks = await getProfileLinks(profileUserId);
@@ -133,7 +130,7 @@ export async function getProfile(nickname: string): Promise<Profile> {
   return {
     ...data,
     profile_links: profileLinks,
-    real_name: canViewRealName ? data.real_name : null,
+    real_name: realName ?? null,
   } satisfies Profile;
 }
 

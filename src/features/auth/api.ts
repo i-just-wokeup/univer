@@ -8,7 +8,11 @@ export type AuthSupabaseClient = SupabaseClient<Database>;
 
 // universities 테이블의 한 줄을 그대로 노출할 때 사용하는 타입.
 export type University = Database["public"]["Tables"]["universities"]["Row"];
-type AuthUser = Database["public"]["Tables"]["users"]["Row"];
+type UserRow = Database["public"]["Tables"]["users"]["Row"];
+type AuthUser = Omit<UserRow, "email" | "fcm_token" | "real_name"> & {
+  email: string | null;
+  real_name: string | null;
+};
 
 // 브라우저 클라이언트가 준비되지 않은 경우 모든 인증 호출을 동일한 에러로 막는다.
 function requireSupabaseClient() {
@@ -285,7 +289,7 @@ export async function getCurrentUserProfile() {
   const { data, error } = await supabase
     .from("users")
     .select(
-      "id, email, real_name, nickname, bio, avatar_url, university_id, department, credit_balance, level, level_score, role, is_onboarded, is_active, fcm_token, visibility, deleted_at, created_at",
+      "id, nickname, bio, avatar_url, university_id, department, credit_balance, level, level_score, role, is_onboarded, is_active, visibility, deleted_at, created_at",
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -294,5 +298,22 @@ export async function getCurrentUserProfile() {
     throw new Error("사용자 정보를 불러오지 못했습니다.");
   }
 
-  return data satisfies AuthUser | null;
+  if (!data) {
+    return null;
+  }
+
+  const { data: realName, error: realNameError } = await supabase.rpc(
+    "get_user_real_name",
+    { p_user_id: user.id },
+  );
+
+  if (realNameError) {
+    throw new Error("실명 정보를 불러오지 못했습니다.");
+  }
+
+  return {
+    ...data,
+    email: user.email ?? null,
+    real_name: realName ?? null,
+  } satisfies AuthUser;
 }

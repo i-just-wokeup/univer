@@ -680,6 +680,12 @@ export type Database = {
           created_at: string
         }>
       }
+      get_user_real_name: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: string | null
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
