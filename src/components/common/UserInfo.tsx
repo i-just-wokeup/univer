@@ -50,7 +50,7 @@ export function ProfileNicknameLink({
       onClick={() => {
         router.push(`/profile/${encodeURIComponent(nickname)}`);
       }}
-      className={`font-semibold text-zinc-950 transition hover:text-krew-accent ${className ?? ""}`}
+      className={`font-semibold text-foreground transition hover:text-krew-accent ${className ?? ""}`}
     >
       {children}
     </button>

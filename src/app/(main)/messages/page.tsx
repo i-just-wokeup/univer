@@ -6,6 +6,12 @@ import { useEffect, useState } from "react";
 
 import { ConversationItem } from "@/components/chat/ConversationItem";
 import { Avatar } from "@/components/common/Avatar";
+import {
+  KrewPage,
+  KrewPageHeader,
+  KrewSectionHeader,
+  KrewSurface,
+} from "@/components/common/KrewLayout";
 import { getOrCreateConversation } from "@/features/chat/api";
 import { useConversations } from "@/features/chat/hooks";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -15,11 +21,11 @@ type ConversationTab = "active" | "pending";
 
 function ConversationSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <div className="h-8 w-8 animate-pulse rounded-full bg-zinc-100" />
+    <div className="flex items-center gap-3 rounded-2xl px-3 py-3">
+      <div className="h-9 w-9 animate-pulse rounded-full bg-white/80" />
       <div className="min-w-0 flex-1">
-        <div className="h-4 w-28 animate-pulse rounded-full bg-zinc-100" />
-        <div className="mt-2 h-4 w-40 animate-pulse rounded-full bg-zinc-100" />
+        <div className="h-4 w-28 animate-pulse rounded-full bg-white/80" />
+        <div className="mt-2 h-4 w-40 animate-pulse rounded-full bg-white/80" />
       </div>
     </div>
   );
@@ -71,30 +77,33 @@ export default function MessagesPage() {
   const visibleConversations = activeTab === "active" ? active : pending;
 
   return (
-    <div className="flex min-h-full flex-col bg-white pb-20">
-      <header className="border-b border-zinc-200 px-4 py-4">
-        <h1 className="text-xl font-bold text-zinc-950">메시지</h1>
-        <div className="relative mt-4">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-          <input
-            type="text"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="닉네임으로 대화 시작"
-            className="h-12 w-full rounded-2xl border border-zinc-200 bg-white pl-11 pr-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-400"
-          />
-        </div>
-      </header>
+    <KrewPage className="pb-24">
+      <KrewPageHeader title="메시지" />
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-krew-faint" />
+        <input
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="닉네임으로 대화 시작"
+          className="h-12 w-full rounded-[18px] border border-white/80 bg-white/90 pl-11 pr-4 text-sm font-semibold text-foreground shadow-sm outline-none transition placeholder:text-krew-faint focus:border-krew-accent-ring focus:bg-white"
+        />
+      </div>
 
       {query.trim() ? (
-        <section className="border-b border-zinc-100 py-2">
+        <KrewSurface className="mt-4 p-2">
+          <KrewSectionHeader
+            className="px-2 pb-1 pt-2"
+            title="대화 시작"
+            eyebrow={query.trim()}
+          />
           {isSearching ? (
             <>
               <ConversationSkeleton />
               <ConversationSkeleton />
             </>
           ) : searchResults.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm font-medium text-zinc-500">
+            <p className="px-4 py-8 text-center text-sm font-semibold text-krew-muted">
               검색 결과가 없습니다.
             </p>
           ) : (
@@ -105,31 +114,31 @@ export default function MessagesPage() {
                 onClick={() => {
                   void openConversation(user.id);
                 }}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-zinc-50"
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-krew-accent-soft"
               >
                 <Avatar src={user.avatar_url} nickname={user.nickname} size="sm" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold text-zinc-950">
+                  <span className="block truncate text-sm font-extrabold text-foreground">
                     {user.nickname}
                   </span>
-                  <span className="block truncate text-sm text-zinc-500">
+                  <span className="block truncate text-xs font-semibold text-krew-muted">
                     {user.department}
                   </span>
                 </span>
               </button>
             ))
           )}
-        </section>
+        </KrewSurface>
       ) : null}
 
-      <div className="grid grid-cols-2 border-b border-zinc-200 px-4">
+      <div className="mt-4 grid grid-cols-2 rounded-[18px] bg-white/70 p-1 shadow-sm">
         <button
           type="button"
           onClick={() => setActiveTab("active")}
-          className={`h-12 border-b-2 text-sm font-bold ${
+          className={`h-10 rounded-[15px] text-sm font-extrabold transition ${
             activeTab === "active"
-              ? "border-zinc-950 text-zinc-950"
-              : "border-transparent text-zinc-400"
+              ? "bg-krew-accent text-white"
+              : "text-krew-muted hover:bg-white/70"
           }`}
         >
           메시지
@@ -137,22 +146,28 @@ export default function MessagesPage() {
         <button
           type="button"
           onClick={() => setActiveTab("pending")}
-          className={`flex h-12 items-center justify-center gap-2 border-b-2 text-sm font-bold ${
+          className={`flex h-10 items-center justify-center gap-2 rounded-[15px] text-sm font-extrabold transition ${
             activeTab === "pending"
-              ? "border-zinc-950 text-zinc-950"
-              : "border-transparent text-zinc-400"
+              ? "bg-krew-accent text-white"
+              : "text-krew-muted hover:bg-white/70"
           }`}
         >
           요청
           {pending.length > 0 ? (
-            <span className="rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white">
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs ${
+                activeTab === "pending"
+                  ? "bg-white/20 text-white"
+                  : "bg-krew-accent text-white"
+              }`}
+            >
               {pending.length}
             </span>
           ) : null}
         </button>
       </div>
 
-      <main className="flex-1 py-2">
+      <KrewSurface className="mt-3 p-2">
         {isLoading ? (
           <>
             <ConversationSkeleton />
@@ -160,7 +175,7 @@ export default function MessagesPage() {
             <ConversationSkeleton />
           </>
         ) : visibleConversations.length === 0 ? (
-          <p className="px-4 py-16 text-center text-sm font-medium text-zinc-500">
+          <p className="px-4 py-16 text-center text-sm font-semibold text-krew-muted">
             아직 메시지가 없습니다.
           </p>
         ) : (
@@ -175,7 +190,7 @@ export default function MessagesPage() {
             </button>
           ))
         )}
-      </main>
-    </div>
+      </KrewSurface>
+    </KrewPage>
   );
 }

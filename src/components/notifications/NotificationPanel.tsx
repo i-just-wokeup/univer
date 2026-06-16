@@ -46,13 +46,13 @@ function getNotificationText(notification: NotificationItem) {
 
 function NotificationSkeleton() {
   return (
-    <div className="flex animate-pulse gap-3 px-4 py-3">
-      <div className="h-10 w-10 rounded-full bg-zinc-100" />
+    <div className="flex animate-pulse gap-3 rounded-2xl px-3 py-3">
+      <div className="h-10 w-10 rounded-full bg-white/80" />
       <div className="min-w-0 flex-1">
-        <div className="h-3 w-4/5 rounded-full bg-zinc-100" />
-        <div className="mt-2 h-3 w-20 rounded-full bg-zinc-100" />
+        <div className="h-3 w-4/5 rounded-full bg-white/80" />
+        <div className="mt-2 h-3 w-20 rounded-full bg-white/80" />
       </div>
-      <div className="h-12 w-12 rounded-lg bg-zinc-100" />
+      <div className="h-12 w-12 rounded-2xl bg-white/80" />
     </div>
   );
 }
@@ -150,57 +150,62 @@ export function NotificationList({ onAfterRead }: NotificationListProps) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-100 px-4">
-        <h1 className="text-lg font-bold text-zinc-950">알림</h1>
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
+      <header className="flex h-16 shrink-0 items-center justify-between px-4">
+        <h1 className="text-2xl font-black tracking-[-0.03em] text-foreground">
+          알림
+        </h1>
         <button
           type="button"
           onClick={() => {
             void handleMarkAllAsRead();
           }}
-          className="text-sm font-semibold text-zinc-500 transition hover:text-zinc-950"
+          className="rounded-full bg-white/80 px-3 py-2 text-xs font-extrabold text-krew-muted shadow-sm transition hover:text-krew-accent"
         >
           모두 읽음
         </button>
       </header>
 
       {error ? (
-        <p className="mx-4 mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+        <p className="mx-4 mt-1 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
           {error}
         </p>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-y-auto py-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         {isLoading ? (
-          <>
+          <div className="rounded-[22px] border border-white/70 bg-white/70 p-2 shadow-[var(--krew-card-shadow)]">
             <NotificationSkeleton />
             <NotificationSkeleton />
             <NotificationSkeleton />
             <NotificationSkeleton />
-          </>
+          </div>
         ) : null}
 
         {!isLoading && notifications.length === 0 ? (
-          <div className="flex min-h-80 items-center justify-center px-6 text-center">
-            <p className="text-sm font-medium text-zinc-500">
+          <div className="flex min-h-80 items-center justify-center rounded-[22px] border border-white/70 bg-white/80 px-6 text-center shadow-[var(--krew-card-shadow)]">
+            <p className="text-sm font-semibold text-krew-muted">
               아직 알림이 없습니다
             </p>
           </div>
         ) : null}
 
-        {!isLoading
-          ? notifications.map((notification) => (
+        {!isLoading && notifications.length > 0 ? (
+          <div className="rounded-[22px] border border-white/70 bg-white/80 p-2 shadow-[var(--krew-card-shadow)]">
+            {notifications.map((notification) => (
               <button
                 key={notification.id}
                 type="button"
                 onClick={() => {
                   void handleNotificationClick(notification);
                 }}
-                className="flex w-full gap-3 px-4 py-3 text-left transition hover:bg-zinc-50"
+                className={`flex w-full gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-krew-accent-soft ${
+                  notification.is_read ? "" : "bg-krew-accent-soft/70"
+                }`}
               >
                 <div className="flex w-3 shrink-0 justify-center pt-4">
                   {!notification.is_read ? (
-                    <span className="h-2 w-2 rounded-full bg-blue-500" />
+                    <span className="h-2 w-2 rounded-full bg-krew-accent" />
                   ) : null}
                 </div>
 
@@ -212,19 +217,19 @@ export function NotificationList({ onAfterRead }: NotificationListProps) {
 
                 <div className="min-w-0 flex-1">
                   <p
-                    className={`text-sm leading-5 text-zinc-950 ${
-                      notification.is_read ? "font-normal" : "font-semibold"
+                    className={`text-sm leading-5 text-foreground ${
+                      notification.is_read ? "font-medium" : "font-extrabold"
                     }`}
                   >
                     {getNotificationText(notification)}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs font-semibold text-krew-faint">
                     {getRelativeTimeLabel(notification.created_at)}
                   </p>
                 </div>
 
                 {notification.thumbnail_url ? (
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-white/80">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={notification.thumbnail_url}
@@ -234,8 +239,9 @@ export function NotificationList({ onAfterRead }: NotificationListProps) {
                   </div>
                 ) : null}
               </button>
-            ))
-          : null}
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -256,7 +262,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         aria-label="알림 패널 닫기"
       />
       {/* 알림 패널 - 사이드바 위에 fixed로 오버레이 */}
-      <aside className="absolute bottom-0 left-0 top-0 flex w-[420px] flex-col bg-white shadow-2xl">
+      <aside className="absolute bottom-0 left-0 top-0 flex w-[420px] flex-col bg-background shadow-2xl">
         <NotificationList />
       </aside>
     </div>

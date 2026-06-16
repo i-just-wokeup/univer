@@ -195,13 +195,13 @@ export default function MessageRoomPage() {
     conversation?.initiated_by !== currentUserProfile?.id;
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-white text-zinc-950">
-      <header className="shrink-0 border-b border-zinc-200 bg-white">
+    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+      <header className="shrink-0 border-b border-krew-line bg-background/95">
         <div className="flex h-14 items-center gap-3 px-4">
           <button
             type="button"
             onClick={() => router.push("/messages")}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-700"
+            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/90 text-foreground shadow-sm transition hover:text-krew-accent"
             aria-label="뒤로가기"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -214,13 +214,13 @@ export default function MessageRoomPage() {
                 size="md"
               />
             ) : (
-              <h1 className="text-base font-bold">메시지</h1>
+              <h1 className="text-base font-extrabold">메시지</h1>
             )}
             {conversation ? (
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500"
+                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/90 text-krew-muted shadow-sm transition hover:text-krew-accent"
                 aria-label="더보기"
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true">
@@ -235,8 +235,8 @@ export default function MessageRoomPage() {
       </header>
 
       {isPending ? (
-        <section className="border-b border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-sm font-semibold text-amber-800">
+        <section className="border-b border-krew-accent-ring bg-krew-accent-soft px-4 py-3">
+          <p className="text-sm font-semibold text-krew-accent">
             메시지 요청 대기 중입니다. 상대방이 수락하면 대화가 시작됩니다.
           </p>
           {isIncomingRequest ? (
@@ -246,7 +246,7 @@ export default function MessageRoomPage() {
               onClick={() => {
                 void handleAcceptRequest();
               }}
-              className="mt-3 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+              className="mt-3 rounded-xl bg-krew-accent px-4 py-2 text-sm font-extrabold text-white disabled:opacity-60"
             >
               수락하기
             </button>
@@ -260,37 +260,37 @@ export default function MessageRoomPage() {
         className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-4"
       >
         {isLoading ? (
-          <p className="py-12 text-center text-sm font-medium text-zinc-500">
+          <p className="py-12 text-center text-sm font-semibold text-krew-muted">
             메시지를 불러오는 중...
           </p>
         ) : messagesError ? (
           <div className="flex min-h-full items-center justify-center px-6 text-center">
             <div>
-              <p className="text-sm font-semibold text-zinc-700">
+              <p className="text-sm font-semibold text-krew-muted">
                 {messagesError}
               </p>
               <button
                 type="button"
                 onClick={() => router.push("/messages")}
-                className="mt-4 rounded-2xl bg-zinc-950 px-4 py-2 text-sm font-bold text-white"
+                className="mt-4 rounded-2xl bg-krew-accent px-4 py-2 text-sm font-extrabold text-white"
               >
                 메시지 목록으로
               </button>
             </div>
           </div>
         ) : messages.length === 0 ? (
-          <p className="py-16 text-center text-sm font-medium text-zinc-500">
+          <p className="py-16 text-center text-sm font-semibold text-krew-muted">
             아직 메시지가 없습니다.
           </p>
         ) : (
           <div className="space-y-0.5">
             {isLoadingMore ? (
-              <p className="py-2 text-center text-xs text-zinc-400">
+              <p className="py-2 text-center text-xs font-medium text-krew-faint">
                 이전 메시지 불러오는 중...
               </p>
             ) : null}
             {!hasMore && messages.length > 0 ? (
-              <p className="py-2 text-center text-xs text-zinc-400">
+              <p className="py-2 text-center text-xs font-medium text-krew-faint">
                 첫 번째 메시지입니다.
               </p>
             ) : null}
@@ -298,7 +298,7 @@ export default function MessageRoomPage() {
               <Fragment key={message.id}>
                 {shouldShowSeparator(messages[index - 1], message) ? (
                   <div className="my-4 flex justify-center">
-                    <span className="text-xs text-zinc-400">
+                    <span className="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-krew-faint">
                       {formatChatTime(message.created_at)}
                     </span>
                   </div>
@@ -317,7 +317,7 @@ export default function MessageRoomPage() {
         )}
       </main>
 
-      <div className="shrink-0 bg-white pb-[env(safe-area-inset-bottom)]">
+      <div className="shrink-0 bg-background pb-[env(safe-area-inset-bottom)]">
         <MessageInput onSend={handleSendMessage} disabled={Boolean(messagesError)} />
       </div>
 

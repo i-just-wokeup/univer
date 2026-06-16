@@ -66,7 +66,7 @@ export function MessageInput({ disabled = false, onSend }: Props) {
 
   return (
     <form
-      className="flex items-end gap-2 border-t border-zinc-200 bg-white px-4 py-3"
+      className="flex items-end gap-2 border-t border-krew-line bg-background/95 px-4 py-3"
       onSubmit={(event) => {
         event.preventDefault();
         handleSend();
@@ -83,7 +83,7 @@ export function MessageInput({ disabled = false, onSend }: Props) {
         }}
         onKeyDown={handleKeyDown}
         placeholder="메시지 입력"
-        className="max-h-24 min-h-11 flex-1 resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm leading-5 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-400 disabled:bg-zinc-50"
+        className="max-h-24 min-h-11 flex-1 resize-none rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium leading-5 text-foreground shadow-sm outline-none transition placeholder:text-krew-faint focus:border-krew-accent-ring focus:bg-white disabled:bg-white/50"
       />
       <button
         type="submit"
@@ -91,7 +91,7 @@ export function MessageInput({ disabled = false, onSend }: Props) {
         onPointerDown={(event) => {
           event.preventDefault();
         }}
-        className="h-11 rounded-2xl bg-zinc-950 px-4 text-sm font-bold text-white transition hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400"
+        className="h-11 rounded-2xl bg-krew-accent px-4 text-sm font-extrabold text-white transition hover:brightness-95 disabled:bg-white/70 disabled:text-krew-faint"
       >
         전송
       </button>

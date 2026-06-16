@@ -24,17 +24,17 @@ export function MessageBubble({
         }`}
       >
         <div
-          className={`rounded-2xl px-4 py-2 text-sm leading-6 ${
+          className={`rounded-2xl px-4 py-2 text-sm font-medium leading-6 shadow-sm ${
             isMine
-              ? "rounded-tr-sm bg-blue-500 text-white"
-              : "rounded-tl-sm bg-zinc-100 text-zinc-900"
+              ? "rounded-tr-sm bg-krew-accent text-white"
+              : "rounded-tl-sm border border-white/80 bg-white/90 text-foreground"
           }`}
         >
           {message.content}
         </div>
       </div>
       <span
-        className={`min-w-0 flex-1 truncate whitespace-nowrap text-xs text-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 ${
+        className={`min-w-0 flex-1 truncate whitespace-nowrap text-xs font-medium text-krew-faint opacity-0 transition-opacity group-hover:opacity-100 ${
           isMine ? "text-right" : "text-left"
         }`}
       >
