@@ -171,19 +171,19 @@ export function PostImageUploader({
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-950">사진</h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            여러 장 선택 가능, 최대 10장
+          <h2 className="text-sm font-extrabold text-foreground">미디어</h2>
+          <p className="mt-1 text-xs font-semibold text-krew-muted">
+            사진을 여러 장 선택할 수 있습니다. 최대 10장
           </p>
         </div>
-        <span className="text-xs font-medium text-zinc-500">
+        <span className="rounded-full bg-white/80 px-2.5 py-1 text-xs font-extrabold text-krew-muted shadow-sm">
           {images.length}/{MAX_IMAGE_COUNT}
         </span>
       </div>
 
       {selectedPreviewImage ? (
         <div
-          className={`relative mx-auto w-full max-w-[430px] overflow-hidden rounded-3xl bg-zinc-100 sm:max-w-[440px] ${aspectRatioClass}`}
+          className={`relative mx-auto w-full max-w-[430px] overflow-hidden rounded-[22px] bg-zinc-100 shadow-[0_18px_40px_rgba(66,43,102,0.12)] sm:max-w-[440px] ${aspectRatioClass}`}
         >
           <Image
             src={selectedPreviewImage.url}
@@ -194,27 +194,27 @@ export function PostImageUploader({
             sizes="(max-width: 640px) 100vw, 470px"
             priority
           />
-          <span className="absolute bottom-3 left-3 rounded-full bg-black/65 px-3 py-1.5 text-xs font-bold text-white">
+          <span className="absolute bottom-3 left-3 rounded-full bg-black/65 px-3 py-1.5 text-xs font-extrabold text-white">
             {activePreviewIndex + 1}/{previewImages.length}
           </span>
         </div>
       ) : (
         <label
           htmlFor={inputId}
-          className={`mx-auto flex min-h-52 w-full max-w-[430px] cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed px-5 py-8 text-center transition sm:max-w-[440px] ${
+          className={`mx-auto flex min-h-52 w-full max-w-[430px] cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed px-5 py-8 text-center shadow-[var(--krew-card-shadow)] transition sm:max-w-[440px] ${
             isMaxReached
-              ? "border-zinc-200 bg-zinc-100 text-zinc-400"
-              : "border-zinc-300 bg-zinc-50 text-zinc-600 hover:border-zinc-950 hover:bg-white hover:text-zinc-950"
+              ? "border-krew-border bg-white/60 text-krew-faint"
+              : "border-krew-accent-ring bg-white/80 text-krew-accent hover:border-krew-accent hover:bg-white"
           }`}
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-krew-accent text-white shadow-[0_14px_28px_rgba(124,58,237,0.24)]">
             <PlusIcon />
           </span>
-          <span className="mt-4 text-sm font-medium">
-            {isMaxReached ? "사진은 최대 10장까지 선택할 수 있습니다" : "사진 선택"}
+          <span className="mt-4 text-sm font-extrabold text-foreground">
+            {isMaxReached ? "최대 10장까지 선택할 수 있습니다" : "사진 선택"}
           </span>
-          <span className="mt-1 text-xs text-zinc-500">
-            JPG, PNG 등 이미지 파일만 업로드하세요
+          <span className="mt-1 text-xs font-semibold text-krew-muted">
+            JPG, PNG 등 이미지 파일
           </span>
         </label>
       )}
@@ -234,10 +234,10 @@ export function PostImageUploader({
           {previewImages.map((previewImage, index) => (
             <div
               key={`${previewImage.fileName}-${index}`}
-              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 outline outline-offset-[-3px] transition sm:h-24 sm:w-24 ${
+              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-[18px] bg-zinc-100 outline outline-offset-[-3px] transition sm:h-24 sm:w-24 ${
                 index === activePreviewIndex
-                  ? "outline-[3px] outline-zinc-950"
-                  : "outline-1 outline-zinc-200"
+                  ? "outline-[3px] outline-krew-accent"
+                  : "outline-1 outline-white/80"
               }`}
             >
               <button
@@ -266,7 +266,7 @@ export function PostImageUploader({
               >
                 <CloseIcon />
               </button>
-              <span className="absolute bottom-1 left-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-black/65 px-1.5 text-[11px] font-bold text-white">
+              <span className="absolute bottom-1 left-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-black/65 px-1.5 text-[11px] font-extrabold text-white">
                 {index + 1}
               </span>
             </div>
@@ -274,7 +274,7 @@ export function PostImageUploader({
           {isMaxReached ? null : (
             <label
               htmlFor={inputId}
-              className="flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-500 transition hover:border-zinc-950 hover:bg-white hover:text-zinc-950 sm:h-24 sm:w-24"
+              className="flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-[18px] border border-dashed border-krew-accent-ring bg-white/70 text-krew-accent transition hover:border-krew-accent hover:bg-white sm:h-24 sm:w-24"
               aria-label="사진 추가"
             >
               <PlusIcon />

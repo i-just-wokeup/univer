@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
+import { KREW_SURFACE_CLASS } from "@/components/common/KrewLayout";
 import { getCurrentUserProfile } from "@/features/auth/api";
 import { getProfileLinks } from "@/features/profile/api";
 import {
@@ -104,7 +105,7 @@ export default function ProfileEditPage() {
       ? "text-green-600"
       : nicknameStatus === "duplicate" || nicknameStatus === "error"
         ? "text-red-500"
-        : "text-zinc-500";
+        : "text-krew-muted";
 
   useEffect(() => {
     let isMounted = true;
@@ -288,22 +289,24 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 text-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
+      <header className="sticky top-0 z-20 border-b border-krew-line bg-background/95 backdrop-blur">
         <div className="flex h-14 items-center justify-between px-4">
           <button
             type="button"
             onClick={handleCancel}
-            className="text-sm font-semibold text-zinc-700"
+            className="text-sm font-bold text-krew-muted transition hover:text-krew-accent"
           >
             취소
           </button>
-          <h1 className="text-base font-bold">프로필 편집</h1>
+          <h1 className="text-base font-black tracking-[-0.02em]">
+            프로필 편집
+          </h1>
           <button
             type="button"
             onClick={handleSave}
             disabled={isSaveDisabled}
-            className="text-sm font-bold text-zinc-950 disabled:text-zinc-300"
+            className="rounded-full bg-krew-accent px-4 py-2 text-sm font-extrabold text-white transition hover:brightness-95 disabled:bg-white/70 disabled:text-krew-faint"
           >
             저장
           </button>
@@ -311,7 +314,7 @@ export default function ProfileEditPage() {
       </header>
 
       <main className="mx-auto w-full max-w-screen-sm px-4 py-6">
-        <section className="flex flex-col items-center">
+        <section className={`${KREW_SURFACE_CLASS} px-4 py-6 text-center`}>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -333,6 +336,12 @@ export default function ProfileEditPage() {
               </span>
             ) : null}
           </button>
+          <p className="mt-3 text-sm font-extrabold text-foreground">
+            {nickname || "프로필"}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-krew-muted">
+            프로필 사진 변경
+          </p>
           <input
             ref={fileInputRef}
             type="file"
@@ -342,9 +351,11 @@ export default function ProfileEditPage() {
           />
         </section>
 
-        <section className="mt-8 space-y-6">
-          <label className="block">
-            <span className="text-sm font-bold text-zinc-950">닉네임</span>
+        <section className="mt-4 space-y-4">
+          <label className={`${KREW_SURFACE_CLASS} block p-4`}>
+            <span className="text-sm font-extrabold text-foreground">
+              닉네임
+            </span>
             <input
               value={nickname}
               onChange={handleNicknameChange}
@@ -352,9 +363,9 @@ export default function ProfileEditPage() {
               inputMode="text"
               autoCapitalize="none"
               disabled={isLoading}
-              className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-950 disabled:bg-zinc-50"
+              className="mt-2 h-12 w-full rounded-[18px] border border-white/80 bg-white/85 px-4 text-sm font-semibold text-foreground shadow-sm outline-none transition placeholder:text-krew-faint focus:border-krew-accent-ring focus:bg-white disabled:bg-white/50"
             />
-            <p className="mt-2 text-xs font-medium text-zinc-500">
+            <p className="mt-2 text-xs font-semibold text-krew-muted">
               영문 소문자, 숫자, 마침표(.), 밑줄(_)만 사용 가능 (최대 30자)
             </p>
             {nicknameMessage ? (
@@ -364,10 +375,12 @@ export default function ProfileEditPage() {
             ) : null}
           </label>
 
-          <label className="block">
+          <label className={`${KREW_SURFACE_CLASS} block p-4`}>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-zinc-950">소개</span>
-              <span className="text-xs font-medium text-zinc-400">
+              <span className="text-sm font-extrabold text-foreground">
+                소개
+              </span>
+              <span className="text-xs font-semibold text-krew-faint">
                 {bio.length}/150
               </span>
             </div>
@@ -377,12 +390,14 @@ export default function ProfileEditPage() {
               maxLength={150}
               rows={4}
               disabled={isLoading}
-              className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-3 text-sm outline-none focus:border-zinc-950 disabled:bg-zinc-50"
+              className="mt-2 w-full resize-none rounded-[18px] border border-white/80 bg-white/85 px-4 py-3 text-sm font-medium leading-6 text-foreground outline-none transition placeholder:text-krew-faint focus:border-krew-accent-ring focus:bg-white disabled:bg-white/50"
             />
           </label>
 
-          <label className="block">
-            <span className="text-sm font-bold text-zinc-950">대표 링크</span>
+          <label className={`${KREW_SURFACE_CLASS} block p-4`}>
+            <span className="text-sm font-extrabold text-foreground">
+              대표 링크
+            </span>
             <input
               value={profileLink}
               onChange={handleProfileLinkChange}
@@ -392,11 +407,11 @@ export default function ProfileEditPage() {
               autoCorrect="off"
               disabled={isLoading}
               placeholder="instagram.com/username"
-              className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-950 disabled:bg-zinc-50"
+              className="mt-2 h-12 w-full rounded-[18px] border border-white/80 bg-white/85 px-4 text-sm font-semibold text-foreground shadow-sm outline-none transition placeholder:text-krew-faint focus:border-krew-accent-ring focus:bg-white disabled:bg-white/50"
             />
             <p
-              className={`mt-2 text-xs font-medium ${
-                isProfileLinkValid ? "text-zinc-500" : "text-red-500"
+              className={`mt-2 text-xs font-semibold ${
+                isProfileLinkValid ? "text-krew-muted" : "text-red-500"
               }`}
             >
               {isProfileLinkValid
@@ -405,16 +420,16 @@ export default function ProfileEditPage() {
             </p>
           </label>
 
-          <div>
-            <p className="text-sm font-bold text-zinc-950">학과</p>
-            <p className="mt-2 rounded-xl bg-zinc-50 px-3 py-3 text-sm font-medium text-zinc-500">
+          <div className={`${KREW_SURFACE_CLASS} p-4`}>
+            <p className="text-sm font-extrabold text-foreground">학과</p>
+            <p className="mt-2 rounded-[18px] bg-white/70 px-4 py-3 text-sm font-semibold text-krew-muted">
               {department || "학과 정보 없음"}
             </p>
           </div>
         </section>
 
         {errorMessage ? (
-          <p className="mt-5 text-sm font-semibold text-red-500">
+          <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
             {errorMessage}
           </p>
         ) : null}

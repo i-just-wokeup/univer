@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { KREW_SURFACE_CLASS } from "@/components/common/KrewLayout";
 import { deleteAccount, signOut } from "@/features/auth/api";
 
 function Section({
@@ -16,9 +17,13 @@ function Section({
   label: string;
 }) {
   return (
-    <section className="border-b border-zinc-100 px-4 py-5">
-      <h2 className="mb-3 text-xs font-bold text-zinc-400">{label}</h2>
-      <div className="divide-y divide-zinc-100">{children}</div>
+    <section className="px-4 py-3">
+      <h2 className="mb-2 px-1 text-xs font-extrabold text-krew-muted">
+        {label}
+      </h2>
+      <div className={`${KREW_SURFACE_CLASS} p-2`}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -33,11 +38,11 @@ function Row({
   onClick?: () => void;
 }) {
   const className =
-    "flex h-12 w-full items-center justify-between text-left text-sm font-semibold";
+    "flex h-12 w-full items-center justify-between rounded-2xl px-3 text-left text-sm font-extrabold transition";
 
   if (disabled) {
     return (
-      <div className={`${className} text-zinc-400`}>
+      <div className={`${className} text-krew-faint`}>
         <span>{label}</span>
         <ChevronRight className="h-4 w-4" aria-hidden="true" />
       </div>
@@ -48,10 +53,10 @@ function Row({
     <button
       type="button"
       onClick={onClick}
-      className={`${className} text-zinc-950`}
+      className={`${className} text-foreground hover:bg-krew-accent-soft hover:text-krew-accent`}
     >
       <span>{label}</span>
-      <ChevronRight className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+      <ChevronRight className="h-4 w-4 text-krew-faint" aria-hidden="true" />
     </button>
   );
 }
@@ -92,23 +97,25 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 text-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
+      <header className="sticky top-0 z-20 border-b border-krew-line bg-background/95 backdrop-blur">
         <div className="grid h-14 grid-cols-3 items-center px-4">
           <button
             type="button"
             onClick={() => router.back()}
-            className="justify-self-start text-2xl font-light text-zinc-800"
+            className="flex h-10 w-10 items-center justify-center justify-self-start rounded-2xl bg-white text-foreground shadow-sm transition hover:text-krew-accent"
             aria-label="뒤로가기"
           >
-            <ChevronLeft className="h-6 w-6 text-zinc-800" aria-hidden="true" />
+            <ChevronLeft className="h-6 w-6" aria-hidden="true" />
           </button>
-          <h1 className="justify-self-center text-base font-bold">설정</h1>
+          <h1 className="justify-self-center text-base font-black tracking-[-0.02em]">
+            설정
+          </h1>
           <div aria-hidden="true" />
         </div>
       </header>
 
-      <main>
+      <main className="py-2">
         <Section label="계정">
           <Row label="프로필 편집" onClick={() => router.push("/profile/edit")} />
           <Row label="내 활동" onClick={() => router.push("/settings/activity")} />
@@ -120,26 +127,26 @@ export default function SettingsPage() {
           <Row label="문의하기" disabled />
         </Section>
 
-        <section className="px-4 py-5">
-          <div className="flex flex-col items-start gap-3">
+        <section className="px-4 py-3">
+          <div className={`${KREW_SURFACE_CLASS} p-2`}>
             <button
               type="button"
               onClick={() => setIsLogoutDialogOpen(true)}
-              className="h-12 text-sm font-bold text-red-500"
+              className="flex h-12 w-full items-center rounded-2xl px-3 text-left text-sm font-extrabold text-red-500 transition hover:bg-red-50"
             >
               로그아웃
             </button>
             <button
               type="button"
               onClick={() => setIsDeleteDialogOpen(true)}
-              className="text-sm font-semibold text-zinc-500"
+              className="flex h-12 w-full items-center rounded-2xl px-3 text-left text-sm font-bold text-krew-muted transition hover:bg-krew-accent-soft hover:text-krew-accent"
             >
               탈퇴하기
             </button>
           </div>
 
           {errorMessage ? (
-            <p className="mt-3 text-sm font-semibold text-red-500">
+            <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
               {errorMessage}
             </p>
           ) : null}

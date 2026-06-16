@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { Avatar } from "@/components/common/Avatar";
+import { KREW_SURFACE_CLASS } from "@/components/common/KrewLayout";
 import { Toast } from "@/components/common/Toast";
 import {
   acceptFriendRequest,
@@ -32,15 +33,15 @@ const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
 
 function ConnectionSkeleton() {
   return (
-    <div className="divide-y divide-zinc-100">
+    <div className={`${KREW_SURFACE_CLASS} p-2`}>
       {Array.from({ length: 5 }).map((_, index) => (
-        <div key={index} className="flex items-center gap-3 px-4 py-4">
-          <div className="h-12 w-12 animate-pulse rounded-full bg-zinc-100" />
+        <div key={index} className="flex items-center gap-3 rounded-2xl px-3 py-3">
+          <div className="h-12 w-12 animate-pulse rounded-full bg-white/80" />
           <div className="min-w-0 flex-1">
-            <div className="h-4 w-28 animate-pulse rounded-full bg-zinc-100" />
-            <div className="mt-2 h-4 w-36 animate-pulse rounded-full bg-zinc-100" />
+            <div className="h-4 w-28 animate-pulse rounded-full bg-white/80" />
+            <div className="mt-2 h-4 w-36 animate-pulse rounded-full bg-white/80" />
           </div>
-          <div className="h-9 w-16 animate-pulse rounded-lg bg-zinc-100" />
+          <div className="h-9 w-16 animate-pulse rounded-xl bg-white/80" />
         </div>
       ))}
     </div>
@@ -68,7 +69,7 @@ function ConnectionActions({
         type="button"
         disabled={isBusy}
         onClick={onRemove}
-        className="h-9 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700 disabled:opacity-50"
+        className="h-9 rounded-xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted transition hover:text-krew-accent disabled:opacity-50"
       >
         삭제
       </button>
@@ -82,7 +83,7 @@ function ConnectionActions({
           type="button"
           disabled={isBusy}
           onClick={onAccept}
-          className="h-9 rounded-lg bg-zinc-950 px-4 text-sm font-bold text-white disabled:opacity-50"
+          className="h-9 rounded-xl bg-krew-accent px-4 text-sm font-extrabold text-white transition hover:brightness-95 disabled:opacity-50"
         >
           수락
         </button>
@@ -90,7 +91,7 @@ function ConnectionActions({
           type="button"
           disabled={isBusy}
           onClick={onReject}
-          className="h-9 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700 disabled:opacity-50"
+          className="h-9 rounded-xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted transition hover:text-krew-accent disabled:opacity-50"
         >
           거절
         </button>
@@ -103,7 +104,7 @@ function ConnectionActions({
       type="button"
       disabled={isBusy}
       onClick={onCancel}
-      className="h-9 rounded-lg border border-zinc-200 px-4 text-sm font-bold text-zinc-700 disabled:opacity-50"
+      className="h-9 rounded-xl border border-krew-border bg-white px-4 text-sm font-extrabold text-krew-muted transition hover:text-krew-accent disabled:opacity-50"
     >
       취소
     </button>
@@ -179,34 +180,36 @@ export default function ProfileConnectionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 text-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
+      <header className="sticky top-0 z-20 border-b border-krew-line bg-background/95 backdrop-blur">
         <div className="grid h-14 grid-cols-3 items-center px-4">
           <button
             type="button"
             onClick={() => router.back()}
-            className="justify-self-start"
+            className="flex h-10 w-10 items-center justify-center justify-self-start rounded-2xl bg-white text-foreground shadow-sm transition hover:text-krew-accent"
             aria-label="뒤로가기"
           >
-            <ChevronLeft className="h-6 w-6 text-zinc-800" aria-hidden="true" />
+            <ChevronLeft className="h-6 w-6" aria-hidden="true" />
           </button>
-          <h1 className="justify-self-center text-base font-bold">크루 관리</h1>
+          <h1 className="justify-self-center text-base font-black tracking-[-0.02em]">
+            크루 관리
+          </h1>
           <div aria-hidden="true" />
         </div>
       </header>
 
-      <main>
-        <div className="sticky top-14 z-10 border-b border-zinc-200 bg-white">
-          <div className="grid grid-cols-3 px-4">
+      <main className="px-4 py-4">
+        <div className="sticky top-14 z-10 -mx-4 bg-background/95 px-4 pb-3 pt-1 backdrop-blur">
+          <div className="grid grid-cols-3 gap-1 rounded-[18px] bg-white/70 p-1 shadow-sm">
             {TABS.map((tab) => (
               <button
                 key={tab.value}
                 type="button"
                 onClick={() => setActiveTab(tab.value)}
-                className={`h-12 border-b-2 text-sm font-bold ${
+                className={`h-10 rounded-[15px] text-sm font-extrabold transition ${
                   activeTab === tab.value
-                    ? "border-zinc-950 text-zinc-950"
-                    : "border-transparent text-zinc-400"
+                    ? "bg-krew-accent text-white"
+                    : "text-krew-muted hover:bg-white/70 hover:text-krew-accent"
                 }`}
               >
                 {tab.label}
@@ -218,15 +221,18 @@ export default function ProfileConnectionsPage() {
         {isLoading ? (
           <ConnectionSkeleton />
         ) : connections.length === 0 ? (
-          <section className="flex min-h-72 items-center justify-center px-6 text-center">
-            <p className="text-sm font-medium text-zinc-500">
+          <section className={`${KREW_SURFACE_CLASS} flex min-h-72 items-center justify-center px-6 text-center`}>
+            <p className="text-sm font-semibold text-krew-muted">
               {EMPTY_MESSAGES[activeTab]}
             </p>
           </section>
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className={`${KREW_SURFACE_CLASS} p-2`}>
             {connections.map((user) => (
-              <li key={user.id} className="flex items-center gap-3 px-4 py-4">
+              <li
+                key={user.id}
+                className="flex items-center gap-3 rounded-2xl px-3 py-3 transition hover:bg-krew-accent-soft"
+              >
                 <button
                   type="button"
                   onClick={() =>
@@ -240,10 +246,10 @@ export default function ProfileConnectionsPage() {
                     size="md"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold text-zinc-950">
+                    <span className="block truncate text-sm font-extrabold text-foreground">
                       {user.nickname}
                     </span>
-                    <span className="mt-1 block truncate text-sm font-medium text-zinc-500">
+                    <span className="mt-1 block truncate text-sm font-semibold text-krew-muted">
                       {user.department}
                     </span>
                   </span>

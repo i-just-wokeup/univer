@@ -40,15 +40,15 @@ export function VisibilityPicker({
   return (
     <section className="flex flex-col gap-3">
       <h2
-        className={`text-sm font-semibold ${
-          isDark ? "text-white" : "text-zinc-950"
+        className={`text-sm font-extrabold ${
+          isDark ? "text-white" : "text-foreground"
         }`}
       >
         공개 범위
       </h2>
       <div
-        className={`grid grid-cols-2 gap-2 rounded-3xl p-1 ${
-          isDark ? "bg-zinc-800" : "bg-zinc-100"
+        className={`grid grid-cols-2 gap-2 rounded-[20px] p-1 ${
+          isDark ? "bg-zinc-800" : "bg-white/70 shadow-sm"
         }`}
       >
         {visibilityOptions.map((option) => {
@@ -59,24 +59,26 @@ export function VisibilityPicker({
               key={option.value}
               type="button"
               onClick={() => onChange(option.value)}
-              className={`flex flex-col items-center gap-1 rounded-[20px] px-4 py-3 text-center transition ${
+              className={`flex flex-col items-center gap-1 rounded-[16px] px-4 py-3 text-center transition ${
                 isSelected
                   ? isDark
                     ? "bg-white text-zinc-950 shadow-sm"
-                    : "bg-white text-zinc-950 shadow-sm"
+                    : "bg-krew-accent text-white shadow-[var(--krew-accent-glow)]"
                   : isDark
                     ? "text-zinc-400"
-                    : "text-zinc-500"
+                    : "text-krew-muted hover:bg-white/70 hover:text-krew-accent"
               }`}
             >
-              <span className="text-sm font-semibold">{option.label}</span>
+              <span className="text-sm font-extrabold">{option.label}</span>
               <span
-                className={`text-[11px] font-medium ${
+                className={`text-[11px] font-semibold ${
                   isSelected
-                    ? "text-zinc-500"
+                    ? isDark
+                      ? "text-zinc-500"
+                      : "text-white/80"
                     : isDark
                       ? "text-zinc-500"
-                      : "text-zinc-400"
+                      : "text-krew-faint"
                 }`}
               >
                 {option.description}
