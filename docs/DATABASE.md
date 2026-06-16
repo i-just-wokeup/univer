@@ -313,6 +313,7 @@ get_connection_status(target_user_id uuid)
 get_friends()
 get_pending_requests()
 get_sent_requests()
+get_user_real_name(p_user_id uuid) returns text
 recount_post_likes(p_post_id uuid) returns int
 recount_post_comments(p_post_id uuid) returns int
 recount_comment_likes(p_comment_id uuid) returns int
@@ -324,6 +325,7 @@ update_user_role(target_user_id uuid, new_role text)
 dismiss_report(report_id uuid)
 take_action_on_report(report_id uuid)
 ```
+- `get_user_real_name`은 본인 또는 크루 관계일 때만 실명을 반환하고, 그 외에는 `null`을 반환한다.
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
 

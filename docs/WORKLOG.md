@@ -29,6 +29,11 @@
   - 좋아요/댓글/조회 row insert·delete/upsert 로직과 낙관적 UI 흐름은 유지하고, 최종 카운트는 RPC 반환값 또는 재계산 결과 기준으로 동기화
   - `database.types.ts`에 `recount_post_likes`, `recount_post_comments`, `recount_comment_likes`, `recount_story_views` 타입 추가
   - 향후 posts/comments/stories 광역 UPDATE RLS 정책 제거에 대비
+- **users 민감 컬럼 직접 SELECT 제거**
+  - 프로필 조회와 현재 유저 프로필 조회에서 `users.email`, `users.real_name`, `users.fcm_token` 직접 SELECT 제거
+  - 현재 유저 이메일은 Supabase Auth 세션의 `user.email`을 사용하고, 실명은 `get_user_real_name(p_user_id)` RPC 반환값으로 채움
+  - `fcm_token`은 현재 소비처가 없어 `getCurrentUserProfile` 반환 타입에서 제외
+  - `database.types.ts`에 `get_user_real_name` RPC 타입 추가
 
 ### 다음 작업
 - [ ] 내 활동/차단 목록 등 남은 보조 화면 디자인 적용
