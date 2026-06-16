@@ -27,6 +27,11 @@ function cx(...classNames: Array<string | undefined>) {
   return classNames.filter(Boolean).join(" ");
 }
 
+// KREW 카드 표면 공통 클래스. div/section/ul/label 등 요소 무관하게 재사용한다.
+// (KrewSurface 컴포넌트가 안 맞는 자리에서는 이 상수를 className에 직접 붙인다.)
+export const KREW_SURFACE_CLASS =
+  "rounded-[22px] border border-white/70 bg-white/82 shadow-[var(--krew-card-shadow)]";
+
 export function KrewPage({ children, className }: KrewPageProps) {
   return (
     <div className={cx("min-h-full bg-background px-4 pb-7 pt-4", className)}>
@@ -59,12 +64,7 @@ export function KrewPageHeader({
 
 export function KrewSurface({ children, className }: KrewSurfaceProps) {
   return (
-    <section
-      className={cx(
-        "rounded-[22px] border border-white/70 bg-white/82 shadow-[var(--krew-card-shadow)]",
-        className,
-      )}
-    >
+    <section className={cx(KREW_SURFACE_CLASS, className)}>
       {children}
     </section>
   );
