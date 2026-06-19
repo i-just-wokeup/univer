@@ -26,7 +26,7 @@
   --color-krew-line: rgba(124, 58, 237, 0.08);
   --color-krew-border: #e4e2eb;
   --color-krew-like: #ff3b4e;
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Noto Sans KR", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -38,7 +38,7 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Noto Sans KR", sans-serif;
   letter-spacing: -0.01em;
 }
 
