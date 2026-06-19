@@ -214,7 +214,7 @@ function ProfileHeader({
         <button
           type="button"
           onClick={onOpenConnectionMenu}
-          className="h-9 w-9 rounded-xl border border-krew-border bg-white text-xs font-extrabold text-krew-muted"
+          className="hidden h-9 w-9 items-center justify-center rounded-xl border border-krew-border bg-white text-xs font-extrabold text-krew-muted lg:flex"
           aria-label="친구 옵션"
         >
           ⋯

@@ -486,7 +486,7 @@ export function PostCard({
             <button
               type="button"
               onClick={() => onComment?.(post.id)}
-              className="flex items-center gap-1.5 text-sm font-bold text-zinc-800 transition hover:text-zinc-950"
+              className="flex items-center gap-1.5 text-sm font-extrabold text-zinc-800 transition hover:text-zinc-950"
               aria-label="댓글"
             >
               <CommentIcon />

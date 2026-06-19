@@ -33,3 +33,7 @@ export function setFeedPageCache(
     cachedAt: Date.now(),
   };
 }
+
+export function clearFeedPageCache() {
+  feedPageCache = null;
+}

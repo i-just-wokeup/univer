@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -13,6 +14,7 @@ import {
 import { getCurrentUserProfile } from "@/features/auth/api";
 import { getChatUnreadCount } from "@/features/chat/api";
 import { getUnreadCount } from "@/features/notifications/api";
+import { clearAllPageCaches } from "@/features/session/page-caches";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type CurrentUserProfile = Pick<
@@ -36,6 +38,7 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
     useState<CurrentUserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const lastAuthUserIdRef = useRef<string | null | undefined>(undefined);
 
   const refreshCurrentUserProfile = useCallback(async () => {
     try {
@@ -81,6 +84,63 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
       window.clearTimeout(timeoutId);
     };
   }, [refreshCurrentUserProfile]);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      return;
+    }
+
+    let isMounted = true;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      const nextUserId = session?.user.id ?? null;
+      const previousUserId = lastAuthUserIdRef.current;
+      const hasUserChanged =
+        previousUserId !== undefined && previousUserId !== nextUserId;
+      const shouldRefreshSession =
+        event === "SIGNED_IN" ||
+        event === "SIGNED_OUT" ||
+        event === "USER_UPDATED" ||
+        hasUserChanged;
+
+      lastAuthUserIdRef.current = nextUserId;
+
+      if (!shouldRefreshSession) {
+        return;
+      }
+
+      clearAllPageCaches();
+
+      if (event === "SIGNED_OUT" || !nextUserId) {
+        setCurrentUserProfile(null);
+        setUnreadCount(0);
+        setChatUnreadCount(0);
+        return;
+      }
+
+      window.setTimeout(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        void refreshCurrentUserProfile();
+        void refreshUnreadCount();
+        void refreshChatUnreadCount();
+      }, 0);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [
+    refreshChatUnreadCount,
+    refreshCurrentUserProfile,
+    refreshUnreadCount,
+  ]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {

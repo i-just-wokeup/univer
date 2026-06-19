@@ -47,3 +47,7 @@ export function setProfilePageCache(
     cachedAt: Date.now(),
   });
 }
+
+export function clearProfilePageCache() {
+  profilePageCacheByNickname.clear();
+}

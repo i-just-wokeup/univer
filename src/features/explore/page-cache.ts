@@ -32,3 +32,7 @@ export function setExplorePageCache(
     cachedAt: Date.now(),
   };
 }
+
+export function clearExplorePageCache() {
+  explorePageCache = null;
+}

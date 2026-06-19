@@ -100,7 +100,7 @@ export function PostActions({
   const commentContent = (
     <>
       <MessageCircle className="h-6 w-6" aria-hidden="true" />
-      <span className="text-sm font-medium">{commentsCount}</span>
+      <span>{commentsCount}</span>
     </>
   );
 
@@ -126,13 +126,16 @@ export function PostActions({
         <button
           type="button"
           onClick={onComment}
-          className="flex items-center gap-1.5 text-sm font-bold text-zinc-800 transition hover:text-zinc-950"
+          className="flex items-center gap-1.5 text-sm font-extrabold text-zinc-800 transition hover:text-zinc-950"
           aria-label="댓글 보기"
         >
           {commentContent}
         </button>
       ) : (
-        <div className="flex items-center gap-1.5 text-sm font-bold text-zinc-800" aria-label="댓글 수">
+        <div
+          className="flex items-center gap-1.5 text-sm font-extrabold text-zinc-800"
+          aria-label="댓글 수"
+        >
           {commentContent}
         </div>
       )}

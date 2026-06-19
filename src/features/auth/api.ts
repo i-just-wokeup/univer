@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { clearAllPageCaches } from "@/features/session/page-caches";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { isValidNickname, normalizeNickname } from "@/lib/utils/nickname";
 import type { Database } from "@/types/database.types";
@@ -150,6 +151,7 @@ export async function updatePassword(password: string): Promise<void> {
 // 현재 세션을 종료한다.
 export async function signOut() {
   const supabase = requireSupabaseClient();
+  clearAllPageCaches();
   const { error } = await supabase.auth.signOut();
 
   if (error) {
