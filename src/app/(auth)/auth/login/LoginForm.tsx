@@ -71,7 +71,7 @@ export default function LoginForm({ initialError }: LoginFormProps) {
 
   return (
     <AuthShell>
-      <AuthKrewMark subtitle="우리 학교 사람들과 연결되는 대학생 비주얼 SNS" />
+      <AuthKrewMark />
 
       <section className="pb-2">
         <form
@@ -131,31 +131,34 @@ export default function LoginForm({ initialError }: LoginFormProps) {
               {isSubmitting ? "로그인 중..." : "로그인"}
             </button>
           </div>
+
+          <div className="my-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-krew-line" />
+            <span className="text-xs font-semibold text-krew-faint">또는</span>
+            <div className="h-px flex-1 bg-krew-line" />
+          </div>
+
+          <GoogleAuthButton
+            label={
+              isGoogleSubmitting ? "연결 중..." : "학교 Google 계정으로 시작하기"
+            }
+            onClick={handleGoogleLogin}
+            disabled={isSubmitting || isGoogleSubmitting}
+          />
+
+          <p className="mt-5 text-center text-sm font-semibold text-krew-muted">
+            처음이신가요?{" "}
+            <Link
+              href="/auth/signup"
+              className="font-extrabold text-krew-accent"
+            >
+              회원가입
+            </Link>
+          </p>
+          <p className="mt-5 text-center text-[11px] font-medium leading-5 text-krew-faint">
+            계속하면 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+          </p>
         </form>
-
-        <div className="my-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-krew-line" />
-          <span className="text-xs font-semibold text-krew-faint">또는</span>
-          <div className="h-px flex-1 bg-krew-line" />
-        </div>
-
-        <GoogleAuthButton
-          label={
-            isGoogleSubmitting ? "연결 중..." : "학교 Google 계정으로 시작하기"
-          }
-          onClick={handleGoogleLogin}
-          disabled={isSubmitting || isGoogleSubmitting}
-        />
-
-        <p className="mt-5 text-center text-sm font-semibold text-krew-muted">
-          처음이신가요?{" "}
-          <Link href="/auth/signup" className="font-extrabold text-krew-accent">
-            회원가입
-          </Link>
-        </p>
-        <p className="mt-5 text-center text-[11px] font-medium leading-5 text-krew-faint">
-          계속 진행하면 KREW 이용약관과 개인정보 처리방침에 동의하게 됩니다.
-        </p>
       </section>
     </AuthShell>
   );
