@@ -27,21 +27,21 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 // 실제 데이터가 오기 전 카드 높이를 유지해 레이아웃 점프를 줄인다.
 function FeedCardSkeleton() {
   return (
-    <div className="mx-3 mb-3 animate-pulse rounded-[22px] border border-white/65 bg-white/82 p-3 shadow-[0_22px_54px_rgba(66,43,102,0.11)] sm:mx-0">
-      <div className="flex items-center gap-3">
+    <div className="mb-2.5 animate-pulse overflow-hidden border-y border-white/65 bg-white/82 sm:mb-3 sm:rounded-2xl sm:border">
+      <div className="flex items-center gap-3 px-4 py-3">
         <div className="h-11 w-11 rounded-full bg-zinc-200" />
         <div className="flex-1">
           <div className="h-4 w-28 rounded-full bg-zinc-200" />
           <div className="mt-2 h-3 w-20 rounded-full bg-zinc-100" />
         </div>
       </div>
-      <div className="mt-4 aspect-square rounded-[18px] bg-zinc-100" />
-      <div className="mt-4 flex gap-3">
+      <div className="aspect-square bg-zinc-100" />
+      <div className="mt-3 flex gap-3 px-4">
         <div className="h-5 w-16 rounded-full bg-zinc-100" />
         <div className="h-5 w-16 rounded-full bg-zinc-100" />
       </div>
-      <div className="mt-4 h-4 w-full rounded-full bg-zinc-100" />
-      <div className="mt-2 h-4 w-2/3 rounded-full bg-zinc-100" />
+      <div className="mx-4 mt-4 h-4 rounded-full bg-zinc-100" />
+      <div className="mx-4 mb-3 mt-2 h-4 w-2/3 rounded-full bg-zinc-100" />
     </div>
   );
 }

@@ -224,7 +224,7 @@ function ProfileHeader({
   }
 
   return (
-    <KrewSurface className="mx-4 mt-4 p-4">
+    <div className="p-4">
       <div className="flex items-center gap-5">
         <Avatar
           src={profile.avatar_url}
@@ -310,7 +310,7 @@ function ProfileHeader({
           </button>
         ) : null}
       </div>
-    </KrewSurface>
+    </div>
   );
 }
 
@@ -323,16 +323,16 @@ function PostsGrid({
 }) {
   if (posts.length === 0) {
     return (
-      <section className="mx-4 flex min-h-56 items-center justify-center rounded-[22px] border border-white/70 bg-white/70 px-6 shadow-[var(--krew-card-shadow)]">
+      <div className="px-6 py-12 text-center">
         <p className="text-sm font-semibold text-krew-muted">
           아직 게시물이 없습니다
         </p>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="grid grid-cols-3 gap-2 px-4 pb-6">
+    <section className="grid grid-cols-3 gap-1 p-3">
       {posts.map((post) => {
         const thumbnail = post.images[0];
 
@@ -341,7 +341,7 @@ function PostsGrid({
             key={post.id}
             type="button"
             onClick={() => onPostClick(post.id)}
-            className="relative aspect-square overflow-hidden bg-zinc-100 shadow-[0_10px_22px_rgba(66,43,102,0.08)]"
+            className="relative aspect-square overflow-hidden rounded-lg bg-zinc-100"
           >
             {thumbnail ? (
               <Image
@@ -728,38 +728,39 @@ export default function ProfilePage() {
         }}
         onOpenSettings={() => router.push("/settings")}
       />
-      <ProfileHeader
-        connectionStatus={state.connectionStatus}
-        isMine={state.currentUserId === state.profile.id}
-        onEditProfile={() => router.push("/profile/edit")}
-        onOpenConnections={() => router.push("/profile/connections")}
-        onOpenConnectionMenu={() => {
-          setIsConnectionMenuOpen(true);
-        }}
-        onSendMessage={() => {
-          void handleSendMessage();
-        }}
-        onRejectFriendRequest={() => {
-          void handleRejectFriendRequest();
-        }}
-        onRespondFriendRequest={() => {
-          void handleAcceptFriendRequest();
-        }}
-        onSendFriendRequest={() => {
-          void handleSendFriendRequest();
-        }}
-        onWithdrawFriendRequest={() => {
-          void handleRemoveFriend();
-        }}
-        postsCount={state.postsCount}
-        profile={state.profile}
-      />
-      <div className="relative left-1/2 mt-4 w-screen -translate-x-1/2 lg:w-[calc(100vw-36rem)] lg:max-w-[832px] xl:w-[calc(100vw-38rem)]">
+      <KrewSurface className="mx-4 mb-6 mt-4 overflow-hidden">
+        <ProfileHeader
+          connectionStatus={state.connectionStatus}
+          isMine={state.currentUserId === state.profile.id}
+          onEditProfile={() => router.push("/profile/edit")}
+          onOpenConnections={() => router.push("/profile/connections")}
+          onOpenConnectionMenu={() => {
+            setIsConnectionMenuOpen(true);
+          }}
+          onSendMessage={() => {
+            void handleSendMessage();
+          }}
+          onRejectFriendRequest={() => {
+            void handleRejectFriendRequest();
+          }}
+          onRespondFriendRequest={() => {
+            void handleAcceptFriendRequest();
+          }}
+          onSendFriendRequest={() => {
+            void handleSendFriendRequest();
+          }}
+          onWithdrawFriendRequest={() => {
+            void handleRemoveFriend();
+          }}
+          postsCount={state.postsCount}
+          profile={state.profile}
+        />
+        <div className="h-px bg-krew-line" />
         <PostsGrid
           posts={state.posts}
           onPostClick={(postId) => router.push(`/posts/${postId}`)}
         />
-      </div>
+      </KrewSurface>
       <ActionSheet
         isOpen={isConnectionMenuOpen}
         items={connectionMenuItems}

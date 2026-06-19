@@ -608,7 +608,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
               : "flex min-h-0 flex-col bg-transparent lg:h-full lg:border-l lg:border-krew-border lg:bg-white/82"
           }
         >
-          <div className="mx-3 mb-3 mt-2 overflow-hidden rounded-2xl border border-white/65 bg-white/82 lg:hidden">
+          <div className="mb-2.5 overflow-hidden rounded-2xl border border-white/65 bg-white/82 lg:hidden">
             <PostHeader
               currentUserId={currentUserId}
               isCardHeader
@@ -620,7 +620,7 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
             />
             <ImageCarousel post={post} />
 
-            <div className="px-3.5 pb-3 pt-2.5">
+            <div className="px-4 pb-3 pt-2.5">
               <PostActions
                 commentsCount={post.comments_count}
                 isLiked={isLiked}

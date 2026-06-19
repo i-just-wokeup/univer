@@ -48,7 +48,7 @@ export function PostHeader({
     <header
       className={
         isCardHeader
-          ? "flex items-center justify-between bg-white/82 px-3.5 py-3"
+          ? "flex items-center justify-between bg-white/82 px-4 py-3"
           : "flex items-center justify-between border-b border-krew-border bg-white/82 px-4 py-3"
       }
     >

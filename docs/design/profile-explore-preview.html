@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UNIVER · 프로필/탐색 풀폭 미리보기 (모바일)</title>
+<style>
+  :root{
+    --bg:#eee9fb; --accent:#7c3aed; --accent-soft:#f0edff;
+    --like:#ff3b4e; --fg:#15161b; --muted:#6b6e7b; --faint:#9a9da8;
+    --border:#ece9f4; --line:rgba(124,58,237,.10);
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:#cdc5e6;color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+    letter-spacing:-.01em;padding:36px 16px 60px}
+  h1{font-size:19px;font-weight:900;text-align:center;margin:0 0 4px}
+  .sub{text-align:center;color:#544c6b;font-weight:600;font-size:13px;margin:0 0 28px}
+  .stage{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .label{font-size:13px;font-weight:800;color:var(--accent);text-align:center}
+  .label small{display:block;color:var(--faint);font-weight:600;margin-top:2px}
+
+  .phone{width:390px;height:844px;background:var(--bg);overflow:hidden;border-radius:30px;
+    box-shadow:0 30px 70px rgba(40,26,70,.4);display:flex;flex-direction:column}
+  .topbar{flex:0 0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;background:var(--bg);border-bottom:1px solid var(--line)}
+  .topbar .nm{font-weight:800;font-size:15px}
+  .topbar .ic{display:flex;gap:6px;color:var(--muted)}
+  .scroll{flex:1 1 auto;overflow-y:auto}
+  .scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,.25);border-radius:3px}
+
+  /* 프로필 헤더 */
+  .phead{padding:18px 16px 10px;display:flex;flex-direction:column;gap:12px}
+  .ptop{display:flex;align-items:center;gap:16px}
+  .pav{width:74px;height:74px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--accent-soft)}
+  .pstats{flex:1 1 auto;display:flex;justify-content:space-around;text-align:center}
+  .pstats b{display:block;font-weight:900;font-size:16px}
+  .pstats span{font-size:11px;color:var(--muted);font-weight:600}
+  .pname{font-weight:800;font-size:15px}
+  .pmeta{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+  .pbio{font-size:13px;line-height:1.5;margin-top:2px}
+  .pbtn{margin-top:2px;display:flex;gap:8px}
+  .pbtn a{flex:1 1 auto;text-align:center;font-weight:800;font-size:13px;padding:9px 0;border-radius:12px}
+  .pbtn .primary{background:var(--accent);color:#fff}
+  .pbtn .ghost{background:#fff;border:1px solid var(--border);color:var(--fg)}
+
+  /* 3열 그리드 */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+  .grid3 .cell{position:relative;aspect-ratio:1/1;background:var(--accent-soft);overflow:hidden}
+  .grid3 .cell img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* 안 A: 게시물 영역을 흰 패널로 감쌈 */
+  .panel{margin:6px 12px 16px;background:#fff;border:1px solid var(--border);
+    border-radius:20px;overflow:hidden;padding:8px}
+  .panel .grid3{gap:4px}
+  .panel .cell{border-radius:10px}
+
+  /* 탐색 2열 풀폭 */
+  .exhead{padding:16px 16px 8px;font-size:20px;font-weight:900}
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 10px 24px}
+  .grid2 .tile{position:relative;border-radius:16px;overflow:hidden;background:var(--accent-soft)}
+  .grid2 .tile img{width:100%;height:100%;object-fit:cover;display:block}
+  .grid2 .r-p{aspect-ratio:4/5}.grid2 .r-s{aspect-ratio:1/1}
+  .likepill{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:4px;
+    background:rgba(12,12,18,.55);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+
+  .note{max-width:900px;margin:30px auto 0;background:#fff;border:1px solid var(--border);
+    border-radius:16px;padding:18px 20px;box-shadow:0 18px 44px rgba(66,43,102,.10)}
+  .note h3{margin:0 0 8px;font-size:15px;font-weight:900}
+  .note ul{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px;line-height:1.7}
+  .note b{color:var(--fg)}
+</style>
+</head>
+<body>
+  <h1>프로필 / 탐색 · 모바일 미리보기</h1>
+  <p class="sub">프로필 그리드 두 가지(흰 패널로 감쌈 / 풀폭) + 탐색 풀폭 비교</p>
+
+  <div class="stage">
+
+    <!-- 프로필 A: 흰 패널로 감쌈 -->
+    <div class="col">
+      <div class="label">프로필 A · 게시물 영역을 흰 패널로 감쌈 <small>그리드가 카드 안에</small></div>
+      <div class="phone">
+        <div class="topbar"><div class="nm">uiv_uiv.</div><div class="ic">⚙</div></div>
+        <div class="scroll">
+          <div class="phead">
+            <div class="ptop">
+              <img class="pav" src="https://picsum.photos/seed/me/150/150" alt="">
+              <div class="pstats">
+                <div><b>24</b><span>게시물</span></div>
+                <div><b>312</b><span>크루</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="pname">uiv_uiv.</div>
+              <div class="pmeta">자동차공학과</div>
+              <div class="pbio">국민대 일상 기록 📸 운영팀</div>
+            </div>
+            <div class="pbtn"><a class="ghost">프로필 편집</a><a class="ghost">공유</a></div>
+          </div>
+          <div class="panel">
+            <div class="grid3">
+              <div class="cell"><img src="https://picsum.photos/seed/p1/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p2/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p3/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p4/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p5/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p6/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p7/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p8/200/200"></div>
+              <div class="cell"><img src="https://picsum.photos/seed/p9/200/200"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 프로필 B: 풀폭 그리드 -->
+    <div class="col">
+      <div class="label">프로필 B · 풀폭 그리드 <small>인스타식 빽빽 (감싸지 않음)</small></div>
+      <div class="phone">
+        <div class="topbar"><div class="nm">uiv_uiv.</div><div class="ic">⚙</div></div>
+        <div class="scroll">
+          <div class="phead">
+            <div class="ptop">
+              <img class="pav" src="https://picsum.photos/seed/me/150/150" alt="">
+              <div class="pstats">
+                <div><b>24</b><span>게시물</span></div>
+                <div><b>312</b><span>크루</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="pname">uiv_uiv.</div>
+              <div class="pmeta">자동차공학과</div>
+              <div class="pbio">국민대 일상 기록 📸 운영팀</div>
+            </div>
+            <div class="pbtn"><a class="ghost">프로필 편집</a><a class="ghost">공유</a></div>
+          </div>
+          <div class="grid3">
+            <div class="cell"><img src="https://picsum.photos/seed/p1/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p2/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p3/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p4/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p5/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p6/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p7/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p8/200/200"></div>
+            <div class="cell"><img src="https://picsum.photos/seed/p9/200/200"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탐색 풀폭 2열 -->
+    <div class="col">
+      <div class="label">탐색 · 풀폭 2열 <small>둥근 타일 + 간격에 연보라</small></div>
+      <div class="phone">
+        <div class="topbar"><div class="nm">탐색</div><div class="ic">🔍</div></div>
+        <div class="scroll">
+          <div class="grid2">
+            <div class="tile r-p"><img src="https://picsum.photos/seed/e1/400/500"><div class="likepill">♥ 128</div></div>
+            <div class="tile r-s"><img src="https://picsum.photos/seed/e2/400/400"><div class="likepill">♥ 64</div></div>
+            <div class="tile r-s"><img src="https://picsum.photos/seed/e3/400/400"><div class="likepill">♥ 45</div></div>
+            <div class="tile r-p"><img src="https://picsum.photos/seed/e4/400/500"><div class="likepill">♥ 210</div></div>
+            <div class="tile r-p"><img src="https://picsum.photos/seed/e5/400/500"><div class="likepill">♥ 87</div></div>
+            <div class="tile r-s"><img src="https://picsum.photos/seed/e6/400/400"><div class="likepill">♥ 33</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <h3>정리</h3>
+    <ul>
+      <li><b>프로필 A (감쌈)</b>: 게시물 그리드를 흰 둥근 패널로 감쌈 → KREW 카드 느낌, 부드러움. 단 좌우 여백만큼 썸네일 약간 작아짐.</li>
+      <li><b>프로필 B (풀폭)</b>: 인스타식 풀폭 빽빽 그리드 → 썸네일 큼, 콘텐츠 많아 보임. 감싸는 흰 영역 없음.</li>
+      <li><b>탐색</b>: 풀폭 2열 + 살짝 둥근 타일 + 간격에 연보라(KREW 색). ♥수 표시.</li>
+      <li>피드/상세가 풀폭 둥근 카드라, <b>프로필도 A(감쌈)로 가면 톤 통일</b> / <b>B(풀폭)은 인스타에 더 가깝고 사진 큼.</b></li>
+    </ul>
+  </div>
+</body>
+</html>
