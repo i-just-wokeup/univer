@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UNIVER · 게시물 상세 모바일 리디자인 미리보기</title>
+<style>
+  :root{
+    --bg:#eee9fb; --accent:#7c3aed; --accent-soft:#f0edff; --accent-ring:#d8ccff;
+    --like:#ff3b4e; --fg:#15161b; --muted:#6b6e7b; --faint:#9a9da8;
+    --border:#e4e2eb; --line:rgba(124,58,237,.08);
+    --card-shadow:0 22px 54px rgba(66,43,102,.11);
+  }
+  *{box-sizing:border-box; -webkit-font-smoothing:antialiased}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+    letter-spacing:-.01em; padding:40px 24px 64px;
+  }
+  h1{font-size:20px; font-weight:900; text-align:center; margin:0 0 6px}
+  .sub{text-align:center; color:var(--muted); font-weight:600; font-size:13px; margin:0 0 36px}
+  .row{display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start}
+  .col{display:flex; flex-direction:column; align-items:center; gap:14px}
+  .label{font-size:13px; font-weight:800; color:var(--accent); text-align:center}
+  .label small{display:block; color:var(--faint); font-weight:600; margin-top:2px}
+
+  .phone{
+    width:374px; height:812px; background:#fff; border-radius:30px; overflow:hidden;
+    box-shadow:var(--card-shadow); display:flex; flex-direction:column;
+    border:1px solid rgba(255,255,255,.7);
+  }
+  .hd{flex:0 0 auto; height:56px; display:flex; align-items:center; gap:10px;
+      padding:0 14px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.96)}
+  .av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--accent-soft)}
+  .hd .who{flex:1 1 auto; min-width:0}
+  .hd .nm{font-weight:800; font-size:14px}
+  .hd .tm{font-size:11px; color:var(--faint); font-weight:600; margin-top:1px}
+  .ico-btn{width:32px;height:32px;border-radius:12px;border:0;background:#fff;color:var(--muted);
+           display:grid;place-items:center;cursor:pointer}
+
+  .body{flex:1 1 auto; overflow-y:auto; min-height:0; display:flex; flex-direction:column}
+  .media{position:relative; width:100%; background:#0c0c12; flex:0 0 auto}
+  .r-portrait{aspect-ratio:4/5}
+  .r-square{aspect-ratio:1/1}
+  .r-landscape{aspect-ratio:16/9}
+  .media img{width:100%;height:100%;object-fit:cover;display:block}
+  .badge{position:absolute; top:12px; right:12px; background:rgba(12,12,18,.62); color:#fff;
+         font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px}
+  .caption{padding:14px 16px 4px; font-size:14px; line-height:1.5}
+  .caption .tag{color:var(--accent); font-weight:700}
+  .cap-time{padding:2px 16px 14px; font-size:11px; color:var(--faint); font-weight:600}
+  .divider{height:1px; background:var(--line); margin:0 16px}
+
+  .cmts{padding:14px 16px 18px; display:flex; flex-direction:column; gap:16px; flex:1 1 auto}
+  .cmt{display:flex; gap:10px}
+  .cmt.reply{margin-left:42px}
+  .cav{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--accent-soft)}
+  .cmt .ct{flex:1 1 auto; min-width:0}
+  .cmt .cl1{font-size:13px; line-height:1.45}
+  .cmt .cl1 b{font-weight:800; margin-right:6px}
+  .cmt .cl2{margin-top:4px; font-size:11px; color:var(--faint); font-weight:600; display:flex; gap:14px}
+  .cheart{flex:0 0 auto; color:var(--faint); align-self:flex-start; margin-top:2px}
+
+  .empty{flex:1 1 auto; min-height:200px; display:flex; flex-direction:column;
+         align-items:center; justify-content:center; gap:8px; text-align:center; padding:30px}
+  .empty .e-ic{width:54px;height:54px;border-radius:50%;background:var(--accent-soft);
+               display:grid;place-items:center;color:var(--accent)}
+  .empty .e-t{font-weight:800; font-size:15px}
+  .empty .e-s{font-size:12.5px; color:var(--muted); font-weight:600}
+
+  .ft{flex:0 0 auto; border-top:1px solid var(--line); background:#fff}
+  .acts{display:flex; align-items:center; gap:18px; padding:10px 16px 8px}
+  .act{display:flex; align-items:center; gap:6px; font-weight:800; font-size:13px; color:var(--fg)}
+  .heart-on{color:var(--like)}
+  .grow{flex:1 1 auto}
+  .save{color:var(--muted)}
+  .inputbar{display:flex; align-items:center; gap:10px; padding:8px 14px 16px}
+  .inputbar .ipt{flex:1 1 auto; height:42px; border-radius:999px; background:#f4f2fb;
+                 border:1px solid var(--border); padding:0 16px; display:flex; align-items:center;
+                 color:var(--faint); font-size:13px; font-weight:600}
+  .send{font-weight:800; font-size:14px; color:var(--accent)}
+
+  .note{max-width:980px; margin:34px auto 0; background:#fff; border:1px solid var(--border);
+        border-radius:18px; padding:18px 20px; box-shadow:var(--card-shadow)}
+  .note h2{margin:0 0 8px; font-size:15px; font-weight:900}
+  .note ul{margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; line-height:1.7}
+  .note b{color:var(--fg)}
+  .q{margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); color:var(--fg); font-size:13.5px}
+</style>
+</head>
+<body>
+  <h1>게시물 상세 · 비율별 모바일 레이아웃</h1>
+  <p class="sub">사진 비율(세로/정사각/가로)이 달라도 — 가운데 스크롤 영역이 유연해서 아래 빈 공간이 안 생김</p>
+
+  <div class="row">
+
+    <!-- 세로 4:5 -->
+    <div class="col">
+      <div class="label">세로 (4:5) <small>이미지 큼 · 댓글은 아래로 스크롤</small></div>
+      <div class="phone">
+        <div class="hd">
+          <img class="av" src="https://picsum.photos/seed/u/80/80" alt="">
+          <div class="who"><div class="nm">uiv_uiv.</div><div class="tm">3일 전</div></div>
+          <button class="ico-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+          <button class="ico-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="body">
+          <div class="media r-portrait"><img src="https://picsum.photos/seed/post-tall/780/975" alt=""><div class="badge">2 / 2</div></div>
+          <div class="caption">오랜만에 나들이 🚂 <span class="tag">#국민대</span> <span class="tag">#주말</span></div>
+          <div class="cap-time">3일 전</div>
+          <div class="divider"></div>
+          <div class="cmts">
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/a/64/64" alt=""><div class="ct"><div class="cl1"><b>minjae_k</b>사진 잘 나왔다 ㅋㅋ 어디야?</div><div class="cl2"><span>2일 전</span><span>좋아요 3</span><span>답글</span></div></div></div>
+            <div class="cmt reply"><img class="cav" src="https://picsum.photos/seed/b/64/64" alt=""><div class="ct"><div class="cl1"><b>uiv_uiv.</b>한강 공원!</div><div class="cl2"><span>2일 전</span><span>좋아요 1</span><span>답글</span></div></div></div>
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/c/64/64" alt=""><div class="ct"><div class="cl1"><b>seoyeon</b>유모차 귀엽다 🥹</div><div class="cl2"><span>1일 전</span><span>좋아요 0</span><span>답글</span></div></div></div>
+          </div>
+        </div>
+        <div class="ft">
+          <div class="acts">
+            <div class="act heart-on"><svg width="22" height="22" viewBox="0 0 24 24" fill="#ff3b4e"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3 1.2 4 2.5 1-1.3 2-2.5 4-2.5 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>1</div>
+            <div class="act"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/></svg>3</div>
+            <div class="grow"></div>
+            <div class="act save"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></div>
+          </div>
+          <div class="inputbar"><div class="ipt">댓글 달기…</div><div class="send">게시</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 정사각 1:1 -->
+    <div class="col">
+      <div class="label">정사각 (1:1) <small>이미지 중간 · 댓글 공간 더 넓음</small></div>
+      <div class="phone">
+        <div class="hd">
+          <img class="av" src="https://picsum.photos/seed/u/80/80" alt="">
+          <div class="who"><div class="nm">uiv_uiv.</div><div class="tm">3일 전</div></div>
+          <button class="ico-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+          <button class="ico-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="body">
+          <div class="media r-square"><img src="https://picsum.photos/seed/post-sq/800/800" alt=""></div>
+          <div class="caption">밥 먹고 산책 🍙 <span class="tag">#국민대</span></div>
+          <div class="cap-time">3일 전</div>
+          <div class="divider"></div>
+          <div class="cmts">
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/d/64/64" alt=""><div class="ct"><div class="cl1"><b>hyun</b>여기 맛집이지</div><div class="cl2"><span>2일 전</span><span>좋아요 2</span><span>답글</span></div></div></div>
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/e/64/64" alt=""><div class="ct"><div class="cl1"><b>jiwoo_</b>나도 가고싶다</div><div class="cl2"><span>1일 전</span><span>좋아요 0</span><span>답글</span></div></div></div>
+          </div>
+        </div>
+        <div class="ft">
+          <div class="acts">
+            <div class="act"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3 1.2 4 2.5 1-1.3 2-2.5 4-2.5 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>5</div>
+            <div class="act"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/></svg>2</div>
+            <div class="grow"></div>
+            <div class="act save"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></div>
+          </div>
+          <div class="inputbar"><div class="ipt">댓글 달기…</div><div class="send">게시</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 가로 16:9 -->
+    <div class="col">
+      <div class="label">가로 (16:9) <small>이미지 짧음 · 빈 공간 대신 댓글이 채움</small></div>
+      <div class="phone">
+        <div class="hd">
+          <img class="av" src="https://picsum.photos/seed/u/80/80" alt="">
+          <div class="who"><div class="nm">uiv_uiv.</div><div class="tm">3일 전</div></div>
+          <button class="ico-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+          <button class="ico-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="body">
+          <div class="media r-landscape"><img src="https://picsum.photos/seed/post-wide/960/540" alt=""><div class="badge">1 / 1</div></div>
+          <div class="caption">기차 보러 다녀옴 🚆 <span class="tag">#국민대</span> <span class="tag">#나들이</span></div>
+          <div class="cap-time">3일 전</div>
+          <div class="divider"></div>
+          <div class="cmts">
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/f/64/64" alt=""><div class="ct"><div class="cl1"><b>dohyun</b>가로 사진도 꽉 차네 보기 좋다</div><div class="cl2"><span>2일 전</span><span>좋아요 4</span><span>답글</span></div></div></div>
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/g/64/64" alt=""><div class="ct"><div class="cl1"><b>nayoung</b>풍경 예쁘다 🥹</div><div class="cl2"><span>2일 전</span><span>좋아요 1</span><span>답글</span></div></div></div>
+            <div class="cmt reply"><img class="cav" src="https://picsum.photos/seed/h/64/64" alt=""><div class="ct"><div class="cl1"><b>uiv_uiv.</b>ㅎㅎ 고마워</div><div class="cl2"><span>1일 전</span><span>좋아요 0</span><span>답글</span></div></div></div>
+            <div class="cmt"><img class="cav" src="https://picsum.photos/seed/i/64/64" alt=""><div class="ct"><div class="cl1"><b>sumin</b>다음엔 같이 가자</div><div class="cl2"><span>1일 전</span><span>좋아요 0</span><span>답글</span></div></div></div>
+          </div>
+        </div>
+        <div class="ft">
+          <div class="acts">
+            <div class="act"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3 1.2 4 2.5 1-1.3 2-2.5 4-2.5 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>4</div>
+            <div class="act"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/></svg>4</div>
+            <div class="grow"></div>
+            <div class="act save"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></div>
+          </div>
+          <div class="inputbar"><div class="ipt">댓글 달기…</div><div class="send">게시</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <h2>비율이 달라도 빈 공간이 안 생기는 이유</h2>
+    <ul>
+      <li><b>이미지 프레임 = 게시물 비율</b>(세로 4:5 / 정사각 1:1 / 가로 16:9)에 맞춰 높이만 달라짐.</li>
+      <li><b>가운데 영역이 flex로 남는 높이를 다 차지</b> → 가로 사진처럼 이미지가 짧으면, 그만큼 댓글/본문 영역이 더 넓어질 뿐 아래가 비지 않음.</li>
+      <li>댓글이 0개여도 그 자리를 <b>"첫 댓글을 남겨보세요" 빈 상태</b>가 채움.</li>
+      <li>하단 좋아요/입력창은 항상 화면 바닥 고정.</li>
+    </ul>
+    <div class="q"><b>결정해줄 것:</b> 가로/세로 사진을 ① 선택한 비율 프레임에 <b>꽉 채워 크롭(object-cover)</b> 할지, ② <b>원본 전체를 보이게(여백 생길 수 있음)</b> 할지. 지금 미리보기는 ①(크롭)입니다. 인스타식 ②를 원하면 그렇게도 보여드릴게요.</div>
+  </div>
+</body>
+</html>
