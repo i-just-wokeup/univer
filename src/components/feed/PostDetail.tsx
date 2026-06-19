@@ -577,6 +577,10 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
       replyTarget={replyTarget}
     />
   );
+  const commentLinkLabel =
+    post.comments_count > 0
+      ? `댓글 ${post.comments_count}개 모두 보기`
+      : "첫 댓글을 남겨보세요";
 
   return (
     <article className="h-full overflow-y-auto bg-background lg:overflow-hidden">
@@ -600,52 +604,63 @@ export function PostDetail({ onClose, postId }: PostDetailProps) {
         <div
           className={
             isModal
-              ? "flex min-h-0 flex-col border-krew-border bg-white/82 lg:h-full lg:w-[500px] lg:shrink-0 lg:border-l"
-              : "flex min-h-0 flex-col border-krew-border bg-white/82 lg:h-full lg:border-l"
+              ? "flex min-h-0 flex-col bg-transparent lg:h-full lg:w-[500px] lg:shrink-0 lg:border-l lg:border-krew-border lg:bg-white/82"
+              : "flex min-h-0 flex-col bg-transparent lg:h-full lg:border-l lg:border-krew-border lg:bg-white/82"
           }
         >
-          <PostHeader
-            currentUserId={currentUserId}
-            onClose={onClose}
-            onOpenActions={() => {
-              setIsActionSheetOpen(true);
-            }}
-            post={post}
-          />
-
-          <div className="lg:hidden">
+          <div className="mx-3 mb-3 mt-2 overflow-hidden rounded-2xl border border-white/65 bg-white/82 lg:hidden">
+            <PostHeader
+              currentUserId={currentUserId}
+              isCardHeader
+              onClose={onClose}
+              onOpenActions={() => {
+                setIsActionSheetOpen(true);
+              }}
+              post={post}
+            />
             <ImageCarousel post={post} />
+
+            <div className="px-3.5 pb-3 pt-2.5">
+              <PostActions
+                commentsCount={post.comments_count}
+                isLiked={isLiked}
+                likesCount={post.likes_count}
+                onComment={() => {
+                  setIsMobileCommentSheetOpen(true);
+                }}
+                onLike={() => {
+                  void handleLike();
+                }}
+              />
+              <PostBody post={post} isCollapsible />
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileCommentSheetOpen(true);
+                }}
+                className="mt-2 block text-sm font-semibold text-krew-muted transition hover:text-zinc-950"
+              >
+                {commentLinkLabel}
+              </button>
+
+              {error ? (
+                <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                  {error}
+                </p>
+              ) : null}
+            </div>
           </div>
 
-          <div className="border-b border-krew-border bg-white/82 px-4 py-4 lg:hidden">
-            <PostActions
-              commentsCount={post.comments_count}
-              isLiked={isLiked}
-              likesCount={post.likes_count}
-              onComment={() => {
-                setIsMobileCommentSheetOpen(true);
+          <div className="hidden lg:block">
+            <PostHeader
+              currentUserId={currentUserId}
+              onClose={onClose}
+              onOpenActions={() => {
+                setIsActionSheetOpen(true);
               }}
-              onLike={() => {
-                void handleLike();
-              }}
+              post={post}
             />
-            <PostBody post={post} isCollapsible />
-
-            {error ? (
-              <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                {error}
-              </p>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsMobileCommentSheetOpen(true);
-              }}
-              className="mt-4 flex w-full items-center rounded-full bg-krew-accent-soft px-4 py-3 text-left text-sm font-semibold text-krew-muted"
-            >
-              댓글 달기...
-            </button>
           </div>
 
           <div className="hidden min-h-0 flex-1 overflow-y-auto lg:block">

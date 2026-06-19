@@ -31,11 +31,13 @@ export function PostDetailSkeleton() {
 
 export function PostHeader({
   currentUserId,
+  isCardHeader = false,
   onClose,
   onOpenActions,
   post,
 }: {
   currentUserId: string | null;
+  isCardHeader?: boolean;
   onClose?: () => void;
   onOpenActions: () => void;
   post: FeedPostDetail;
@@ -43,7 +45,13 @@ export function PostHeader({
   const isOwnPost = currentUserId === post.user.id;
 
   return (
-    <header className="flex items-center justify-between border-b border-krew-border bg-white/82 px-4 py-3">
+    <header
+      className={
+        isCardHeader
+          ? "flex items-center justify-between bg-white/82 px-3.5 py-3"
+          : "flex items-center justify-between border-b border-krew-border bg-white/82 px-4 py-3"
+      }
+    >
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <UserInfo
