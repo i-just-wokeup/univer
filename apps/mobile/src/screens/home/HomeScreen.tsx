@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -18,6 +19,7 @@ import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
 export function HomeScreen() {
+  const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -133,6 +135,24 @@ export function HomeScreen() {
     );
   }, []);
 
+  const handleUserPress = useCallback(
+    (nickname: string) => {
+      router.push({
+        pathname: "/profile/[nickname]",
+        params: { nickname },
+      });
+    },
+    [router],
+  );
+
+  const handleCommentUserPress = useCallback(
+    (nickname: string) => {
+      setCommentSheetPostId(null);
+      handleUserPress(nickname);
+    },
+    [handleUserPress],
+  );
+
   if (isInitialLoading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -205,6 +225,7 @@ export function HomeScreen() {
             onLike={(postId) => {
               void handleToggleLike(postId);
             }}
+            onUserPress={handleUserPress}
             post={item}
           />
         )}
@@ -221,6 +242,7 @@ export function HomeScreen() {
           setCommentSheetPostId(null);
         }}
         onCommentCountChange={handleCommentCountChange}
+        onUserPress={handleCommentUserPress}
         postId={commentSheetPostId}
       />
     </SafeAreaView>
