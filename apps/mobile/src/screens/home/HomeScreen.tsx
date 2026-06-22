@@ -8,7 +8,6 @@ import {
   View,
 } from "react-native";
 
-import { BottomTabBar } from "../../components/common/BottomTabBar";
 import { StateView } from "../../components/common/StateView";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
@@ -18,11 +17,7 @@ import type { FeedPost } from "../../features/feed/types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
-type HomeScreenProps = {
-  userEmail: string;
-};
-
-export function HomeScreen({ userEmail: _userEmail }: HomeScreenProps) {
+export function HomeScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -164,7 +159,6 @@ export function HomeScreen({ userEmail: _userEmail }: HomeScreenProps) {
           title="피드를 불러오지 못했습니다"
           type="error"
         />
-        <BottomTabBar />
       </SafeAreaView>
     );
   }
@@ -229,7 +223,6 @@ export function HomeScreen({ userEmail: _userEmail }: HomeScreenProps) {
         onCommentCountChange={handleCommentCountChange}
         postId={commentSheetPostId}
       />
-      <BottomTabBar />
     </SafeAreaView>
   );
 }
