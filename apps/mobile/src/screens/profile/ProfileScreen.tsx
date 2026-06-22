@@ -118,7 +118,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           <Text style={styles.headerTitle} numberOfLines={1}>
             {profile?.nickname}
           </Text>
-          <View style={styles.headerButton} />
+          <View style={styles.headerSpacer} />
         </View>
       ) : (
         <View style={styles.tabHeader}>
@@ -205,6 +205,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 16,
     backgroundColor: colors.white,
+  },
+  headerSpacer: {
+    height: 40,
+    width: 40,
   },
   headerTitle: {
     flex: 1,
