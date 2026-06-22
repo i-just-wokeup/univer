@@ -1,44 +1,59 @@
-import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
-  FlatList,
   Pressable,
+  RefreshControl,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
-import { Avatar } from "../../components/common/Avatar";
+import { KrewSurface } from "../../components/common/KrewSurface";
+import { PostThumbnailGrid } from "../../components/common/PostThumbnailGrid";
 import { StateView } from "../../components/common/StateView";
-import { getMyProfile, getMyProfilePosts } from "../../features/profile/api";
+import { ProfileInfoPanel } from "../../components/profile/ProfileInfoPanel";
+import {
+  getProfile,
+  getProfileCounts,
+  getProfilePosts,
+} from "../../features/profile/api";
 import type {
+  ProfileCounts,
+  ProfileDetail,
   ProfileGridPost,
-  ProfileSummary,
 } from "../../features/profile/types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
-export function ProfileScreen() {
-  const { width } = useWindowDimensions();
-  const tileSize = (width - 6) / 3;
+type ProfileScreenProps = {
+  nickname?: string;
+};
 
-  const [errorMessage, setErrorMessage] = useState("");
+export function ProfileScreen({ nickname }: ProfileScreenProps) {
+  const router = useRouter();
+
+  const [profile, setProfile] = useState<ProfileDetail | null>(null);
+  const [counts, setCounts] = useState<ProfileCounts>({ crew: 0, posts: 0 });
+  const [posts, setPosts] = useState<ProfileGridPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [posts, setPosts] = useState<ProfileGridPost[]>([]);
-  const [profile, setProfile] = useState<ProfileSummary | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const load = useCallback(async () => {
     try {
       setErrorMessage("");
-      const [nextProfile, nextPosts] = await Promise.all([
-        getMyProfile(),
-        getMyProfilePosts(),
+      const { profile: loaded } = await getProfile(nickname);
+      setProfile(loaded);
+
+      const [loadedCounts, loadedPosts] = await Promise.all([
+        getProfileCounts(loaded.id),
+        getProfilePosts(loaded.id),
       ]);
-      setProfile(nextProfile);
-      setPosts(nextPosts);
+      setCounts(loadedCounts);
+      setPosts(loadedPosts);
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "프로필을 불러오지 못했습니다.",
@@ -47,7 +62,7 @@ export function ProfileScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [nickname]);
 
   useEffect(() => {
     void load();
@@ -88,71 +103,53 @@ export function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <FlatList
-        ListEmptyComponent={
-          <StateView
-            message="아직 올린 게시물이 없습니다."
-            title="게시물 없음"
+      {nickname ? (
+        <View style={styles.pushedHeader}>
+          <Pressable onPress={() => router.back()} style={styles.headerButton}>
+            <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
+          </Pressable>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {profile?.nickname}
+          </Text>
+          <View style={styles.headerButton} />
+        </View>
+      ) : (
+        <View style={styles.tabHeader}>
+          <Text style={styles.logo}>KREW</Text>
+          <Pressable onPress={handleSignOut} style={styles.signOutButton}>
+            <Text style={styles.signOutText}>로그아웃</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => {
+              setIsRefreshing(true);
+              void load();
+            }}
+            refreshing={isRefreshing}
+            tintColor={colors.accent}
           />
         }
-        ListHeaderComponent={
-          profile ? (
-            <ProfileHeader onSignOut={handleSignOut} profile={profile} />
-          ) : null
-        }
-        contentContainerStyle={styles.listContent}
-        data={posts}
-        keyExtractor={(post) => post.id}
-        numColumns={3}
-        onRefresh={() => {
-          setIsRefreshing(true);
-          void load();
-        }}
-        refreshing={isRefreshing}
-        renderItem={({ item }) => (
-          <View style={[styles.tile, { height: tileSize, width: tileSize }]}>
-            {item.image_url ? (
-              <Image
-                cachePolicy="memory-disk"
-                contentFit="cover"
-                source={{ uri: item.image_url }}
-                style={styles.tileImage}
-              />
+      >
+        {profile ? (
+          <KrewSurface style={styles.panel}>
+            <ProfileInfoPanel counts={counts} profile={profile} />
+            <View style={styles.divider} />
+            {posts.length === 0 ? (
+              <View style={styles.emptyGrid}>
+                <Text style={styles.emptyText}>아직 게시물이 없습니다</Text>
+              </View>
             ) : (
-              <View style={styles.tilePlaceholder} />
+              <PostThumbnailGrid items={posts} />
             )}
-          </View>
-        )}
-      />
-    </SafeAreaView>
-  );
-}
-
-function ProfileHeader({
-  onSignOut,
-  profile,
-}: {
-  onSignOut: () => void;
-  profile: ProfileSummary;
-}) {
-  return (
-    <View style={styles.header}>
-      <View style={styles.topRow}>
-        <Text style={styles.logo}>KREW</Text>
-        <Pressable onPress={onSignOut} style={styles.signOutButton}>
-          <Text style={styles.signOutText}>로그아웃</Text>
-        </Pressable>
-      </View>
-      <View style={styles.identity}>
-        <Avatar imageUrl={profile.avatar_url} label={profile.nickname} size={88} />
-        <Text style={styles.nickname}>{profile.nickname}</Text>
-        {profile.department ? (
-          <Text style={styles.department}>{profile.department}</Text>
+          </KrewSurface>
         ) : null}
-        {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
-        <Text style={styles.postsCount}>게시물 {profile.posts_count}</Text>
-      </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -161,18 +158,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.accentSoft,
   },
-  listContent: {
-    paddingBottom: 96,
-  },
-  header: {
-    paddingBottom: 16,
-  },
-  topRow: {
+  tabHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 24,
     paddingTop: 12,
+    paddingBottom: 6,
   },
   logo: {
     color: colors.accent,
@@ -192,50 +184,48 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
   },
-  identity: {
+  pushedHeader: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 18,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 6,
   },
-  nickname: {
-    marginTop: 14,
+  headerButton: {
+    height: 40,
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    backgroundColor: colors.white,
+  },
+  headerTitle: {
+    flex: 1,
+    marginHorizontal: 12,
     color: colors.text,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "900",
   },
-  department: {
-    marginTop: 6,
+  scrollContent: {
+    paddingBottom: 110,
+  },
+  panel: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    overflow: "hidden",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(124,58,237,0.08)",
+  },
+  emptyGrid: {
+    paddingHorizontal: 24,
+    paddingVertical: 48,
+    alignItems: "center",
+  },
+  emptyText: {
     color: colors.muted,
     fontSize: 14,
     fontWeight: "700",
-  },
-  bio: {
-    marginTop: 10,
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
-    textAlign: "center",
-  },
-  postsCount: {
-    marginTop: 14,
-    color: colors.textFaint,
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  tile: {
-    margin: 1,
-    overflow: "hidden",
-    borderRadius: 8,
-    backgroundColor: colors.card,
-  },
-  tileImage: {
-    height: "100%",
-    width: "100%",
-  },
-  tilePlaceholder: {
-    height: "100%",
-    width: "100%",
-    backgroundColor: "#DDD3FA",
   },
 });
