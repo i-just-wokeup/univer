@@ -3,6 +3,7 @@ import { Home, Plus, Search, SquarePlay, UserCircle } from "lucide-react-native"
 import type { LucideProps } from "lucide-react-native";
 import type { ComponentType } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors } from "../../lib/theme";
 
@@ -21,8 +22,18 @@ const TAB_META: Record<string, TabMeta> = {
 };
 
 export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.bottomNav}>
+    <View
+      style={[
+        styles.bottomNav,
+        {
+          height: 78 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+      ]}
+    >
       {state.routes.map((route, index) => {
         const meta = TAB_META[route.name];
 
