@@ -7,6 +7,13 @@
 ## 2026-06-22
 
 ### 완료
+- **앱 게시물 상세 화면 1차 구현**
+  - 앱용 `getPost(postId)` 추가(`features/feed/api.ts`) — 차단 제외/soft delete 제외, 작성자+미디어(order_index) 조합해 기존 `FeedPost` 형태로 반환(FeedPostCard 그대로 재사용)
+  - `screens/post/PostDetailScreen.tsx` 추가 — `getPost`+`getLikedPostIds([postId])` 로드, 좋아요 토글(홈과 동일 `togglePostLike`+recount), 댓글은 기존 `CommentsSheet` 바텀시트, 작성자 탭 → `/profile/[nickname]`. 헤더(뒤로+게시물), safe-area-context 적용
+  - 라우트 `app/post/[id].tsx` — `(tabs)` 바깥(탭바 안 보임), 세션 가드, id 없으면 `/` 리다이렉트
+  - 탐색 타일·프로필 그리드 `Pressable` → `/post/[id]` 이동 (탐색 masonry 디자인/비율 유지, 프로필 내/상대 동일)
+  - 저장/신고/차단/삭제는 이번 범위 제외(UI no-op). 연속 피드 미확장(단일 상세 우선)
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo Router 전환 + 앱 화면 확장 (탐색/프로필)**
   - 수동 useState 탭 → Expo Router 파일 기반 라우팅 전환(실기기 검증). 세션 게이트 `src/lib/session.tsx`, `app/(tabs)` 5탭.
   - **탐색 화면**: 같은 학교 public 인기순 2열 masonry. 웹 `ExploreGrid` 규칙 그대로 — 세로→4:5, 정사각·가로→1:1 썸네일, 둥근타일+흰 좋아요뱃지+빨강 하트. 무한 스크롤. (실기기 검증)
