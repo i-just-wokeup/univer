@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -58,6 +59,7 @@ export function CommentsSheet({
   postId,
 }: CommentsSheetProps) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -75,14 +77,13 @@ export function CommentsSheet({
     isClosingRef.current = true;
     Animated.timing(sheetTranslateY, {
       duration: 180,
-      toValue: 720,
+      toValue: height,
       useNativeDriver: true,
     }).start(() => {
-      sheetTranslateY.setValue(0);
       isClosingRef.current = false;
       onClose();
     });
-  }, [onClose, sheetTranslateY]);
+  }, [height, onClose, sheetTranslateY]);
 
   const panResponder = useMemo(
     () =>
@@ -212,7 +213,6 @@ export function CommentsSheet({
         style={[
           styles.overlay,
           {
-            paddingBottom: insets.bottom,
             paddingTop: insets.top,
           },
         ]}
@@ -273,7 +273,12 @@ export function CommentsSheet({
             <Text style={styles.errorText}>{errorMessage}</Text>
           ) : null}
 
-          <View style={styles.inputRow}>
+          <View
+            style={[
+              styles.inputRow,
+              { paddingBottom: Math.max(12, insets.bottom + 10) },
+            ]}
+          >
             <TextInput
               onChangeText={setContent}
               placeholder="댓글 달기..."
