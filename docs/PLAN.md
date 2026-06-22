@@ -148,21 +148,21 @@
 - [x] **Expo 피드 이미지 로딩 개선** — `expo-image` 적용, 피드 캐러셀 이미지 캐시/transition/recycling key 설정
 - [x] **Expo 댓글 시트 자동 키보드 표시 제거** — 댓글 시트 열림 시 입력창 자동 focus 제거, 입력창을 직접 누를 때만 키보드 표시
 - [x] **Expo 앱 탭 전환 구조 1차 구현** — 로그인 후 앱 셸에서 홈/검색/작성/활동/프로필 탭 상태 관리, 하단 탭 실제 버튼화, placeholder 화면 연결
+- [x] **Expo Router 전환** — 수동 `useState` 탭을 파일 기반 라우팅으로 교체. `app/_layout`(세션 게이트)·`app/(tabs)`·`app/login` 신설, 세션 로직 `src/lib/session.tsx` 이전, `BottomTabBar`를 라우터 탭 상태 기반으로 변경, 옛 엔트리/수동 탭 파일 제거. 실기기 로그인/탭전환/세션유지 확인 + tsc 통과
 
 ## 진행 중인 작업
 - [x] **탐색(Explore) 탭 1차 (임시 그리드)** — 하단 탭 카테고리→탐색, 같은 학교 인기순 썸네일 그리드, 무한 스크롤. 본 기능(타 학교/승격/주간바이럴)은 다학교 확장 시
 
 ## 다음 작업 (순서대로)
 
-1. Expo 앱 전환 vertical slice
-   - Node 20 LTS 환경에서 `cd apps/mobile && npx expo start` 재실행
-   - Expo Go 앱 재실행 후 lucide 아이콘 렌더링, 홈 피드 조회/이미지 렌더/좋아요 토글 실기기 확인
-   - 필요 시 `react-native-safe-area-context`를 SDK 54 기준으로 설치하고 안전영역 보정
+1. Expo 앱 전환 vertical slice (라우터 전환 완료, 다음은 화면 연결)
+   - WSL2 + 실기기 실행은 `cd apps/mobile && npx expo start --tunnel` (LAN 모드면 번들 다운로드 실패)
+   - 상세 화면을 `(tabs)` 바깥 라우트(`app/post/[id].tsx`, `app/profile/[username].tsx`)로 만들어 진입 시 하단 탭바가 가려지는 인스타식 구조 적용
+   - 검색/활동(탐색)/프로필 placeholder를 실제 조회 화면으로 연결 (`getProfile`/`getProfilePosts`/`getExplorePosts` 재사용)
+   - 화면들의 `react-native` `SafeAreaView`를 `react-native-safe-area-context`로 교체(deprecation 경고 제거)
+   - `react-dom` 19.1.0 정렬(`npx expo install react-dom`) — 선택
    - 스토리 카드 크기/간격을 웹 모바일 홈 기준으로 재조정
-   - 피드 다중 이미지 좌우 스와이프 캐러셀 실기기 확인
-   - 댓글 바텀시트 열림/닫힘, 댓글 목록 조회, 댓글 작성, 입력창 직접 탭 시 키보드 표시 실기기 확인
-   - 하단 탭 홈/검색/작성/활동/프로필 전환 실기기 확인
-   - 검색/탐색/프로필 조회 화면 연결
+   - 댓글 바텀시트 키보드/답글 포커스 실기기 재확인
 2. KREW 기반 디자인 모바일 확인
    - 홈 피드 카드와 모바일 게시물 상세가 좌우 풀폭/풀블리드 이미지/그림자 없는 표면으로 보이는지 확인
    - 프로필 카드/게시물 그리드 통합 레이아웃이 모바일에서 과하게 좁거나 답답하지 않은지 확인
