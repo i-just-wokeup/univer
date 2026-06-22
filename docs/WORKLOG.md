@@ -63,16 +63,23 @@
 - **Expo dev server 실행 이슈 확인**
   - `npx expo start`, `npx expo start --port 8081` 모두 현재 로컬 Node `v24.15.0`에서 `ERR_SOCKET_BAD_PORT(65536)`로 종료됨
   - Expo SDK 54 문서 기준 조합은 Node `20.19.x` 이상이며, 현재 Expo CLI/freeport 조합은 Node 24에서 포트 탐색 문제가 있어 Node 20 LTS로 실행 필요
+- **Expo Router 전환 (수동 탭 → 파일 기반 라우팅)**
+  - 공식 문서(`/router/installation`, `/router/advanced/tabs`) 확인 후 진행
+  - `expo-router` + `react-native-safe-area-context`/`react-native-screens`/`expo-linking` 설치, `package.json` main을 `expo-router/entry`로 변경, `app.json`에 `scheme: univer` + `plugins: [expo-router]` 추가
+  - `app/` 파일 기반 라우트 신설: `app/_layout.tsx`(세션 게이트 + Stack), `app/login.tsx`, `app/(tabs)/_layout.tsx`(세션 없으면 로그인 리다이렉트, 커스텀 탭바), `(tabs)/index·search·write·activity·profile`
+  - `AppRoot`의 세션 로직을 `src/lib/session.tsx`(SessionProvider/useSession)로 이전
+  - `BottomTabBar`를 Expo Router 탭 상태(`state`/`navigation`) 기반으로 변경(기존 KREW 디자인 유지)
+  - 수동 탭 구조 제거: `index.ts`, `App.tsx`, `src/app/AppRoot.tsx`, `src/app/AuthenticatedApp.tsx`, `src/app/tabs.ts` 삭제
+  - 효과: 탭별 네비게이션 스택/안드로이드 백버튼/딥링크 기반 확보, 웹(Next App Router)과 파일 기반 라우팅 멘탈모델 일치
+  - 실기기 확인: 로그인 → 홈 진입, 하단 탭 5개 전환, 세션 유지, 로그아웃, 피드/좋아요/댓글 동작 정상 / `cd apps/mobile && npx tsc --noEmit` 통과
+  - 연결 메모: WSL2 + 실기기는 `npx expo start --tunnel` 필요(LAN 모드면 "Failed to download remote update")
 
 ### 다음 작업
-- [ ] Node 20 LTS 환경에서 `cd apps/mobile && npx expo start` 재실행
-- [ ] Expo Go 실기기에서 로그인 후 홈 피드가 표시되는지 확인
-- [ ] lucide 아이콘 렌더링과 홈/피드 아이콘 크기 실기기 확인
-- [ ] 피드 이미지 렌더링/비율/좌우 캐러셀 스와이프/좋아요 토글 실기기 확인
-- [ ] 댓글 바텀시트 열림/닫힘, 댓글 목록 조회, 댓글 작성, 키보드 대응 실기기 확인
-- [ ] 필요 시 `react-native-safe-area-context`를 SDK 54 기준으로 설치하고 안전영역 보정
-- [ ] 하단 탭 홈/검색/작성/활동/프로필 전환 실기기 확인
-- [ ] 프로필/탐색 화면 연결
+- [ ] 상세 화면을 `(tabs)` 바깥 라우트로(`app/post/[id].tsx`, `app/profile/[username].tsx`) 만들어 진입 시 하단 탭바가 가려지는 구조 적용
+- [ ] 검색/활동(탐색)/프로필 placeholder를 실제 조회 화면으로 연결
+- [ ] 화면들의 `react-native` `SafeAreaView`를 `react-native-safe-area-context`로 교체 (deprecation 경고 제거)
+- [ ] `react-dom` 19.1.0으로 정렬(`npx expo install react-dom`) — 선택
+- [ ] 그동안 쌓인 커밋 push
 
 ---
 
