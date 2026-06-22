@@ -149,6 +149,8 @@
 - [x] **Expo 댓글 시트 자동 키보드 표시 제거** — 댓글 시트 열림 시 입력창 자동 focus 제거, 입력창을 직접 누를 때만 키보드 표시
 - [x] **Expo 앱 탭 전환 구조 1차 구현** — 로그인 후 앱 셸에서 홈/검색/작성/활동/프로필 탭 상태 관리, 하단 탭 실제 버튼화, placeholder 화면 연결
 - [x] **Expo Router 전환** — 수동 `useState` 탭을 파일 기반 라우팅으로 교체. `app/_layout`(세션 게이트)·`app/(tabs)`·`app/login` 신설, 세션 로직 `src/lib/session.tsx` 이전, `BottomTabBar`를 라우터 탭 상태 기반으로 변경, 옛 엔트리/수동 탭 파일 제거. 실기기 로그인/탭전환/세션유지 확인 + tsc 통과
+- [x] **앱 탐색 화면** — 같은 학교 public 인기순 2열 masonry, 웹 ExploreGrid 비율 규칙(세로→4:5/정사각·가로→1:1), 둥근 타일+좋아요 뱃지, 무한 스크롤 (실기기 검증)
+- [x] **앱 내 프로필 화면** — 웹 page 레이아웃(KrewSurface 패널: 아바타+게시물/크루+실명/학과+bio/링크+3열 1:1 그리드), `getProfile(nickname?)` 닉네임 분기 지원, 재사용 컴포넌트(KrewSurface/PostThumbnailGrid/ProfileInfoPanel) 분리
 
 ## 진행 중인 작업
 - [x] **탐색(Explore) 탭 1차 (임시 그리드)** — 하단 탭 카테고리→탐색, 같은 학교 인기순 썸네일 그리드, 무한 스크롤. 본 기능(타 학교/승격/주간바이럴)은 다학교 확장 시
