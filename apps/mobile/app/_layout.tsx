@@ -15,7 +15,11 @@ export default function RootLayout() {
   return (
     <SessionProvider>
       <RootNavigator />
-      <StatusBar style="dark" />
+      <StatusBar
+        backgroundColor={colors.accentSoft}
+        style="dark"
+        translucent={false}
+      />
     </SessionProvider>
   );
 }
