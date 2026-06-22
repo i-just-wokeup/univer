@@ -1,10 +1,12 @@
 import { Image } from "expo-image";
 import { Heart } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   RefreshControl,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -14,11 +16,21 @@ import {
 import { StateView } from "../../components/common/StateView";
 import { getExplorePosts } from "../../features/explore/api";
 import type { ExplorePost } from "../../features/explore/types";
+import type { PostAspectRatio } from "../../features/feed/types";
 import { colors } from "../../lib/theme";
 
 const PAGE_SIZE = 24;
 const H_PADDING = 10;
 const GAP = 8;
+
+// 웹 ExploreGrid 규칙: 세로(portrait)만 4:5 세로 썸네일, 정사각·가로는 1:1 정사각.
+function getImageAspectRatio(aspectRatio: PostAspectRatio) {
+  if (aspectRatio === "portrait") {
+    return 4 / 5;
+  }
+
+  return 1;
+}
 
 export function ExploreScreen() {
   const { width } = useWindowDimensions();
@@ -31,6 +43,28 @@ export function ExploreScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [posts, setPosts] = useState<ExplorePost[]>([]);
   const offsetRef = useRef(0);
+
+  // 높이 낮은 열에 번갈아 쌓아 들쭉날쭉(masonry) 배치를 만든다.
+  const columns = useMemo(() => {
+    const left: ExplorePost[] = [];
+    const right: ExplorePost[] = [];
+    let leftHeight = 0;
+    let rightHeight = 0;
+
+    for (const post of posts) {
+      const tileHeight = tileWidth / getImageAspectRatio(post.aspect_ratio);
+
+      if (leftHeight <= rightHeight) {
+        left.push(post);
+        leftHeight += tileHeight + GAP;
+      } else {
+        right.push(post);
+        rightHeight += tileHeight + GAP;
+      }
+    }
+
+    return { left, right };
+  }, [posts, tileWidth]);
 
   const loadFirstPage = useCallback(async () => {
     try {
@@ -60,7 +94,7 @@ export function ExploreScreen() {
     await loadFirstPage();
   }
 
-  async function handleLoadMore() {
+  const handleLoadMore = useCallback(async () => {
     if (!hasMore || isLoadingMore) {
       return;
     }
@@ -82,6 +116,16 @@ export function ExploreScreen() {
       );
     } finally {
       setIsLoadingMore(false);
+    }
+  }, [hasMore, isLoadingMore]);
+
+  function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceToBottom =
+      contentSize.height - contentOffset.y - layoutMeasurement.height;
+
+    if (distanceToBottom < 600) {
+      void handleLoadMore();
     }
   }
 
@@ -116,36 +160,9 @@ export function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <FlatList
-        ListEmptyComponent={
-          <StateView
-            message="같은 학교 공개 게시물이 아직 없습니다."
-            title="탐색할 게시물이 없습니다"
-          />
-        }
-        ListFooterComponent={
-          isLoadingMore ? (
-            <StateView
-              message="잠시만 기다려주세요."
-              title="더 불러오는 중"
-              type="loading"
-            />
-          ) : null
-        }
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <Text style={styles.title}>탐색</Text>
-          </View>
-        }
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
-        data={posts}
-        keyExtractor={(post) => post.id}
-        numColumns={2}
-        onEndReached={() => {
-          void handleLoadMore();
-        }}
-        onEndReachedThreshold={0.7}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        onScroll={handleScroll}
         refreshControl={
           <RefreshControl
             onRefresh={() => {
@@ -155,22 +172,64 @@ export function ExploreScreen() {
             tintColor={colors.accent}
           />
         }
-        renderItem={({ item }) => (
-          <View style={[styles.tile, { width: tileWidth }]}>
+        scrollEventThrottle={200}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>탐색</Text>
+        </View>
+
+        {posts.length === 0 ? (
+          <StateView
+            message="같은 학교 공개 게시물이 아직 없습니다."
+            title="탐색할 게시물이 없습니다"
+          />
+        ) : (
+          <View style={styles.columns}>
+            <MasonryColumn posts={columns.left} tileWidth={tileWidth} />
+            <MasonryColumn posts={columns.right} tileWidth={tileWidth} />
+          </View>
+        )}
+
+        {isLoadingMore ? (
+          <StateView
+            message="잠시만 기다려주세요."
+            title="더 불러오는 중"
+            type="loading"
+          />
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function MasonryColumn({
+  posts,
+  tileWidth,
+}: {
+  posts: ExplorePost[];
+  tileWidth: number;
+}) {
+  return (
+    <View style={[styles.column, { width: tileWidth }]}>
+      {posts.map((post) => {
+        const tileHeight = tileWidth / getImageAspectRatio(post.aspect_ratio);
+
+        return (
+          <View key={post.id} style={[styles.tile, { height: tileHeight }]}>
             <Image
               cachePolicy="memory-disk"
               contentFit="cover"
-              source={{ uri: item.thumbnail_url }}
+              source={{ uri: post.thumbnail_url }}
               style={styles.tileImage}
             />
             <View style={styles.likeBadge}>
-              <Heart color={colors.white} fill={colors.white} size={12} />
-              <Text style={styles.likeText}>{item.likes_count}</Text>
+              <Heart color={colors.danger} fill={colors.danger} size={13} />
+              <Text style={styles.likeText}>{post.likes_count}</Text>
             </View>
           </View>
-        )}
-      />
-    </SafeAreaView>
+        );
+      })}
+    </View>
   );
 }
 
@@ -179,13 +238,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.accentSoft,
   },
-  listContent: {
+  scrollContent: {
     paddingBottom: 96,
-  },
-  columnWrapper: {
-    paddingHorizontal: H_PADDING,
-    justifyContent: "space-between",
-    marginBottom: GAP,
   },
   header: {
     paddingHorizontal: 24,
@@ -197,11 +251,18 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "900",
   },
+  columns: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: H_PADDING,
+  },
+  column: {
+    gap: GAP,
+  },
   tile: {
-    aspectRatio: 4 / 5,
     overflow: "hidden",
-    borderRadius: 16,
-    backgroundColor: colors.card,
+    borderRadius: 20,
+    backgroundColor: "#F4F4F5",
   },
   tileImage: {
     height: "100%",
@@ -215,13 +276,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
     borderRadius: 999,
-    backgroundColor: "rgba(12,12,18,0.55)",
+    backgroundColor: "rgba(255,255,255,0.86)",
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
   },
   likeText: {
-    color: colors.white,
-    fontSize: 11,
+    color: colors.text,
+    fontSize: 12,
     fontWeight: "800",
   },
 });
