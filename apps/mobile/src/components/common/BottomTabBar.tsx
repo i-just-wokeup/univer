@@ -1,53 +1,68 @@
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Home, Plus, Search, SquarePlay, UserCircle } from "lucide-react-native";
+import type { LucideProps } from "lucide-react-native";
+import type { ComponentType } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
-import type { AppTab } from "../../app/tabs";
 import { colors } from "../../lib/theme";
 
-type BottomTabItem = {
-  icon: typeof Home;
-  key: AppTab;
+type TabMeta = {
+  icon: ComponentType<LucideProps>;
   label: string;
   primary?: boolean;
 };
 
-const items: BottomTabItem[] = [
-  { key: "home", label: "홈", icon: Home },
-  { key: "search", label: "검색", icon: Search },
-  { key: "write", label: "작성", icon: Plus, primary: true },
-  { key: "activity", label: "활동", icon: SquarePlay },
-  { key: "profile", label: "프로필", icon: UserCircle },
-];
-
-type BottomTabBarProps = {
-  activeTab: AppTab;
-  onTabPress: (tab: AppTab) => void;
+const TAB_META: Record<string, TabMeta> = {
+  index: { icon: Home, label: "홈" },
+  search: { icon: Search, label: "검색" },
+  write: { icon: Plus, label: "작성", primary: true },
+  activity: { icon: SquarePlay, label: "활동" },
+  profile: { icon: UserCircle, label: "프로필" },
 };
 
-export function BottomTabBar({ activeTab, onTabPress }: BottomTabBarProps) {
+export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
   return (
     <View style={styles.bottomNav}>
-      {items.map(({ icon: Icon, key, label, primary }) => {
-        const active = activeTab === key;
-        const iconColor = primary
+      {state.routes.map((route, index) => {
+        const meta = TAB_META[route.name];
+
+        if (!meta) {
+          return null;
+        }
+
+        const Icon = meta.icon;
+        const isActive = state.index === index;
+        const iconColor = meta.primary
           ? colors.white
-          : active
+          : isActive
             ? colors.accent
             : colors.textFaint;
 
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isActive && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+
         return (
           <Pressable
-            accessibilityLabel={label}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            key={key}
-            onPress={() => onTabPress(key)}
-            style={primary ? styles.primaryTab : styles.navTab}
+            accessibilityLabel={meta.label}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isActive }}
+            key={route.key}
+            onPress={onPress}
+            style={meta.primary ? styles.primaryTab : styles.navTab}
           >
             <Icon
               color={iconColor}
-              size={primary ? 36 : 31}
-              strokeWidth={primary ? 2.8 : 2.5}
+              size={meta.primary ? 36 : 31}
+              strokeWidth={meta.primary ? 2.8 : 2.5}
             />
           </Pressable>
         );
