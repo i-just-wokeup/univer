@@ -4,6 +4,87 @@
 
 ---
 
+## 2026-06-22
+
+### 완료
+- **Expo 앱 구조 분리 + 홈 피드 1차 연결**
+  - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
+  - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
+  - 앱용 피드 API `apps/mobile/src/features/feed/api.ts` 추가
+    - `getFeed()` — 같은 학교 게시물, 작성자, 미디어 조회
+    - `getLikedPostIds()` — 현재 유저 좋아요 상태 조회
+    - `togglePostLike()` — `post_likes` 토글 + `recount_post_likes` RPC 호출
+  - `HomeScreen`에서 로그인 후 `세션 연결 완료` 화면 대신 실제 홈 피드 화면을 표시하도록 변경
+  - `FlatList` 기반 피드 렌더링, 당겨서 새로고침, 무한 스크롤, 좋아요 토글 1차 연결
+  - RN 전용 `FeedPostCard`, `Avatar`, `StateView` 공용 컴포넌트 추가
+  - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 홈 피드 KREW 모바일 레이아웃 1차 보정**
+  - 앱 홈에서 이메일/로그아웃 노출을 제거하고 KREW 워드마크 + 우측 원형 액션 버튼 구조로 변경
+  - 웹 모바일 홈과 유사한 `내 스토리` 카드, 하단 탭바, 둥근 흰 피드 카드, 다중 이미지 배지, 실제 프로필 이미지 표시를 추가
+  - 좋아요/댓글/북마크 액션 영역과 작성자 메타 라인을 웹 모바일 피드에 가깝게 재배치
+  - `cd apps/mobile && npx tsc --noEmit` 재통과
+- **Expo 앱 아이콘 체계 정리 1차**
+  - `react-native-svg`를 Expo SDK 54 호환 버전(`15.12.1`)으로 설치하고 `lucide-react-native` 추가
+  - 홈 헤더, 하단 탭바, 피드 카드의 텍스트/이모지 아이콘을 lucide 아이콘(`Bell`, `MessageCircle`, `Home`, `Search`, `Plus`, `Heart`, `Bookmark`, `MoreHorizontal` 등)으로 교체
+  - 기기 폰트에 따라 아이콘 모양이 달라지는 문제를 줄이고 웹의 lucide 계열 아이콘 방향과 맞춤
+  - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 피드 다중 이미지 캐러셀 구현**
+  - `FeedMediaCarousel` 컴포넌트 추가
+  - 피드 카드의 단일 첫 이미지 렌더를 horizontal `FlatList` + `pagingEnabled` 캐러셀로 교체
+  - 이미지 스와이프 종료 시 현재 인덱스를 계산해 `1/2`, `2/2` 배지가 실제 위치와 동기화되도록 변경
+  - 게시물 `aspect_ratio`에 따라 정사각형/세로/가로 이미지 프레임 유지
+  - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 댓글 바텀시트 1차 연결**
+  - 앱용 댓글 API `apps/mobile/src/features/comments/api.ts` 추가
+    - `getComments()` — 댓글/대댓글 조회 및 작성자 정보 조합
+    - `createComment()` — 댓글 작성 + `recount_post_comments` RPC 호출
+  - `CommentsSheet` 컴포넌트 추가
+    - RN `Modal` 기반 하단 시트
+    - 댓글 목록/빈 상태/로딩/에러 표시
+    - 댓글 입력 및 전송 버튼 연결
+  - 피드 카드 댓글 아이콘을 누르면 해당 게시물 댓글 시트가 열리도록 `HomeScreen`과 `FeedPostCard` 연결
+  - 댓글 작성 후 피드 카드 댓글 수를 즉시 갱신
+  - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 댓글 바텀시트 반복 로딩 버그 수정**
+  - 원인: 댓글 조회 후 피드 댓글 수 갱신 → `HomeScreen` 재렌더 → `onCommentCountChange` 콜백 참조 변경 → `CommentsSheet` effect 재실행 루프
+  - `HomeScreen`의 `handleCommentCountChange`를 `useCallback`으로 고정해 댓글 시트가 계속 로딩 상태로 돌아가는 문제를 차단
+  - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo dev server 실행 이슈 확인**
+  - `npx expo start`, `npx expo start --port 8081` 모두 현재 로컬 Node `v24.15.0`에서 `ERR_SOCKET_BAD_PORT(65536)`로 종료됨
+  - Expo SDK 54 문서 기준 조합은 Node `20.19.x` 이상이며, 현재 Expo CLI/freeport 조합은 Node 24에서 포트 탐색 문제가 있어 Node 20 LTS로 실행 필요
+
+### 다음 작업
+- [ ] Node 20 LTS 환경에서 `cd apps/mobile && npx expo start` 재실행
+- [ ] Expo Go 실기기에서 로그인 후 홈 피드가 표시되는지 확인
+- [ ] lucide 아이콘 렌더링과 홈/피드 아이콘 크기 실기기 확인
+- [ ] 피드 이미지 렌더링/비율/좌우 캐러셀 스와이프/좋아요 토글 실기기 확인
+- [ ] 댓글 바텀시트 열림/닫힘, 댓글 목록 조회, 댓글 작성, 키보드 대응 실기기 확인
+- [ ] 필요 시 `expo-image`, `react-native-safe-area-context`를 SDK 54 기준으로 설치하고 이미지/안전영역 보정
+- [ ] 프로필/탐색 화면 연결
+
+---
+
+## 2026-06-21
+
+### 완료
+- **Expo 앱 전환 검증 시작**
+  - `docs/APP_MIGRATION.md`를 추가해 앱 1차 범위, 웹/앱 분리 기준, 재사용 후보 API, 실행/확인 방식을 정리
+  - `apps/mobile`에 Expo SDK 54 TypeScript 앱 뼈대 생성
+  - 앱 전용 `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `react-native-url-polyfill` 의존성 추가
+  - Expo용 Supabase client `apps/mobile/src/lib/supabase.ts` 추가
+  - 앱 첫 화면을 KREW 톤의 이메일 로그인/세션 확인 화면으로 구성
+  - Expo 앱 환경변수 예시 `apps/mobile/.env.example` 추가
+  - Android Expo Go 54.0.8 기준 앱 실행 및 이메일 로그인 성공 확인
+  - 루트 `.gitignore`에 `.claude/`, `supabase/.temp/` 명시
+
+### 다음 작업
+- [ ] Expo Go 앱 재실행 후 Supabase 세션 유지 확인
+- [ ] 앱 홈 피드 vertical slice 구현 (`getFeed`, 이미지 렌더, 좋아요)
+- [ ] 댓글 바텀시트와 댓글 조회/작성 연결
+- [ ] 프로필/탐색 조회 화면 연결
+
+---
+
 ## 2026-06-19
 
 ### 완료
