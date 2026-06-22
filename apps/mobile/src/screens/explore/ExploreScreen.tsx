@@ -1,9 +1,11 @@
+import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { Heart } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -33,8 +35,16 @@ function getImageAspectRatio(aspectRatio: PostAspectRatio) {
 }
 
 export function ExploreScreen() {
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const tileWidth = (width - H_PADDING * 2 - GAP) / 2;
+
+  const handlePressPost = useCallback(
+    (postId: string) => {
+      router.push({ pathname: "/post/[id]", params: { id: postId } });
+    },
+    [router],
+  );
 
   const [errorMessage, setErrorMessage] = useState("");
   const [hasMore, setHasMore] = useState(false);
@@ -185,8 +195,16 @@ export function ExploreScreen() {
           />
         ) : (
           <View style={styles.columns}>
-            <MasonryColumn posts={columns.left} tileWidth={tileWidth} />
-            <MasonryColumn posts={columns.right} tileWidth={tileWidth} />
+            <MasonryColumn
+              onPressPost={handlePressPost}
+              posts={columns.left}
+              tileWidth={tileWidth}
+            />
+            <MasonryColumn
+              onPressPost={handlePressPost}
+              posts={columns.right}
+              tileWidth={tileWidth}
+            />
           </View>
         )}
 
@@ -203,9 +221,11 @@ export function ExploreScreen() {
 }
 
 function MasonryColumn({
+  onPressPost,
   posts,
   tileWidth,
 }: {
+  onPressPost: (postId: string) => void;
   posts: ExplorePost[];
   tileWidth: number;
 }) {
@@ -215,7 +235,11 @@ function MasonryColumn({
         const tileHeight = tileWidth / getImageAspectRatio(post.aspect_ratio);
 
         return (
-          <View key={post.id} style={[styles.tile, { height: tileHeight }]}>
+          <Pressable
+            key={post.id}
+            onPress={() => onPressPost(post.id)}
+            style={[styles.tile, { height: tileHeight }]}
+          >
             <Image
               cachePolicy="memory-disk"
               contentFit="cover"
@@ -226,7 +250,7 @@ function MasonryColumn({
               <Heart color={colors.danger} fill={colors.danger} size={13} />
               <Text style={styles.likeText}>{post.likes_count}</Text>
             </View>
-          </View>
+          </Pressable>
         );
       })}
     </View>
