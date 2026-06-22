@@ -1,5 +1,6 @@
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import type { PostAspectRatio } from "../feed/types";
 import type {
   ExplorePost,
   GetExplorePostsParams,
@@ -8,6 +9,13 @@ import type {
 
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
+
+type ExplorePostRow = Pick<
+  PostRow,
+  "comments_count" | "created_at" | "id" | "likes_count" | "user_id"
+> & {
+  aspect_ratio?: PostAspectRatio;
+};
 
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
@@ -62,7 +70,7 @@ export async function getExplorePosts({
   // 이미지 없는 글을 걸러내면 페이지 크기가 줄 수 있어 한 칸 더 받아 hasMore를 판단한다.
   let postsQuery = supabase
     .from("posts")
-    .select("id, user_id, likes_count, comments_count, created_at")
+    .select("id, user_id, aspect_ratio, likes_count, comments_count, created_at")
     .eq("university_id", universityId)
     .eq("visibility", "public")
     .is("deleted_at", null)
@@ -85,10 +93,7 @@ export async function getExplorePosts({
     throw new Error("탐색 게시물을 불러오지 못했습니다.");
   }
 
-  const normalizedPosts = postsData as Pick<
-    PostRow,
-    "comments_count" | "created_at" | "id" | "likes_count" | "user_id"
-  >[];
+  const normalizedPosts = postsData as ExplorePostRow[];
   const hasMore = normalizedPosts.length > limit;
   const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
 
@@ -123,6 +128,7 @@ export async function getExplorePosts({
       }
 
       items.push({
+        aspect_ratio: post.aspect_ratio ?? "portrait",
         comments_count: post.comments_count,
         id: post.id,
         likes_count: post.likes_count,
