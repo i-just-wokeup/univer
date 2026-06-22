@@ -72,6 +72,13 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     await getSupabaseMobileClient().auth.signOut();
   }
 
+  const handlePressPost = useCallback(
+    (postId: string) => {
+      router.push({ pathname: "/post/[id]", params: { id: postId } });
+    },
+    [router],
+  );
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -144,7 +151,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
                 <Text style={styles.emptyText}>아직 게시물이 없습니다</Text>
               </View>
             ) : (
-              <PostThumbnailGrid items={posts} />
+              <PostThumbnailGrid items={posts} onPressItem={handlePressPost} />
             )}
           </KrewSurface>
         ) : null}
