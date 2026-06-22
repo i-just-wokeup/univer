@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
+import { Image } from "expo-image";
 import {
   FlatList,
-  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   StyleSheet,
@@ -63,9 +63,13 @@ export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps
         pagingEnabled
         renderItem={({ item }) => (
           <Image
-            resizeMode="cover"
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            placeholderContentFit="cover"
+            recyclingKey={item.id}
             source={{ uri: item.url }}
             style={[styles.image, { aspectRatio: imageAspectRatio, width }]}
+            transition={160}
           />
         )}
         scrollEnabled={imageMedia.length > 1}
