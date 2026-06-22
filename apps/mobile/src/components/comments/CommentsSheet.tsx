@@ -5,6 +5,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Modal,
+  PanResponder,
   Platform,
   Pressable,
   StyleSheet,
@@ -60,6 +61,20 @@ export function CommentsSheet({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const flatComments = useMemo(() => flattenComments(comments), [comments]);
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gestureState) =>
+          gestureState.dy > 8 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+        onPanResponderRelease: (_event, gestureState) => {
+          if (gestureState.dy > 56 || gestureState.vy > 0.75) {
+            onClose();
+          }
+        },
+      }),
+    [onClose],
+  );
 
   useEffect(() => {
     if (!isOpen || !postId) {
@@ -143,12 +158,11 @@ export function CommentsSheet({
       >
         <Pressable onPress={onClose} style={styles.backdrop} />
         <View style={styles.sheet}>
-          <View style={styles.handle} />
-          <View style={styles.header}>
+          <View style={styles.dragArea} {...panResponder.panHandlers}>
+            <View style={styles.handle} />
+          </View>
+          <View style={styles.header} {...panResponder.panHandlers}>
             <Text style={styles.title}>댓글</Text>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeText}>닫기</Text>
-            </Pressable>
           </View>
 
           {isLoading ? (
@@ -229,7 +243,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.24)",
+    backgroundColor: "#111418",
   },
   sheet: {
     height: "94%",
@@ -238,36 +252,30 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 26,
     backgroundColor: colors.white,
   },
+  dragArea: {
+    alignItems: "center",
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
   handle: {
-    alignSelf: "center",
     height: 5,
     width: 42,
-    marginTop: 10,
     borderRadius: 999,
     backgroundColor: "#D8D4E2",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     borderBottomColor: colors.border,
     borderBottomWidth: 1,
     paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingBottom: 14,
   },
   title: {
     color: colors.text,
     fontSize: 17,
     fontWeight: "900",
-  },
-  closeButton: {
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-  },
-  closeText: {
-    color: colors.muted,
-    fontSize: 14,
-    fontWeight: "800",
   },
   loadingBox: {
     flex: 1,
