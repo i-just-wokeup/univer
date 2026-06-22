@@ -185,6 +185,7 @@ export function CommentsSheet({
                   <Text style={styles.commentContent}>{item.content}</Text>
                 </View>
               )}
+              style={styles.commentListBox}
             />
           )}
 
@@ -231,8 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.24)",
   },
   sheet: {
-    maxHeight: "82%",
-    minHeight: "58%",
+    height: "94%",
     overflow: "hidden",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   loadingBox: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 48,
@@ -283,6 +284,9 @@ const styles = StyleSheet.create({
   commentList: {
     paddingHorizontal: 18,
     paddingVertical: 12,
+  },
+  commentListBox: {
+    flex: 1,
   },
   emptyBox: {
     alignItems: "center",
