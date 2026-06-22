@@ -5,13 +5,13 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateView } from "../../components/common/StateView";
 import { getExplorePosts } from "../../features/explore/api";
