@@ -49,6 +49,11 @@
   - 원인: 댓글 조회 후 피드 댓글 수 갱신 → `HomeScreen` 재렌더 → `onCommentCountChange` 콜백 참조 변경 → `CommentsSheet` effect 재실행 루프
   - `HomeScreen`의 `handleCommentCountChange`를 `useCallback`으로 고정해 댓글 시트가 계속 로딩 상태로 돌아가는 문제를 차단
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 피드 이미지 로딩 개선 + 댓글 시트 자동 포커스 제거**
+  - Expo SDK 54 호환 `expo-image`를 설치하고 앱 피드 캐러셀 이미지를 RN 기본 `Image`에서 Expo Image로 전환
+  - 피드 이미지에 `memory-disk` 캐시, `contentFit="cover"`, 짧은 transition, recycling key를 적용해 재방문/스크롤 시 로딩 체감을 개선
+  - 댓글 바텀시트가 열릴 때 입력창을 자동 focus하지 않도록 변경해, 사용자가 댓글 입력창을 누를 때만 키보드가 뜨도록 보정
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo dev server 실행 이슈 확인**
   - `npx expo start`, `npx expo start --port 8081` 모두 현재 로컬 Node `v24.15.0`에서 `ERR_SOCKET_BAD_PORT(65536)`로 종료됨
   - Expo SDK 54 문서 기준 조합은 Node `20.19.x` 이상이며, 현재 Expo CLI/freeport 조합은 Node 24에서 포트 탐색 문제가 있어 Node 20 LTS로 실행 필요
@@ -59,7 +64,7 @@
 - [ ] lucide 아이콘 렌더링과 홈/피드 아이콘 크기 실기기 확인
 - [ ] 피드 이미지 렌더링/비율/좌우 캐러셀 스와이프/좋아요 토글 실기기 확인
 - [ ] 댓글 바텀시트 열림/닫힘, 댓글 목록 조회, 댓글 작성, 키보드 대응 실기기 확인
-- [ ] 필요 시 `expo-image`, `react-native-safe-area-context`를 SDK 54 기준으로 설치하고 이미지/안전영역 보정
+- [ ] 필요 시 `react-native-safe-area-context`를 SDK 54 기준으로 설치하고 안전영역 보정
 - [ ] 프로필/탐색 화면 연결
 
 ---
