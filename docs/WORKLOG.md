@@ -18,6 +18,11 @@
   - 기존 `ProfileScreen`의 `nickname` prop을 재사용해 상대방 프로필 보기 전용 진입 경로를 연결
   - 탭 그룹 바깥 라우트라 프로필 진입 시 하단 탭바가 가려지는 구조
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 피드/댓글 작성자 프로필 이동 연결**
+  - 공용 `UserInline` 컴포넌트를 추가해 앱 작성자 표시 UI를 재사용 가능하게 분리
+  - 홈 피드 카드 작성자 영역을 누르면 `/profile/[nickname]`로 이동하도록 연결
+  - 댓글 바텀시트의 댓글/대댓글 작성자 영역을 누르면 시트를 닫고 해당 프로필로 이동하도록 연결
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
@@ -88,7 +93,7 @@
 ### 다음 작업
 - [ ] 상세 화면을 `(tabs)` 바깥 라우트로(`app/post/[id].tsx`, `app/profile/[username].tsx`) 만들어 진입 시 하단 탭바가 가려지는 구조 적용
 - [x] 상대방 프로필 라우트 `app/profile/[nickname].tsx` 1차 연결
-- [ ] 피드 카드 작성자·댓글 작성자 탭 시 `/profile/[nickname]` 이동 연결
+- [x] 피드 카드 작성자·댓글 작성자 탭 시 `/profile/[nickname]` 이동 연결
 - [ ] 검색/활동(탐색)/프로필 placeholder를 실제 조회 화면으로 연결
 - [ ] 화면들의 `react-native` `SafeAreaView`를 `react-native-safe-area-context`로 교체 (deprecation 경고 제거)
 - [ ] `react-dom` 19.1.0으로 정렬(`npx expo install react-dom`) — 선택
