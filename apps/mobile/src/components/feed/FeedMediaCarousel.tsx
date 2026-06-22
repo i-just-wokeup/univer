@@ -1,0 +1,106 @@
+import { useMemo, useState } from "react";
+import {
+  FlatList,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+
+import { colors } from "../../lib/theme";
+import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
+
+type FeedMediaCarouselProps = {
+  aspectRatio: PostAspectRatio;
+  media: PostMedia[];
+};
+
+function getImageAspectRatio(aspectRatio: PostAspectRatio) {
+  if (aspectRatio === "square") {
+    return 1;
+  }
+
+  if (aspectRatio === "landscape") {
+    return 16 / 9;
+  }
+
+  return 4 / 5;
+}
+
+export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps) {
+  const { width } = useWindowDimensions();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const imageMedia = useMemo(
+    () => media.filter((mediaItem) => mediaItem.type === "image"),
+    [media],
+  );
+
+  if (imageMedia.length === 0) {
+    return null;
+  }
+
+  const imageAspectRatio = getImageAspectRatio(aspectRatio);
+
+  function handleMomentumScrollEnd(
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) {
+    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+    setCurrentIndex(
+      Math.min(Math.max(nextIndex, 0), Math.max(imageMedia.length - 1, 0)),
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={imageMedia}
+        horizontal
+        keyExtractor={(mediaItem) => mediaItem.id}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        pagingEnabled
+        renderItem={({ item }) => (
+          <Image
+            resizeMode="cover"
+            source={{ uri: item.url }}
+            style={[styles.image, { aspectRatio: imageAspectRatio, width }]}
+          />
+        )}
+        scrollEnabled={imageMedia.length > 1}
+        showsHorizontalScrollIndicator={false}
+      />
+      {imageMedia.length > 1 ? (
+        <View style={styles.mediaBadge}>
+          <Text style={styles.mediaBadgeText}>
+            {currentIndex + 1}/{imageMedia.length}
+          </Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#E8E3F3",
+  },
+  image: {
+    backgroundColor: "#E8E3F3",
+  },
+  mediaBadge: {
+    position: "absolute",
+    right: 18,
+    top: 18,
+    borderRadius: 999,
+    backgroundColor: "rgba(21,22,27,0.72)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  mediaBadgeText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "900",
+  },
+});
