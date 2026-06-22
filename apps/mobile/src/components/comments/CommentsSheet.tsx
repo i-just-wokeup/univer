@@ -14,6 +14,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { UserInline } from "../common/UserInline";
 import { createComment, getComments } from "../../features/comments/api";
@@ -56,6 +57,7 @@ export function CommentsSheet({
   onUserPress,
   postId,
 }: CommentsSheetProps) {
+  const insets = useSafeAreaInsets();
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -78,9 +80,18 @@ export function CommentsSheet({
   const panResponder = useMemo(
     () =>
       PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onStartShouldSetPanResponderCapture: () => true,
         onMoveShouldSetPanResponder: (_event, gestureState) =>
           gestureState.dy > 8 &&
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+        onMoveShouldSetPanResponderCapture: (_event, gestureState) =>
+          gestureState.dy > 2 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+        onPanResponderGrant: () => {
+          sheetTranslateY.stopAnimation();
+          sheetTranslateY.setValue(0);
+        },
         onPanResponderMove: (_event, gestureState) => {
           sheetTranslateY.setValue(Math.max(0, gestureState.dy));
         },
@@ -97,6 +108,16 @@ export function CommentsSheet({
             useNativeDriver: true,
           }).start();
         },
+        onPanResponderTerminate: () => {
+          Animated.spring(sheetTranslateY, {
+            damping: 22,
+            mass: 0.7,
+            stiffness: 240,
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        },
+        onPanResponderTerminationRequest: () => false,
       }),
     [closeWithAnimation, sheetTranslateY],
   );
@@ -180,7 +201,13 @@ export function CommentsSheet({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.overlay}
+        style={[
+          styles.overlay,
+          {
+            paddingBottom: insets.bottom,
+            paddingTop: insets.top,
+          },
+        ]}
       >
         <Pressable onPress={closeWithAnimation} style={styles.backdrop} />
         <Animated.View
