@@ -48,6 +48,11 @@
   - `Modal` 애니메이션은 끄고 내부 시트 애니메이션만 사용하도록 변경
   - 닫힘 중복 호출 방지 ref를 추가해 backdrop/드래그 닫기가 겹쳐 호출되지 않도록 보정
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 댓글 시트 하단 여백/닫힘 튐 보정**
+  - 모달 overlay의 bottom inset padding을 제거해 댓글 시트가 화면 하단에 다시 붙도록 수정
+  - 입력 영역에만 bottom safe-area padding을 적용해 Android 시스템 내비게이션바와 입력창이 겹치지 않도록 보정
+  - 닫힘 애니메이션 종료 시 `translateY`를 즉시 0으로 되돌리던 코드를 제거해 시트가 중간에 다시 뜨는 프레임을 방지
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
