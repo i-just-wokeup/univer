@@ -1,4 +1,7 @@
+import type { PostAspectRatio } from "../feed/types";
+
 export type ExplorePost = {
+  aspect_ratio: PostAspectRatio;
   comments_count: number;
   id: string;
   likes_count: number;
