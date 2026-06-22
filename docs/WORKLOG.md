@@ -23,6 +23,10 @@
   - 홈 피드 카드 작성자 영역을 누르면 `/profile/[nickname]`로 이동하도록 연결
   - 댓글 바텀시트의 댓글/대댓글 작성자 영역을 누르면 시트를 닫고 해당 프로필로 이동하도록 연결
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 댓글 바텀시트 높이 보정**
+  - 댓글 시트 높이를 화면 대부분을 덮는 `94%` 고정 높이로 변경해 인스타그램식 풀 높이 바텀시트에 가깝게 조정
+  - 댓글 리스트/로딩 영역에 `flex: 1`을 적용해 입력창을 하단에 두고 댓글 목록이 남은 공간을 채우도록 보정
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
