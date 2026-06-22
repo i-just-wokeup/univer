@@ -1,5 +1,5 @@
 import { Send } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -57,7 +57,6 @@ export function CommentsSheet({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const inputRef = useRef<TextInput | null>(null);
   const flatComments = useMemo(() => flattenComments(comments), [comments]);
 
   useEffect(() => {
@@ -104,12 +103,6 @@ export function CommentsSheet({
       isMounted = false;
     };
   }, [isOpen, onCommentCountChange, postId]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 250);
-    }
-  }, [isOpen]);
 
   async function handleSubmit() {
     if (!postId || isSubmitting || content.trim().length === 0) {
@@ -207,7 +200,6 @@ export function CommentsSheet({
 
           <View style={styles.inputRow}>
             <TextInput
-              ref={inputRef}
               onChangeText={setContent}
               placeholder="댓글 달기..."
               placeholderTextColor={colors.textFaint}
