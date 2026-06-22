@@ -12,6 +12,12 @@
   - **탐색 화면**: 같은 학교 public 인기순 2열 masonry. 웹 `ExploreGrid` 규칙 그대로 — 세로→4:5, 정사각·가로→1:1 썸네일, 둥근타일+흰 좋아요뱃지+빨강 하트. 무한 스크롤. (실기기 검증)
   - **프로필 화면(내 프로필)**: 웹 page 레이아웃으로 재구성 — KrewSurface 흰 패널 안에 아바타+게시물/크루 통계, 닉네임/실명/학과, bio/링크, **3열 1:1 그리드**. 앱용 `getProfile(nickname?)/getProfilePosts/getProfileCounts`(닉네임 분기 지원). 재사용 컴포넌트 `KrewSurface`, `PostThumbnailGrid`(3열 flex 행), `ProfileInfoPanel`로 분리.
   - 웹 코드/문서 전수 파악(features 13개 api + 주요 렌더링 컴포넌트 + ARCHITECTURE/DECISIONS/NOTES). 비율·탐색·하단탭 규칙 등 메모리 기록.
+- **Expo 상대방 프로필 라우트 1차 연결**
+  - `(tabs)` 바깥 파일 기반 라우트 `apps/mobile/app/profile/[nickname].tsx` 추가
+  - 세션이 없으면 `/login`, 닉네임 파라미터가 없으면 `/profile`로 리다이렉트
+  - 기존 `ProfileScreen`의 `nickname` prop을 재사용해 상대방 프로필 보기 전용 진입 경로를 연결
+  - 탭 그룹 바깥 라우트라 프로필 진입 시 하단 탭바가 가려지는 구조
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
@@ -81,6 +87,8 @@
 
 ### 다음 작업
 - [ ] 상세 화면을 `(tabs)` 바깥 라우트로(`app/post/[id].tsx`, `app/profile/[username].tsx`) 만들어 진입 시 하단 탭바가 가려지는 구조 적용
+- [x] 상대방 프로필 라우트 `app/profile/[nickname].tsx` 1차 연결
+- [ ] 피드 카드 작성자·댓글 작성자 탭 시 `/profile/[nickname]` 이동 연결
 - [ ] 검색/활동(탐색)/프로필 placeholder를 실제 조회 화면으로 연결
 - [ ] 화면들의 `react-native` `SafeAreaView`를 `react-native-safe-area-context`로 교체 (deprecation 경고 제거)
 - [ ] `react-dom` 19.1.0으로 정렬(`npx expo install react-dom`) — 선택
