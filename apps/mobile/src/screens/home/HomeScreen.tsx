@@ -3,11 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   RefreshControl,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateView } from "../../components/common/StateView";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
