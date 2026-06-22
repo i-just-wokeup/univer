@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import type { LucideProps } from "lucide-react-native";
 
 import { colors } from "../../lib/theme";
