@@ -1,7 +1,8 @@
 import { Send } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -61,19 +62,43 @@ export function CommentsSheet({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const flatComments = useMemo(() => flattenComments(comments), [comments]);
+  const sheetTranslateY = useRef(new Animated.Value(0)).current;
+
+  const closeWithAnimation = useCallback(() => {
+    Animated.timing(sheetTranslateY, {
+      duration: 180,
+      toValue: 720,
+      useNativeDriver: true,
+    }).start(() => {
+      sheetTranslateY.setValue(0);
+      onClose();
+    });
+  }, [onClose, sheetTranslateY]);
+
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_event, gestureState) =>
           gestureState.dy > 8 &&
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+        onPanResponderMove: (_event, gestureState) => {
+          sheetTranslateY.setValue(Math.max(0, gestureState.dy));
+        },
         onPanResponderRelease: (_event, gestureState) => {
           if (gestureState.dy > 56 || gestureState.vy > 0.75) {
-            onClose();
+            closeWithAnimation();
+            return;
           }
+          Animated.spring(sheetTranslateY, {
+            damping: 22,
+            mass: 0.7,
+            stiffness: 240,
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
         },
       }),
-    [onClose],
+    [closeWithAnimation, sheetTranslateY],
   );
 
   useEffect(() => {
@@ -81,6 +106,7 @@ export function CommentsSheet({
       return;
     }
 
+    sheetTranslateY.setValue(0);
     let isMounted = true;
 
     async function loadComments() {
@@ -156,8 +182,13 @@ export function CommentsSheet({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.overlay}
       >
-        <Pressable onPress={onClose} style={styles.backdrop} />
-        <View style={styles.sheet}>
+        <Pressable onPress={closeWithAnimation} style={styles.backdrop} />
+        <Animated.View
+          style={[
+            styles.sheet,
+            { transform: [{ translateY: sheetTranslateY }] },
+          ]}
+        >
           <View style={styles.dragArea} {...panResponder.panHandlers}>
             <View style={styles.handle} />
           </View>
@@ -230,7 +261,7 @@ export function CommentsSheet({
               <Send color={colors.white} size={18} strokeWidth={2.7} />
             </Pressable>
           </View>
-        </View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -243,7 +274,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#111418",
+    backgroundColor: "rgba(0,0,0,0.24)",
   },
   sheet: {
     height: "94%",
