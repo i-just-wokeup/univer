@@ -1,4 +1,4 @@
-import type { Database } from "../../../../../src/types/database.types";
+import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type { FeedPost, FeedUser, GetFeedResult, PostAspectRatio, PostMedia } from "./types";
 
