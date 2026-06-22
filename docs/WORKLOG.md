@@ -37,6 +37,12 @@
   - 드래그 닫기를 `Animated` 기반으로 바꿔 시트가 손가락을 따라 내려가고, 취소 시 스프링으로 원위치 복귀하도록 보정
   - Android 상태바 겹침 완화를 위해 루트 `StatusBar`에 `backgroundColor`와 `translucent={false}`를 명시
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo safe area 1차 보정**
+  - 앱 루트에 `SafeAreaProvider`를 추가하고 주요 화면의 `SafeAreaView`를 `react-native-safe-area-context`로 교체
+  - 하단 탭바에 bottom inset을 반영해 Android 시스템 내비게이션바 영역과 겹치지 않도록 보정
+  - 댓글 모달에 top/bottom inset을 적용해 상태바/시스템 내비게이션바 영역 침범을 줄임
+  - 댓글 시트 드래그 responder를 터치 시작부터 잡도록 바꿔 첫 드래그부터 시트가 손가락을 따라 움직이도록 보정
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
