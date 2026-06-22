@@ -43,6 +43,11 @@
   - 댓글 모달에 top/bottom inset을 적용해 상태바/시스템 내비게이션바 영역 침범을 줄임
   - 댓글 시트 드래그 responder를 터치 시작부터 잡도록 바꿔 첫 드래그부터 시트가 손가락을 따라 움직이도록 보정
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 댓글 시트 닫힘 중복 모션 제거**
+  - RN `Modal`의 `animationType="slide"`와 내부 `Animated.timing`이 동시에 내려가던 문제를 제거
+  - `Modal` 애니메이션은 끄고 내부 시트 애니메이션만 사용하도록 변경
+  - 닫힘 중복 호출 방지 ref를 추가해 backdrop/드래그 닫기가 겹쳐 호출되지 않도록 보정
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
