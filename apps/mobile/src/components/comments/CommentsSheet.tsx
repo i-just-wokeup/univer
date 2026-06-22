@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-import { Avatar } from "../common/Avatar";
+import { UserInline } from "../common/UserInline";
 import { createComment, getComments } from "../../features/comments/api";
 import type { Comment } from "../../features/comments/types";
 import { colors } from "../../lib/theme";
@@ -22,6 +22,7 @@ type CommentsSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   onCommentCountChange: (postId: string, nextCount: number) => void;
+  onUserPress: (nickname: string) => void;
   postId: string | null;
 };
 
@@ -50,6 +51,7 @@ export function CommentsSheet({
   isOpen,
   onClose,
   onCommentCountChange,
+  onUserPress,
   postId,
 }: CommentsSheetProps) {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -168,27 +170,19 @@ export function CommentsSheet({
               renderItem={({ item }) => (
                 <View
                   style={[
-                    styles.commentRow,
+                    styles.commentBlock,
                     item.parent_id ? styles.replyRow : null,
                   ]}
                 >
-                  <Avatar
+                  <UserInline
+                    avatarSize={34}
                     imageUrl={item.user.avatar_url}
-                    label={item.user.nickname}
-                    size={34}
+                    meta={getRelativeTimeLabel(item.created_at)}
+                    nickname={item.user.nickname}
+                    nicknameSize={13}
+                    onPress={onUserPress}
                   />
-                  <View style={styles.commentBody}>
-                    <Text style={styles.commentMeta}>
-                      <Text style={styles.commentNickname}>
-                        {item.user.nickname}
-                      </Text>
-                      <Text style={styles.commentTime}>
-                        {" · "}
-                        {getRelativeTimeLabel(item.created_at)}
-                      </Text>
-                    </Text>
-                    <Text style={styles.commentContent}>{item.content}</Text>
-                  </View>
+                  <Text style={styles.commentContent}>{item.content}</Text>
                 </View>
               )}
             />
@@ -305,32 +299,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
   },
-  commentRow: {
-    flexDirection: "row",
-    gap: 10,
+  commentBlock: {
     paddingVertical: 9,
   },
   replyRow: {
     marginLeft: 34,
   },
-  commentBody: {
-    flex: 1,
-  },
-  commentMeta: {
-    color: colors.textFaint,
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  commentNickname: {
-    color: colors.text,
-    fontWeight: "900",
-  },
-  commentTime: {
-    color: colors.textFaint,
-    fontWeight: "700",
-  },
   commentContent: {
-    marginTop: 3,
+    marginTop: 4,
+    marginLeft: 46,
     color: colors.text,
     fontSize: 14,
     fontWeight: "600",
