@@ -2,25 +2,31 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
   ActivityIndicator,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  initialWindowMetrics,
+} from "react-native-safe-area-context";
 
 import { SessionProvider, useSession } from "../src/lib/session";
 import { colors } from "../src/lib/theme";
 
 export default function RootLayout() {
   return (
-    <SessionProvider>
-      <RootNavigator />
-      <StatusBar
-        backgroundColor={colors.accentSoft}
-        style="dark"
-        translucent={false}
-      />
-    </SessionProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <SessionProvider>
+        <RootNavigator />
+        <StatusBar
+          backgroundColor={colors.accentSoft}
+          style="dark"
+          translucent={false}
+        />
+      </SessionProvider>
+    </SafeAreaProvider>
   );
 }
 
