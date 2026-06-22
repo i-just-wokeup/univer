@@ -1,8 +1,8 @@
 import { Bookmark, Heart, MessageCircle, MoreHorizontal } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Avatar } from "../common/Avatar";
 import { FeedMediaCarousel } from "./FeedMediaCarousel";
+import { UserInline } from "../common/UserInline";
 import { colors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -10,6 +10,7 @@ type FeedPostCardProps = {
   isLiked: boolean;
   onComment: (postId: string) => void;
   onLike: (postId: string) => void;
+  onUserPress: (nickname: string) => void;
   post: FeedPost;
 };
 
@@ -42,19 +43,21 @@ export function FeedPostCard({
   isLiked,
   onComment,
   onLike,
+  onUserPress,
   post,
 }: FeedPostCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Avatar imageUrl={post.user.avatar_url} label={post.user.nickname} size={42} />
-        <View style={styles.userText}>
-          <Text numberOfLines={1} style={styles.metaLine}>
-            <Text style={styles.nickname}>{post.user.nickname}</Text>
-            <Text style={styles.metaText}> · {post.user.department}</Text>
-            <Text style={styles.metaText}> · {getRelativeTimeLabel(post.created_at)}</Text>
-          </Text>
-        </View>
+        <UserInline
+          avatarSize={42}
+          imageUrl={post.user.avatar_url}
+          meta={`${post.user.department} · ${getRelativeTimeLabel(post.created_at)}`}
+          nickname={post.user.nickname}
+          nicknameSize={16}
+          onPress={onUserPress}
+          style={styles.userInline}
+        />
         <MoreHorizontal color={colors.textFaint} size={26} strokeWidth={2.7} />
       </View>
 
@@ -106,23 +109,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
   },
-  userText: {
+  userInline: {
     flex: 1,
-  },
-  metaLine: {
-    color: colors.textFaint,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  nickname: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  metaText: {
-    color: colors.textFaint,
-    fontSize: 14,
-    fontWeight: "700",
   },
   actionRow: {
     flexDirection: "row",
