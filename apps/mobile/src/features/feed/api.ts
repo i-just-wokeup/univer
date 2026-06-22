@@ -264,6 +264,21 @@ export async function togglePostLike(postId: string) {
   );
 
   if (recountError || typeof likesCount !== "number") {
+    if (existingLike) {
+      await supabase.from("post_likes").insert({
+        target_id: postId,
+        target_type: "post",
+        user_id: user.id,
+      });
+    } else {
+      await supabase
+        .from("post_likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("target_type", "post")
+        .eq("target_id", postId);
+    }
+
     throw new Error("좋아요 수 업데이트에 실패했습니다.");
   }
 
