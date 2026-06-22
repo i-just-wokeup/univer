@@ -64,15 +64,22 @@ export function CommentsSheet({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const flatComments = useMemo(() => flattenComments(comments), [comments]);
+  const isClosingRef = useRef(false);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
 
   const closeWithAnimation = useCallback(() => {
+    if (isClosingRef.current) {
+      return;
+    }
+
+    isClosingRef.current = true;
     Animated.timing(sheetTranslateY, {
       duration: 180,
       toValue: 720,
       useNativeDriver: true,
     }).start(() => {
       sheetTranslateY.setValue(0);
+      isClosingRef.current = false;
       onClose();
     });
   }, [onClose, sheetTranslateY]);
@@ -128,6 +135,7 @@ export function CommentsSheet({
     }
 
     sheetTranslateY.setValue(0);
+    isClosingRef.current = false;
     let isMounted = true;
 
     async function loadComments() {
@@ -194,7 +202,7 @@ export function CommentsSheet({
 
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
       transparent
       visible={isOpen && Boolean(postId)}
