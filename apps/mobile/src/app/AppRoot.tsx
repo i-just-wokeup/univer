@@ -2,8 +2,8 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
+import { AuthenticatedApp } from "./AuthenticatedApp";
 import { LoginScreen } from "../screens/auth/LoginScreen";
-import { HomeScreen } from "../screens/home/HomeScreen";
 import {
   getSupabaseMobileClient,
   isSupabaseConfigured,
@@ -74,11 +74,7 @@ export function AppRoot() {
 
   return (
     <>
-      {userEmail ? (
-        <HomeScreen userEmail={userEmail} />
-      ) : (
-        <LoginScreen />
-      )}
+      {userEmail ? <AuthenticatedApp /> : <LoginScreen />}
       <StatusBar style="dark" />
     </>
   );
