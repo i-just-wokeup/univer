@@ -1,20 +1,34 @@
 import { Home, Plus, Search, SquarePlay, UserCircle } from "lucide-react-native";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
+import type { AppTab } from "../../app/tabs";
 import { colors } from "../../lib/theme";
 
-export function BottomTabBar() {
-  const items = [
-    { key: "home", active: true, icon: Home },
-    { key: "search", active: false, icon: Search },
-    { key: "write", active: true, icon: Plus, primary: true },
-    { key: "explore", active: false, icon: SquarePlay },
-    { key: "profile", active: false, icon: UserCircle },
-  ];
+type BottomTabItem = {
+  icon: typeof Home;
+  key: AppTab;
+  label: string;
+  primary?: boolean;
+};
 
+const items: BottomTabItem[] = [
+  { key: "home", label: "홈", icon: Home },
+  { key: "search", label: "검색", icon: Search },
+  { key: "write", label: "작성", icon: Plus, primary: true },
+  { key: "activity", label: "활동", icon: SquarePlay },
+  { key: "profile", label: "프로필", icon: UserCircle },
+];
+
+type BottomTabBarProps = {
+  activeTab: AppTab;
+  onTabPress: (tab: AppTab) => void;
+};
+
+export function BottomTabBar({ activeTab, onTabPress }: BottomTabBarProps) {
   return (
     <View style={styles.bottomNav}>
-      {items.map(({ active, icon: Icon, key, primary }) => {
+      {items.map(({ icon: Icon, key, label, primary }) => {
+        const active = activeTab === key;
         const iconColor = primary
           ? colors.white
           : active
@@ -22,13 +36,20 @@ export function BottomTabBar() {
             : colors.textFaint;
 
         return (
-          <View key={key} style={primary ? styles.primaryTab : styles.navTab}>
+          <Pressable
+            accessibilityLabel={label}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            key={key}
+            onPress={() => onTabPress(key)}
+            style={primary ? styles.primaryTab : styles.navTab}
+          >
             <Icon
               color={iconColor}
               size={primary ? 36 : 31}
               strokeWidth={primary ? 2.8 : 2.5}
             />
-          </View>
+          </Pressable>
         );
       })}
     </View>
