@@ -32,6 +32,11 @@
   - 모달 상단 배경을 어두운 단색으로 바꿔 Android 상태바 영역에 뒤 피드 이미지가 비쳐 보이는 느낌을 줄임
   - 댓글 제목을 중앙 정렬해 인스타그램식 바텀시트 헤더에 가깝게 보정
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 댓글 바텀시트 드래그/상태바 재보정**
+  - 단색 모달 배경을 다시 반투명 배경으로 복구해 뒤 피드 맥락이 보이도록 수정
+  - 드래그 닫기를 `Animated` 기반으로 바꿔 시트가 손가락을 따라 내려가고, 취소 시 스프링으로 원위치 복귀하도록 보정
+  - Android 상태바 겹침 완화를 위해 루트 `StatusBar`에 `backgroundColor`와 `translucent={false}`를 명시
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
