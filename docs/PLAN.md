@@ -156,6 +156,7 @@
 - [x] **앱 댓글 바텀시트 높이 보정** — 댓글 시트를 화면 대부분을 덮는 94% 높이로 조정하고 리스트/로딩 영역을 남은 공간에 맞춤
 - [x] **앱 댓글 바텀시트 닫기 UX 보정** — `닫기` 버튼 제거, 핸들/헤더 드래그 닫기 구조 적용
 - [x] **앱 댓글 바텀시트 드래그/상태바 재보정** — 반투명 배경 복구, Animated 드래그 닫기, Android StatusBar 배경/투명 설정 명시
+- [x] **앱 safe area 1차 보정** — 루트 SafeAreaProvider, 주요 화면 SafeAreaView 교체, 하단 탭/댓글 모달 inset 반영
 
 ## 진행 중인 작업
 - [x] **탐색(Explore) 탭 1차 (임시 그리드)** — 하단 탭 카테고리→탐색, 같은 학교 인기순 썸네일 그리드, 무한 스크롤. 본 기능(타 학교/승격/주간바이럴)은 다학교 확장 시
@@ -167,7 +168,7 @@
    - 상세 화면을 `(tabs)` 바깥 라우트(`app/post/[id].tsx`)로 만들어 진입 시 하단 탭바가 가려지는 인스타식 구조 적용
    - 상대 프로필 보기 전용 라우트 실기기 확인(피드/댓글 작성자 탭 → 하단 탭바 없이 프로필 표시)
    - 검색/활동(탐색)/프로필 placeholder를 실제 조회 화면으로 연결 (`getProfile`/`getProfilePosts`/`getExplorePosts` 재사용)
-   - 화면들의 `react-native` `SafeAreaView`를 `react-native-safe-area-context`로 교체(deprecation 경고 제거)
+   - 남은 세부 화면의 safe area/키보드/상태바 겹침 실기기 확인
    - `react-dom` 19.1.0 정렬(`npx expo install react-dom`) — 선택
    - 스토리 카드 크기/간격을 웹 모바일 홈 기준으로 재조정
    - 댓글 바텀시트 키보드/답글 포커스 실기기 재확인
