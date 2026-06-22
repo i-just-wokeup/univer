@@ -1,16 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Bell,
-  Home,
-  MessageCircle,
-  Plus,
-  Search,
-  SquarePlay,
-  UserCircle,
-} from "lucide-react-native";
-import {
   FlatList,
-  Pressable,
   RefreshControl,
   SafeAreaView,
   StyleSheet,
@@ -18,9 +8,11 @@ import {
   View,
 } from "react-native";
 
+import { BottomTabBar } from "../../components/common/BottomTabBar";
 import { StateView } from "../../components/common/StateView";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
+import { HomeHeader } from "../../components/home/HomeHeader";
 import { getFeed, getLikedPostIds, togglePostLike } from "../../features/feed/api";
 import type { FeedPost } from "../../features/feed/types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -242,64 +234,6 @@ export function HomeScreen({ userEmail: _userEmail }: HomeScreenProps) {
   );
 }
 
-function HomeHeader({ onSignOut }: { onSignOut: () => void }) {
-  return (
-    <View style={styles.headerArea}>
-      <View style={styles.topBar}>
-        <Text style={styles.logo}>KREW</Text>
-        <View style={styles.headerActions}>
-          <View style={styles.circleButton}>
-            <Bell color={colors.text} size={27} strokeWidth={2.6} />
-          </View>
-          <Pressable onLongPress={onSignOut} style={styles.circleButton}>
-            <MessageCircle color={colors.text} size={28} strokeWidth={2.6} />
-          </Pressable>
-        </View>
-      </View>
-      <View style={styles.storyRow}>
-        <View style={styles.storyCard}>
-          <View style={styles.storyPlus}>
-            <Plus color={colors.white} size={30} strokeWidth={2.6} />
-          </View>
-          <Text style={styles.storyLabel}>내 스토리</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function BottomTabBar() {
-  const items = [
-    { key: "home", active: true, icon: Home },
-    { key: "search", active: false, icon: Search },
-    { key: "write", active: true, icon: Plus, primary: true },
-    { key: "explore", active: false, icon: SquarePlay },
-    { key: "profile", active: false, icon: UserCircle },
-  ];
-
-  return (
-    <View style={styles.bottomNav}>
-      {items.map(({ active, icon: Icon, key, primary }) => {
-        const iconColor = primary
-          ? colors.white
-          : active
-            ? colors.accent
-            : colors.textFaint;
-
-        return (
-          <View key={key} style={primary ? styles.primaryTab : styles.navTab}>
-            <Icon
-              color={iconColor}
-              size={primary ? 36 : 31}
-              strokeWidth={primary ? 2.8 : 2.5}
-            />
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -310,87 +244,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 96,
-  },
-  headerArea: {
-    paddingBottom: 14,
-  },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingBottom: 18,
-    paddingTop: 12,
-  },
-  logo: {
-    color: colors.accent,
-    fontSize: 32,
-    fontWeight: "900",
-  },
-  headerActions: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  circleButton: {
-    height: 52,
-    width: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 26,
-    backgroundColor: colors.white,
-  },
-  storyRow: {
-    paddingHorizontal: 24,
-    paddingBottom: 14,
-  },
-  storyCard: {
-    height: 176,
-    width: 128,
-    alignItems: "center",
-    justifyContent: "center",
-    borderColor: "#D9CCFA",
-    borderRadius: 28,
-    borderWidth: 3,
-    backgroundColor: "rgba(255,255,255,0.3)",
-  },
-  storyPlus: {
-    height: 52,
-    width: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 26,
-    backgroundColor: colors.accent,
-  },
-  storyLabel: {
-    marginTop: 14,
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "900",
-  },
-  bottomNav: {
-    position: "absolute",
-    right: 0,
-    bottom: 0,
-    left: 0,
-    height: 78,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    backgroundColor: "rgba(255,255,255,0.94)",
-  },
-  navTab: {
-    height: 48,
-    width: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryTab: {
-    height: 58,
-    width: 58,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 18,
-    backgroundColor: colors.accent,
   },
   inlineError: {
     position: "absolute",
