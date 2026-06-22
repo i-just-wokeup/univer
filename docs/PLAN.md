@@ -153,6 +153,7 @@
 - [x] **앱 내 프로필 화면** — 웹 page 레이아웃(KrewSurface 패널: 아바타+게시물/크루+실명/학과+bio/링크+3열 1:1 그리드), `getProfile(nickname?)` 닉네임 분기 지원, 재사용 컴포넌트(KrewSurface/PostThumbnailGrid/ProfileInfoPanel) 분리
 - [x] **앱 상대방 프로필 라우트 1차 연결** — `(tabs)` 바깥 `app/profile/[nickname].tsx` 추가, 기존 `ProfileScreen` 재사용, 세션/파라미터 리다이렉트 처리
 - [x] **앱 피드/댓글 작성자 프로필 이동 연결** — 공용 `UserInline` 분리, 피드 카드/댓글 작성자 탭 시 `/profile/[nickname]` 이동 연결
+- [x] **앱 댓글 바텀시트 높이 보정** — 댓글 시트를 화면 대부분을 덮는 94% 높이로 조정하고 리스트/로딩 영역을 남은 공간에 맞춤
 
 ## 진행 중인 작업
 - [x] **탐색(Explore) 탭 1차 (임시 그리드)** — 하단 탭 카테고리→탐색, 같은 학교 인기순 썸네일 그리드, 무한 스크롤. 본 기능(타 학교/승격/주간바이럴)은 다학교 확장 시
