@@ -7,6 +7,11 @@
 ## 2026-06-22
 
 ### 완료
+- **Expo Router 전환 + 앱 화면 확장 (탐색/프로필)**
+  - 수동 useState 탭 → Expo Router 파일 기반 라우팅 전환(실기기 검증). 세션 게이트 `src/lib/session.tsx`, `app/(tabs)` 5탭.
+  - **탐색 화면**: 같은 학교 public 인기순 2열 masonry. 웹 `ExploreGrid` 규칙 그대로 — 세로→4:5, 정사각·가로→1:1 썸네일, 둥근타일+흰 좋아요뱃지+빨강 하트. 무한 스크롤. (실기기 검증)
+  - **프로필 화면(내 프로필)**: 웹 page 레이아웃으로 재구성 — KrewSurface 흰 패널 안에 아바타+게시물/크루 통계, 닉네임/실명/학과, bio/링크, **3열 1:1 그리드**. 앱용 `getProfile(nickname?)/getProfilePosts/getProfileCounts`(닉네임 분기 지원). 재사용 컴포넌트 `KrewSurface`, `PostThumbnailGrid`(3열 flex 행), `ProfileInfoPanel`로 분리.
+  - 웹 코드/문서 전수 파악(features 13개 api + 주요 렌더링 컴포넌트 + ARCHITECTURE/DECISIONS/NOTES). 비율·탐색·하단탭 규칙 등 메모리 기록.
 - **Expo 앱 구조 분리 + 홈 피드 1차 연결**
   - 검증용으로 `App.tsx`에 몰려 있던 세션 분기, 로그인 화면, 홈 화면을 `apps/mobile/src/app`, `screens`, `components`, `features` 구조로 분리
   - `apps/mobile/src/lib/theme.ts`를 추가해 KREW 앱 색상 토큰을 앱 전용으로 분리
