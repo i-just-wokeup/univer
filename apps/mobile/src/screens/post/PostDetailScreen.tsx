@@ -105,7 +105,7 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
           <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
         </Pressable>
         <Text style={styles.headerTitle}>게시물</Text>
-        <View style={styles.headerButton} />
+        <View style={styles.headerSpacer} />
       </View>
 
       {isLoading ? (
@@ -169,6 +169,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 16,
     backgroundColor: colors.white,
+  },
+  headerSpacer: {
+    height: 40,
+    width: 40,
   },
   headerTitle: {
     flex: 1,
