@@ -54,6 +54,12 @@
   - 피드 이미지에 `memory-disk` 캐시, `contentFit="cover"`, 짧은 transition, recycling key를 적용해 재방문/스크롤 시 로딩 체감을 개선
   - 댓글 바텀시트가 열릴 때 입력창을 자동 focus하지 않도록 변경해, 사용자가 댓글 입력창을 누를 때만 키보드가 뜨도록 보정
   - `cd apps/mobile && npx tsc --noEmit` 통과
+- **Expo 앱 탭 전환 구조 1차 구현**
+  - `AuthenticatedApp` 셸을 추가해 로그인 이후 홈/검색/작성/활동/프로필 탭 상태를 관리하도록 분리
+  - `BottomTabBar`를 실제 `Pressable` 탭 버튼으로 변경하고 활성 탭, 접근성 label/selected state를 반영
+  - 홈 화면 내부에 있던 하단 탭 렌더링을 앱 셸로 올려 탭바 중복 렌더링 가능성을 제거
+  - 검색/작성/활동/프로필은 이후 기능 연결을 위한 placeholder 화면으로 먼저 구성
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo dev server 실행 이슈 확인**
   - `npx expo start`, `npx expo start --port 8081` 모두 현재 로컬 Node `v24.15.0`에서 `ERR_SOCKET_BAD_PORT(65536)`로 종료됨
   - Expo SDK 54 문서 기준 조합은 Node `20.19.x` 이상이며, 현재 Expo CLI/freeport 조합은 Node 24에서 포트 탐색 문제가 있어 Node 20 LTS로 실행 필요
@@ -65,6 +71,7 @@
 - [ ] 피드 이미지 렌더링/비율/좌우 캐러셀 스와이프/좋아요 토글 실기기 확인
 - [ ] 댓글 바텀시트 열림/닫힘, 댓글 목록 조회, 댓글 작성, 키보드 대응 실기기 확인
 - [ ] 필요 시 `react-native-safe-area-context`를 SDK 54 기준으로 설치하고 안전영역 보정
+- [ ] 하단 탭 홈/검색/작성/활동/프로필 전환 실기기 확인
 - [ ] 프로필/탐색 화면 연결
 
 ---
