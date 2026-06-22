@@ -287,3 +287,81 @@ export async function togglePostLike(postId: string) {
     likesCount,
   };
 }
+
+// 단일 게시물 상세 조회. 차단 유저/삭제 제외, FeedPost 형태로 반환해 FeedPostCard가 그대로 받게 한다.
+export async function getPost(postId: string): Promise<FeedPost> {
+  const supabase = getSupabaseMobileClient();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+
+  const { data: postData, error: postError } = await supabase
+    .from("posts")
+    .select("id, aspect_ratio, content, created_at, likes_count, comments_count, user_id")
+    .eq("id", postId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (postError || !postData) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  const post = postData as FeedPostRow;
+
+  if (blockRelatedUserIds.includes(post.user_id)) {
+    throw new Error("게시물을 찾을 수 없습니다.");
+  }
+
+  const [
+    { data: userData, error: userError },
+    { data: mediaData, error: mediaError },
+  ] = await Promise.all([
+    supabase
+      .from("users")
+      .select("id, nickname, department, avatar_url")
+      .eq("id", post.user_id)
+      .maybeSingle(),
+    supabase
+      .from("post_media")
+      .select("id, post_id, type, url, thumbnail_url, duration, order_index")
+      .eq("post_id", postId)
+      .order("order_index", { ascending: true }),
+  ]);
+
+  if (userError || !userData) {
+    throw new Error("작성자 정보를 불러오지 못했습니다.");
+  }
+
+  if (mediaError || !mediaData) {
+    throw new Error("게시물 미디어를 불러오지 못했습니다.");
+  }
+
+  const userRow = userData as Pick<
+    UserRow,
+    "avatar_url" | "department" | "id" | "nickname"
+  >;
+  const user: FeedUser = {
+    avatar_url: userRow.avatar_url,
+    department: userRow.department,
+    id: userRow.id,
+    nickname: userRow.nickname,
+  };
+
+  const media: PostMedia[] = (mediaData as PostMediaRow[]).map((mediaItem) => ({
+    duration: mediaItem.duration,
+    id: mediaItem.id,
+    order_index: mediaItem.order_index,
+    thumbnail_url: mediaItem.thumbnail_url,
+    type: mediaItem.type,
+    url: mediaItem.url,
+  }));
+
+  return {
+    aspect_ratio: post.aspect_ratio ?? "portrait",
+    comments_count: post.comments_count,
+    content: post.content,
+    created_at: post.created_at,
+    id: post.id,
+    likes_count: post.likes_count,
+    media,
+    user,
+  };
+}
