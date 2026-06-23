@@ -1,6 +1,14 @@
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import type { FeedPost, FeedUser, GetFeedResult, PostAspectRatio, PostMedia } from "./types";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import type {
+  FeedPost,
+  FeedUser,
+  GetFeedResult,
+  PostAspectRatio,
+  PostMedia,
+  PostVisibility,
+} from "./types";
 
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
@@ -14,8 +22,76 @@ type FeedPostRow = Pick<
   aspect_ratio?: PostAspectRatio;
 };
 
+type CreatePostParams = {
+  aspectRatio: PostAspectRatio;
+  content: string;
+  imageUrls: string[];
+  visibility: PostVisibility;
+};
+
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
+}
+
+function createStoragePath() {
+  const id =
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `posts/${id}.jpg`;
+}
+
+function decodeBase64(base64: string): ArrayBuffer {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const cleanBase64 = base64.replace(/[\r\n=]/g, "");
+  const bytes: number[] = [];
+
+  for (let index = 0; index < cleanBase64.length; index += 4) {
+    const encoded1 = chars.indexOf(cleanBase64[index] ?? "A");
+    const encoded2 = chars.indexOf(cleanBase64[index + 1] ?? "A");
+    const encoded3 = chars.indexOf(cleanBase64[index + 2] ?? "A");
+    const encoded4 = chars.indexOf(cleanBase64[index + 3] ?? "A");
+    const bitmap =
+      (encoded1 << 18) | (encoded2 << 12) | (encoded3 << 6) | encoded4;
+
+    bytes.push((bitmap >> 16) & 255);
+
+    if (index + 2 < cleanBase64.length) {
+      bytes.push((bitmap >> 8) & 255);
+    }
+
+    if (index + 3 < cleanBase64.length) {
+      bytes.push(bitmap & 255);
+    }
+  }
+
+  return new Uint8Array(bytes).buffer;
+}
+
+async function getManipulatedImageBytes(uri: string): Promise<ArrayBuffer> {
+  const manipulated = await manipulateAsync(
+    uri,
+    [{ resize: { width: 1600 } }],
+    { compress: 0.8, format: SaveFormat.JPEG },
+  );
+
+  try {
+    const response = await fetch(manipulated.uri);
+    return await response.arrayBuffer();
+  } catch {
+    const base64Manipulated = await manipulateAsync(
+      uri,
+      [{ resize: { width: 1600 } }],
+      { base64: true, compress: 0.8, format: SaveFormat.JPEG },
+    );
+
+    if (!base64Manipulated.base64) {
+      throw new Error("이미지 압축 결과를 읽지 못했습니다.");
+    }
+
+    return decodeBase64(base64Manipulated.base64);
+  }
 }
 
 async function getCurrentUserContext() {
@@ -43,6 +119,75 @@ async function getCurrentUserContext() {
     universityId: data.university_id,
     userId: user.id,
   };
+}
+
+export async function uploadPostImages(uris: string[]): Promise<string[]> {
+  const supabase = getSupabaseMobileClient();
+
+  return Promise.all(
+    uris.map(async (uri) => {
+      const bytes = await getManipulatedImageBytes(uri);
+      const path = createStoragePath();
+      const { error } = await supabase.storage
+        .from("post-images")
+        .upload(path, bytes, {
+          contentType: "image/jpeg",
+          upsert: false,
+        });
+
+      if (error) {
+        throw new Error("이미지 업로드에 실패했습니다.");
+      }
+
+      const { data } = supabase.storage.from("post-images").getPublicUrl(path);
+
+      return data.publicUrl;
+    }),
+  );
+}
+
+export async function createPost({
+  aspectRatio,
+  content,
+  imageUrls,
+  visibility,
+}: CreatePostParams): Promise<string> {
+  const supabase = getSupabaseMobileClient();
+  const { universityId, userId } = await getCurrentUserContext();
+  const trimmedContent = content.trim();
+
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .insert({
+      aspect_ratio: aspectRatio,
+      content: trimmedContent || null,
+      university_id: universityId,
+      user_id: userId,
+      visibility,
+    })
+    .select("id")
+    .single();
+
+  if (postError || !post) {
+    throw new Error("게시물 작성에 실패했습니다.");
+  }
+
+  if (imageUrls.length > 0) {
+    const { error: mediaError } = await supabase.from("post_media").insert(
+      imageUrls.map((url, index) => ({
+        order_index: index,
+        post_id: post.id,
+        type: "image" as const,
+        url,
+      })),
+    );
+
+    if (mediaError) {
+      throw new Error("게시물 이미지를 저장하지 못했습니다.");
+    }
+  }
+
+  return post.id;
 }
 
 async function getBlockRelatedUserIds() {
