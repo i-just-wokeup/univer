@@ -3,6 +3,7 @@ import type { Json } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type {
   ConnectionStatus,
+  ConnectionUser,
   ProfileCounts,
   ProfileDetail,
   ProfileGridPost,
@@ -31,6 +32,15 @@ function isConnectionStatus(value: Json | null): value is ConnectionStatus {
     "friends_count" in value &&
     typeof value.friends_count === "number"
   );
+}
+
+function normalizeConnectionUsers(users: ConnectionUser[]): ConnectionUser[] {
+  return users.map(({ avatar_url, department, id, nickname }) => ({
+    avatar_url,
+    department,
+    id,
+    nickname,
+  }));
 }
 
 async function getCurrentUserId(): Promise<string> {
@@ -275,6 +285,39 @@ export async function removeFriend(userId: string): Promise<void> {
   if (error) {
     throw new Error("친구 연결 해제에 실패했습니다.");
   }
+}
+
+export async function getFriends(): Promise<ConnectionUser[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_friends");
+
+  if (error || !data) {
+    throw new Error("크루 목록을 불러오지 못했습니다.");
+  }
+
+  return normalizeConnectionUsers(data);
+}
+
+export async function getPendingRequests(): Promise<ConnectionUser[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_pending_requests");
+
+  if (error || !data) {
+    throw new Error("받은 요청 목록을 불러오지 못했습니다.");
+  }
+
+  return normalizeConnectionUsers(data);
+}
+
+export async function getSentRequests(): Promise<ConnectionUser[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_sent_requests");
+
+  if (error || !data) {
+    throw new Error("보낸 요청 목록을 불러오지 못했습니다.");
+  }
+
+  return normalizeConnectionUsers(data);
 }
 
 export async function getFavoriteUserStatus(userId: string): Promise<boolean> {
