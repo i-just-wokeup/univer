@@ -1,6 +1,10 @@
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type { PostAspectRatio } from "../feed/types";
+import {
+  getBlockRelatedUserIds,
+  getCurrentUserContext,
+} from "../shared/userContext";
 import type {
   ExplorePost,
   GetExplorePostsParams,
@@ -19,43 +23,6 @@ type ExplorePostRow = Pick<
 
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
-}
-
-async function getCurrentUserContext() {
-  const supabase = getSupabaseMobileClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("로그인이 필요합니다.");
-  }
-
-  const { data, error } = await supabase
-    .from("users")
-    .select("university_id")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error || !data?.university_id) {
-    throw new Error("현재 로그인 유저의 학교 정보를 찾을 수 없습니다.");
-  }
-
-  return { universityId: data.university_id, userId: user.id };
-}
-
-async function getBlockRelatedUserIds() {
-  const supabase = getSupabaseMobileClient();
-  const { data, error } = await supabase.rpc("get_block_related_user_ids");
-
-  if (error || !Array.isArray(data)) {
-    return [];
-  }
-
-  return data
-    .map((row) => row.user_id)
-    .filter((userId): userId is string => typeof userId === "string");
 }
 
 // 같은 학교 전체공개 게시물 중 대표 이미지가 있는 글을 인기순으로 모아 탐색 그리드를 구성한다.
