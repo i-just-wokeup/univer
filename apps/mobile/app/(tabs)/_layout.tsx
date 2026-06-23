@@ -24,7 +24,7 @@ export default function TabsLayout() {
           // 작성은 탭 화면이 아니라 탭 바깥 라우트로 띄워 하단 탭바가 가려지게 한다.
           tabPress: (event) => {
             event.preventDefault();
-            router.push("/write");
+            router.push("/compose");
           },
         }}
       />
