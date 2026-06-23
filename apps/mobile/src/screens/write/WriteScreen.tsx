@@ -176,6 +176,7 @@ export function WriteScreen() {
         >
           <View style={styles.card}>
             <PostImageUploader
+              aspectRatio={aspectRatio}
               imageUris={imageUris}
               maxCount={MAX_IMAGES}
               onAdd={() => {
