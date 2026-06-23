@@ -16,6 +16,7 @@ import { HomeHeader } from "../../components/home/HomeHeader";
 import { StoryBar } from "../../components/stories/StoryBar";
 import { getFeed, getLikedPostIds, togglePostLike } from "../../features/feed/api";
 import type { FeedPost } from "../../features/feed/types";
+import { getUnreadCount } from "../../features/notifications/api";
 import { getStories } from "../../features/stories/api";
 import type { StoryGroup } from "../../features/stories/types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -32,21 +33,28 @@ export function HomeScreen() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [storyGroups, setStoryGroups] = useState<StoryGroup[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
 
-  const loadStories = useCallback(async () => {
+  const loadHomeMeta = useCallback(async () => {
     try {
       setStoryGroups(await getStories());
     } catch {
       // 스토리바 로딩 실패는 피드 사용을 막지 않는다.
     }
+
+    try {
+      setUnreadCount(await getUnreadCount());
+    } catch {
+      // 안읽은 알림 수 로딩 실패는 무시한다.
+    }
   }, []);
 
-  // 화면에 다시 진입할 때마다(작성/뷰어에서 복귀 포함) 스토리바를 갱신한다.
+  // 화면에 다시 진입할 때마다(작성/뷰어/알림에서 복귀 포함) 스토리바·알림 뱃지를 갱신한다.
   useFocusEffect(
     useCallback(() => {
-      void loadStories();
-    }, [loadStories]),
+      void loadHomeMeta();
+    }, [loadHomeMeta]),
   );
 
   const loadFirstPage = useCallback(async () => {
@@ -176,6 +184,10 @@ export function HomeScreen() {
     router.push("/story/create");
   }, [router]);
 
+  const handlePressNotifications = useCallback(() => {
+    router.push("/notifications");
+  }, [router]);
+
   const handlePressStoryGroup = useCallback(
     (group: StoryGroup) => {
       router.push({
@@ -201,7 +213,11 @@ export function HomeScreen() {
   if (errorMessage && posts.length === 0) {
     return (
       <SafeAreaView style={styles.screen}>
-        <HomeHeader onSignOut={handleSignOut} />
+        <HomeHeader
+              onPressNotifications={handlePressNotifications}
+              onSignOut={handleSignOut}
+              unreadCount={unreadCount}
+            />
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
@@ -236,7 +252,11 @@ export function HomeScreen() {
         }
         ListHeaderComponent={
           <>
-            <HomeHeader onSignOut={handleSignOut} />
+            <HomeHeader
+              onPressNotifications={handlePressNotifications}
+              onSignOut={handleSignOut}
+              unreadCount={unreadCount}
+            />
             <StoryBar
               groups={storyGroups}
               onPressCreate={handlePressCreateStory}

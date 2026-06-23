@@ -4,18 +4,36 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../lib/theme";
 
 type HomeHeaderProps = {
+  onPressNotifications: () => void;
   onSignOut: () => void;
+  unreadCount: number;
 };
 
-export function HomeHeader({ onSignOut }: HomeHeaderProps) {
+export function HomeHeader({
+  onPressNotifications,
+  onSignOut,
+  unreadCount,
+}: HomeHeaderProps) {
   return (
     <View style={styles.headerArea}>
       <View style={styles.topBar}>
         <Text style={styles.logo}>KREW</Text>
         <View style={styles.headerActions}>
-          <View style={styles.circleButton}>
+          <Pressable
+            accessibilityLabel="알림"
+            accessibilityRole="button"
+            onPress={onPressNotifications}
+            style={styles.circleButton}
+          >
             <Bell color={colors.text} size={27} strokeWidth={2.6} />
-          </View>
+            {unreadCount > 0 ? (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            ) : null}
+          </Pressable>
           <Pressable onLongPress={onSignOut} style={styles.circleButton}>
             <MessageCircle color={colors.text} size={28} strokeWidth={2.6} />
           </Pressable>
@@ -53,5 +71,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 26,
     backgroundColor: colors.white,
+  },
+  badge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9,
+    backgroundColor: colors.danger,
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 10,
+    fontWeight: "900",
   },
 });
