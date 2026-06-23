@@ -10,11 +10,16 @@ import { Avatar } from "../common/Avatar";
 
 type ProfileInfoPanelProps = {
   counts: ProfileCounts;
+  onPressCrew?: () => void;
   profile: ProfileDetail;
 };
 
 // 프로필 상단 정보 영역(아바타+통계+이름/실명/학과+소개+링크). 순수 UI.
-export function ProfileInfoPanel({ counts, profile }: ProfileInfoPanelProps) {
+export function ProfileInfoPanel({
+  counts,
+  onPressCrew,
+  profile,
+}: ProfileInfoPanelProps) {
   return (
     <View style={styles.section}>
       <View style={styles.identityRow}>
@@ -24,10 +29,25 @@ export function ProfileInfoPanel({ counts, profile }: ProfileInfoPanelProps) {
             <Text style={styles.statNumber}>{counts.posts}</Text>
             <Text style={styles.statLabel}>게시물</Text>
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{counts.crew}</Text>
-            <Text style={styles.statLabel}>크루</Text>
-          </View>
+          {onPressCrew ? (
+            <Pressable
+              accessibilityLabel="크루 관리 열기"
+              accessibilityRole="button"
+              onPress={onPressCrew}
+              style={({ pressed }) => [
+                styles.stat,
+                pressed ? styles.pressedStat : null,
+              ]}
+            >
+              <Text style={styles.statNumber}>{counts.crew}</Text>
+              <Text style={styles.statLabel}>크루</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{counts.crew}</Text>
+              <Text style={styles.statLabel}>크루</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -81,6 +101,9 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1,
     alignItems: "center",
+  },
+  pressedStat: {
+    opacity: 0.65,
   },
   statNumber: {
     color: colors.text,
