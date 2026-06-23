@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Comment } from "../../features/comments/types";
 import { colors } from "../../lib/theme";
+import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { UserInline } from "../common/UserInline";
 
 type CommentRowProps = {
@@ -17,23 +18,6 @@ type CommentRowProps = {
   onToggleLike: (commentId: string) => void;
   onUserPress: (nickname: string) => void;
 };
-
-function getRelativeTimeLabel(createdAt: string) {
-  const diffMs = Date.now() - new Date(createdAt).getTime();
-  const minuteMs = 60 * 1000;
-  const hourMs = 60 * minuteMs;
-  const dayMs = 24 * hourMs;
-
-  if (diffMs < hourMs) {
-    return `${Math.max(1, Math.floor(diffMs / minuteMs))}분 전`;
-  }
-
-  if (diffMs < dayMs) {
-    return `${Math.max(1, Math.floor(diffMs / hourMs))}시간 전`;
-  }
-
-  return `${Math.max(1, Math.floor(diffMs / dayMs))}일 전`;
-}
 
 // 순수 UI. 댓글 한 행(원댓글/대댓글). 대댓글이면 부모 닉네임 @멘션을 링크로 표시.
 export function CommentRow({
