@@ -1,4 +1,5 @@
 export type PostAspectRatio = "square" | "portrait" | "landscape";
+export type PostVisibility = "public" | "close_friends";
 
 export type FeedUser = {
   avatar_url: string | null;
