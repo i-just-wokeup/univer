@@ -11,24 +11,13 @@ import {
 } from "react-native";
 
 import { colors } from "../../lib/theme";
+import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
 
 type FeedMediaCarouselProps = {
   aspectRatio: PostAspectRatio;
   media: PostMedia[];
 };
-
-function getImageAspectRatio(aspectRatio: PostAspectRatio) {
-  if (aspectRatio === "square") {
-    return 1;
-  }
-
-  if (aspectRatio === "landscape") {
-    return 16 / 9;
-  }
-
-  return 4 / 5;
-}
 
 export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps) {
   const { width } = useWindowDimensions();
@@ -42,7 +31,7 @@ export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps
     return null;
   }
 
-  const imageAspectRatio = getImageAspectRatio(aspectRatio);
+  const imageAspectRatio = getAspectRatioValue(aspectRatio);
 
   function handleMomentumScrollEnd(
     event: NativeSyntheticEvent<NativeScrollEvent>,
