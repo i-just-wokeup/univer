@@ -5,6 +5,8 @@ import type { Comment, CommentUser } from "./types";
 type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
 type CommentInsert = Database["public"]["Tables"]["comments"]["Insert"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
+type CommentLikeRow = Database["public"]["Tables"]["comment_likes"]["Row"];
+type CommentLikeInsert = Database["public"]["Tables"]["comment_likes"]["Insert"];
 
 function toComment(comment: CommentRow, user: CommentUser): Comment {
   return {
@@ -180,4 +182,157 @@ export async function createComment(
   }
 
   return toComment(data as CommentRow, commentUser);
+}
+
+// 본인 댓글만 hard delete. 부모 댓글 삭제 시 대댓글/좋아요도 DB cascade로 함께 삭제된다.
+export async function deleteComment(commentId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data: comment, error: commentError } = await supabase
+    .from("comments")
+    .select("id, user_id, post_id, parent_id")
+    .eq("id", commentId)
+    .maybeSingle();
+
+  if (commentError || !comment) {
+    throw new Error("댓글을 찾을 수 없습니다.");
+  }
+
+  if (comment.user_id !== user.id) {
+    throw new Error("본인 댓글만 삭제할 수 있습니다.");
+  }
+
+  const { error: deleteError } = await supabase
+    .from("comments")
+    .delete()
+    .eq("id", comment.id);
+
+  if (deleteError) {
+    throw new Error("댓글 삭제에 실패했습니다.");
+  }
+
+  // 게시물 댓글 수는 원댓글만 반영한다.
+  if (!comment.parent_id) {
+    const { error: recountError } = await supabase.rpc("recount_post_comments", {
+      p_post_id: comment.post_id,
+    });
+
+    if (recountError) {
+      throw new Error("댓글 수 업데이트에 실패했습니다.");
+    }
+  }
+}
+
+// 현재 로그인 유저가 좋아요한 댓글 id 목록 (초기 좋아요 상태용).
+export async function getLikedCommentIds(
+  commentIds: string[],
+): Promise<string[]> {
+  if (commentIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getSupabaseMobileClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data, error } = await supabase
+    .from("comment_likes")
+    .select("comment_id")
+    .eq("user_id", user.id)
+    .in("comment_id", commentIds);
+
+  if (error || !data) {
+    throw new Error("댓글 좋아요 정보를 불러오지 못했습니다.");
+  }
+
+  return data.map((like: Pick<CommentLikeRow, "comment_id">) => like.comment_id);
+}
+
+// 댓글 좋아요 토글 + recount_comment_likes RPC. RPC 실패 시 insert/delete 롤백.
+export async function toggleCommentLike(
+  commentId: string,
+): Promise<{ liked: boolean; likesCount: number }> {
+  const supabase = getSupabaseMobileClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data: existingLike, error: likeSelectError } = await supabase
+    .from("comment_likes")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("comment_id", commentId)
+    .maybeSingle();
+
+  if (likeSelectError) {
+    throw new Error("댓글 좋아요 상태를 확인하지 못했습니다.");
+  }
+
+  const nextLiked = !existingLike;
+
+  if (existingLike) {
+    const { error } = await supabase
+      .from("comment_likes")
+      .delete()
+      .eq("id", existingLike.id);
+
+    if (error) {
+      throw new Error("댓글 좋아요 취소에 실패했습니다.");
+    }
+  } else {
+    const commentLikeInsert: CommentLikeInsert = {
+      comment_id: commentId,
+      user_id: user.id,
+    };
+
+    const { error } = await supabase
+      .from("comment_likes")
+      .insert(commentLikeInsert);
+
+    if (error) {
+      throw new Error("댓글 좋아요에 실패했습니다.");
+    }
+  }
+
+  const { data: likesCount, error: recountError } = await supabase.rpc(
+    "recount_comment_likes",
+    { p_comment_id: commentId },
+  );
+
+  if (recountError || typeof likesCount !== "number") {
+    if (existingLike) {
+      await supabase
+        .from("comment_likes")
+        .insert({ comment_id: commentId, user_id: user.id });
+    } else {
+      await supabase
+        .from("comment_likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("comment_id", commentId);
+    }
+
+    throw new Error("댓글 좋아요 수 업데이트에 실패했습니다.");
+  }
+
+  return { liked: nextLiked, likesCount };
 }
