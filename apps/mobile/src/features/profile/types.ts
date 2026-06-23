@@ -29,3 +29,10 @@ export type ConnectionStatus = {
   is_requester: boolean;
   status: "none" | "pending" | "accepted" | "rejected";
 };
+
+export type ConnectionUser = {
+  avatar_url: string | null;
+  department: string | null;
+  id: string;
+  nickname: string;
+};
