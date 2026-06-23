@@ -7,6 +7,12 @@
 ## 2026-06-23
 
 ### 완료
+- **앱 알림 기능 구현 (목록/뱃지/읽음/이동)**
+  - 웹 `notifications/api.ts` 로직 포팅 — `features/notifications/`(`getNotifications`/`getUnreadCount`/`markAsRead`/`markAllAsRead`). 이동 대상을 `href` 문자열 대신 RN 라우팅용 `target` 객체(post/story/profile)로 반환, 라우트는 앱용(`/post/[id]`). 스키마 변경 없음
+  - 알림 화면 — `screens/notifications/NotificationsScreen.tsx` + `app/notifications.tsx`(push). 헤더(알림+모두읽음), 목록, 탭 시 읽음처리(낙관적)+게시물/스토리/프로필 이동, 빈/로딩/에러. 순수 UI `components/notifications/NotificationRow.tsx` 분리
+  - 홈 헤더 벨 → 알림 화면 + 안읽음 빨간 뱃지, `HomeScreen` 포커스 시 `getUnreadCount` 갱신
+  - **버그 수정**: 본인이 자기 글에 누른 좋아요/댓글이 알림에 "나"로 뜨던 문제 — actor 컬럼이 없어 "최근 좋아요/댓글한 사람"으로 추정하던 것이 원인. actor 추정 쿼리에 `neq(user_id, 본인)` 추가(트리거는 본인 행동 알림 미생성 확인). ⚠️ 웹도 동일 버그 + 근본 해결은 `notifications.actor_id` 컬럼 → 이슈트래커 기록
+  - `cd apps/mobile && npx tsc --noEmit` 통과. main에 파일별 커밋
 - **앱 스토리 기능 구현 (스토리바/작성/뷰어/자체 카메라)**
   - **이미지 업로드 공용 헬퍼 분리** — `features/shared/imageUpload.ts`로 리사이즈/압축/버킷 업로드 공용화. 피드 `uploadPostImages`도 이 헬퍼로 교체(중복 제거, expo-image-manipulator 로직 1곳)
   - **스토리 API/타입** — `features/stories/`에 웹 `stories/api.ts` 로직 포팅(DB/쿼리 동일, 스키마 변경 없음). `getStories`(내 스토리→크루→같은 학교 정렬)/`createStory`/`recordStoryView`/`toggleStoryLike`/`getMyStoryLikedStatus`/`deleteStory`/`getStoryViewers`. 업로드만 모바일 방식(`story-images` 버킷, width 1080)
