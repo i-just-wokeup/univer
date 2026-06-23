@@ -23,3 +23,9 @@ export type ProfileCounts = {
   crew: number;
   posts: number;
 };
+
+export type ConnectionStatus = {
+  friends_count: number;
+  is_requester: boolean;
+  status: "none" | "pending" | "accepted" | "rejected";
+};
