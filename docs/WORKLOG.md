@@ -7,6 +7,12 @@
 ## 2026-06-23
 
 ### 완료
+- **Expo 게시물 작성 화면 구현 (사진 업로드)**
+  - `expo-image-picker`/`expo-image-manipulator`를 설치하고 `react-dom`을 Expo SDK 54 호환 `19.1.0`으로 정렬
+  - 앱 `feed/api.ts`에 이미지 리사이즈/압축 후 Supabase Storage `post-images` 업로드 함수와 `posts`/`post_media` 작성 함수를 추가(스키마 변경 없음)
+  - 작성 탭 placeholder를 `WriteScreen`으로 교체하고, 사진 다중 선택/미리보기/삭제, 본문, 비율 자동감지+수동 선택, 공개범위 선택, 게시 후 홈 이동을 연결
+  - `PostImageUploader`, `PostAspectRatioPicker`, 공용 `VisibilityPicker` 순수 UI를 분리
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 크루 관리 화면 구현**
   - 앱 `profile/api.ts`에 `getFriends`/`getPendingRequests`/`getSentRequests` RPC 조회를 추가하고 기존 수락/거절/삭제 RPC를 재사용(스키마 변경 없음)
   - `(tabs)` 바깥 `app/profile/connections.tsx`와 `ConnectionsScreen`을 추가해 내 크루/받은 요청/보낸 요청 3탭, lazy load, 새로고침, 빈상태/로딩/에러 표시를 구현
