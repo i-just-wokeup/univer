@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft, MoreHorizontal } from "lucide-react-native";
+import { MoreHorizontal } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
@@ -17,6 +17,7 @@ import {
 } from "../../components/common/ActionSheet";
 import { KrewSurface } from "../../components/common/KrewSurface";
 import { PostThumbnailGrid } from "../../components/common/PostThumbnailGrid";
+import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { ProfileConnectionActions } from "../../components/profile/ProfileConnectionActions";
 import { ProfileInfoPanel } from "../../components/profile/ProfileInfoPanel";
@@ -298,32 +299,28 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   return (
     <SafeAreaView style={styles.screen}>
       {nickname ? (
-        <View style={styles.pushedHeader}>
-          <Pressable onPress={() => router.back()} style={styles.headerButton}>
-            <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
-          </Pressable>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {profile?.nickname}
-          </Text>
-          {!isMine ? (
-            <Pressable
-              accessibilityLabel="프로필 옵션"
-              accessibilityRole="button"
-              onPress={() => {
-                setIsActionSheetOpen(true);
-              }}
-              style={styles.headerButton}
-            >
-              <MoreHorizontal
-                color={colors.text}
-                size={22}
-                strokeWidth={2.4}
-              />
-            </Pressable>
-          ) : (
-            <View style={styles.headerSpacer} />
-          )}
-        </View>
+        <ScreenHeader
+          onBack={() => router.back()}
+          right={
+            !isMine ? (
+              <Pressable
+                accessibilityLabel="프로필 옵션"
+                accessibilityRole="button"
+                onPress={() => {
+                  setIsActionSheetOpen(true);
+                }}
+                style={styles.headerButton}
+              >
+                <MoreHorizontal
+                  color={colors.text}
+                  size={22}
+                  strokeWidth={2.4}
+                />
+              </Pressable>
+            ) : undefined
+          }
+          title={profile?.nickname ?? ""}
+        />
       ) : (
         <View style={styles.tabHeader}>
           <Text style={styles.logo}>KREW</Text>
@@ -425,13 +422,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
   },
-  pushedHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 6,
-  },
   headerButton: {
     height: 40,
     width: 40,
@@ -439,17 +429,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 16,
     backgroundColor: colors.white,
-  },
-  headerSpacer: {
-    height: 40,
-    width: 40,
-  },
-  headerTitle: {
-    flex: 1,
-    marginHorizontal: 12,
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "900",
   },
   scrollContent: {
     paddingBottom: 110,
