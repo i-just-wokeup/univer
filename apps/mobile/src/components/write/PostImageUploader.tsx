@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
 import { colors } from "../../lib/theme";
+import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 
 type PostImageUploaderProps = {
   aspectRatio: PostAspectRatio;
@@ -13,19 +14,6 @@ type PostImageUploaderProps = {
   onAdd: () => void;
   onRemove: (index: number) => void;
 };
-
-// 선택한 비율을 미리보기 프레임 비율(width/height)로 변환한다.
-function getAspectRatioValue(aspectRatio: PostAspectRatio) {
-  if (aspectRatio === "landscape") {
-    return 16 / 9;
-  }
-
-  if (aspectRatio === "portrait") {
-    return 4 / 5;
-  }
-
-  return 1;
-}
 
 export function PostImageUploader({
   aspectRatio,
