@@ -7,6 +7,16 @@
 ## 2026-06-23
 
 ### 완료
+- **앱 스토리 기능 구현 (스토리바/작성/뷰어/자체 카메라)**
+  - **이미지 업로드 공용 헬퍼 분리** — `features/shared/imageUpload.ts`로 리사이즈/압축/버킷 업로드 공용화. 피드 `uploadPostImages`도 이 헬퍼로 교체(중복 제거, expo-image-manipulator 로직 1곳)
+  - **스토리 API/타입** — `features/stories/`에 웹 `stories/api.ts` 로직 포팅(DB/쿼리 동일, 스키마 변경 없음). `getStories`(내 스토리→크루→같은 학교 정렬)/`createStory`/`recordStoryView`/`toggleStoryLike`/`getMyStoryLikedStatus`/`deleteStory`/`getStoryViewers`. 업로드만 모바일 방식(`story-images` 버킷, width 1080)
+  - **스토리 신고 API** — `features/reports/api.ts` 웹에서 포팅(`createReport`, `reports` 테이블)
+  - **홈 스토리바** — `components/stories/StoryBar.tsx`. 내 스토리는 "내 스토리" 카드(미리보기 썸네일 + 우하단 추가 배지)로 합치고, 타 유저는 그룹 카드(썸네일 + 미열람 보라 테두리 + 닉네임). `HomeHeader` placeholder 카드 제거, `HomeScreen`에 `useFocusEffect`로 포커스 시 스토리 갱신
+  - **스토리 작성 화면** — `screens/stories/StoryCreateScreen.tsx` + `app/story/create.tsx`. 갤러리 선택 + 업로드 → `createStory`
+  - **자체 카메라** — `expo-camera` 설치. 작성 화면을 "카메라 먼저"로 전환(라이브 프리뷰 + 촬영/전후면 전환/플래시/갤러리 단축) → 미리보기 모드(공개범위 + 다시/공유). `app.json`에 카메라 권한 문구 추가
+  - **스토리 뷰어** — `screens/stories/StoryViewerScreen.tsx` + `app/story/[userId].tsx`. 9:16 칸(화면 맨 위부터, 아래 남는 공간은 검정), 세로 사진 `cover`/정사각·가로 `contain`+같은 이미지 블러, 진행바 자동재생(5초)+탭 일시정지, 좌측/우측 탭 이전·다음, 유저 간 이동, 좋아요(낙관적+롤백), `···` 메뉴(본인 삭제/타인 신고+ConfirmDialog), 내 스토리 "N명 봄" → 조회자 시트. 조회 기록은 본인 제외. `expo-linear-gradient` 스크림 추가
+  - `cd apps/mobile && npx tsc --noEmit` 통과. main에 파일별 커밋
+  - ⚠️ **미해결 이슈**: 뷰어에서 다른 앱/홈 갔다 복귀 시 사진이 상태바 영역 뒤로 올라감(Android/Expo Go). StatusBar/AppState 재적용 시도했으나 미완 → 이슈트래커 기록, dev build 기준 재검증 예정
 - **중복 코드 공용화(시간/비율/유저컨텍스트/ScreenHeader)**
 - **공용 ConfirmDialog 추가 + 작성 화면 초기화/취소 경고**
   - 재사용 가능한 `components/common/ConfirmDialog.tsx`(RN Modal, danger 분기) 추가 — 스토리 삭제/신고·친구 삭제 등 재사용 예정
