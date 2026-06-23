@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, MoreHorizontal } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
@@ -11,16 +11,29 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import {
+  ActionSheet,
+  type ActionSheetItem,
+} from "../../components/common/ActionSheet";
 import { KrewSurface } from "../../components/common/KrewSurface";
 import { PostThumbnailGrid } from "../../components/common/PostThumbnailGrid";
 import { StateView } from "../../components/common/StateView";
+import { ProfileConnectionActions } from "../../components/profile/ProfileConnectionActions";
 import { ProfileInfoPanel } from "../../components/profile/ProfileInfoPanel";
 import {
+  acceptFriendRequest,
+  getConnectionStatus,
+  getFavoriteUserStatus,
   getProfile,
   getProfileCounts,
   getProfilePosts,
+  rejectFriendRequest,
+  removeFriend,
+  sendFriendRequest,
+  toggleUserFavorite,
 } from "../../features/profile/api";
 import type {
+  ConnectionStatus,
   ProfileCounts,
   ProfileDetail,
   ProfileGridPost,
@@ -37,22 +50,41 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   const [profile, setProfile] = useState<ProfileDetail | null>(null);
   const [counts, setCounts] = useState<ProfileCounts>({ crew: 0, posts: 0 });
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus | null>(null);
   const [posts, setPosts] = useState<ProfileGridPost[]>([]);
+  const [isMine, setIsMine] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const load = useCallback(async () => {
     try {
       setErrorMessage("");
-      const { profile: loaded } = await getProfile(nickname);
+      const { isMine: loadedIsMine, profile: loaded } =
+        await getProfile(nickname);
       setProfile(loaded);
+      setIsMine(loadedIsMine);
 
-      const [loadedCounts, loadedPosts] = await Promise.all([
-        getProfileCounts(loaded.id),
-        getProfilePosts(loaded.id),
-      ]);
-      setCounts(loadedCounts);
+      const [loadedCounts, loadedPosts, loadedConnectionStatus, favoriteStatus] =
+        await Promise.all([
+          getProfileCounts(loaded.id),
+          getProfilePosts(loaded.id),
+          loadedIsMine ? Promise.resolve(null) : getConnectionStatus(loaded.id),
+          loadedIsMine
+            ? Promise.resolve(false)
+            : getFavoriteUserStatus(loaded.id),
+        ]);
+      setCounts(
+        loadedConnectionStatus
+          ? { ...loadedCounts, crew: loadedConnectionStatus.friends_count }
+          : loadedCounts,
+      );
+      setConnectionStatus(loadedConnectionStatus);
+      setIsFavorite(favoriteStatus);
       setPosts(loadedPosts);
     } catch (error) {
       setErrorMessage(
@@ -72,12 +104,167 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     await getSupabaseMobileClient().auth.signOut();
   }
 
+  async function refreshConnectionStatus(profileId: string) {
+    const nextConnectionStatus = await getConnectionStatus(profileId);
+    setConnectionStatus(nextConnectionStatus);
+    setCounts((currentCounts) => ({
+      ...currentCounts,
+      crew: nextConnectionStatus.friends_count,
+    }));
+  }
+
+  async function runConnectionAction({
+    action,
+    optimisticStatus,
+  }: {
+    action: () => Promise<void>;
+    optimisticStatus: ConnectionStatus;
+  }) {
+    if (!profile || isMine || !connectionStatus || isActionPending) {
+      return;
+    }
+
+    const previousConnectionStatus = connectionStatus;
+    const previousCounts = counts;
+
+    setIsActionPending(true);
+    setErrorMessage("");
+    setConnectionStatus(optimisticStatus);
+    setCounts((currentCounts) => ({
+      ...currentCounts,
+      crew: optimisticStatus.friends_count,
+    }));
+
+    try {
+      await action();
+      await refreshConnectionStatus(profile.id);
+    } catch (error) {
+      setConnectionStatus(previousConnectionStatus);
+      setCounts(previousCounts);
+      setErrorMessage(
+        error instanceof Error ? error.message : "친구 상태를 변경하지 못했습니다.",
+      );
+    } finally {
+      setIsActionPending(false);
+    }
+  }
+
+  function handleSendFriendRequest() {
+    if (!profile || !connectionStatus) {
+      return;
+    }
+
+    void runConnectionAction({
+      action: () => sendFriendRequest(profile.id),
+      optimisticStatus: {
+        ...connectionStatus,
+        is_requester: true,
+        status: "pending",
+      },
+    });
+  }
+
+  function handleAcceptFriendRequest() {
+    if (!profile || !connectionStatus) {
+      return;
+    }
+
+    void runConnectionAction({
+      action: () => acceptFriendRequest(profile.id),
+      optimisticStatus: {
+        friends_count: connectionStatus.friends_count + 1,
+        is_requester: false,
+        status: "accepted",
+      },
+    });
+  }
+
+  function handleRejectFriendRequest() {
+    if (!profile || !connectionStatus) {
+      return;
+    }
+
+    void runConnectionAction({
+      action: () => rejectFriendRequest(profile.id),
+      optimisticStatus: {
+        ...connectionStatus,
+        is_requester: false,
+        status: "none",
+      },
+    });
+  }
+
+  function handleRemoveFriend() {
+    if (!profile || !connectionStatus) {
+      return;
+    }
+
+    void runConnectionAction({
+      action: () => removeFriend(profile.id),
+      optimisticStatus: {
+        friends_count:
+          connectionStatus.status === "accepted"
+            ? Math.max(0, connectionStatus.friends_count - 1)
+            : connectionStatus.friends_count,
+        is_requester: false,
+        status: "none",
+      },
+    });
+  }
+
+  async function handleToggleFavorite() {
+    if (!profile || isMine || isActionPending) {
+      return;
+    }
+
+    const previousIsFavorite = isFavorite;
+    setIsActionPending(true);
+    setErrorMessage("");
+    setIsFavorite(!previousIsFavorite);
+
+    try {
+      const result = await toggleUserFavorite(profile.id);
+      setIsFavorite(result.favorited);
+    } catch (error) {
+      setIsFavorite(previousIsFavorite);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "즐겨찾기 상태를 변경하지 못했습니다.",
+      );
+    } finally {
+      setIsActionPending(false);
+    }
+  }
+
   const handlePressPost = useCallback(
     (postId: string) => {
       router.push({ pathname: "/post/[id]", params: { id: postId } });
     },
     [router],
   );
+
+  const actionSheetItems: ActionSheetItem[] = [
+    {
+      label: isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가",
+      onPress: () => {
+        void handleToggleFavorite();
+      },
+    },
+    ...(connectionStatus?.status === "accepted"
+      ? [
+          {
+            danger: true,
+            label: "친구 삭제",
+            onPress: handleRemoveFriend,
+          } satisfies ActionSheetItem,
+        ]
+      : []),
+    {
+      label: "취소",
+      onPress: () => {},
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -118,7 +305,24 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           <Text style={styles.headerTitle} numberOfLines={1}>
             {profile?.nickname}
           </Text>
-          <View style={styles.headerSpacer} />
+          {!isMine ? (
+            <Pressable
+              accessibilityLabel="프로필 옵션"
+              accessibilityRole="button"
+              onPress={() => {
+                setIsActionSheetOpen(true);
+              }}
+              style={styles.headerButton}
+            >
+              <MoreHorizontal
+                color={colors.text}
+                size={22}
+                strokeWidth={2.4}
+              />
+            </Pressable>
+          ) : (
+            <View style={styles.headerSpacer} />
+          )}
         </View>
       ) : (
         <View style={styles.tabHeader}>
@@ -145,6 +349,19 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
         {profile ? (
           <KrewSurface style={styles.panel}>
             <ProfileInfoPanel counts={counts} profile={profile} />
+            {!isMine && connectionStatus ? (
+              <ProfileConnectionActions
+                connectionStatus={connectionStatus}
+                disabled={isActionPending}
+                onAccept={handleAcceptFriendRequest}
+                onReject={handleRejectFriendRequest}
+                onRemove={handleRemoveFriend}
+                onSend={handleSendFriendRequest}
+              />
+            ) : null}
+            {errorMessage ? (
+              <Text style={styles.inlineError}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.divider} />
             {posts.length === 0 ? (
               <View style={styles.emptyGrid}>
@@ -156,6 +373,13 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           </KrewSurface>
         ) : null}
       </ScrollView>
+      <ActionSheet
+        isOpen={isActionSheetOpen}
+        items={actionSheetItems}
+        onClose={() => {
+          setIsActionSheetOpen(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -238,5 +462,12 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 14,
     fontWeight: "700",
+  },
+  inlineError: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    color: colors.danger,
+    fontSize: 12,
+    fontWeight: "800",
   },
 });
