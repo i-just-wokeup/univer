@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { VisibilityPicker } from "../../components/common/VisibilityPicker";
 import { PostAspectRatioPicker } from "../../components/write/PostAspectRatioPicker";
 import { PostImageUploader } from "../../components/write/PostImageUploader";
@@ -54,9 +55,38 @@ export function WriteScreen() {
   const [visibility, setVisibility] = useState<PostVisibility>("public");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDiscardOpen, setIsDiscardOpen] = useState(false);
 
   const canSubmit =
     !isSubmitting && (imageUris.length > 0 || content.trim().length > 0);
+  const hasDraft = imageUris.length > 0 || content.trim().length > 0;
+
+  function resetForm() {
+    setImageUris([]);
+    setAspectRatio("square");
+    setContent("");
+    setVisibility("public");
+    setErrorMessage("");
+  }
+
+  function handleCancel() {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (hasDraft) {
+      setIsDiscardOpen(true);
+      return;
+    }
+
+    router.back();
+  }
+
+  function handleConfirmDiscard() {
+    setIsDiscardOpen(false);
+    resetForm();
+    router.back();
+  }
 
   async function handlePickImages() {
     setErrorMessage("");
@@ -123,6 +153,7 @@ export function WriteScreen() {
         visibility,
       });
 
+      resetForm();
       router.replace("/");
     } catch (error) {
       setErrorMessage(
@@ -143,7 +174,7 @@ export function WriteScreen() {
           <Pressable
             accessibilityRole="button"
             disabled={isSubmitting}
-            onPress={() => router.back()}
+            onPress={handleCancel}
             style={({ pressed }) => [
               styles.headerButton,
               pressed ? styles.pressed : null,
@@ -218,6 +249,17 @@ export function WriteScreen() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <ConfirmDialog
+        cancelLabel="계속 작성"
+        confirmLabel="나가기"
+        danger
+        description="지금 나가면 작성 중인 내용이 사라집니다."
+        isOpen={isDiscardOpen}
+        onCancel={() => setIsDiscardOpen(false)}
+        onConfirm={handleConfirmDiscard}
+        title="작성을 취소할까요?"
+      />
     </SafeAreaView>
   );
 }
