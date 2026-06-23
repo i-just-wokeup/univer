@@ -7,6 +7,7 @@
 ## 2026-06-23
 
 ### 완료
+- **중복 코드 공용화(시간/비율/유저컨텍스트/ScreenHeader)**
 - **공용 ConfirmDialog 추가 + 작성 화면 초기화/취소 경고**
   - 재사용 가능한 `components/common/ConfirmDialog.tsx`(RN Modal, danger 분기) 추가 — 스토리 삭제/신고·친구 삭제 등 재사용 예정
   - WriteScreen: 게시 성공 후 입력값 초기화(다음에 방금 올린 글 안 남게), "취소" 시 작성 중인 내용 있으면 ConfirmDialog로 discard 경고(탭 전환은 draft 유지)
