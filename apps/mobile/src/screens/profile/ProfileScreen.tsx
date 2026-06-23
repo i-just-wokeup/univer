@@ -348,7 +348,17 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
       >
         {profile ? (
           <KrewSurface style={styles.panel}>
-            <ProfileInfoPanel counts={counts} profile={profile} />
+            <ProfileInfoPanel
+              counts={counts}
+              onPressCrew={
+                isMine
+                  ? () => {
+                      router.push("/profile/connections");
+                    }
+                  : undefined
+              }
+              profile={profile}
+            />
             {!isMine && connectionStatus ? (
               <ProfileConnectionActions
                 connectionStatus={connectionStatus}
