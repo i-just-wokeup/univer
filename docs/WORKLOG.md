@@ -7,6 +7,8 @@
 ## 2026-06-23
 
 ### 완료
+- **Expo 기본 아바타 실루엣 통일**
+  - 기본 아바타를 웹과 동일한 회색 실루엣으로 통일
 - **앱 댓글 고도화 (대댓글/좋아요/삭제/멘션)**
   - `features/comments/api.ts`에 `deleteComment`(본인만, cascade, 원댓글일 때만 `recount_post_comments`), `toggleCommentLike`(`comment_likes` 토글 + `recount_comment_likes` + 실패 시 롤백), `getLikedCommentIds` 추가 — 기존 테이블/RPC 호출만, 스키마 변경 없음
   - `CommentsSheet`를 평탄화 → **트리 렌더**로 리팩토링: 답글 달기(@멘션 자동 채움 + "○○에게 답글 달기" 배너), 대댓글 "답글 N개 보기/숨기기" 접기펼치기, 댓글 좋아요(하트+수, 낙관적+롤백), 본인 댓글 삭제, 대댓글 @부모닉네임 멘션(프로필 링크)
