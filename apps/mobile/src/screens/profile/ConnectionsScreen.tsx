@@ -1,9 +1,7 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   RefreshControl,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { KrewSurface } from "../../components/common/KrewSurface";
+import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import {
   CONNECTION_TABS,
@@ -146,13 +145,7 @@ export function ConnectionsScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.headerButton}>
-          <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
-        </Pressable>
-        <Text style={styles.headerTitle}>크루 관리</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader onBack={() => router.back()} title="크루 관리" />
 
       <View style={styles.tabsWrap}>
         <ConnectionTabs activeTab={activeTab} onChange={setActiveTab} />
@@ -253,33 +246,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.accentSoft,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  headerButton: {
-    height: 40,
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-    backgroundColor: colors.white,
-  },
-  headerTitle: {
-    flex: 1,
-    marginHorizontal: 12,
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "900",
-    textAlign: "center",
-  },
-  headerSpacer: {
-    height: 40,
-    width: 40,
   },
   tabsWrap: {
     paddingHorizontal: 16,
