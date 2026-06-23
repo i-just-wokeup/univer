@@ -1,6 +1,8 @@
 import type { Database } from "../../types/database.types";
+import type { Json } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type {
+  ConnectionStatus,
   ProfileCounts,
   ProfileDetail,
   ProfileGridPost,
@@ -11,6 +13,25 @@ type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
 type ProfileLinkRow = Database["public"]["Tables"]["profile_links"]["Row"];
+
+function isConnectionStatus(value: Json | null): value is ConnectionStatus {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  return (
+    "status" in value &&
+    typeof value.status === "string" &&
+    (value.status === "none" ||
+      value.status === "pending" ||
+      value.status === "accepted" ||
+      value.status === "rejected") &&
+    "is_requester" in value &&
+    typeof value.is_requester === "boolean" &&
+    "friends_count" in value &&
+    typeof value.friends_count === "number"
+  );
+}
 
 async function getCurrentUserId(): Promise<string> {
   const supabase = getSupabaseMobileClient();
@@ -186,21 +207,163 @@ export async function getProfileCounts(userId: string): Promise<ProfileCounts> {
     throw new Error("게시물 수를 불러오지 못했습니다.");
   }
 
-  let crew = 0;
+  const connectionStatus = await getConnectionStatus(userId);
+
+  return { crew: connectionStatus.friends_count, posts: count ?? 0 };
+}
+
+export async function getConnectionStatus(
+  userId: string,
+): Promise<ConnectionStatus> {
+  const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase.rpc("get_connection_status", {
     target_user_id: userId,
   });
 
-  if (
-    !error &&
-    data &&
-    typeof data === "object" &&
-    !Array.isArray(data) &&
-    "friends_count" in data
-  ) {
-    const friendsCount = (data as { friends_count?: unknown }).friends_count;
-    crew = typeof friendsCount === "number" ? friendsCount : 0;
+  if (error) {
+    throw new Error("친구 연결 상태를 불러오지 못했습니다.");
   }
 
-  return { crew, posts: count ?? 0 };
+  const normalizedData = (data ?? null) as Json | null;
+
+  if (!isConnectionStatus(normalizedData)) {
+    throw new Error("친구 연결 상태 응답 형식이 올바르지 않습니다.");
+  }
+
+  return normalizedData;
+}
+
+export async function sendFriendRequest(userId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const { error } = await supabase.rpc("send_friend_request", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 신청에 실패했습니다.");
+  }
+}
+
+export async function acceptFriendRequest(userId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const { error } = await supabase.rpc("accept_friend_request", {
+    requester_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 요청 수락에 실패했습니다.");
+  }
+}
+
+export async function rejectFriendRequest(userId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const { error } = await supabase.rpc("reject_friend_request", {
+    requester_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 요청 거절에 실패했습니다.");
+  }
+}
+
+export async function removeFriend(userId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const { error } = await supabase.rpc("remove_friend", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("친구 연결 해제에 실패했습니다.");
+  }
+}
+
+export async function getFavoriteUserStatus(userId: string): Promise<boolean> {
+  const supabase = getSupabaseMobileClient();
+  const currentUserId = await getCurrentUserId();
+
+  if (currentUserId === userId) {
+    return false;
+  }
+
+  const { data, error } = await supabase
+    .from("user_favorites")
+    .select("id")
+    .eq("user_id", currentUserId)
+    .eq("favorite_user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("즐겨찾기 상태를 불러오지 못했습니다.");
+  }
+
+  return Boolean(data);
+}
+
+export async function toggleUserFavorite(
+  favoriteUserId: string,
+): Promise<{ favorited: boolean }> {
+  const supabase = getSupabaseMobileClient();
+  const currentUserId = await getCurrentUserId();
+
+  if (currentUserId === favoriteUserId) {
+    throw new Error("내 계정은 즐겨찾기에 추가할 수 없습니다.");
+  }
+
+  const { data: currentUser, error: currentUserError } = await supabase
+    .from("users")
+    .select("university_id")
+    .eq("id", currentUserId)
+    .maybeSingle();
+
+  if (currentUserError || !currentUser?.university_id) {
+    throw new Error("사용자 정보를 불러오지 못했습니다.");
+  }
+
+  const { data: existingFavorite, error: selectError } = await supabase
+    .from("user_favorites")
+    .select("id")
+    .eq("user_id", currentUserId)
+    .eq("favorite_user_id", favoriteUserId)
+    .maybeSingle();
+
+  if (selectError) {
+    throw new Error("즐겨찾기 상태를 확인하지 못했습니다.");
+  }
+
+  if (existingFavorite) {
+    const { error: deleteError } = await supabase
+      .from("user_favorites")
+      .delete()
+      .eq("id", existingFavorite.id)
+      .eq("user_id", currentUserId);
+
+    if (deleteError) {
+      throw new Error("즐겨찾기 해제에 실패했습니다.");
+    }
+
+    return { favorited: false };
+  }
+
+  const { data: targetUser, error: targetError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", favoriteUserId)
+    .eq("university_id", currentUser.university_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (targetError || !targetUser) {
+    throw new Error("즐겨찾기에 추가할 수 없는 계정입니다.");
+  }
+
+  const { error: insertError } = await supabase.from("user_favorites").insert({
+    favorite_user_id: favoriteUserId,
+    user_id: currentUserId,
+  });
+
+  if (insertError) {
+    throw new Error("즐겨찾기 추가에 실패했습니다.");
+  }
+
+  return { favorited: true };
 }
