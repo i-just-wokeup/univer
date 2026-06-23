@@ -1,6 +1,6 @@
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import { uploadImagesToBucket } from "../shared/imageUpload";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -37,90 +37,8 @@ function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
 }
 
-function createStoragePath() {
-  const id =
-    globalThis.crypto?.randomUUID?.() ??
-    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-  return `posts/${id}.jpg`;
-}
-
-function decodeBase64(base64: string): ArrayBuffer {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  const cleanBase64 = base64.replace(/[\r\n=]/g, "");
-  const bytes: number[] = [];
-
-  for (let index = 0; index < cleanBase64.length; index += 4) {
-    const encoded1 = chars.indexOf(cleanBase64[index] ?? "A");
-    const encoded2 = chars.indexOf(cleanBase64[index + 1] ?? "A");
-    const encoded3 = chars.indexOf(cleanBase64[index + 2] ?? "A");
-    const encoded4 = chars.indexOf(cleanBase64[index + 3] ?? "A");
-    const bitmap =
-      (encoded1 << 18) | (encoded2 << 12) | (encoded3 << 6) | encoded4;
-
-    bytes.push((bitmap >> 16) & 255);
-
-    if (index + 2 < cleanBase64.length) {
-      bytes.push((bitmap >> 8) & 255);
-    }
-
-    if (index + 3 < cleanBase64.length) {
-      bytes.push(bitmap & 255);
-    }
-  }
-
-  return new Uint8Array(bytes).buffer;
-}
-
-async function getManipulatedImageBytes(uri: string): Promise<ArrayBuffer> {
-  const manipulated = await manipulateAsync(
-    uri,
-    [{ resize: { width: 1600 } }],
-    { compress: 0.8, format: SaveFormat.JPEG },
-  );
-
-  try {
-    const response = await fetch(manipulated.uri);
-    return await response.arrayBuffer();
-  } catch {
-    const base64Manipulated = await manipulateAsync(
-      uri,
-      [{ resize: { width: 1600 } }],
-      { base64: true, compress: 0.8, format: SaveFormat.JPEG },
-    );
-
-    if (!base64Manipulated.base64) {
-      throw new Error("이미지 압축 결과를 읽지 못했습니다.");
-    }
-
-    return decodeBase64(base64Manipulated.base64);
-  }
-}
-
 export async function uploadPostImages(uris: string[]): Promise<string[]> {
-  const supabase = getSupabaseMobileClient();
-
-  return Promise.all(
-    uris.map(async (uri) => {
-      const bytes = await getManipulatedImageBytes(uri);
-      const path = createStoragePath();
-      const { error } = await supabase.storage
-        .from("post-images")
-        .upload(path, bytes, {
-          contentType: "image/jpeg",
-          upsert: false,
-        });
-
-      if (error) {
-        throw new Error("이미지 업로드에 실패했습니다.");
-      }
-
-      const { data } = supabase.storage.from("post-images").getPublicUrl(path);
-
-      return data.publicUrl;
-    }),
-  );
+  return uploadImagesToBucket("post-images", "posts", uris, 1600);
 }
 
 export async function createPost({
