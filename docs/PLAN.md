@@ -154,6 +154,7 @@
 - [x] **앱 상대방 프로필 진입** — `app/profile/[nickname]`(탭 바깥), 피드/댓글 작성자 탭 → 프로필 이동, `UserInline` 공용 컴포넌트 (보기 전용)
 - [x] **앱 게시물 상세 화면 1차** — `getPost(postId)` + `app/post/[id]`(탭바 숨김), FeedPostCard/CommentsSheet 재사용, 탐색·프로필 그리드 탭 → 상세 이동. 저장/신고/차단/삭제·연속피드는 다음 단계
 - [x] **앱 댓글 고도화** — 대댓글(@멘션/접기펼치기) + 댓글 좋아요(낙관적+롤백) + 본인 삭제. `deleteComment`/`toggleCommentLike`/`getLikedCommentIds` 추가(기존 테이블·RPC), `CommentRow` 분리. 스키마 변경 없음
+- [x] **앱 상대 프로필 크루 액션** — 친구 신청/수락/거절/삭제 RPC, 즐겨찾기 토글, 상대 프로필 `...` 액션시트, 낙관적 업데이트+롤백, 크루 수 갱신. 메시지 버튼은 앱 채팅 라우트 전까지 제외
 - [x] **앱 상대방 프로필 라우트 1차 연결** — `(tabs)` 바깥 `app/profile/[nickname].tsx` 추가, 기존 `ProfileScreen` 재사용, 세션/파라미터 리다이렉트 처리
 - [x] **앱 피드/댓글 작성자 프로필 이동 연결** — 공용 `UserInline` 분리, 피드 카드/댓글 작성자 탭 시 `/profile/[nickname]` 이동 연결
 - [x] **앱 댓글 바텀시트 높이 보정** — 댓글 시트를 화면 대부분을 덮는 94% 높이로 조정하고 리스트/로딩 영역을 남은 공간에 맞춤
@@ -170,8 +171,7 @@
 
 1. Expo 앱 전환 vertical slice (라우터 전환 완료, 다음은 화면 연결)
    - WSL2 + 실기기 실행은 `cd apps/mobile && npx expo start --tunnel` (LAN 모드면 번들 다운로드 실패)
-   - 상세 화면을 `(tabs)` 바깥 라우트(`app/post/[id].tsx`)로 만들어 진입 시 하단 탭바가 가려지는 인스타식 구조 적용
-   - 상대 프로필 보기 전용 라우트 실기기 확인(피드/댓글 작성자 탭 → 하단 탭바 없이 프로필 표시)
+   - 상대 프로필 크루 액션 실기기 확인(친구 신청/취소, 수락/거절, 친구 삭제, 즐겨찾기 토글, 크루 수 갱신)
    - 검색/활동(탐색)/프로필 placeholder를 실제 조회 화면으로 연결 (`getProfile`/`getProfilePosts`/`getExplorePosts` 재사용)
    - 남은 세부 화면의 safe area/키보드/상태바 겹침 실기기 확인
    - `react-dom` 19.1.0 정렬(`npx expo install react-dom`) — 선택
