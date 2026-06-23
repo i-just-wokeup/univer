@@ -7,6 +7,12 @@
 ## 2026-06-23
 
 ### 완료
+- **Expo 크루 관리 화면 구현**
+  - 앱 `profile/api.ts`에 `getFriends`/`getPendingRequests`/`getSentRequests` RPC 조회를 추가하고 기존 수락/거절/삭제 RPC를 재사용(스키마 변경 없음)
+  - `(tabs)` 바깥 `app/profile/connections.tsx`와 `ConnectionsScreen`을 추가해 내 크루/받은 요청/보낸 요청 3탭, lazy load, 새로고침, 빈상태/로딩/에러 표시를 구현
+  - `ConnectionTabs`/`ConnectionUserRow` 순수 UI를 분리하고, 받은 요청 수락·거절, 보낸 요청 취소, 내 크루 삭제를 낙관적 행 제거+실패 롤백으로 처리
+  - 내 프로필의 크루 통계를 누르면 크루 관리 화면으로 이동하도록 연결하고, 유저 행 탭 시 상대 프로필로 이동
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 상대 프로필 크루 액션 구현**
   - 앱 `profile/api.ts`에 친구 상태 조회/신청/수락/거절/삭제 RPC와 유저 즐겨찾기 조회/토글을 이식(기존 RPC·테이블만 사용, 스키마 변경 없음)
   - `ProfileConnectionActions` 순수 UI와 RN `ActionSheet` 공용 컴포넌트를 추가하고, 상대 프로필에서 친구 신청/요청됨+취소/수락·거절/친구 상태를 표시
