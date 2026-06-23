@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
+import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import {
@@ -100,13 +100,7 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
 
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.headerButton}>
-          <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
-        </Pressable>
-        <Text style={styles.headerTitle}>게시물</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader onBack={() => router.back()} title="게시물" />
 
       {isLoading ? (
         <StateView
@@ -154,33 +148,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.accentSoft,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 6,
-  },
-  headerButton: {
-    height: 40,
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-    backgroundColor: colors.white,
-  },
-  headerSpacer: {
-    height: 40,
-    width: 40,
-  },
-  headerTitle: {
-    flex: 1,
-    marginHorizontal: 12,
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "900",
-    textAlign: "center",
   },
   scrollContent: {
     paddingTop: 8,
