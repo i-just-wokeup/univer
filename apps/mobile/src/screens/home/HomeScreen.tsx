@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -13,8 +13,11 @@ import { StateView } from "../../components/common/StateView";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { HomeHeader } from "../../components/home/HomeHeader";
+import { StoryBar } from "../../components/stories/StoryBar";
 import { getFeed, getLikedPostIds, togglePostLike } from "../../features/feed/api";
 import type { FeedPost } from "../../features/feed/types";
+import { getStories } from "../../features/stories/api";
+import type { StoryGroup } from "../../features/stories/types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
@@ -28,7 +31,23 @@ export function HomeScreen() {
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(() => new Set());
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [storyGroups, setStoryGroups] = useState<StoryGroup[]>([]);
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
+
+  const loadStories = useCallback(async () => {
+    try {
+      setStoryGroups(await getStories());
+    } catch {
+      // 스토리바 로딩 실패는 피드 사용을 막지 않는다.
+    }
+  }, []);
+
+  // 화면에 다시 진입할 때마다(작성/뷰어에서 복귀 포함) 스토리바를 갱신한다.
+  useFocusEffect(
+    useCallback(() => {
+      void loadStories();
+    }, [loadStories]),
+  );
 
   const loadFirstPage = useCallback(async () => {
     try {
@@ -153,6 +172,20 @@ export function HomeScreen() {
     [handleUserPress],
   );
 
+  const handlePressCreateStory = useCallback(() => {
+    router.push("/story/create");
+  }, [router]);
+
+  const handlePressStoryGroup = useCallback(
+    (group: StoryGroup) => {
+      router.push({
+        pathname: "/story/[userId]",
+        params: { userId: group.user.id },
+      });
+    },
+    [router],
+  );
+
   if (isInitialLoading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -201,7 +234,16 @@ export function HomeScreen() {
             />
           ) : null
         }
-        ListHeaderComponent={<HomeHeader onSignOut={handleSignOut} />}
+        ListHeaderComponent={
+          <>
+            <HomeHeader onSignOut={handleSignOut} />
+            <StoryBar
+              groups={storyGroups}
+              onPressCreate={handlePressCreateStory}
+              onPressGroup={handlePressStoryGroup}
+            />
+          </>
+        }
         contentContainerStyle={styles.listContent}
         data={posts}
         keyExtractor={(post) => post.id}
