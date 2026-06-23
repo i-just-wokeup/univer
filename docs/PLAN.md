@@ -153,6 +153,7 @@
 - [x] **앱 내 프로필 화면** — 웹 page 레이아웃(KrewSurface 패널: 아바타+게시물/크루+실명/학과+bio/링크+3열 1:1 그리드), `getProfile(nickname?)` 닉네임 분기 지원, 재사용 컴포넌트(KrewSurface/PostThumbnailGrid/ProfileInfoPanel) 분리
 - [x] **앱 상대방 프로필 진입** — `app/profile/[nickname]`(탭 바깥), 피드/댓글 작성자 탭 → 프로필 이동, `UserInline` 공용 컴포넌트 (보기 전용)
 - [x] **앱 게시물 상세 화면 1차** — `getPost(postId)` + `app/post/[id]`(탭바 숨김), FeedPostCard/CommentsSheet 재사용, 탐색·프로필 그리드 탭 → 상세 이동. 저장/신고/차단/삭제·연속피드는 다음 단계
+- [x] **앱 댓글 고도화** — 대댓글(@멘션/접기펼치기) + 댓글 좋아요(낙관적+롤백) + 본인 삭제. `deleteComment`/`toggleCommentLike`/`getLikedCommentIds` 추가(기존 테이블·RPC), `CommentRow` 분리. 스키마 변경 없음
 - [x] **앱 상대방 프로필 라우트 1차 연결** — `(tabs)` 바깥 `app/profile/[nickname].tsx` 추가, 기존 `ProfileScreen` 재사용, 세션/파라미터 리다이렉트 처리
 - [x] **앱 피드/댓글 작성자 프로필 이동 연결** — 공용 `UserInline` 분리, 피드 카드/댓글 작성자 탭 시 `/profile/[nickname]` 이동 연결
 - [x] **앱 댓글 바텀시트 높이 보정** — 댓글 시트를 화면 대부분을 덮는 94% 높이로 조정하고 리스트/로딩 영역을 남은 공간에 맞춤
