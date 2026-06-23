@@ -7,6 +7,10 @@
 ## 2026-06-23
 
 ### 완료
+- **공용 ConfirmDialog 추가 + 작성 화면 초기화/취소 경고**
+  - 재사용 가능한 `components/common/ConfirmDialog.tsx`(RN Modal, danger 분기) 추가 — 스토리 삭제/신고·친구 삭제 등 재사용 예정
+  - WriteScreen: 게시 성공 후 입력값 초기화(다음에 방금 올린 글 안 남게), "취소" 시 작성 중인 내용 있으면 ConfirmDialog로 discard 경고(탭 전환은 draft 유지)
+  - 게시물 작성 큰 미리보기 추가(선택 사진을 고른 비율로 표시, 비율 변경 시 프레임도 변경)
 - **CommentsSheet 로직 useComments 훅 분리(리팩토링)**
 - **Expo 게시물 작성 화면 구현 (사진 업로드)**
   - `expo-image-picker`/`expo-image-manipulator`를 설치하고 `react-dom`을 Expo SDK 54 호환 `19.1.0`으로 정렬
