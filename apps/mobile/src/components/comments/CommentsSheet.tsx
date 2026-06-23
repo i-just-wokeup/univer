@@ -17,8 +17,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { UserInline } from "../common/UserInline";
-import { createComment, getComments } from "../../features/comments/api";
+import { CommentRow } from "./CommentRow";
+import {
+  createComment,
+  deleteComment,
+  getComments,
+  getCurrentCommentUserId,
+  getLikedCommentIds,
+  toggleCommentLike,
+} from "../../features/comments/api";
 import type { Comment } from "../../features/comments/types";
 import { colors } from "../../lib/theme";
 
@@ -30,25 +37,49 @@ type CommentsSheetProps = {
   postId: string | null;
 };
 
+type ReplyTarget = {
+  nickname: string;
+  parentId: string;
+};
+
 function flattenComments(comments: Comment[]) {
   return comments.flatMap((comment) => [comment, ...comment.replies]);
 }
 
-function getRelativeTimeLabel(createdAt: string) {
-  const diffMs = Date.now() - new Date(createdAt).getTime();
-  const minuteMs = 60 * 1000;
-  const hourMs = 60 * minuteMs;
-  const dayMs = 24 * hourMs;
+function addReply(comments: Comment[], parentId: string, reply: Comment) {
+  return comments.map((comment) =>
+    comment.id === parentId
+      ? { ...comment, replies: [...comment.replies, reply] }
+      : comment,
+  );
+}
 
-  if (diffMs < hourMs) {
-    return `${Math.max(1, Math.floor(diffMs / minuteMs))}분 전`;
-  }
+function removeComment(comments: Comment[], commentId: string) {
+  return comments
+    .filter((comment) => comment.id !== commentId)
+    .map((comment) => ({
+      ...comment,
+      replies: comment.replies.filter((reply) => reply.id !== commentId),
+    }));
+}
 
-  if (diffMs < dayMs) {
-    return `${Math.max(1, Math.floor(diffMs / hourMs))}시간 전`;
-  }
+function updateCommentLikes(
+  comments: Comment[],
+  commentId: string,
+  likesCount: number,
+) {
+  return comments.map((comment) => {
+    if (comment.id === commentId) {
+      return { ...comment, likes_count: likesCount };
+    }
 
-  return `${Math.max(1, Math.floor(diffMs / dayMs))}일 전`;
+    return {
+      ...comment,
+      replies: comment.replies.map((reply) =>
+        reply.id === commentId ? { ...reply, likes_count: likesCount } : reply,
+      ),
+    };
+  });
 }
 
 export function CommentsSheet({
@@ -65,7 +96,18 @@ export function CommentsSheet({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const flatComments = useMemo(() => flattenComments(comments), [comments]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [likedCommentIds, setLikedCommentIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [expandedReplyIds, setExpandedReplyIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null,
+  );
+  const inputRef = useRef<TextInput | null>(null);
   const isClosingRef = useRef(false);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -137,6 +179,10 @@ export function CommentsSheet({
 
     sheetTranslateY.setValue(0);
     isClosingRef.current = false;
+    setContent("");
+    setReplyTarget(null);
+    setExpandedReplyIds(new Set());
+    setErrorMessage("");
     let isMounted = true;
 
     async function loadComments() {
@@ -147,13 +193,21 @@ export function CommentsSheet({
       try {
         setIsLoading(true);
         setErrorMessage("");
-        const loadedComments = await getComments(postId);
+        const [loadedComments, loadedUserId] = await Promise.all([
+          getComments(postId),
+          getCurrentCommentUserId(),
+        ]);
+        const likedIds = await getLikedCommentIds(
+          flattenComments(loadedComments).map((comment) => comment.id),
+        );
 
         if (!isMounted) {
           return;
         }
 
         setComments(loadedComments);
+        setCurrentUserId(loadedUserId);
+        setLikedCommentIds(new Set(likedIds));
         onCommentCountChange(postId, loadedComments.length);
       } catch (error) {
         if (!isMounted) {
@@ -175,23 +229,39 @@ export function CommentsSheet({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, onCommentCountChange, postId]);
+  }, [isOpen, onCommentCountChange, postId, sheetTranslateY]);
 
   async function handleSubmit() {
-    if (!postId || isSubmitting || content.trim().length === 0) {
+    const trimmed = content.trim();
+
+    if (!postId || isSubmitting || trimmed.length === 0) {
       return;
     }
+
+    const parentId = replyTarget?.parentId;
 
     try {
       setIsSubmitting(true);
       setErrorMessage("");
-      const nextComment = await createComment(postId, content);
-      setComments((currentComments) => {
-        const nextComments = [nextComment, ...currentComments];
-        onCommentCountChange(postId, nextComments.length);
-        return nextComments;
-      });
+      const created = await createComment(postId, trimmed, parentId);
       setContent("");
+      setReplyTarget(null);
+
+      if (created.parent_id) {
+        const replyParentId = created.parent_id;
+        setComments((current) => addReply(current, replyParentId, created));
+        setExpandedReplyIds((current) => {
+          const next = new Set(current);
+          next.add(replyParentId);
+          return next;
+        });
+      } else {
+        setComments((current) => {
+          const next = [created, ...current];
+          onCommentCountChange(postId, next.length);
+          return next;
+        });
+      }
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "댓글 작성에 실패했습니다.",
@@ -200,6 +270,128 @@ export function CommentsSheet({
       setIsSubmitting(false);
     }
   }
+
+  const handleReply = useCallback((comment: Comment) => {
+    setReplyTarget({ nickname: comment.user.nickname, parentId: comment.id });
+    setContent(`@${comment.user.nickname} `);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, []);
+
+  function handleCancelReply() {
+    setReplyTarget(null);
+    setContent("");
+  }
+
+  const toggleReplies = useCallback((commentId: string) => {
+    setExpandedReplyIds((current) => {
+      const next = new Set(current);
+      if (next.has(commentId)) {
+        next.delete(commentId);
+      } else {
+        next.add(commentId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleLike = useCallback(
+    async (commentId: string) => {
+      const previousComments = comments;
+      const previousLiked = new Set(likedCommentIds);
+      const wasLiked = likedCommentIds.has(commentId);
+
+      setErrorMessage("");
+      setLikedCommentIds((current) => {
+        const next = new Set(current);
+        if (wasLiked) {
+          next.delete(commentId);
+        } else {
+          next.add(commentId);
+        }
+        return next;
+      });
+      setComments((current) => {
+        const target = flattenComments(current).find(
+          (comment) => comment.id === commentId,
+        );
+        const nextCount = Math.max(
+          0,
+          (target?.likes_count ?? 0) + (wasLiked ? -1 : 1),
+        );
+        return updateCommentLikes(current, commentId, nextCount);
+      });
+
+      try {
+        const result = await toggleCommentLike(commentId);
+        setLikedCommentIds((current) => {
+          const next = new Set(current);
+          if (result.liked) {
+            next.add(commentId);
+          } else {
+            next.delete(commentId);
+          }
+          return next;
+        });
+        setComments((current) =>
+          updateCommentLikes(current, commentId, result.likesCount),
+        );
+      } catch (error) {
+        setComments(previousComments);
+        setLikedCommentIds(previousLiked);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "댓글 좋아요 처리에 실패했습니다.",
+        );
+      }
+    },
+    [comments, likedCommentIds],
+  );
+
+  const handleDelete = useCallback(
+    async (commentId: string) => {
+      if (!postId) {
+        return;
+      }
+
+      try {
+        setDeletingCommentId(commentId);
+        setErrorMessage("");
+        await deleteComment(commentId);
+
+        const deletedComment = flattenComments(comments).find(
+          (comment) => comment.id === commentId,
+        );
+        const parentComment = comments.find(
+          (comment) => comment.id === commentId,
+        );
+        const removedIds = parentComment
+          ? [commentId, ...parentComment.replies.map((reply) => reply.id)]
+          : [commentId];
+        const nextComments = removeComment(comments, commentId);
+
+        setComments(nextComments);
+        setLikedCommentIds((current) => {
+          const next = new Set(current);
+          removedIds.forEach((removedId) => next.delete(removedId));
+          return next;
+        });
+
+        if (deletedComment && deletedComment.parent_id === null) {
+          onCommentCountChange(postId, nextComments.length);
+        }
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "댓글 삭제에 실패했습니다.",
+        );
+      } finally {
+        setDeletingCommentId(null);
+      }
+    },
+    [comments, onCommentCountChange, postId],
+  );
 
   return (
     <Modal
@@ -210,12 +402,7 @@ export function CommentsSheet({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={[
-          styles.overlay,
-          {
-            paddingTop: insets.top,
-          },
-        ]}
+        style={[styles.overlay, { paddingTop: insets.top }]}
       >
         <Pressable onPress={closeWithAnimation} style={styles.backdrop} />
         <Animated.View
@@ -241,28 +428,63 @@ export function CommentsSheet({
               ListEmptyComponent={
                 <View style={styles.emptyBox}>
                   <Text style={styles.emptyTitle}>아직 댓글이 없습니다</Text>
-                  <Text style={styles.emptyDescription}>첫 댓글을 남겨보세요.</Text>
+                  <Text style={styles.emptyDescription}>
+                    첫 댓글을 남겨보세요.
+                  </Text>
                 </View>
               }
               contentContainerStyle={styles.commentList}
-              data={flatComments}
+              data={comments}
               keyExtractor={(comment) => comment.id}
+              keyboardShouldPersistTaps="handled"
               renderItem={({ item }) => (
-                <View
-                  style={[
-                    styles.commentBlock,
-                    item.parent_id ? styles.replyRow : null,
-                  ]}
-                >
-                  <UserInline
-                    avatarSize={34}
-                    imageUrl={item.user.avatar_url}
-                    meta={getRelativeTimeLabel(item.created_at)}
-                    nickname={item.user.nickname}
-                    nicknameSize={13}
-                    onPress={onUserPress}
+                <View>
+                  <CommentRow
+                    comment={item}
+                    isDeleting={deletingCommentId === item.id}
+                    isLiked={likedCommentIds.has(item.id)}
+                    isOwn={currentUserId === item.user.id}
+                    onDelete={handleDelete}
+                    onReply={handleReply}
+                    onToggleLike={handleToggleLike}
+                    onUserPress={onUserPress}
                   />
-                  <Text style={styles.commentContent}>{item.content}</Text>
+                  {item.replies.length > 0 ? (
+                    expandedReplyIds.has(item.id) ? (
+                      <View>
+                        {item.replies.map((reply) => (
+                          <CommentRow
+                            comment={reply}
+                            isDeleting={deletingCommentId === reply.id}
+                            isLiked={likedCommentIds.has(reply.id)}
+                            isOwn={currentUserId === reply.user.id}
+                            isReply
+                            key={reply.id}
+                            mentionNickname={item.user.nickname}
+                            onDelete={handleDelete}
+                            onReply={handleReply}
+                            onToggleLike={handleToggleLike}
+                            onUserPress={onUserPress}
+                          />
+                        ))}
+                        <Pressable
+                          onPress={() => toggleReplies(item.id)}
+                          style={styles.replyToggle}
+                        >
+                          <Text style={styles.replyToggleText}>답글 숨기기</Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Pressable
+                        onPress={() => toggleReplies(item.id)}
+                        style={styles.replyToggle}
+                      >
+                        <Text style={styles.replyToggleText}>
+                          답글 {item.replies.length}개 보기
+                        </Text>
+                      </Pressable>
+                    )
+                  ) : null}
                 </View>
               )}
               style={styles.commentListBox}
@@ -275,31 +497,45 @@ export function CommentsSheet({
 
           <View
             style={[
-              styles.inputRow,
+              styles.footer,
               { paddingBottom: Math.max(12, insets.bottom + 10) },
             ]}
           >
-            <TextInput
-              onChangeText={setContent}
-              placeholder="댓글 달기..."
-              placeholderTextColor={colors.textFaint}
-              style={styles.input}
-              value={content}
-            />
-            <Pressable
-              disabled={isSubmitting || content.trim().length === 0}
-              onPress={() => {
-                void handleSubmit();
-              }}
-              style={[
-                styles.sendButton,
-                isSubmitting || content.trim().length === 0
-                  ? styles.sendButtonDisabled
-                  : null,
-              ]}
-            >
-              <Send color={colors.white} size={18} strokeWidth={2.7} />
-            </Pressable>
+            {replyTarget ? (
+              <View style={styles.replyBanner}>
+                <Text style={styles.replyBannerText}>
+                  {replyTarget.nickname}에게 답글 달기
+                </Text>
+                <Pressable onPress={handleCancelReply}>
+                  <Text style={styles.replyBannerCancel}>취소</Text>
+                </Pressable>
+              </View>
+            ) : null}
+
+            <View style={styles.inputRow}>
+              <TextInput
+                onChangeText={setContent}
+                placeholder="댓글 달기..."
+                placeholderTextColor={colors.textFaint}
+                ref={inputRef}
+                style={styles.input}
+                value={content}
+              />
+              <Pressable
+                disabled={isSubmitting || content.trim().length === 0}
+                onPress={() => {
+                  void handleSubmit();
+                }}
+                style={[
+                  styles.sendButton,
+                  isSubmitting || content.trim().length === 0
+                    ? styles.sendButtonDisabled
+                    : null,
+                ]}
+              >
+                <Send color={colors.white} size={18} strokeWidth={2.7} />
+              </Pressable>
+            </View>
           </View>
         </Animated.View>
       </KeyboardAvoidingView>
@@ -361,8 +597,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   commentList: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   commentListBox: {
     flex: 1,
@@ -382,19 +617,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
   },
-  commentBlock: {
-    paddingVertical: 9,
+  replyToggle: {
+    marginLeft: 80,
+    paddingVertical: 4,
   },
-  replyRow: {
-    marginLeft: 34,
-  },
-  commentContent: {
-    marginTop: 4,
-    marginLeft: 46,
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
+  replyToggleText: {
+    color: colors.textFaint,
+    fontSize: 12,
+    fontWeight: "800",
   },
   errorText: {
     color: colors.danger,
@@ -403,14 +633,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: 8,
   },
+  footer: {
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+  },
+  replyBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    borderRadius: 16,
+    backgroundColor: colors.accentSoft,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  replyBannerText: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  replyBannerCancel: {
+    color: colors.accent,
+    fontSize: 12,
+    fontWeight: "900",
+  },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
   },
   input: {
     flex: 1,
