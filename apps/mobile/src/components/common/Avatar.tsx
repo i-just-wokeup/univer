@@ -1,6 +1,5 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-
-import { colors } from "../../lib/theme";
+import { Image, StyleSheet, View } from "react-native";
+import Svg, { Circle, Ellipse } from "react-native-svg";
 
 type AvatarProps = {
   imageUrl?: string | null;
@@ -9,15 +8,28 @@ type AvatarProps = {
 };
 
 export function Avatar({ imageUrl, label, size = 40 }: AvatarProps) {
-  const initial = label.trim().slice(0, 1).toUpperCase() || "U";
   const frameStyle = { height: size, width: size, borderRadius: size / 2 };
 
   return (
-    <View style={[styles.avatar, frameStyle]}>
+    <View
+      accessibilityLabel={`${label} 프로필 이미지`}
+      accessibilityRole="image"
+      style={[styles.avatar, frameStyle]}
+    >
       {imageUrl ? (
         <Image source={{ uri: imageUrl }} style={[styles.image, frameStyle]} />
       ) : (
-        <Text style={styles.initial}>{initial}</Text>
+        <Svg
+          accessibilityElementsHidden
+          height="100%"
+          importantForAccessibility="no-hide-descendants"
+          viewBox="0 0 80 80"
+          width="100%"
+        >
+          <Circle cx="40" cy="40" fill="#A1A1AA" opacity="0.18" r="40" />
+          <Circle cx="40" cy="31" fill="#A1A1AA" r="13" />
+          <Ellipse cx="40" cy="65" fill="#A1A1AA" rx="25" ry="21" />
+        </Svg>
       )}
     </View>
   );
@@ -28,14 +40,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor: "#DDD3FA",
+    backgroundColor: "#E4E4E7",
   },
   image: {
     ...StyleSheet.absoluteFillObject,
-  },
-  initial: {
-    color: colors.accent,
-    fontSize: 15,
-    fontWeight: "900",
   },
 });
