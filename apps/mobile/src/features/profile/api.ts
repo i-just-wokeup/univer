@@ -1,6 +1,7 @@
 import type { Database } from "../../types/database.types";
 import type { Json } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { getBlockRelatedUserIds } from "../shared/userContext";
 import type {
   ConnectionStatus,
   ConnectionUser,
@@ -55,19 +56,6 @@ async function getCurrentUserId(): Promise<string> {
   }
 
   return user.id;
-}
-
-async function getBlockRelatedUserIds(): Promise<string[]> {
-  const supabase = getSupabaseMobileClient();
-  const { data, error } = await supabase.rpc("get_block_related_user_ids");
-
-  if (error || !Array.isArray(data)) {
-    return [];
-  }
-
-  return data
-    .map((row) => row.user_id)
-    .filter((userId): userId is string => typeof userId === "string");
 }
 
 // 실명은 본인이거나 크루(accepted)일 때만 RPC가 값을 반환한다.
