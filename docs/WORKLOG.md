@@ -7,6 +7,7 @@
 ## 2026-06-23
 
 ### 완료
+- **CommentsSheet 로직 useComments 훅 분리(리팩토링)**
 - **Expo 게시물 작성 화면 구현 (사진 업로드)**
   - `expo-image-picker`/`expo-image-manipulator`를 설치하고 `react-dom`을 Expo SDK 54 호환 `19.1.0`으로 정렬
   - 앱 `feed/api.ts`에 이미지 리사이즈/압축 후 Supabase Storage `post-images` 업로드 함수와 `posts`/`post_media` 작성 함수를 추가(스키마 변경 없음)
