@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -23,6 +24,8 @@ export function useMessages(conversationId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  // 읽음 표시는 DB 변경 감지 대신 Broadcast(읽었다 이벤트)로 즉시 전달한다.
+  const readChannelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -180,8 +183,53 @@ export function useMessages(conversationId: string) {
     };
   }, [conversationId, error]);
 
+  // 대화별 공유 채널에서 상대의 "읽음" 이벤트를 받아 내 메시지를 읽음 처리한다.
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`chat:read:${conversationId}`)
+      .on("broadcast", { event: "read" }, ({ payload }) => {
+        const readerId = (payload as { readerId?: string }).readerId;
+
+        if (!readerId) {
+          return;
+        }
+
+        setMessages((prevMessages) =>
+          prevMessages.map((message) =>
+            message.sender_id !== readerId && !message.read_at
+              ? { ...message, read_at: new Date().toISOString() }
+              : message,
+          ),
+        );
+      })
+      .subscribe();
+
+    readChannelRef.current = channel;
+
+    return () => {
+      readChannelRef.current = null;
+      void supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
+
+  // 내가 읽었음을 같은 대화 채널에 알린다(상대가 보낸 메시지를 읽음으로 바꾸게).
+  const broadcastRead = useCallback((readerId: string) => {
+    void readChannelRef.current?.send({
+      event: "read",
+      payload: { readerId },
+      type: "broadcast",
+    });
+  }, []);
+
   return {
     addOptimisticMessage,
+    broadcastRead,
     error,
     hasMore,
     isLoading,

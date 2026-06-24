@@ -49,6 +49,7 @@ export default function MessageRoomPage() {
   const { active, pending, reload } = useConversations();
   const {
     addOptimisticMessage,
+    broadcastRead,
     error: messagesError,
     hasMore,
     isLoading,
@@ -103,6 +104,23 @@ export default function MessageRoomPage() {
 
     return () => window.clearTimeout(timeoutId);
   }, [params.conversationId]);
+
+  // 방을 열고 있을 때 안 읽은 상대 메시지가 있으면 읽음 처리 + 상대에게 읽음 broadcast.
+  useEffect(() => {
+    if (!currentUserProfile) {
+      return;
+    }
+
+    const hasUnreadIncoming = messages.some(
+      (message) =>
+        message.sender_id !== currentUserProfile.id && !message.read_at,
+    );
+
+    if (hasUnreadIncoming) {
+      void markMessagesRead(params.conversationId).catch(() => {});
+      broadcastRead(currentUserProfile.id);
+    }
+  }, [broadcastRead, currentUserProfile, messages, params.conversationId]);
 
   useEffect(() => {
     if (isLoading) {
