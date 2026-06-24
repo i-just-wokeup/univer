@@ -4,14 +4,18 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../lib/theme";
 
 type HomeHeaderProps = {
+  onPressMessages: () => void;
   onPressNotifications: () => void;
   onSignOut: () => void;
+  unreadChatCount: number;
   unreadCount: number;
 };
 
 export function HomeHeader({
+  onPressMessages,
   onPressNotifications,
   onSignOut,
+  unreadChatCount,
   unreadCount,
 }: HomeHeaderProps) {
   return (
@@ -34,8 +38,21 @@ export function HomeHeader({
               </View>
             ) : null}
           </Pressable>
-          <Pressable onLongPress={onSignOut} style={styles.circleButton}>
+          <Pressable
+            accessibilityLabel="메시지"
+            accessibilityRole="button"
+            onLongPress={onSignOut}
+            onPress={onPressMessages}
+            style={styles.circleButton}
+          >
             <MessageCircle color={colors.text} size={28} strokeWidth={2.6} />
+            {unreadChatCount > 0 ? (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                </Text>
+              </View>
+            ) : null}
           </Pressable>
         </View>
       </View>

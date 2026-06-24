@@ -14,6 +14,7 @@ import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { HomeHeader } from "../../components/home/HomeHeader";
 import { StoryBar } from "../../components/stories/StoryBar";
+import { getChatUnreadCount } from "../../features/chat/api";
 import { getFeed, getLikedPostIds, togglePostLike } from "../../features/feed/api";
 import type { FeedPost } from "../../features/feed/types";
 import { getUnreadCount } from "../../features/notifications/api";
@@ -33,6 +34,7 @@ export function HomeScreen() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [storyGroups, setStoryGroups] = useState<StoryGroup[]>([]);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
 
@@ -47,6 +49,12 @@ export function HomeScreen() {
       setUnreadCount(await getUnreadCount());
     } catch {
       // 안읽은 알림 수 로딩 실패는 무시한다.
+    }
+
+    try {
+      setUnreadChatCount(await getChatUnreadCount());
+    } catch {
+      // 안읽은 메시지 수 로딩 실패는 무시한다.
     }
   }, []);
 
@@ -188,6 +196,10 @@ export function HomeScreen() {
     router.push("/notifications");
   }, [router]);
 
+  const handlePressMessages = useCallback(() => {
+    router.push("/messages");
+  }, [router]);
+
   const handlePressStoryGroup = useCallback(
     (group: StoryGroup) => {
       router.push({
@@ -214,10 +226,12 @@ export function HomeScreen() {
     return (
       <SafeAreaView style={styles.screen}>
         <HomeHeader
-              onPressNotifications={handlePressNotifications}
-              onSignOut={handleSignOut}
-              unreadCount={unreadCount}
-            />
+          onPressMessages={handlePressMessages}
+          onPressNotifications={handlePressNotifications}
+          onSignOut={handleSignOut}
+          unreadChatCount={unreadChatCount}
+          unreadCount={unreadCount}
+        />
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
@@ -253,8 +267,10 @@ export function HomeScreen() {
         ListHeaderComponent={
           <>
             <HomeHeader
+              onPressMessages={handlePressMessages}
               onPressNotifications={handlePressNotifications}
               onSignOut={handleSignOut}
+              unreadChatCount={unreadChatCount}
               unreadCount={unreadCount}
             />
             <StoryBar

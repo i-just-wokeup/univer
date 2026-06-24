@@ -21,6 +21,7 @@ import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { ProfileConnectionActions } from "../../components/profile/ProfileConnectionActions";
 import { ProfileInfoPanel } from "../../components/profile/ProfileInfoPanel";
+import { getOrCreateConversation } from "../../features/chat/api";
 import {
   acceptFriendRequest,
   getConnectionStatus,
@@ -238,6 +239,28 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     }
   }
 
+  async function handleStartMessage() {
+    if (!profile || isMine || isActionPending) {
+      return;
+    }
+
+    try {
+      setIsActionPending(true);
+      setErrorMessage("");
+      const conversationId = await getOrCreateConversation(profile.id);
+      router.push({
+        pathname: "/messages/[conversationId]",
+        params: { conversationId },
+      });
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "대화를 시작하지 못했습니다.",
+      );
+    } finally {
+      setIsActionPending(false);
+    }
+  }
+
   const handlePressPost = useCallback(
     (postId: string) => {
       router.push({ pathname: "/post/[id]", params: { id: postId } });
@@ -361,6 +384,9 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
                 connectionStatus={connectionStatus}
                 disabled={isActionPending}
                 onAccept={handleAcceptFriendRequest}
+                onMessage={() => {
+                  void handleStartMessage();
+                }}
                 onReject={handleRejectFriendRequest}
                 onRemove={handleRemoveFriend}
                 onSend={handleSendFriendRequest}

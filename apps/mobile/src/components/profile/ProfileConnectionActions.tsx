@@ -7,6 +7,7 @@ type ProfileConnectionActionsProps = {
   connectionStatus: ConnectionStatus;
   disabled?: boolean;
   onAccept: () => void;
+  onMessage?: () => void;
   onReject: () => void;
   onRemove: () => void;
   onSend: () => void;
@@ -16,6 +17,7 @@ export function ProfileConnectionActions({
   connectionStatus,
   disabled = false,
   onAccept,
+  onMessage,
   onReject,
   onRemove,
   onSend,
@@ -26,6 +28,12 @@ export function ProfileConnectionActions({
   ) {
     return (
       <View style={styles.container}>
+        <ActionButton
+          disabled={disabled}
+          label="메시지"
+          onPress={onMessage}
+          variant="secondary"
+        />
         <ActionButton
           disabled={disabled}
           label="친구 신청"
@@ -39,6 +47,12 @@ export function ProfileConnectionActions({
   if (connectionStatus.status === "pending" && connectionStatus.is_requester) {
     return (
       <View style={styles.container}>
+        <ActionButton
+          disabled={disabled}
+          label="메시지"
+          onPress={onMessage}
+          variant="secondary"
+        />
         <ActionButton disabled label="요청됨" variant="muted" />
         <ActionButton
           disabled={disabled}
@@ -53,6 +67,12 @@ export function ProfileConnectionActions({
   if (connectionStatus.status === "pending") {
     return (
       <View style={styles.container}>
+        <ActionButton
+          disabled={disabled}
+          label="메시지"
+          onPress={onMessage}
+          variant="secondary"
+        />
         <ActionButton
           disabled={disabled}
           label="수락"
@@ -71,6 +91,12 @@ export function ProfileConnectionActions({
 
   return (
     <View style={styles.container}>
+      <ActionButton
+        disabled={disabled}
+        label="메시지"
+        onPress={onMessage}
+        variant="primary"
+      />
       <ActionButton disabled label="친구 ✓" variant="accentSoft" />
     </View>
   );

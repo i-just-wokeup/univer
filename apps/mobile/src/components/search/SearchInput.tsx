@@ -4,18 +4,25 @@ import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { colors } from "../../lib/theme";
 
 type SearchInputProps = {
+  autoFocus?: boolean;
   onChange: (value: string) => void;
+  placeholder?: string;
   value: string;
 };
 
-export function SearchInput({ onChange, value }: SearchInputProps) {
+export function SearchInput({
+  autoFocus = true,
+  onChange,
+  placeholder = "닉네임, 해시태그 검색",
+  value,
+}: SearchInputProps) {
   return (
     <View style={styles.wrap}>
       <Search color={colors.textFaint} size={18} strokeWidth={2.4} />
       <TextInput
-        autoFocus
+        autoFocus={autoFocus}
         onChangeText={onChange}
-        placeholder="닉네임, 해시태그 검색"
+        placeholder={placeholder}
         placeholderTextColor={colors.textFaint}
         returnKeyType="search"
         style={styles.input}
