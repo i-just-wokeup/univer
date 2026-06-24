@@ -7,6 +7,12 @@
 ## 2026-06-24
 
 ### 완료
+- **Expo 앱 프로필 편집/차단한 계정 화면 구현**
+  - 웹 프로필 편집/차단 목록 로직을 앱으로 포팅 — `getBlockedUsers`/`unblockUser`, `updateProfile`/`checkNicknameDuplicate`/`uploadAvatar` 추가. 기존 테이블/RPC/Storage만 사용, 스키마 변경 없음
+  - `/blocked`, `/profile/edit` push 라우트 추가, 설정 화면의 "프로필 편집"/"차단한 계정" Row 활성화
+  - 프로필 편집 화면에서 현재 프로필 프리필, 프로필 사진 선택/업로드, 닉네임 유효성+중복 확인, 한 줄 소개, 대표 링크 다중 저장 연결
+  - 차단한 계정 화면에서 목록/빈상태/에러 처리와 차단 해제 낙관적 제거+실패 롤백 처리
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 내 활동 화면 구현 + 탐색 탭 라벨 정정**
   - 웹 `/settings/activity` API/5탭 lazy load 로직을 앱 `features/activity/api.ts`와 `MyActivityScreen`으로 포팅 — 기존 `stories`/`bookmarks`/`post_likes`/`comments`/`user_favorites` 테이블만 사용, 스키마 변경 없음
   - 스토리/저장됨/좋아요/댓글/즐겨찾기 5탭 구성, 스토리 로드 후 저장·좋아요·댓글 백그라운드 prefetch, 탭별 로딩/빈/에러 처리
