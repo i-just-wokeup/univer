@@ -7,6 +7,17 @@
 ## 2026-06-24
 
 ### 완료
+- **Expo 앱 1:1 DM(채팅) 구현**
+  - 웹 채팅 API/Realtime 훅을 앱 `features/chat/`로 포팅 — `conversations`/`messages` 기존 테이블과 `mark_messages_read`/`accept_chat_request` RPC만 사용, 스키마 변경 없음
+  - `MessagesScreen`/`ChatRoomScreen` 및 `/messages`, `/messages/[conversationId]` 라우트 추가 — 대화 목록(active/pending), 채팅방, 이전 메시지 로드, 읽음 처리, pending 수락, 낙관적 전송, Realtime 수신
+  - RN 순수 UI `ConversationRow`/`MessageBubble`/`MessageInput` 분리, 공용 `Avatar`/`ScreenHeader`/`StateView` 재사용
+  - 홈 헤더 메시지 아이콘 → `/messages` 이동 및 안읽음 뱃지 연결, 상대 프로필 메시지 버튼 → 대화 생성/진입 연결
+  - **웹 정합 디자인/UX 수정** — 채팅방 5분 간격 시간 구분선 + 버블 탭 시에만 시간/읽음 표시(항상표시 제거), 목록을 "닉네임으로 대화 시작" 검색 + 알약 탭(메시지/요청)으로 재구성
+  - **채팅방 inverted FlatList 재작성** — 최신 메시지를 하단 고정해 새 메시지/키보드에서 자동으로 하단 유지(수동 스크롤 제거). 입력창 하단 `safe-area inset`(SDK 54 Android 엣지투엣지 대응)
+  - **읽음 처리 버그 수정** — 방을 연 채 들어온 메시지도 읽음 처리(웹도 동일 버그였음 → 나가도 안읽음으로 안 남게)
+  - **읽음을 Broadcast로 전환 (앱+웹)** — `postgres_changes` UPDATE(간헐 미수신) 대신 대화 공유 채널 `chat:read:<id>`에 "read" 이벤트 broadcast → 양쪽 즉시 읽음 반영(카톡식). DB `read_at`은 안읽음 카운트/재입장 폴백용 유지
+  - ⚠️ **미해결(dev build 필요)** — ① Android 엣지투엣지 백그라운드 복귀 시 시스템바 inset이 잠깐 사라지는 현상(앱 전역, 스토리 포함) ② 키보드 완벽 처리(`react-native-keyboard-controller`는 Expo Go 불가). 둘 다 dev build에서 정리
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **앱 검색 기능 구현 (유저 검색 + 최근 검색)**
   - 웹 검색 로직 포팅 — `features/search/api.ts`(`search_users` RPC + 차단 제외). 스키마 변경 없음
   - 최근 검색을 웹 `localStorage` → **`AsyncStorage` 비동기**로 포팅(`features/search/history.ts`, 최대 10개)
