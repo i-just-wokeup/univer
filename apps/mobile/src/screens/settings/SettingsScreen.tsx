@@ -93,9 +93,12 @@ export function SettingsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Section label="계정">
-          <Row disabled label="프로필 편집" />
+          <Row
+            label="프로필 편집"
+            onPress={() => router.push("/profile/edit")}
+          />
           <Row label="내 활동" onPress={() => router.push("/activity")} />
-          <Row disabled label="차단한 계정" />
+          <Row label="차단한 계정" onPress={() => router.push("/blocked")} />
         </Section>
 
         <Section label="지원">

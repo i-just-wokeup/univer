@@ -268,6 +268,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     router.push("/settings");
   }, [router]);
 
+  const handlePressEdit = useCallback(() => {
+    router.push("/profile/edit");
+  }, [router]);
+
   const actionSheetItems: ActionSheetItem[] = [
     {
       label: isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가",
@@ -393,6 +397,18 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
               }
               profile={profile}
             />
+            {isMine ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={handlePressEdit}
+                style={({ pressed }) => [
+                  styles.editButton,
+                  pressed ? styles.editButtonPressed : null,
+                ]}
+              >
+                <Text style={styles.editButtonText}>프로필 편집</Text>
+              </Pressable>
+            ) : null}
             {!isMine && connectionStatus ? (
               <ProfileConnectionActions
                 connectionStatus={connectionStatus}
@@ -499,17 +515,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
   },
-  activityButton: {
+  editButton: {
     height: 42,
     alignItems: "center",
     justifyContent: "center",
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 14,
-    backgroundColor: colors.accent,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
   },
-  activityButtonText: {
-    color: colors.white,
+  editButtonPressed: {
+    opacity: 0.75,
+  },
+  editButtonText: {
+    color: colors.text,
     fontSize: 14,
     fontWeight: "900",
   },
