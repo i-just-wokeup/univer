@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { MoreHorizontal } from "lucide-react-native";
+import { MoreHorizontal, Settings } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
@@ -101,10 +101,6 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   useEffect(() => {
     void load();
   }, [load]);
-
-  async function handleSignOut() {
-    await getSupabaseMobileClient().auth.signOut();
-  }
 
   async function refreshConnectionStatus(profileId: string) {
     const nextConnectionStatus = await getConnectionStatus(profileId);
@@ -268,6 +264,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     [router],
   );
 
+  const handlePressSettings = useCallback(() => {
+    router.push("/settings");
+  }, [router]);
+
   const actionSheetItems: ActionSheetItem[] = [
     {
       label: isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가",
@@ -340,15 +340,29 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
                   strokeWidth={2.4}
                 />
               </Pressable>
-            ) : undefined
+            ) : (
+              <Pressable
+                accessibilityLabel="설정"
+                accessibilityRole="button"
+                onPress={handlePressSettings}
+                style={styles.headerButton}
+              >
+                <Settings color={colors.text} size={22} strokeWidth={2.4} />
+              </Pressable>
+            )
           }
           title={profile?.nickname ?? ""}
         />
       ) : (
         <View style={styles.tabHeader}>
           <Text style={styles.logo}>KREW</Text>
-          <Pressable onPress={handleSignOut} style={styles.signOutButton}>
-            <Text style={styles.signOutText}>로그아웃</Text>
+          <Pressable
+            accessibilityLabel="설정"
+            accessibilityRole="button"
+            onPress={handlePressSettings}
+            style={styles.headerButton}
+          >
+            <Settings color={colors.text} size={22} strokeWidth={2.4} />
           </Pressable>
         </View>
       )}
@@ -484,5 +498,22 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 12,
     fontWeight: "800",
+  },
+  activityButton: {
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 14,
+    backgroundColor: colors.accent,
+  },
+  activityButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  pressed: {
+    opacity: 0.75,
   },
 });
