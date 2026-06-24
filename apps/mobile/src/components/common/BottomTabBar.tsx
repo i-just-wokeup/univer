@@ -17,7 +17,7 @@ const TAB_META: Record<string, TabMeta> = {
   index: { icon: Home, label: "홈" },
   search: { icon: Search, label: "검색" },
   write: { icon: Plus, label: "작성", primary: true },
-  activity: { icon: SquarePlay, label: "활동" },
+  activity: { icon: SquarePlay, label: "탐색" },
   profile: { icon: UserCircle, label: "프로필" },
 };
 
