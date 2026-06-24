@@ -1,5 +1,19 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
+export async function getCurrentUserId(): Promise<string> {
+  const supabase = getSupabaseMobileClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  return user.id;
+}
+
 export async function getCurrentUserContext(): Promise<{
   universityId: string;
   userId: string;
@@ -41,4 +55,9 @@ export async function getBlockRelatedUserIds(): Promise<string[]> {
   return data
     .map((row) => row.user_id)
     .filter((userId): userId is string => typeof userId === "string");
+}
+
+export async function isBlockRelatedUser(userId: string): Promise<boolean> {
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  return blockRelatedUserIds.includes(userId);
 }
