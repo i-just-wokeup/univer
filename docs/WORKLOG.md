@@ -7,6 +7,12 @@
 ## 2026-06-24
 
 ### 완료
+- **Expo 앱 내 활동 화면 구현 + 탐색 탭 라벨 정정**
+  - 웹 `/settings/activity` API/5탭 lazy load 로직을 앱 `features/activity/api.ts`와 `MyActivityScreen`으로 포팅 — 기존 `stories`/`bookmarks`/`post_likes`/`comments`/`user_favorites` 테이블만 사용, 스키마 변경 없음
+  - 스토리/저장됨/좋아요/댓글/즐겨찾기 5탭 구성, 스토리 로드 후 저장·좋아요·댓글 백그라운드 prefetch, 탭별 로딩/빈/에러 처리
+  - RN 순수 UI `ActivityStoryGrid`/`ActivityPostGrid`/`ActivityFavoriteUserRow`/`ActivityStoryPreviewSheet` 추가 — 스토리 미리보기+조회자 목록, 게시물 상세/프로필 이동 연결
+  - `/activity` push 라우트 추가, 본인 프로필에 "내 활동" 진입 버튼 연결, 하단 4번째 탭 라벨 `"활동"` → `"탐색"` 정정
+  - `cd apps/mobile && npx tsc --noEmit` 통과
 - **Expo 앱 1:1 DM(채팅) 구현**
   - 웹 채팅 API/Realtime 훅을 앱 `features/chat/`로 포팅 — `conversations`/`messages` 기존 테이블과 `mark_messages_read`/`accept_chat_request` RPC만 사용, 스키마 변경 없음
   - `MessagesScreen`/`ChatRoomScreen` 및 `/messages`, `/messages/[conversationId]` 라우트 추가 — 대화 목록(active/pending), 채팅방, 이전 메시지 로드, 읽음 처리, pending 수락, 낙관적 전송, Realtime 수신
