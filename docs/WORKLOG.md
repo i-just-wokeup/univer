@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-06-24
+
+### 완료
+- **앱 검색 기능 구현 (유저 검색 + 최근 검색)**
+  - 웹 검색 로직 포팅 — `features/search/api.ts`(`search_users` RPC + 차단 제외). 스키마 변경 없음
+  - 최근 검색을 웹 `localStorage` → **`AsyncStorage` 비동기**로 포팅(`features/search/history.ts`, 최대 10개)
+  - `screens/search/SearchScreen.tsx` + 기존 `(tabs)/search.tsx` placeholder 교체 — 입력 300ms 디바운스, 입력 시 결과/빈칸 시 최근 검색, 탭 시 최근검색 추가 + 프로필 이동. 순수 UI `SearchInput`·`SearchUserRow` 분리
+  - 탭 전환 시 입력어/결과 초기화(`useFocusEffect` 정리 함수) — 탭 떠나면 비우고 복귀 시 빈 입력+최근검색
+  - `cd apps/mobile && npx tsc --noEmit` 통과. main 파일별 커밋
+  - 참고: 프로토타입 "발견" 탭(추천 크루/공식·동아리/실시간 급상승)은 승격·구독·랭킹 의존 → Phase 2. 이번은 검색만
+
+---
+
 ## 2026-06-23
 
 ### 완료
