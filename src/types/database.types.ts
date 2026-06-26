@@ -203,6 +203,9 @@ export type Database = {
           id: string
           user_id: string
           image_url: string
+          type: 'image' | 'video'
+          thumbnail_url: string | null
+          duration: number | null
           university_id: string
           views_count: number
           expires_at: string
@@ -215,6 +218,9 @@ export type Database = {
           id?: string
           user_id: string
           image_url: string
+          type?: 'image' | 'video'
+          thumbnail_url?: string | null
+          duration?: number | null
           university_id: string
           views_count?: number
           expires_at?: string
@@ -227,6 +233,9 @@ export type Database = {
           id?: string
           user_id?: string
           image_url?: string
+          type?: 'image' | 'video'
+          thumbnail_url?: string | null
+          duration?: number | null
           university_id?: string
           views_count?: number
           expires_at?: string
