@@ -7,6 +7,12 @@
 ## 2026-06-26
 
 ### 완료
+- **앱 Google 로그인 + 온보딩 라우팅 가드**
+  - `@react-native-google-signin/google-signin` 네이티브 패키지 추가 및 Expo config plugin 등록. `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` 환경변수 예시 추가
+  - 앱 로그인 화면에 Google 4색 로고 버튼 추가 — 기존 이메일/비밀번호 로그인과 공존, 취소 응답은 조용히 무시
+  - 앱 온보딩 API/화면 추가 — 구글 가입 후 서버 트리거가 채운 실명/학과를 읽고, 닉네임 중복확인 후 `is_onboarded=true` 저장
+  - 세션 컨텍스트에 온보딩 상태를 추가하고 `login`/`(tabs)`/`onboarding` 라우팅 가드 연결. `cd apps/mobile && npx tsc --noEmit` 통과
+  - 네이티브 모듈 추가 작업이라 실제 Google 로그인 동작 확인은 dev build 재빌드 후 진행 필요
 - **앱 인증 토큰 SecureStore 전환**
   - 앱 Supabase 인증 세션 저장소를 AsyncStorage 평문 저장에서 `expo-secure-store` 기반 OS 암호화 저장소로 전환
   - SecureStore 값 크기 제한을 피하기 위해 2KB 청크 저장 어댑터(`secureStorageAdapter`) 추가, 기존 AsyncStorage 세션은 SecureStore가 비어 있을 때 1회 복사 후 삭제

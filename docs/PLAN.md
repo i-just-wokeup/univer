@@ -176,6 +176,7 @@
 - [x] **탐색(Explore) 탭 1차 (임시 그리드)** — 하단 탭 카테고리→탐색, 같은 학교 인기순 썸네일 그리드, 무한 스크롤. 본 기능(타 학교/승격/주간바이럴)은 다학교 확장 시
 - [x] **스토리 영상 지원 DB 준비** — `stories`에 `type`/`thumbnail_url`/`duration` 추가(`post_media`와 동일), CHECK 제약, 라이브 적용, 웹/앱 타입·DATABASE.md 동기화. 게시물(`post_media`)은 이미 영상 컬럼 보유. **클라이언트(녹화/재생/압축/썸네일)는 별도 작업**
 - [x] **앱 보안 검토 + 이미지 버킷 용량/형식 제한** — 검토 후 avatars(5MB)·post-images/story-images(10MB) 용량 + image/jpeg·png·webp 형식 제한 적용. 후속: #1 토큰 SecureStore(앱코드) 완료, #2 크루공개/DM private+signed URL(정책결정), #4 외부링크 https 검증
+- [x] **앱 Google 로그인 + 온보딩 라우팅 가드** — `@react-native-google-signin/google-signin` 네이티브 로그인 추가, 로그인 화면 Google 버튼, 온보딩 화면, 세션 기반 온보딩 가드 연결. dev build 재빌드 후 실기기 확인 필요
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요
@@ -186,6 +187,7 @@
 
 1. Expo 앱 전환 vertical slice (라우터 전환 완료, 다음은 화면 연결)
    - WSL2 + 실기기 실행은 `cd apps/mobile && npx expo start --tunnel` (LAN 모드면 번들 다운로드 실패)
+   - Google 로그인 dev build 재검증(Web client ID env, 구글 시트 취소/성공, 신규 가입자 온보딩 이동, 완료 후 홈 이동)
    - 작성 탭 실기기 확인(사진 여러 장 선택/삭제, 비율·공개범위 선택, 사진+본문/본문만 게시, 홈 피드 반영)
    - 상대 프로필 크루 액션 실기기 확인(친구 신청/취소, 수락/거절, 친구 삭제, 즐겨찾기 토글, 크루 수 갱신)
    - 크루 관리 화면 실기기 확인(내 프로필 크루 통계 → `/profile/connections`, 받은 요청 수락/거절, 보낸 요청 취소, 내 크루 삭제, 유저 프로필 이동)
