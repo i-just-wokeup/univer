@@ -7,6 +7,12 @@
 ## 2026-06-26
 
 ### 완료
+- **앱 푸시 알림 클라이언트 구현**
+  - `expo-notifications`/`expo-device` 설치, `app.json`에 `expo-notifications` 플러그인과 Android `googleServicesFile` 연결 추가
+  - 로그인 + 온보딩 완료 상태에서만 Android 알림 채널 생성 → 권한 요청 → Expo push token 획득 → `users.fcm_token` 저장하는 등록 훅 추가
+  - 포그라운드 알림 표시 핸들러와 알림 탭 response listener 추가. 푸시 payload(`targetType`/`targetId`)를 기존 인앱 알림 target 라우팅과 동일한 공용 함수로 처리
+  - 서버 전송(Edge Function)은 Phase 2로 남김. `cd apps/mobile && npx tsc --noEmit` 통과
+  - 네이티브 모듈 추가 작업이라 실제 토큰 발급/수신/탭 이동 확인은 dev build 재빌드 후 진행 필요
 - **앱 Google 로그인 + 온보딩 라우팅 가드**
   - `@react-native-google-signin/google-signin` 네이티브 패키지 추가 및 Expo config plugin 등록. `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` 환경변수 예시 추가
   - 앱 로그인 화면에 Google 4색 로고 버튼 추가 — 기존 이메일/비밀번호 로그인과 공존, 취소 응답은 조용히 무시
