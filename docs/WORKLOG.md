@@ -14,6 +14,7 @@
   - **대댓글 푸시**(`add_comment_reply_notification_and_push`): `notify_on_comment`이 답글(parent_id 있음)이면 **부모 댓글 작성자에게 `comment_reply` 알림** 생성하도록 변경(기존엔 답글 알림 자체가 없었음) + 푸시 트리거에 comment_reply 추가
   - **버그 발견·수정**: `notifications_type_check` 제약에 `comment_reply`가 없어 답글 INSERT가 롤백되던 문제 → 제약에 comment_reply 추가(이 버그 안 잡았으면 실제 답글 기능 깨짐)
   - 실기기 검증: 댓글/DM/대댓글 푸시 수신 + 탭 이동 모두 ✅ (pg_net 응답 200/ok). 테스트 데이터 정리 완료
+  - **DM 스팸 방지**: 메시지마다 알림이 따로 쌓이는 문제 — Expo Push는 안드로이드 트레이 합치기(collapseId/tag) 보장 안 됨(알려진 한계). 대안으로 **"첫 안읽음만 푸시"**(이미 안 읽은 메시지 있으면 추가 푸시 생략) 트리거에 추가 → 실기기 확인(1번째 푸시/2번째 스킵). 트레이 그룹핑 자체는 백로그(FCM 직접/notifee 필요)
   - 남음: 인앱 알림 목록에서 comment_reply 문구/actor 처리(현재 generic), 좋아요/친구 푸시는 미적용(의도)
 - **앱 푸시 알림 클라이언트 구현**
   - `expo-notifications`/`expo-device` 설치, `app.json`에 `expo-notifications` 플러그인과 Android `googleServicesFile` 연결 추가
