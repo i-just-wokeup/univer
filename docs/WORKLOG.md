@@ -7,6 +7,11 @@
 ## 2026-06-26
 
 ### 완료
+- **앱 인증 토큰 SecureStore 전환**
+  - 앱 Supabase 인증 세션 저장소를 AsyncStorage 평문 저장에서 `expo-secure-store` 기반 OS 암호화 저장소로 전환
+  - SecureStore 값 크기 제한을 피하기 위해 2KB 청크 저장 어댑터(`secureStorageAdapter`) 추가, 기존 AsyncStorage 세션은 SecureStore가 비어 있을 때 1회 복사 후 삭제
+  - 웹 코드와 검색 기록 AsyncStorage는 변경하지 않음. `cd apps/mobile && npx tsc --noEmit` 통과
+  - 네이티브 모듈 추가 작업이라 실제 동작 확인은 dev build 재빌드 후 진행 필요
 - **dev build 전환 + 앱 시스템바 안정화** (commit `b30f16e`)
   - EAS dev build 구성(`eas.json` development/preview/production 프로필) + `app.json`에 `package`(com.univer.app)/안드 권한/`extra.eas.projectId` 정리. 클라우드 빌드 → 실기기 APK 설치 → 터널 dev 서버 연결 완료
   - **edge-to-edge 비활성화**(`android.edgeToEdgeEnabled: false`) + `expo-navigation-bar` 플러그인·`androidNavigationBar`로 하단 네비바 흰 배경/어두운 버튼 고정
