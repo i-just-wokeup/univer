@@ -1,14 +1,28 @@
 import { Redirect, Tabs, useRouter } from "expo-router";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { BottomTabBar } from "../../src/components/common/BottomTabBar";
 import { useSession } from "../../src/lib/session";
+import { colors } from "../../src/lib/theme";
 
 export default function TabsLayout() {
-  const { session } = useSession();
+  const { isOnboardingLoading, requiresOnboarding, session } = useSession();
   const router = useRouter();
 
   if (!session) {
     return <Redirect href="/login" />;
+  }
+
+  if (isOnboardingLoading) {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
+
+  if (requiresOnboarding) {
+    return <Redirect href="/onboarding" />;
   }
 
   return (
@@ -33,3 +47,12 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.accentSoft,
+  },
+});

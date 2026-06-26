@@ -1,0 +1,553 @@
+import { useRouter } from "expo-router";
+import { Lock } from "lucide-react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { StateView } from "../../components/common/StateView";
+import {
+  getCurrentUserProfile,
+  shouldRequireOnboarding,
+  updateOnboardingProfile,
+  type CurrentUserProfile,
+} from "../../features/auth/api";
+import { checkNicknameDuplicate } from "../../features/profile/mutations";
+import { useSession } from "../../lib/session";
+import { colors } from "../../lib/theme";
+import {
+  isTemporaryNickname,
+  isValidNickname,
+  normalizeNickname,
+} from "../../lib/utils/nickname";
+
+type NicknameStatus =
+  | "idle"
+  | "checking"
+  | "available"
+  | "duplicate"
+  | "invalid";
+
+function shouldClearNicknameInput(profile: CurrentUserProfile) {
+  const emailLocalPart = profile.email?.split("@")[0]?.toLowerCase();
+  const normalizedNickname = profile.nickname.toLowerCase();
+
+  return (
+    isTemporaryNickname(profile.nickname) ||
+    Boolean(emailLocalPart && normalizedNickname === emailLocalPart)
+  );
+}
+
+function getNicknameMessage(status: NicknameStatus) {
+  switch (status) {
+    case "checking":
+      return "닉네임을 확인하는 중입니다.";
+    case "available":
+      return "사용 가능한 닉네임입니다.";
+    case "duplicate":
+      return "이미 사용 중인 닉네임입니다.";
+    case "invalid":
+      return "영문, 숫자, 마침표, 밑줄만 사용할 수 있습니다.";
+    default:
+      return "영문 소문자, 숫자, 마침표(.), 밑줄(_)만 사용할 수 있습니다.";
+  }
+}
+
+export function OnboardingScreen() {
+  const router = useRouter();
+  const { refreshOnboardingStatus } = useSession();
+  const [department, setDepartment] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isDepartmentReadOnly, setIsDepartmentReadOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRealNameReadOnly, setIsRealNameReadOnly] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [nicknameStatus, setNicknameStatus] =
+    useState<NicknameStatus>("idle");
+  const [realName, setRealName] = useState("");
+
+  const normalizedNickname = useMemo(
+    () => normalizeNickname(nickname),
+    [nickname],
+  );
+  const nicknameMessage = getNicknameMessage(nicknameStatus);
+  const canSubmit =
+    !isLoading &&
+    !isSubmitting &&
+    realName.trim().length > 0 &&
+    department.trim().length > 0 &&
+    isValidNickname(normalizedNickname) &&
+    nicknameStatus === "available";
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProfile() {
+      try {
+        setErrorMessage("");
+        const profile = await getCurrentUserProfile();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!profile) {
+          router.replace("/login");
+          return;
+        }
+
+        if (!shouldRequireOnboarding(profile)) {
+          router.replace("/");
+          return;
+        }
+
+        const nextNickname = shouldClearNicknameInput(profile)
+          ? ""
+          : profile.nickname;
+        setNickname(nextNickname);
+        setNicknameStatus(nextNickname ? "available" : "idle");
+        setDepartment(profile.department ?? "");
+        setRealName(profile.real_name ?? "");
+        setIsDepartmentReadOnly(Boolean(profile.department));
+        setIsRealNameReadOnly(Boolean(profile.real_name));
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "프로필 정보를 불러오지 못했습니다.",
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
+  function handleChangeNickname(value: string) {
+    const nextNickname = normalizeNickname(value);
+    setNickname(nextNickname);
+    setNicknameStatus(
+      nextNickname && isValidNickname(nextNickname) ? "idle" : "invalid",
+    );
+  }
+
+  async function handleCheckNickname() {
+    if (!isValidNickname(normalizedNickname)) {
+      setNicknameStatus("invalid");
+      return;
+    }
+
+    setErrorMessage("");
+    setNicknameStatus("checking");
+
+    try {
+      const duplicated = await checkNicknameDuplicate(normalizedNickname);
+      setNicknameStatus(duplicated ? "duplicate" : "available");
+    } catch (error) {
+      setNicknameStatus("idle");
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "닉네임 중복 확인에 실패했습니다.",
+      );
+    }
+  }
+
+  async function handleSubmit() {
+    if (!canSubmit) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      await updateOnboardingProfile({
+        department,
+        nickname: normalizedNickname,
+        realName,
+      });
+      await refreshOnboardingStatus();
+      router.replace("/");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "온보딩 저장에 실패했습니다.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <StateView
+          message="학교 인증 정보를 확인하는 중입니다."
+          title="프로필 준비 중"
+          type="loading"
+        />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.screen}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboard}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.logo}>KREW</Text>
+          <Text style={styles.title}>학교가 자동으로 인식되었어요</Text>
+          <Text style={styles.description}>
+            학교 이메일 기준으로 인증된 정보를 확인해주세요.
+          </Text>
+
+          <View style={styles.schoolCard}>
+            <View style={styles.schoolBadge}>
+              <Text style={styles.schoolBadgeText}>국</Text>
+            </View>
+            <Text style={styles.schoolName}>국민대학교</Text>
+            <Text style={styles.schoolMeta}>재학생 인증 완료</Text>
+
+            <View style={styles.cardDivider} />
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>실명</Text>
+              <View style={styles.lockedValue}>
+                <Text numberOfLines={1} style={styles.infoValue}>
+                  {realName || "직접 입력 필요"}
+                </Text>
+                {isRealNameReadOnly ? (
+                  <Lock color={colors.textFaint} size={14} strokeWidth={2.4} />
+                ) : null}
+              </View>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>학과</Text>
+              <View style={styles.lockedValue}>
+                <Text numberOfLines={1} style={styles.infoValue}>
+                  {department || "직접 입력 필요"}
+                </Text>
+                {isDepartmentReadOnly ? (
+                  <Lock color={colors.textFaint} size={14} strokeWidth={2.4} />
+                ) : null}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.formCard}>
+            <Text style={styles.sectionTitle}>프로필을 완성해주세요</Text>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>실명</Text>
+              <TextInput
+                editable={!isRealNameReadOnly}
+                onChangeText={setRealName}
+                placeholder="홍길동"
+                placeholderTextColor={colors.textFaint}
+                style={[styles.input, isRealNameReadOnly ? styles.readOnly : null]}
+                value={realName}
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>닉네임</Text>
+              <View style={styles.nicknameRow}>
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={30}
+                  onChangeText={handleChangeNickname}
+                  placeholder="nickname"
+                  placeholderTextColor={colors.textFaint}
+                  style={[styles.input, styles.nicknameInput]}
+                  value={nickname}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={nicknameStatus === "checking"}
+                  onPress={handleCheckNickname}
+                  style={({ pressed }) => [
+                    styles.checkButton,
+                    pressed ? styles.pressed : null,
+                    nicknameStatus === "checking" ? styles.disabled : null,
+                  ]}
+                >
+                  <Text style={styles.checkButtonText}>
+                    {nicknameStatus === "checking" ? "확인 중" : "중복확인"}
+                  </Text>
+                </Pressable>
+              </View>
+              <Text
+                style={[
+                  styles.helper,
+                  nicknameStatus === "available" ? styles.success : null,
+                  nicknameStatus === "duplicate" || nicknameStatus === "invalid"
+                    ? styles.error
+                    : null,
+                ]}
+              >
+                {nicknameMessage}
+              </Text>
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>학과</Text>
+              <TextInput
+                editable={!isDepartmentReadOnly}
+                onChangeText={setDepartment}
+                placeholder="자동차공학과"
+                placeholderTextColor={colors.textFaint}
+                style={[
+                  styles.input,
+                  isDepartmentReadOnly ? styles.readOnly : null,
+                ]}
+                value={department}
+              />
+            </View>
+
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={!canSubmit}
+              onPress={handleSubmit}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                pressed && canSubmit ? styles.pressed : null,
+                !canSubmit ? styles.disabled : null,
+              ]}
+            >
+              <Text style={styles.primaryButtonText}>
+                {isSubmitting ? "저장 중..." : "KREW 시작하기"}
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.accentSoft,
+  },
+  keyboard: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 32,
+  },
+  logo: {
+    color: colors.accent,
+    fontSize: 34,
+    fontWeight: "900",
+  },
+  title: {
+    marginTop: 24,
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: "900",
+    lineHeight: 31,
+  },
+  description: {
+    marginTop: 8,
+    color: colors.muted,
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 21,
+  },
+  schoolCard: {
+    marginTop: 24,
+    alignItems: "center",
+    borderColor: "rgba(124,58,237,0.1)",
+    borderRadius: 24,
+    borderWidth: 1,
+    backgroundColor: colors.card,
+    padding: 22,
+  },
+  schoolBadge: {
+    height: 64,
+    width: 64,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+    backgroundColor: colors.accent,
+  },
+  schoolBadgeText: {
+    color: colors.white,
+    fontSize: 28,
+    fontWeight: "900",
+  },
+  schoolName: {
+    marginTop: 14,
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  schoolMeta: {
+    marginTop: 4,
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  cardDivider: {
+    height: 1,
+    alignSelf: "stretch",
+    marginVertical: 18,
+    backgroundColor: colors.border,
+  },
+  infoRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+    paddingVertical: 6,
+  },
+  infoLabel: {
+    color: colors.muted,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  infoValue: {
+    maxWidth: 210,
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  lockedValue: {
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  formCard: {
+    marginTop: 18,
+    borderColor: "rgba(124,58,237,0.1)",
+    borderRadius: 24,
+    borderWidth: 1,
+    backgroundColor: colors.card,
+    padding: 20,
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  field: {
+    marginTop: 18,
+  },
+  label: {
+    marginBottom: 8,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  input: {
+    minHeight: 52,
+    borderColor: colors.border,
+    borderRadius: 18,
+    borderWidth: 1,
+    backgroundColor: colors.white,
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "800",
+    paddingHorizontal: 16,
+  },
+  readOnly: {
+    backgroundColor: "rgba(255,255,255,0.55)",
+    color: colors.muted,
+  },
+  nicknameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  nicknameInput: {
+    flex: 1,
+  },
+  checkButton: {
+    height: 52,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 18,
+    backgroundColor: "rgba(124,58,237,0.12)",
+    paddingHorizontal: 14,
+  },
+  checkButtonText: {
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  helper: {
+    marginTop: 8,
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  success: {
+    color: colors.accent,
+  },
+  error: {
+    color: colors.danger,
+  },
+  errorText: {
+    marginTop: 16,
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 19,
+  },
+  primaryButton: {
+    height: 54,
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 18,
+    backgroundColor: colors.accent,
+  },
+  primaryButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  disabled: {
+    opacity: 0.55,
+  },
+  pressed: {
+    opacity: 0.82,
+  },
+});

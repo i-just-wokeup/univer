@@ -3,28 +3,28 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { useSession } from "../src/lib/session";
 import { colors } from "../src/lib/theme";
-import { LoginScreen } from "../src/screens/auth/LoginScreen";
+import { OnboardingScreen } from "../src/screens/auth/OnboardingScreen";
 
-export default function LoginRoute() {
+export default function OnboardingRoute() {
   const { isOnboardingLoading, requiresOnboarding, session } = useSession();
 
-  if (session) {
-    if (isOnboardingLoading) {
-      return (
-        <View style={styles.loadingScreen}>
-          <ActivityIndicator color={colors.accent} />
-        </View>
-      );
-    }
+  if (!session) {
+    return <Redirect href="/login" />;
+  }
 
-    if (requiresOnboarding) {
-      return <Redirect href="/onboarding" />;
-    }
+  if (isOnboardingLoading) {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
 
+  if (!requiresOnboarding) {
     return <Redirect href="/" />;
   }
 
-  return <LoginScreen />;
+  return <OnboardingScreen />;
 }
 
 const styles = StyleSheet.create({

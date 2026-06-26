@@ -10,17 +10,20 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
+import { signInWithGoogle } from "../../features/auth/googleSignIn";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
 export function LoginScreen() {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [password, setPassword] = useState("");
 
   async function handleSignIn() {
-    if (isSubmitting) {
+    if (isSubmitting || isGoogleSubmitting) {
       return;
     }
 
@@ -37,6 +40,30 @@ export function LoginScreen() {
     }
 
     setIsSubmitting(false);
+  }
+
+  async function handleGoogleSignIn() {
+    if (isSubmitting || isGoogleSubmitting) {
+      return;
+    }
+
+    setErrorMessage("");
+    setIsGoogleSubmitting(true);
+
+    try {
+      const result = await signInWithGoogle();
+      if (result.cancelled) {
+        return;
+      }
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Google 로그인에 실패했습니다.",
+      );
+    } finally {
+      setIsGoogleSubmitting(false);
+    }
   }
 
   return (
@@ -75,14 +102,31 @@ export function LoginScreen() {
           ) : null}
 
           <Pressable
-            disabled={isSubmitting}
+            disabled={isSubmitting || isGoogleSubmitting}
             onPress={handleSignIn}
-            style={[styles.primaryButton, isSubmitting ? styles.disabled : null]}
+            style={[
+              styles.primaryButton,
+              isSubmitting || isGoogleSubmitting ? styles.disabled : null,
+            ]}
           >
             <Text style={styles.primaryButtonText}>
               {isSubmitting ? "로그인 중..." : "로그인"}
             </Text>
           </Pressable>
+
+          <View style={styles.dividerRow}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>또는</Text>
+            <View style={styles.divider} />
+          </View>
+
+          <GoogleAuthButton
+            disabled={isSubmitting || isGoogleSubmitting}
+            label={
+              isGoogleSubmitting ? "Google 로그인 중..." : "학교 Google 계정으로 계속"
+            }
+            onPress={handleGoogleSignIn}
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -160,5 +204,21 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.6,
+  },
+  divider: {
+    height: 1,
+    flex: 1,
+    backgroundColor: colors.border,
+  },
+  dividerRow: {
+    marginVertical: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  dividerText: {
+    color: colors.textFaint,
+    fontSize: 12,
+    fontWeight: "800",
   },
 });
