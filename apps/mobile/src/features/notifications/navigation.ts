@@ -3,6 +3,7 @@ import type { Router } from "expo-router";
 import type { NotificationTarget } from "./types";
 
 type PushNotificationData = {
+  conversationId?: unknown;
   targetId?: unknown;
   targetNickname?: unknown;
   targetType?: unknown;
@@ -29,6 +30,11 @@ export function routeToNotificationTarget(
       pathname: "/profile/[nickname]",
       params: { nickname: target.nickname },
     });
+  } else if (target.type === "chat") {
+    router.push({
+      pathname: "/messages/[conversationId]",
+      params: { conversationId: target.conversationId },
+    });
   }
 }
 
@@ -40,6 +46,12 @@ export function getNotificationTargetFromPushData(
 
   if (targetType === "post" && targetId) {
     return { id: targetId, type: "post" };
+  }
+
+  if (targetType === "chat") {
+    const conversationId =
+      typeof data.conversationId === "string" ? data.conversationId : "";
+    return conversationId ? { conversationId, type: "chat" } : null;
   }
 
   if (targetType === "story") {

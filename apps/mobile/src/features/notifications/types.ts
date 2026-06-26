@@ -11,6 +11,7 @@ export type NotificationActor = {
 
 // 알림 탭 시 이동 대상. RN 라우팅에 바로 쓰도록 구조화한다.
 export type NotificationTarget =
+  | { type: "chat"; conversationId: string }
   | { type: "post"; id: string }
   | { type: "story"; userId: string }
   | { type: "profile"; nickname: string }
