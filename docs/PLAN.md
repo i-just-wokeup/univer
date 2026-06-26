@@ -174,6 +174,13 @@
 
 ## 진행 중인 작업
 - [x] **탐색(Explore) 탭 1차 (임시 그리드)** — 하단 탭 카테고리→탐색, 같은 학교 인기순 썸네일 그리드, 무한 스크롤. 본 기능(타 학교/승격/주간바이럴)은 다학교 확장 시
+- [x] **스토리 영상 지원 DB 준비** — `stories`에 `type`/`thumbnail_url`/`duration` 추가(`post_media`와 동일), CHECK 제약, 라이브 적용, 웹/앱 타입·DATABASE.md 동기화. 게시물(`post_media`)은 이미 영상 컬럼 보유. **클라이언트(녹화/재생/압축/썸네일)는 별도 작업**
+- [x] **앱 보안 검토 + 이미지 버킷 용량/형식 제한** — 검토 후 avatars(5MB)·post-images/story-images(10MB) 용량 + image/jpeg·png·webp 형식 제한 적용. 후속: #1 토큰 SecureStore(앱코드), #2 크루공개/DM private+signed URL(정책결정), #4 외부링크 https 검증
+
+### 보안 후속 과제 (영상 들어가기 전 점검)
+- [ ] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터). 앱 코드
+- [ ] **#2 민감 콘텐츠 접근제어** — 크루공개/DM 첨부/비공개 영상은 private 버킷 + signed URL(TTL 재사용). MVP 정책 결정 선행
+- [ ] **#4 프로필 외부 링크 검증** — `ProfileInfoPanel` `Linking.openURL`을 https(s)만 허용
 
 ## 다음 작업 (순서대로)
 
@@ -400,7 +407,7 @@
 4. 핵심 플로우 실기기 테스트 후 치명 버그만 수정
 
 ## 주의사항
-- 영상 업로드는 MVP 제외 (사진만)
+- 영상 방침 변경(2026-06-26): 스토리 영상은 MVP 포함 목표(DB 준비 완료), 피드 영상은 출시 후 fast-follow. 클라이언트 작업(녹화/재생/압축/썸네일) 미착수
 - 디자인은 나중에, 지금은 구조/로직 우선
 - 모든 컴포넌트 모바일 퍼스트 (375px)
 - features/ 로직은 UI와 반드시 분리 (앱 전환 대비)

@@ -117,7 +117,10 @@ post_media (
 stories (
   id            uuid PK default gen_random_uuid(),
   user_id       uuid FK → users,
-  image_url     text not null,
+  image_url     text not null,                 -- 영상일 때는 영상 파일 URL (컬럼 재사용)
+  type          text not null default 'image', -- 'image' | 'video' (2026-06-26 추가)
+  thumbnail_url text,                           -- 영상 미리보기 썸네일
+  duration      int,                            -- 영상 길이(초)
   university_id uuid FK → universities not null,
   views_count   int default 0,
   expires_at    timestamptz not null,         -- 생성 후 24시간 (피드에서 안 보임)
@@ -454,3 +457,19 @@ community_comments (
 | messages | 참여자만 | 참여자만 |
 | community_posts | 같은 학교 유저 | 본인만 |
 | community_comments | 같은 학교 유저 | 본인만 |
+
+---
+
+## Storage 버킷
+
+| 버킷 | 공개 | 용량 제한 | 허용 형식 | 업로드 경로 |
+|---|---|---|---|---|
+| avatars | public | 5MB | image/jpeg·png·webp | `{userId}/{uuid}.jpg` |
+| post-images | public | 10MB | image/jpeg·png·webp | `posts/{uuid}.jpg` |
+| post-videos | public | 100MB | video/mp4·quicktime·webm | (게시물 영상, 클라이언트 미구현) |
+| story-images | public | 10MB | image/jpeg·png·webp | `stories/{uuid}.jpg` |
+
+- 정책(`storage.objects` RLS): 읽기/업로드 모두 `authenticated`(로그인 유저)만. 익명 업로드 불가. 삭제는 post-videos만 `owner` 기준 정책 있음.
+- 용량/형식 제한은 2026-06-26 추가(`20260626100000_set_image_bucket_limits`). 거대/비이미지 파일 업로드 악용 방지.
+- ⚠️ **공개범위 한계**: 모든 버킷이 `public=true`라 **공개 URL은 RLS를 거치지 않음** → 크루공개/비공개 콘텐츠도 URL만 알면 비로그인 조회 가능. 민감 범위(크루공개/DM/비공개 영상)는 추후 private 버킷 + signed URL 전환 필요(보안 검토 #2).
+- 스토리 영상용 `story-videos` 버킷은 아직 없음(스토리 영상 구현 시 생성).

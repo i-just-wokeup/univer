@@ -4,6 +4,29 @@
 
 ---
 
+## 2026-06-26
+
+### 완료
+- **dev build 전환 + 앱 시스템바 안정화** (commit `b30f16e`)
+  - EAS dev build 구성(`eas.json` development/preview/production 프로필) + `app.json`에 `package`(com.univer.app)/안드 권한/`extra.eas.projectId` 정리. 클라우드 빌드 → 실기기 APK 설치 → 터널 dev 서버 연결 완료
+  - **edge-to-edge 비활성화**(`android.edgeToEdgeEnabled: false`) + `expo-navigation-bar` 플러그인·`androidNavigationBar`로 하단 네비바 흰 배경/어두운 버튼 고정
+  - `lib/systemBars.ts` `SystemBarsController` 추가 — 경로별 프리셋(기본=흰 상태바/네비, 스토리=검정) 적용 + `AppState` 'active' 복귀 시 80/240ms 재시도로 재적용해 복귀 시 시스템바 깜빡임 보정. 루트 `_layout`의 expo-status-bar `<StatusBar>` 제거 → 컨트롤러로 대체. `StoryViewerScreen`의 개별 상태바 처리 제거(중앙화)
+  - `lib/useStableInsets.ts` 추가 — 엣지투엣지 복귀 시 inset이 0으로 빠지는 것 방지(마지막 0 아닌 값 유지), 채팅 입력창에 적용
+  - ⚠️ 실기기 검증 중 확인된 점: 사용자가 원한 건 3버튼 네비 투명화가 아니라 흰 배경 고정 쪽이었고, 영상 기능 설계로 우선순위 전환됨
+- **앱 보안 검토 + 이미지 버킷 용량/형식 제한** (`20260626100000_set_image_bucket_limits.sql`)
+  - 앱 보안 검토: service_role 키 없음·.env gitignore·RLS·랜덤 파일명·recount RPC 위조불가 등 양호 확인. 발견: ① 인증 토큰이 암호화 안 된 AsyncStorage 저장(SecureStore 권장, 앱 코드) ② 모든 버킷 public이라 공개 URL이 RLS 우회 → 크루공개/비공개도 URL 새면 노출 ③ 이미지 버킷에 용량/형식 제한 없음 ④ 프로필 외부 링크 무검증 오픈
+  - 라이브 Storage 정책 조회: 업로드/읽기 모두 `authenticated`만(익명 업로드 불가), post-videos 버킷·정책은 이미 구성됨(100MB/형식 제한/owner 삭제). story-videos 버킷은 없음
+  - 현업 조사: 공개 콘텐츠=public 버킷, 민감 콘텐츠=private+signed URL로 민감도 분리. 인스타도 public URL 노출 사고 이력 → 크루공개/DM은 향후 private+signed 권장
+  - **적용**: avatars(5MB)·post-images/story-images(10MB)에 용량 제한 + `image/jpeg·png·webp` 형식 제한 추가. 라이브 적용·확인 완료. `docs/DATABASE.md`에 Storage 버킷 섹션 추가
+  - 후속 과제(미적용): #1 토큰 SecureStore(앱 코드), #2 민감 버킷 private+signed URL(정책 결정 필요), #4 외부 링크 https 검증
+- **스토리 영상 지원 DB 준비** (`20260626090000_add_story_video_support.sql`)
+  - `stories` 테이블에 `type`('image'|'video', default 'image')·`thumbnail_url`·`duration` 컬럼 추가 — `post_media`와 동일한 방식. `image_url`은 영상일 때 영상 파일 URL로 재사용
+  - `stories_type_check` CHECK 제약 추가, 라이브 DB 적용 완료(컬럼 추가라 기존 데이터 영향 없음)
+  - 웹/앱 `database.types.ts` stories Row/Insert/Update 동기화, `docs/DATABASE.md` 반영
+  - 참고: 게시물(`post_media`)은 이미 type/thumbnail_url/duration 보유 → 영상 DB 준비 완료 상태였음. 스토리만 이번에 맞춤. **클라이언트(녹화·재생·압축·썸네일) 작업은 별도 단계**
+
+---
+
 ## 2026-06-24
 
 ### 완료
