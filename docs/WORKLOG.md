@@ -7,6 +7,14 @@
 ## 2026-06-26
 
 ### 완료
+- **푸시 Phase 2 — 서버 전송(댓글/대댓글/DM) + 실기기 검증**
+  - 방식: `notifications`/`messages` insert 트리거에서 **`pg_net`으로 Expo Push API 직접 POST**(Edge Function 없이 마이그레이션만, Expo Push는 인증키 불필요). 받는 사람 `fcm_token` 없으면 no-op
+  - **댓글 푸시**(`push_on_comment_notification`): notifications insert(type=post_comment) → 게시물 작성자에게 푸시, data `{targetType:post,targetId}` → 탭 시 게시물
+  - **DM 푸시**(`push_on_message`): messages insert → 대화 상대에게 "OO님이 메시지를 보냈어요", data `{targetType:chat,conversationId}` → 탭 시 채팅방. 클라 `navigation.ts`에 chat 타깃 라우팅 추가(Codex, 재빌드 X)
+  - **대댓글 푸시**(`add_comment_reply_notification_and_push`): `notify_on_comment`이 답글(parent_id 있음)이면 **부모 댓글 작성자에게 `comment_reply` 알림** 생성하도록 변경(기존엔 답글 알림 자체가 없었음) + 푸시 트리거에 comment_reply 추가
+  - **버그 발견·수정**: `notifications_type_check` 제약에 `comment_reply`가 없어 답글 INSERT가 롤백되던 문제 → 제약에 comment_reply 추가(이 버그 안 잡았으면 실제 답글 기능 깨짐)
+  - 실기기 검증: 댓글/DM/대댓글 푸시 수신 + 탭 이동 모두 ✅ (pg_net 응답 200/ok). 테스트 데이터 정리 완료
+  - 남음: 인앱 알림 목록에서 comment_reply 문구/actor 처리(현재 generic), 좋아요/친구 푸시는 미적용(의도)
 - **앱 푸시 알림 클라이언트 구현**
   - `expo-notifications`/`expo-device` 설치, `app.json`에 `expo-notifications` 플러그인과 Android `googleServicesFile` 연결 추가
   - 로그인 + 온보딩 완료 상태에서만 Android 알림 채널 생성 → 권한 요청 → Expo push token 획득 → `users.fcm_token` 저장하는 등록 훅 추가

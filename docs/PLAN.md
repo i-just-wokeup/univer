@@ -178,6 +178,7 @@
 - [x] **앱 보안 검토 + 이미지 버킷 용량/형식 제한** — 검토 후 avatars(5MB)·post-images/story-images(10MB) 용량 + image/jpeg·png·webp 형식 제한 적용. 후속: #1 토큰 SecureStore(앱코드) 완료, #2 크루공개/DM private+signed URL(정책결정), #4 외부링크 https 검증
 - [x] **앱 Google 로그인 + 온보딩 라우팅 가드** — `@react-native-google-signin/google-signin` 네이티브 로그인 추가, 로그인 화면 Google 버튼, 온보딩 화면, 세션 기반 온보딩 가드 연결. dev build 재빌드 후 실기기 확인 필요
 - [x] **앱 푸시 알림 클라이언트 구현** — `expo-notifications`/FCM 설정 연결, 로그인+온보딩 완료 후 Expo push token 발급→`users.fcm_token` 저장, 포그라운드 표시와 탭 라우팅 연결. 서버 전송은 Phase 2
+- [x] **푸시 Phase 2 (서버 전송)** — pg_net 트리거로 댓글(post_comment)/대댓글(comment_reply)/DM(messages) Expo Push 전송. 대댓글 알림 신규(트리거+`notifications_type_check` 제약 추가 — 답글 INSERT 롤백 버그 수정), DM 탭 라우팅 클라 추가. 실기기 검증 완료. 남음: 인앱 comment_reply 문구/actor 처리, 좋아요·친구 푸시(의도적 보류)
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요
