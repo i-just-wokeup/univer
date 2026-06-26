@@ -2,13 +2,14 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MessageBubble } from "../../components/chat/MessageBubble";
 import { MessageInput } from "../../components/chat/MessageInput";
@@ -22,6 +23,7 @@ import {
 } from "../../features/chat/api";
 import { useConversations, useMessages } from "../../features/chat/hooks";
 import { getCurrentUserId } from "../../features/shared/userContext";
+import { useStableInsets } from "../../lib/useStableInsets";
 import { colors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 
@@ -51,9 +53,10 @@ function shouldShowSeparator(
 
 export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const insets = useStableInsets();
   const [currentUserId, setCurrentUserId] = useState("");
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   // 방을 열고 있는 동안 들어온 메시지를 읽음 처리하기 위한 포커스 상태.
   const [isFocused, setIsFocused] = useState(false);
   const { active, pending, reload } = useConversations();
@@ -84,6 +87,20 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     void getCurrentUserId()
       .then(setCurrentUserId)
       .catch(() => setCurrentUserId(""));
+  }, []);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
   }, []);
 
   useFocusEffect(
@@ -235,7 +252,12 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
           />
         )}
 
-        <View style={[styles.inputWrap, { paddingBottom: insets.bottom }]}>
+        <View
+          style={[
+            styles.inputWrap,
+            { paddingBottom: isKeyboardVisible ? 0 : insets.bottom },
+          ]}
+        >
           <MessageInput
             disabled={Boolean(messagesError)}
             onSend={handleSendMessage}

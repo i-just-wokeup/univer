@@ -10,6 +10,15 @@
     "plugins": [
       "expo-router",
       [
+        "expo-navigation-bar",
+        {
+          "backgroundColor": "#FFFFFF",
+          "barStyle": "dark",
+          "position": "relative",
+          "behavior": "inset-touch"
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "스토리를 촬영하려면 카메라 접근 권한이 필요합니다."
@@ -19,17 +28,33 @@
     "ios": {
       "supportsTablet": true
     },
+    "androidNavigationBar": {
+      "backgroundColor": "#FFFFFF",
+      "barStyle": "dark-content"
+    },
     "android": {
+      "edgeToEdgeEnabled": false,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.univer.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e7a0008e-b18f-4a2c-92ad-6f062fbbd450"
+      }
     }
   }
 }

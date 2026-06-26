@@ -1,18 +1,14 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Eye, Heart, MoreHorizontal, Pause, X } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  AppState,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  StatusBar as NativeStatusBar,
   Text,
   View,
 } from "react-native";
@@ -31,16 +27,17 @@ import {
   toggleStoryLike,
 } from "../../features/stories/api";
 import type { StoryGroup, StoryViewer } from "../../features/stories/types";
+import { useStableInsets } from "../../lib/useStableInsets";
 import { colors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 
 const STORY_DURATION_MS = 5000;
 const PROGRESS_TICK_MS = 50;
-const STORY_STATUS_BAR_COLOR = "#000000";
 
 export function StoryViewerScreen() {
   const router = useRouter();
   const { userId } = useLocalSearchParams<{ userId: string }>();
+  const insets = useStableInsets();
 
   const [groups, setGroups] = useState<StoryGroup[] | null>(null);
   const [groupIndex, setGroupIndex] = useState(0);
@@ -58,55 +55,6 @@ export function StoryViewerScreen() {
   const viewedIdsRef = useRef<Set<string>>(new Set());
   // 액션시트에서 삭제/신고 다이얼로그를 띄울 때는 시트가 닫혀도 재생을 재개하지 않는다.
   const keepPausedRef = useRef(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      const timeoutIds = new Set<ReturnType<typeof setTimeout>>();
-
-    function applyStoryStatusBar() {
-      NativeStatusBar.setBarStyle("light-content");
-
-      if (Platform.OS === "android") {
-        NativeStatusBar.setBackgroundColor(STORY_STATUS_BAR_COLOR);
-        NativeStatusBar.setTranslucent(false);
-      }
-    }
-
-    function restoreDefaultStatusBar() {
-      NativeStatusBar.setBarStyle("dark-content");
-
-      if (Platform.OS === "android") {
-        NativeStatusBar.setBackgroundColor(colors.accentSoft);
-        NativeStatusBar.setTranslucent(false);
-      }
-    }
-
-      function scheduleStoryStatusBarApply() {
-        applyStoryStatusBar();
-
-        const timeoutId = setTimeout(() => {
-          applyStoryStatusBar();
-          timeoutIds.delete(timeoutId);
-        }, 120);
-
-        timeoutIds.add(timeoutId);
-      }
-
-      scheduleStoryStatusBarApply();
-
-    const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState === "active") {
-          scheduleStoryStatusBarApply();
-      }
-    });
-
-    return () => {
-      subscription.remove();
-        timeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
-      restoreDefaultStatusBar();
-    };
-    }, []),
-  );
 
   useEffect(() => {
     let isMounted = true;
@@ -347,12 +295,7 @@ export function StoryViewerScreen() {
 
   return (
     <View style={styles.screen}>
-      <ExpoStatusBar
-        backgroundColor={STORY_STATUS_BAR_COLOR}
-        style="light"
-        translucent={false}
-      />
-      <View style={styles.frame}>
+      <View style={[styles.frame, { marginTop: insets.top + 6 }]}>
         <Image
           blurRadius={28}
           cachePolicy="memory-disk"
@@ -602,7 +545,6 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 9 / 16,
     maxHeight: "100%",
-    marginTop: 6,
     overflow: "hidden",
     borderRadius: 6,
     backgroundColor: "#000000",

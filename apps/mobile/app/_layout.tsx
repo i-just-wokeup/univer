@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
 } from "react-native-safe-area-context";
 
 import { SessionProvider, useSession } from "../src/lib/session";
+import { SystemBarsController } from "../src/lib/systemBars";
 import { colors } from "../src/lib/theme";
 
 export default function RootLayout() {
@@ -20,11 +20,7 @@ export default function RootLayout() {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <SessionProvider>
         <RootNavigator />
-        <StatusBar
-          backgroundColor={colors.accentSoft}
-          style="dark"
-          translucent={false}
-        />
+        <SystemBarsController />
       </SessionProvider>
     </SafeAreaProvider>
   );
