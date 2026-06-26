@@ -11,6 +11,7 @@ import {
   initialWindowMetrics,
 } from "react-native-safe-area-context";
 
+import { usePushNotifications } from "../src/features/notifications/usePushNotifications";
 import { SessionProvider, useSession } from "../src/lib/session";
 import { SystemBarsController } from "../src/lib/systemBars";
 import { colors } from "../src/lib/theme";
@@ -20,10 +21,16 @@ export default function RootLayout() {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <SessionProvider>
         <RootNavigator />
+        <PushNotificationsController />
         <SystemBarsController />
       </SessionProvider>
     </SafeAreaProvider>
   );
+}
+
+function PushNotificationsController() {
+  usePushNotifications();
+  return null;
 }
 
 function RootNavigator() {

@@ -11,6 +11,7 @@ import {
   markAllAsRead,
   markAsRead,
 } from "../../features/notifications/api";
+import { routeToNotificationTarget } from "../../features/notifications/navigation";
 import type { NotificationItem } from "../../features/notifications/types";
 import { colors } from "../../lib/theme";
 
@@ -60,25 +61,7 @@ export function NotificationsScreen() {
         void markAsRead(notification.id).catch(() => undefined);
       }
 
-      const target = notification.target;
-
-      if (!target) {
-        return;
-      }
-
-      if (target.type === "post") {
-        router.push({ pathname: "/post/[id]", params: { id: target.id } });
-      } else if (target.type === "story") {
-        router.push({
-          pathname: "/story/[userId]",
-          params: { userId: target.userId },
-        });
-      } else if (target.type === "profile") {
-        router.push({
-          pathname: "/profile/[nickname]",
-          params: { nickname: target.nickname },
-        });
-      }
+      routeToNotificationTarget(router, notification.target);
     },
     [router],
   );

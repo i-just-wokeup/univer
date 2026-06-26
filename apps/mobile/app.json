@@ -25,7 +25,13 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-notifications",
+        {
+          "color": "#7C3AED"
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true
@@ -36,6 +42,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": false,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
