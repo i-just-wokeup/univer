@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
 import { getCurrentUserContext } from "../shared/userContext";
@@ -22,7 +23,12 @@ async function getCurrentUserId(): Promise<string> {
 
 // 로컬 이미지 한 장을 story-images 버킷에 올리고 공개 URL을 반환한다.
 export async function uploadStoryImage(uri: string): Promise<string> {
-  const [url] = await uploadImagesToBucket("story-images", "stories", [uri], 1080);
+  const [url] = await uploadImagesToBucket(
+    STORAGE_BUCKETS.storyImages,
+    STORAGE_FOLDERS.stories,
+    [uri],
+    1080,
+  );
 
   if (!url) {
     throw new Error("스토리 이미지 업로드에 실패했습니다.");

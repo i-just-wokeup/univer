@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
 import {
@@ -39,7 +40,12 @@ function toPostgrestInFilter(values: string[]) {
 }
 
 export async function uploadPostImages(uris: string[]): Promise<string[]> {
-  return uploadImagesToBucket("post-images", "posts", uris, 1600);
+  return uploadImagesToBucket(
+    STORAGE_BUCKETS.postImages,
+    STORAGE_FOLDERS.posts,
+    uris,
+    1600,
+  );
 }
 
 export async function createPost({

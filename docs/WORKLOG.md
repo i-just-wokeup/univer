@@ -7,6 +7,10 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 Storage 버킷/폴더명 상수화**
+  - 앱 업로드 버킷/폴더 문자열을 `src/lib/constants/storage.ts`의 `STORAGE_BUCKETS`/`STORAGE_FOLDERS`로 분리
+  - 아바타/게시물 이미지/스토리 이미지 업로드 호출부를 상수 참조로 교체. 버킷명 값과 업로드 동작 변경 없음
+  - 웹/서버/DB 스키마 변경 없음. `cd apps/mobile && npx tsc --noEmit` 통과
 - **앱 게시물 본인 글 삭제 메뉴 연결**
   - 앱 `feed/api.ts`에 `deletePost(postId)` 추가 — 현재 유저 본인 글만 `posts.deleted_at` soft delete 처리, 실제 삭제/스키마 변경 없음
   - `FeedPostCard` 본인 글 `...` 메뉴에 `삭제` 액션과 확인 다이얼로그 추가. 본인 글은 저장·삭제, 타인 글은 기존 저장·차단·신고 흐름 유지

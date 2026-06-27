@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import { STORAGE_BUCKETS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
 import { getCurrentUserId } from "../shared/userContext";
@@ -140,7 +141,12 @@ export async function checkNicknameDuplicate(
 
 export async function uploadAvatar(uri: string): Promise<string> {
   const userId = await getCurrentUserId();
-  const [publicUrl] = await uploadImagesToBucket("avatars", userId, [uri], 512);
+  const [publicUrl] = await uploadImagesToBucket(
+    STORAGE_BUCKETS.avatars,
+    userId,
+    [uri],
+    512,
+  );
 
   if (!publicUrl) {
     throw new Error("프로필 사진 업로드에 실패했습니다.");
