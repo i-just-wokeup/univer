@@ -7,6 +7,10 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 StoryCreateScreen 카메라 컴포넌트/훅 분리**
+  - 한 파일에 섞여있던 카메라·권한·미리보기 3개 모드를 분리: 카메라/갤러리 입력은 `components/stories/StoryCamera.tsx`(촬영·전환·플래시·권한, 결과 uri를 `onSelected`로 전달), 업로드 상태/공개범위/제출은 `features/stories/useStoryCreate.ts`(`submit()` 성공 여부 반환)
+  - 화면 파일은 훅 연결 + 미리보기 렌더 + 카메라 연결 + 라우팅만. `StoryCreateScreen.tsx` 457줄 → 177줄. 동작/화면/업로드 변경 없음, tsc 통과
+  - 구조상 영상 추가 시 진입점 정리됨(StoryCamera 녹화 모드 / useStoryCreate 영상 업로드 / StoryPlayer 재생). 영상 자체는 스키마+expo-video+버킷 묶음으로 백로그
 - **앱 스토리 보관함 조회자 목록 슬라이드 패널**
   - 미리보기 시트에서 사진 아래 항상 깔려 잘리던 "조회한 사람" 목록을, `조회 N` 버튼 탭 시 아래에서 올라오는 슬라이드 패널로 변경(인스타 스토리 인사이트 방식). 헤더 ∨/뒷배경 탭으로 닫힘
   - 기존 `ActivityStoryPreviewSheet` 재사용 — 조회자 행/포맷 함수/뱃지/메타 줄 그대로, 데이터/쿼리 변경 없음. 열림 상태 + Animated 슬라이드만 추가. tsc 통과
