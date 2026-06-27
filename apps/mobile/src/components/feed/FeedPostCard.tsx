@@ -17,6 +17,7 @@ type FeedPostCardProps = {
   onBlockUser?: (userId: string) => void;
   onBookmark?: (postId: string) => void;
   onComment: (postId: string) => void;
+  onDelete?: (postId: string) => void;
   onLike: (postId: string) => void;
   onReport?: (postId: string) => void;
   onUserPress: (nickname: string) => void;
@@ -38,6 +39,7 @@ export function FeedPostCard({
   onBlockUser,
   onBookmark,
   onComment,
+  onDelete,
   onLike,
   onReport,
   onUserPress,
@@ -45,6 +47,7 @@ export function FeedPostCard({
 }: FeedPostCardProps) {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const isOwnPost = currentUserId === post.user.id;
   const actionSheetItems: ActionSheetItem[] = [
@@ -53,6 +56,15 @@ export function FeedPostCard({
           {
             label: isBookmarked ? "저장 취소" : "저장",
             onPress: () => onBookmark(post.id),
+          } satisfies ActionSheetItem,
+        ]
+      : []),
+    ...(isOwnPost && onDelete
+      ? [
+          {
+            danger: true,
+            label: "삭제",
+            onPress: () => setIsDeleteConfirmOpen(true),
           } satisfies ActionSheetItem,
         ]
       : []),
@@ -167,6 +179,18 @@ export function FeedPostCard({
           onBlockUser?.(post.user.id);
         }}
         title={`${post.user.nickname} 님을 차단할까요?`}
+      />
+      <ConfirmDialog
+        confirmLabel="삭제"
+        danger
+        description="되돌릴 수 없습니다."
+        isOpen={isDeleteConfirmOpen}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          setIsDeleteConfirmOpen(false);
+          onDelete?.(post.id);
+        }}
+        title="이 게시물을 삭제할까요?"
       />
       <ConfirmDialog
         confirmLabel="신고"

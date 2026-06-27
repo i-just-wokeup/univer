@@ -9,6 +9,7 @@ import { StateView } from "../../components/common/StateView";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { blockUser } from "../../features/blocks/api";
 import {
+  deletePost,
   getBookmarkedPostIds,
   getLikedPostIds,
   getPost,
@@ -157,6 +158,23 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
     [showFeedback],
   );
 
+  const handleDeletePost = useCallback(
+    async (deletedPostId: string) => {
+      try {
+        await deletePost(deletedPostId);
+        showFeedback("삭제했어요");
+        setTimeout(() => {
+          router.back();
+        }, 250);
+      } catch (error) {
+        showFeedback(
+          error instanceof Error ? error.message : "삭제에 실패했습니다.",
+        );
+      }
+    },
+    [router, showFeedback],
+  );
+
   const handleCommentCountChange = useCallback(
     (changedPostId: string, nextCount: number) => {
       setPost((current) =>
@@ -217,6 +235,9 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
               void handleToggleBookmark();
             }}
             onComment={() => setIsCommentSheetOpen(true)}
+            onDelete={(deletedPostId) => {
+              void handleDeletePost(deletedPostId);
+            }}
             onLike={() => {
               void handleToggleLike();
             }}

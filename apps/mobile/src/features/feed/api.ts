@@ -86,6 +86,24 @@ export async function createPost({
   return post.id;
 }
 
+export async function deletePost(postId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const { userId } = await getCurrentUserContext();
+
+  const { data, error } = await supabase
+    .from("posts")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", postId)
+    .eq("user_id", userId)
+    .is("deleted_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    throw new Error("게시물 삭제에 실패했습니다.");
+  }
+}
+
 export async function getFeed({
   cursor,
   limit = 20,

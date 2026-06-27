@@ -17,6 +17,7 @@ import { StoryBar } from "../../components/stories/StoryBar";
 import { blockUser } from "../../features/blocks/api";
 import { getChatUnreadCount } from "../../features/chat/api";
 import {
+  deletePost,
   getBookmarkedPostIds,
   getFeed,
   getLikedPostIds,
@@ -300,6 +301,25 @@ export function HomeScreen() {
     }
   }
 
+  async function handleDeletePost(postId: string) {
+    const previousPosts = posts;
+
+    setPosts((currentPosts) =>
+      currentPosts.filter((post) => post.id !== postId),
+    );
+
+    try {
+      await deletePost(postId);
+      showFeedback("삭제했어요", "success");
+    } catch (error) {
+      setPosts(previousPosts);
+      showFeedback(
+        error instanceof Error ? error.message : "삭제에 실패했습니다.",
+        "error",
+      );
+    }
+  }
+
   async function handleSignOut() {
     await getSupabaseMobileClient().auth.signOut();
   }
@@ -450,6 +470,9 @@ export function HomeScreen() {
               void handleToggleBookmark(postId);
             }}
             onComment={setCommentSheetPostId}
+            onDelete={(postId) => {
+              void handleDeletePost(postId);
+            }}
             onLike={(postId) => {
               void handleToggleLike(postId);
             }}
