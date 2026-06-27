@@ -181,6 +181,7 @@
 - [x] **푸시 Phase 2 (서버 전송)** — pg_net 트리거로 댓글(post_comment)/대댓글(comment_reply)/DM(messages) Expo Push 전송. 대댓글 알림 신규(트리거+`notifications_type_check` 제약 추가 — 답글 INSERT 롤백 버그 수정), DM 탭 라우팅 클라 추가. 실기기 검증 완료. 남음: 인앱 comment_reply 문구/actor 처리, 좋아요·친구 푸시(의도적 보류)
 - [x] **앱 게시물 메뉴 액션 연결** — `FeedPostCard` 저장 아이콘/`...` 메뉴를 저장·차단·신고 기능에 연결, 피드/상세 저장 상태 로드, 차단 후 피드 낙관적 제거, 신고 피드백 처리
 - [x] **앱 채팅방 `...` 메뉴 연결** — 웹 채팅방과 동일하게 상대 차단 액션시트/확인 다이얼로그/차단 후 메시지 목록 이동 흐름 연결
+- [x] **앱 게시물 본인 글 삭제 메뉴 연결** — `deletePost` soft delete API 추가, 본인 글 `...` 메뉴 삭제/확인 다이얼로그 연결, 홈 피드 낙관적 제거와 상세 뒤로가기 처리
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요
