@@ -7,6 +7,10 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 WriteScreen 폼 로직 훅 분리** (앱 화면 god 파일 정리 완료)
+  - 게시물 작성 화면의 이미지 선택/비율 자동 감지/내용·공개범위 상태/업로드·제출 로직을 `features/feed/useWriteForm.ts`로 분리(`MAX_IMAGES` export, `submit()` 성공 여부 반환)
+  - 화면 파일은 작성취소 다이얼로그 UI 상태 + 렌더 + 라우팅만. `WriteScreen.tsx` 360줄 → 262줄. 동작/업로드 변경 없음, tsc 통과
+  - 이로써 앱 화면 god 파일(StoryViewer/Home/Profile/ProfileEdit/Onboarding/MyActivity/StoryCreate/ChatRoom/Write) 전부 로직 훅·컴포넌트로 분리 완료
 - **앱 ChatRoomScreen 로직 훅 분리**
   - 채팅방의 유저ID 로드/포커스·읽음 처리/키보드 가시성/요청 수락/차단/메시지 전송/대화·메시지 wrap 로직을 `features/chat/useChatRoom.ts`로 분리(`ChatMessage` 타입 포함). 차단은 성공 여부 반환 → 화면이 `router.replace`
   - 화면 파일은 메뉴/차단확인 UI 상태 + 렌더 + 네비게이션만. `ChatRoomScreen.tsx` 421줄 → 317줄(렌더 JSX+스타일 중심). 동작/실시간/읽음 처리 변경 없음, tsc 통과
