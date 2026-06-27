@@ -7,6 +7,10 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 HomeScreen 피드 로직 훅 분리**
+  - `HomeScreen`에 섞여 있던 피드 상태/페이지 로드/새로고침/더보기/좋아요/저장/차단/신고/삭제/댓글 수 갱신 로직을 `features/feed/useHomeFeed.ts`로 분리
+  - 화면 파일은 스토리·뱃지 메타, 댓글시트 상태, 네비게이션 핸들러, 렌더 연결 중심으로 정리. 동작/네트워크 호출 변경 없음
+  - `HomeScreen.tsx` 562줄 → 309줄. 웹/서버/DB 스키마 변경 없음. `cd apps/mobile && npx tsc --noEmit` 통과
 - **앱 색상 토큰화 Phase 1 (안전)** — theme.ts에 `black`/`imagePlaceholder` 토큰 추가, 기존 토큰과 똑같은 값 + `#000000`/`#E8E3F3` 하드코딩 17곳(11파일)을 `colors.*`로 교체. **값 동일 = 화면 변화 0**. push.ts colors import 누락 보완. tsc 통과. (알파값 soup/일회성은 Phase 2)
 - **앱 페이지네이션 매직넘버 상수화** — `lib/constants/pagination.ts` `PAGE_SIZE`(feed 20/explore 24/messages 50/notifications 50)로 모으고 feed/explore/notifications/chat 호출부 교체. 동작 변경 없음, tsc 통과
 - **앱 Storage 버킷/폴더명 상수화**
