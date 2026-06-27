@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { MoreHorizontal, Settings } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Pressable,
   RefreshControl,
@@ -21,26 +21,7 @@ import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { ProfileConnectionActions } from "../../components/profile/ProfileConnectionActions";
 import { ProfileInfoPanel } from "../../components/profile/ProfileInfoPanel";
-import { getOrCreateConversation } from "../../features/chat/api";
-import {
-  acceptFriendRequest,
-  getConnectionStatus,
-  getFavoriteUserStatus,
-  getProfile,
-  getProfileCounts,
-  getProfilePosts,
-  rejectFriendRequest,
-  removeFriend,
-  sendFriendRequest,
-  toggleUserFavorite,
-} from "../../features/profile/api";
-import type {
-  ConnectionStatus,
-  ProfileCounts,
-  ProfileDetail,
-  ProfileGridPost,
-} from "../../features/profile/types";
-import { getSupabaseMobileClient } from "../../lib/supabase";
+import { useProfile } from "../../features/profile/useProfile";
 import { colors } from "../../lib/theme";
 
 type ProfileScreenProps = {
@@ -49,211 +30,35 @@ type ProfileScreenProps = {
 
 export function ProfileScreen({ nickname }: ProfileScreenProps) {
   const router = useRouter();
-
-  const [profile, setProfile] = useState<ProfileDetail | null>(null);
-  const [counts, setCounts] = useState<ProfileCounts>({ crew: 0, posts: 0 });
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus | null>(null);
-  const [posts, setPosts] = useState<ProfileGridPost[]>([]);
-  const [isMine, setIsMine] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const {
+    connectionStatus,
+    counts,
+    errorMessage,
+    handleAcceptFriendRequest,
+    handleRejectFriendRequest,
+    handleRemoveFriend,
+    handleSendFriendRequest,
+    handleToggleFavorite,
+    isActionPending,
+    isFavorite,
+    isLoading,
+    isMine,
+    isRefreshing,
+    posts,
+    profile,
+    refresh,
+    retry,
+    startConversation,
+  } = useProfile(nickname);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isActionPending, setIsActionPending] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const load = useCallback(async () => {
-    try {
-      setErrorMessage("");
-      const { isMine: loadedIsMine, profile: loaded } =
-        await getProfile(nickname);
-      setProfile(loaded);
-      setIsMine(loadedIsMine);
-
-      const [loadedCounts, loadedPosts, loadedConnectionStatus, favoriteStatus] =
-        await Promise.all([
-          getProfileCounts(loaded.id),
-          getProfilePosts(loaded.id),
-          loadedIsMine ? Promise.resolve(null) : getConnectionStatus(loaded.id),
-          loadedIsMine
-            ? Promise.resolve(false)
-            : getFavoriteUserStatus(loaded.id),
-        ]);
-      setCounts(
-        loadedConnectionStatus
-          ? { ...loadedCounts, crew: loadedConnectionStatus.friends_count }
-          : loadedCounts,
-      );
-      setConnectionStatus(loadedConnectionStatus);
-      setIsFavorite(favoriteStatus);
-      setPosts(loadedPosts);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "프로필을 불러오지 못했습니다.",
-      );
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [nickname]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function refreshConnectionStatus(profileId: string) {
-    const nextConnectionStatus = await getConnectionStatus(profileId);
-    setConnectionStatus(nextConnectionStatus);
-    setCounts((currentCounts) => ({
-      ...currentCounts,
-      crew: nextConnectionStatus.friends_count,
-    }));
-  }
-
-  async function runConnectionAction({
-    action,
-    optimisticStatus,
-  }: {
-    action: () => Promise<void>;
-    optimisticStatus: ConnectionStatus;
-  }) {
-    if (!profile || isMine || !connectionStatus || isActionPending) {
-      return;
-    }
-
-    const previousConnectionStatus = connectionStatus;
-    const previousCounts = counts;
-
-    setIsActionPending(true);
-    setErrorMessage("");
-    setConnectionStatus(optimisticStatus);
-    setCounts((currentCounts) => ({
-      ...currentCounts,
-      crew: optimisticStatus.friends_count,
-    }));
-
-    try {
-      await action();
-      await refreshConnectionStatus(profile.id);
-    } catch (error) {
-      setConnectionStatus(previousConnectionStatus);
-      setCounts(previousCounts);
-      setErrorMessage(
-        error instanceof Error ? error.message : "친구 상태를 변경하지 못했습니다.",
-      );
-    } finally {
-      setIsActionPending(false);
-    }
-  }
-
-  function handleSendFriendRequest() {
-    if (!profile || !connectionStatus) {
-      return;
-    }
-
-    void runConnectionAction({
-      action: () => sendFriendRequest(profile.id),
-      optimisticStatus: {
-        ...connectionStatus,
-        is_requester: true,
-        status: "pending",
-      },
-    });
-  }
-
-  function handleAcceptFriendRequest() {
-    if (!profile || !connectionStatus) {
-      return;
-    }
-
-    void runConnectionAction({
-      action: () => acceptFriendRequest(profile.id),
-      optimisticStatus: {
-        friends_count: connectionStatus.friends_count + 1,
-        is_requester: false,
-        status: "accepted",
-      },
-    });
-  }
-
-  function handleRejectFriendRequest() {
-    if (!profile || !connectionStatus) {
-      return;
-    }
-
-    void runConnectionAction({
-      action: () => rejectFriendRequest(profile.id),
-      optimisticStatus: {
-        ...connectionStatus,
-        is_requester: false,
-        status: "none",
-      },
-    });
-  }
-
-  function handleRemoveFriend() {
-    if (!profile || !connectionStatus) {
-      return;
-    }
-
-    void runConnectionAction({
-      action: () => removeFriend(profile.id),
-      optimisticStatus: {
-        friends_count:
-          connectionStatus.status === "accepted"
-            ? Math.max(0, connectionStatus.friends_count - 1)
-            : connectionStatus.friends_count,
-        is_requester: false,
-        status: "none",
-      },
-    });
-  }
-
-  async function handleToggleFavorite() {
-    if (!profile || isMine || isActionPending) {
-      return;
-    }
-
-    const previousIsFavorite = isFavorite;
-    setIsActionPending(true);
-    setErrorMessage("");
-    setIsFavorite(!previousIsFavorite);
-
-    try {
-      const result = await toggleUserFavorite(profile.id);
-      setIsFavorite(result.favorited);
-    } catch (error) {
-      setIsFavorite(previousIsFavorite);
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "즐겨찾기 상태를 변경하지 못했습니다.",
-      );
-    } finally {
-      setIsActionPending(false);
-    }
-  }
 
   async function handleStartMessage() {
-    if (!profile || isMine || isActionPending) {
-      return;
-    }
-
-    try {
-      setIsActionPending(true);
-      setErrorMessage("");
-      const conversationId = await getOrCreateConversation(profile.id);
+    const conversationId = await startConversation();
+    if (conversationId) {
       router.push({
         pathname: "/messages/[conversationId]",
         params: { conversationId },
       });
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "대화를 시작하지 못했습니다.",
-      );
-    } finally {
-      setIsActionPending(false);
     }
   }
 
@@ -312,10 +117,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
-          onAction={() => {
-            setIsLoading(true);
-            void load();
-          }}
+          onAction={retry}
           title="프로필을 불러오지 못했습니다"
           type="error"
         />
@@ -375,10 +177,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            onRefresh={() => {
-              setIsRefreshing(true);
-              void load();
-            }}
+            onRefresh={refresh}
             refreshing={isRefreshing}
             tintColor={colors.accent}
           />
@@ -465,19 +264,6 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "900",
   },
-  signOutButton: {
-    height: 38,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 14,
-    backgroundColor: colors.white,
-    paddingHorizontal: 16,
-  },
-  signOutText: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: "800",
-  },
   headerButton: {
     height: 40,
     width: 40,
@@ -533,8 +319,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     fontWeight: "900",
-  },
-  pressed: {
-    opacity: 0.75,
   },
 });
