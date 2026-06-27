@@ -4,6 +4,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { colors } from "../../lib/theme";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,7 +22,7 @@ async function ensureAndroidNotificationChannel() {
 
   await Notifications.setNotificationChannelAsync("default", {
     importance: Notifications.AndroidImportance.MAX,
-    lightColor: "#7C3AED",
+    lightColor: colors.accent,
     name: "default",
     vibrationPattern: [0, 250, 250, 250],
   });

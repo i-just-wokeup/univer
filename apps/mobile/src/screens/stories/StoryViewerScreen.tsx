@@ -535,11 +535,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#000000",
+    backgroundColor: colors.black,
   },
   screen: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.black,
   },
   frame: {
     width: "100%",
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     maxHeight: "100%",
     overflow: "hidden",
     borderRadius: 6,
-    backgroundColor: "#000000",
+    backgroundColor: colors.black,
   },
   frameBlur: {
     ...StyleSheet.absoluteFillObject,

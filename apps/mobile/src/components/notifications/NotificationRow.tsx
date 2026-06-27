@@ -131,6 +131,6 @@ const styles = StyleSheet.create({
     height: 48,
     width: 48,
     borderRadius: 14,
-    backgroundColor: "#E8E3F3",
+    backgroundColor: colors.imagePlaceholder,
   },
 });

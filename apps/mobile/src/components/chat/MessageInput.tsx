@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   sendButtonDisabled: {
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: colors.card,
   },
   pressed: {
     opacity: 0.75,

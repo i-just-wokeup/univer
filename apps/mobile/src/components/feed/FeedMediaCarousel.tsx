@@ -77,10 +77,10 @@ export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#E8E3F3",
+    backgroundColor: colors.imagePlaceholder,
   },
   image: {
-    backgroundColor: "#E8E3F3",
+    backgroundColor: colors.imagePlaceholder,
   },
   mediaBadge: {
     position: "absolute",

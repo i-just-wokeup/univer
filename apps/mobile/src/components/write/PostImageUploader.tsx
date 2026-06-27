@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     width: "100%",
     overflow: "hidden",
     borderRadius: 20,
-    backgroundColor: "#E8E3F3",
+    backgroundColor: colors.imagePlaceholder,
   },
   previewImage: {
     height: "100%",
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     borderColor: "transparent",
-    backgroundColor: "#E8E3F3",
+    backgroundColor: colors.imagePlaceholder,
   },
   thumbnailActive: {
     borderColor: colors.accent,

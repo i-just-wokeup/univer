@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(20,22,30,0.08)",
+    borderBottomColor: colors.border,
     paddingHorizontal: 20,
   },
   lastItem: {

@@ -264,7 +264,7 @@ export function StoryCreateScreen() {
 const styles = StyleSheet.create({
   cameraScreen: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.black,
   },
   topControls: {
     position: "absolute",
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: "hidden",
     borderRadius: 24,
-    backgroundColor: "#000000",
+    backgroundColor: colors.black,
   },
   previewImage: {
     height: "100%",

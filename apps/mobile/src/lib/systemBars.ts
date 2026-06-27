@@ -29,9 +29,9 @@ const defaultPreset: SystemBarPreset = {
 };
 
 const storyPreset: SystemBarPreset = {
-  navigationBackgroundColor: "#000000",
+  navigationBackgroundColor: colors.black,
   navigationButtonStyle: "light",
-  statusBackgroundColor: "#000000",
+  statusBackgroundColor: colors.black,
   statusBarStyle: "light-content",
 };
 

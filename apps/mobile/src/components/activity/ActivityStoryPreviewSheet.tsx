@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   preview: {
     width: "100%",
     aspectRatio: 9 / 16,
-    backgroundColor: "#000000",
+    backgroundColor: colors.black,
   },
   previewImage: {
     height: "100%",
