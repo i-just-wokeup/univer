@@ -52,6 +52,7 @@ export function StoryViewerScreen() {
   const [viewers, setViewers] = useState<StoryViewer[]>([]);
   const [isViewerSheetOpen, setIsViewerSheetOpen] = useState(false);
   const likePendingRef = useRef(false);
+  const progressRef = useRef(0);
   const viewedIdsRef = useRef<Set<string>>(new Set());
   // 액션시트에서 삭제/신고 다이얼로그를 띄울 때는 시트가 닫혀도 재생을 재개하지 않는다.
   const keepPausedRef = useRef(false);
@@ -139,6 +140,7 @@ export function StoryViewerScreen() {
     }
 
     setProgress(0);
+    progressRef.current = 0;
     setIsPortrait(false);
     setIsLiked(false);
 
@@ -161,17 +163,19 @@ export function StoryViewerScreen() {
     }
 
     const timer = setInterval(() => {
-      setProgress((current) => {
-        const next = current + (PROGRESS_TICK_MS / STORY_DURATION_MS) * 100;
+      const next =
+        progressRef.current + (PROGRESS_TICK_MS / STORY_DURATION_MS) * 100;
 
-        if (next < 100) {
-          return next;
-        }
+      if (next < 100) {
+        progressRef.current = next;
+        setProgress(next);
+        return;
+      }
 
-        clearInterval(timer);
-        goNext();
-        return 100;
-      });
+      progressRef.current = 100;
+      setProgress(100);
+      clearInterval(timer);
+      goNext();
     }, PROGRESS_TICK_MS);
 
     return () => {
