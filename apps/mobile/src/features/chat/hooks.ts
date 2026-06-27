@@ -1,6 +1,7 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import {
   getConversations,
@@ -9,7 +10,7 @@ import {
   type Message,
 } from "./api";
 
-const MESSAGE_PAGE_SIZE = 50;
+const MESSAGE_PAGE_SIZE = PAGE_SIZE.messages;
 
 type ChatMessage = Message & {
   isOptimistic?: boolean;

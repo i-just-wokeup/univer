@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type {
   NotificationItem,
@@ -80,7 +81,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     .select("id, user_id, type, reference_type, reference_id, message, is_read, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(PAGE_SIZE.notifications);
 
   if (error || !notifications) {
     throw new Error("알림을 불러오지 못했습니다.");

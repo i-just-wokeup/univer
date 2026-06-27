@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
@@ -112,7 +113,7 @@ export async function deletePost(postId: string): Promise<void> {
 
 export async function getFeed({
   cursor,
-  limit = 20,
+  limit = PAGE_SIZE.feed,
 }: {
   cursor?: string;
   limit?: number;

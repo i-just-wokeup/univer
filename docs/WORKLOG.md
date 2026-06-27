@@ -7,6 +7,7 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 페이지네이션 매직넘버 상수화** — `lib/constants/pagination.ts` `PAGE_SIZE`(feed 20/explore 24/messages 50/notifications 50)로 모으고 feed/explore/notifications/chat 호출부 교체. 동작 변경 없음, tsc 통과
 - **앱 Storage 버킷/폴더명 상수화**
   - 앱 업로드 버킷/폴더 문자열을 `src/lib/constants/storage.ts`의 `STORAGE_BUCKETS`/`STORAGE_FOLDERS`로 분리
   - 아바타/게시물 이미지/스토리 이미지 업로드 호출부를 상수 참조로 교체. 버킷명 값과 업로드 동작 변경 없음

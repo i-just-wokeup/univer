@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type { PostAspectRatio } from "../feed/types";
 import {
@@ -27,7 +28,7 @@ function toPostgrestInFilter(values: string[]) {
 
 // 같은 학교 전체공개 게시물 중 대표 이미지가 있는 글을 인기순으로 모아 탐색 그리드를 구성한다.
 export async function getExplorePosts({
-  limit = 24,
+  limit = PAGE_SIZE.explore,
   offset = 0,
 }: GetExplorePostsParams = {}): Promise<GetExplorePostsResult> {
   const supabase = getSupabaseMobileClient();
