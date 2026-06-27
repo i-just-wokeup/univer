@@ -7,6 +7,10 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 MyActivityScreen 로직 훅 분리**
+  - 내 활동 화면의 탭 상태/탭별 lazy load/백그라운드 prefetch/스토리 미리보기·본 사람 로딩/로딩·에러 파생값을 `features/activity/useMyActivity.ts`로 분리
+  - 화면 파일은 훅 연결 + 게시물/프로필 네비게이션 + 탭바·그리드·시트 렌더 중심으로 정리. 동작/화면/네트워크 호출 변경 없음
+  - `MyActivityScreen.tsx` 418줄 → 220줄(+훅 250). 웹/서버/DB 스키마 변경 없음. `cd apps/mobile && npx tsc --noEmit` 통과
 - **앱 OnboardingScreen 폼 로직 훅 분리**
   - 온보딩 화면의 프로필 로드/닉네임 정규화·중복확인/제출/로딩·에러·readOnly 상태/canSubmit 파생값을 `features/auth/useOnboarding.ts`로 분리
   - 화면 파일은 훅 연결, `redirectTo`/제출 성공 시 라우팅, 기존 JSX/스타일 렌더 중심으로 정리. 동작/화면/네트워크 호출 변경 없음
