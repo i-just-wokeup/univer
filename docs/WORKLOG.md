@@ -7,6 +7,9 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 ChatRoomScreen 로직 훅 분리**
+  - 채팅방의 유저ID 로드/포커스·읽음 처리/키보드 가시성/요청 수락/차단/메시지 전송/대화·메시지 wrap 로직을 `features/chat/useChatRoom.ts`로 분리(`ChatMessage` 타입 포함). 차단은 성공 여부 반환 → 화면이 `router.replace`
+  - 화면 파일은 메뉴/차단확인 UI 상태 + 렌더 + 네비게이션만. `ChatRoomScreen.tsx` 421줄 → 317줄(렌더 JSX+스타일 중심). 동작/실시간/읽음 처리 변경 없음, tsc 통과
 - **앱 StoryCreateScreen 카메라 컴포넌트/훅 분리**
   - 한 파일에 섞여있던 카메라·권한·미리보기 3개 모드를 분리: 카메라/갤러리 입력은 `components/stories/StoryCamera.tsx`(촬영·전환·플래시·권한, 결과 uri를 `onSelected`로 전달), 업로드 상태/공개범위/제출은 `features/stories/useStoryCreate.ts`(`submit()` 성공 여부 반환)
   - 화면 파일은 훅 연결 + 미리보기 렌더 + 카메라 연결 + 라우팅만. `StoryCreateScreen.tsx` 457줄 → 177줄. 동작/화면/업로드 변경 없음, tsc 통과
