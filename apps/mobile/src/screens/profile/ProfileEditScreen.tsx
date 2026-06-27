@@ -1,7 +1,5 @@
-import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { Plus, Trash2 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,221 +15,42 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Avatar } from "../../components/common/Avatar";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
-import { getProfile } from "../../features/profile/api";
 import {
-  checkNicknameDuplicate,
-  updateProfile,
-  uploadAvatar,
-} from "../../features/profile/mutations";
+  BIO_MAX_LENGTH,
+  MAX_PROFILE_LINKS,
+  useProfileEdit,
+} from "../../features/profile/useProfileEdit";
 import { colors } from "../../lib/theme";
-import { isValidNickname, normalizeNickname } from "../../lib/utils/nickname";
-import { normalizeProfileLinks } from "../../lib/utils/profileLinks";
-
-const BIO_MAX_LENGTH = 60;
-const MAX_PROFILE_LINKS = 5;
-
-type NicknameStatus = "idle" | "checking" | "available" | "duplicate" | "invalid";
-
-function getNicknameMessage(status: NicknameStatus) {
-  switch (status) {
-    case "checking":
-      return "닉네임을 확인하는 중입니다.";
-    case "available":
-      return "사용 가능한 닉네임입니다.";
-    case "duplicate":
-      return "이미 사용 중인 닉네임입니다.";
-    case "invalid":
-      return "영문, 숫자, 마침표, 밑줄만 사용할 수 있습니다.";
-    default:
-      return "";
-  }
-}
-
-function normalizeLinkInputs(links: string[]) {
-  return links.map((link) => link.trim()).filter(Boolean);
-}
 
 export function ProfileEditScreen() {
   const router = useRouter();
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [bio, setBio] = useState("");
-  const [department, setDepartment] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [initialNickname, setInitialNickname] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [nickname, setNickname] = useState("");
-  const [nicknameStatus, setNicknameStatus] =
-    useState<NicknameStatus>("idle");
-  const [profileLinks, setProfileLinks] = useState<string[]>([""]);
-  const [selectedAvatarUri, setSelectedAvatarUri] = useState<string | null>(
-    null,
-  );
-
-  const normalizedNickname = useMemo(
-    () => normalizeNickname(nickname),
-    [nickname],
-  );
-  const cleanedLinks = useMemo(
-    () => normalizeLinkInputs(profileLinks),
-    [profileLinks],
-  );
-  const hasInvalidLink = useMemo(
-    () =>
-      cleanedLinks.length > 0 &&
-      normalizeProfileLinks(cleanedLinks).length !== cleanedLinks.length,
-    [cleanedLinks],
-  );
-  const nicknameMessage = getNicknameMessage(nicknameStatus);
-  const canSave =
-    !isSaving &&
-    !isLoading &&
-    normalizedNickname.length > 0 &&
-    nicknameStatus !== "checking" &&
-    nicknameStatus !== "duplicate" &&
-    nicknameStatus !== "invalid" &&
-    !hasInvalidLink;
-
-  const loadProfile = useCallback(async () => {
-    try {
-      setErrorMessage("");
-      const { profile } = await getProfile();
-
-      setAvatarUrl(profile.avatar_url);
-      setBio(profile.bio ?? "");
-      setDepartment(profile.department);
-      setInitialNickname(profile.nickname);
-      setNickname(profile.nickname);
-      setNicknameStatus("idle");
-      setProfileLinks(
-        profile.links.length > 0 ? profile.links.map((link) => link.url) : [""],
-      );
-      setSelectedAvatarUri(null);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "프로필을 불러오지 못했습니다.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadProfile();
-  }, [loadProfile]);
-
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    const nextNickname = normalizeNickname(nickname);
-
-    if (!nextNickname || !isValidNickname(nextNickname)) {
-      setNicknameStatus("invalid");
-      return;
-    }
-
-    if (nextNickname === initialNickname) {
-      setNicknameStatus("idle");
-      return;
-    }
-
-    setNicknameStatus("checking");
-    const timer = setTimeout(() => {
-      void (async () => {
-        try {
-          const duplicated = await checkNicknameDuplicate(nextNickname);
-          setNicknameStatus(duplicated ? "duplicate" : "available");
-        } catch (error) {
-          setNicknameStatus("idle");
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "닉네임 중복 확인에 실패했습니다.",
-          );
-        }
-      })();
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [initialNickname, isLoading, nickname]);
-
-  async function handlePickAvatar() {
-    setErrorMessage("");
-
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      setErrorMessage("사진 접근 권한이 필요합니다.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      allowsMultipleSelection: false,
-      aspect: [1, 1],
-      mediaTypes: ["images"],
-      quality: 1,
-    });
-
-    if (result.canceled || result.assets.length === 0) {
-      return;
-    }
-
-    const nextUri = result.assets[0].uri;
-    setSelectedAvatarUri(nextUri);
-    setAvatarUrl(nextUri);
-  }
-
-  function handleChangeLink(index: number, value: string) {
-    setProfileLinks((currentLinks) =>
-      currentLinks.map((link, linkIndex) =>
-        linkIndex === index ? value : link,
-      ),
-    );
-  }
-
-  function handleAddLink() {
-    setProfileLinks((currentLinks) =>
-      currentLinks.length >= MAX_PROFILE_LINKS ? currentLinks : [...currentLinks, ""],
-    );
-  }
-
-  function handleRemoveLink(index: number) {
-    setProfileLinks((currentLinks) => {
-      const nextLinks = currentLinks.filter((_, linkIndex) => linkIndex !== index);
-      return nextLinks.length > 0 ? nextLinks : [""];
-    });
-  }
+  const {
+    avatarUrl,
+    bio,
+    canSave,
+    department,
+    errorMessage,
+    handleAddLink,
+    handleChangeLink,
+    handleChangeNickname,
+    handlePickAvatar,
+    handleRemoveLink,
+    hasInvalidLink,
+    isLoading,
+    isSaving,
+    nickname,
+    nicknameMessage,
+    nicknameStatus,
+    profileLinks,
+    retry,
+    save,
+    setBio,
+  } = useProfileEdit();
 
   async function handleSave() {
-    if (!canSave) {
-      return;
-    }
-
-    setIsSaving(true);
-    setErrorMessage("");
-
-    try {
-      const nextAvatarUrl = selectedAvatarUri
-        ? await uploadAvatar(selectedAvatarUri)
-        : avatarUrl;
-
-      await updateProfile({
-        avatar_url: nextAvatarUrl ?? "",
-        bio,
-        nickname: normalizedNickname,
-        profileLinks: cleanedLinks,
-      });
-
+    const saved = await save();
+    if (saved) {
       router.back();
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "프로필을 저장하지 못했습니다.",
-      );
-    } finally {
-      setIsSaving(false);
     }
   }
 
@@ -255,10 +74,7 @@ export function ProfileEditScreen() {
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
-          onAction={() => {
-            setIsLoading(true);
-            void loadProfile();
-          }}
+          onAction={retry}
           title="프로필을 불러오지 못했습니다"
           type="error"
         />
@@ -274,7 +90,9 @@ export function ProfileEditScreen() {
           <Pressable
             accessibilityRole="button"
             disabled={!canSave}
-            onPress={handleSave}
+            onPress={() => {
+              void handleSave();
+            }}
             style={({ pressed }) => [
               styles.saveButton,
               pressed && canSave ? styles.pressed : null,
@@ -298,7 +116,9 @@ export function ProfileEditScreen() {
           <View style={styles.card}>
             <Pressable
               accessibilityRole="button"
-              onPress={handlePickAvatar}
+              onPress={() => {
+                void handlePickAvatar();
+              }}
               style={({ pressed }) => [
                 styles.avatarButton,
                 pressed ? styles.pressed : null,
@@ -314,7 +134,7 @@ export function ProfileEditScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 maxLength={30}
-                onChangeText={(value) => setNickname(normalizeNickname(value))}
+                onChangeText={handleChangeNickname}
                 placeholder="nickname"
                 placeholderTextColor={colors.textFaint}
                 style={styles.input}
