@@ -7,6 +7,10 @@
 ## 2026-06-27
 
 ### 완료
+- **앱 OnboardingScreen 폼 로직 훅 분리**
+  - 온보딩 화면의 프로필 로드/닉네임 정규화·중복확인/제출/로딩·에러·readOnly 상태/canSubmit 파생값을 `features/auth/useOnboarding.ts`로 분리
+  - 화면 파일은 훅 연결, `redirectTo`/제출 성공 시 라우팅, 기존 JSX/스타일 렌더 중심으로 정리. 동작/화면/네트워크 호출 변경 없음
+  - 웹/서버/DB 스키마 변경 없음. `cd apps/mobile && npx tsc --noEmit` 통과
 - **앱 god 파일 분리 (리팩토링)** — StoryViewer(712→로더79+StoryPlayer495+ViewersSheet/ProgressBar/Header), ProfileScreen(540→323+useProfile259), ProfileEditScreen(569→389+useProfileEdit258). 동작 동일, 각 단계 tsc+실기기 검증. StoryPlayer는 groups/onClose props로 받아 보관함/하이라이트 재사용 가능 구조
 - **앱 HomeScreen 피드 로직 훅 분리**
   - `HomeScreen`에 섞여 있던 피드 상태/페이지 로드/새로고침/더보기/좋아요/저장/차단/신고/삭제/댓글 수 갱신 로직을 `features/feed/useHomeFeed.ts`로 분리
