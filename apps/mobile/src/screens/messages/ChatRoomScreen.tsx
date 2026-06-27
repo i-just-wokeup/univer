@@ -1,4 +1,5 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { MoreHorizontal } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -11,10 +12,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ActionSheet } from "../../components/common/ActionSheet";
+import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { MessageBubble } from "../../components/chat/MessageBubble";
 import { MessageInput } from "../../components/chat/MessageInput";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
+import { blockUser } from "../../features/blocks/api";
 import {
   acceptChatRequest,
   markMessagesRead,
@@ -56,7 +60,10 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   const insets = useStableInsets();
   const [currentUserId, setCurrentUserId] = useState("");
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 방을 열고 있는 동안 들어온 메시지를 읽음 처리하기 위한 포커스 상태.
   const [isFocused, setIsFocused] = useState(false);
   const { active, pending, reload } = useConversations();
@@ -141,6 +148,21 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     }
   }
 
+  async function handleBlockUser() {
+    if (!conversation || isBlocking) {
+      return;
+    }
+
+    try {
+      setIsBlocking(true);
+      await blockUser(conversation.other_user.id);
+      router.replace("/messages");
+    } catch {
+      setIsBlocking(false);
+      setIsBlockConfirmOpen(false);
+    }
+  }
+
   async function handleSendMessage(content: string) {
     const tempId = addOptimisticMessage(content, currentUserId);
 
@@ -163,6 +185,25 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
       <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
         <ScreenHeader
           onBack={() => router.back()}
+          right={
+            conversation ? (
+              <Pressable
+                accessibilityLabel="더보기"
+                accessibilityRole="button"
+                onPress={() => setIsMenuOpen(true)}
+                style={({ pressed }) => [
+                  styles.headerMenuButton,
+                  pressed ? styles.pressed : null,
+                ]}
+              >
+                <MoreHorizontal
+                  color={colors.muted}
+                  size={22}
+                  strokeWidth={2.5}
+                />
+              </Pressable>
+            ) : null
+          }
           title={conversation?.other_user.nickname ?? "메시지"}
         />
 
@@ -264,6 +305,34 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
           />
         </View>
       </KeyboardAvoidingView>
+
+      <ActionSheet
+        isOpen={isMenuOpen}
+        items={[
+          {
+            danger: true,
+            label: "차단하기",
+            onPress: () => setIsBlockConfirmOpen(true),
+          },
+          {
+            label: "취소",
+            onPress: () => setIsMenuOpen(false),
+          },
+        ]}
+        onClose={() => setIsMenuOpen(false)}
+      />
+
+      <ConfirmDialog
+        confirmLabel={isBlocking ? "차단 중..." : "차단"}
+        danger
+        description="차단하면 서로의 게시물과 채팅이 숨겨집니다."
+        isOpen={isBlockConfirmOpen}
+        onCancel={() => setIsBlockConfirmOpen(false)}
+        onConfirm={() => {
+          void handleBlockUser();
+        }}
+        title={`${conversation?.other_user.nickname ?? ""}을(를) 차단할까요?`}
+      />
     </SafeAreaView>
   );
 }
@@ -281,6 +350,14 @@ const styles = StyleSheet.create({
   },
   inputWrap: {
     backgroundColor: "rgba(255,255,255,0.95)",
+  },
+  headerMenuButton: {
+    height: 40,
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    backgroundColor: colors.white,
   },
   pendingBox: {
     borderTopWidth: 1,

@@ -18,6 +18,7 @@ type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type PostLikeRow = Database["public"]["Tables"]["post_likes"]["Row"];
+type BookmarkRow = Database["public"]["Tables"]["bookmarks"]["Row"];
 
 type FeedPostRow = Pick<
   PostRow,
@@ -237,6 +238,81 @@ export async function getLikedPostIds(postIds: string[]) {
   }
 
   return data.map((like: Pick<PostLikeRow, "target_id">) => like.target_id);
+}
+
+export async function getBookmarkedPostIds(postIds: string[]) {
+  if (postIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getSupabaseMobileClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select("post_id")
+    .eq("user_id", user.id)
+    .in("post_id", postIds);
+
+  if (error || !data) {
+    throw new Error("저장 정보를 불러오지 못했습니다.");
+  }
+
+  return data.map((bookmark: Pick<BookmarkRow, "post_id">) => bookmark.post_id);
+}
+
+export async function toggleBookmark(postId: string) {
+  const supabase = getSupabaseMobileClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const { data: existingBookmark, error: selectError } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("post_id", postId)
+    .maybeSingle();
+
+  if (selectError) {
+    throw new Error("저장 상태를 확인하지 못했습니다.");
+  }
+
+  if (existingBookmark) {
+    const { error } = await supabase
+      .from("bookmarks")
+      .delete()
+      .eq("id", existingBookmark.id);
+
+    if (error) {
+      throw new Error("저장 취소에 실패했습니다.");
+    }
+
+    return { bookmarked: false };
+  }
+
+  const { error } = await supabase.from("bookmarks").insert({
+    post_id: postId,
+    user_id: user.id,
+  });
+
+  if (error) {
+    throw new Error("게시물 저장에 실패했습니다.");
+  }
+
+  return { bookmarked: true };
 }
 
 export async function togglePostLike(postId: string) {

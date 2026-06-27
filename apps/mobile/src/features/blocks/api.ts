@@ -8,6 +8,18 @@ export type BlockedUser = {
   created_at: string;
 };
 
+export async function blockUser(userId: string): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+
+  const { error } = await supabase.rpc("block_user", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error("사용자 차단에 실패했습니다.");
+  }
+}
+
 export async function getBlockedUsers(): Promise<BlockedUser[]> {
   const supabase = getSupabaseMobileClient();
 

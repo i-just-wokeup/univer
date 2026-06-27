@@ -1,16 +1,24 @@
 import { Bookmark, Heart, MessageCircle, MoreHorizontal } from "lucide-react-native";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { FeedMediaCarousel } from "./FeedMediaCarousel";
+import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
+import { ConfirmDialog } from "../common/ConfirmDialog";
 import { UserInline } from "../common/UserInline";
 import { colors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 
 type FeedPostCardProps = {
+  currentUserId?: string;
+  isBookmarked?: boolean;
   isLiked: boolean;
+  onBlockUser?: (userId: string) => void;
+  onBookmark?: (postId: string) => void;
   onComment: (postId: string) => void;
   onLike: (postId: string) => void;
+  onReport?: (postId: string) => void;
   onUserPress: (nickname: string) => void;
   post: FeedPost;
 };
@@ -24,12 +32,54 @@ function formatCount(count: number) {
 }
 
 export function FeedPostCard({
+  currentUserId = "",
+  isBookmarked = false,
   isLiked,
+  onBlockUser,
+  onBookmark,
   onComment,
   onLike,
+  onReport,
   onUserPress,
   post,
 }: FeedPostCardProps) {
+  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
+  const isOwnPost = currentUserId === post.user.id;
+  const actionSheetItems: ActionSheetItem[] = [
+    ...(onBookmark
+      ? [
+          {
+            label: isBookmarked ? "저장 취소" : "저장",
+            onPress: () => onBookmark(post.id),
+          } satisfies ActionSheetItem,
+        ]
+      : []),
+    ...(!isOwnPost && onBlockUser
+      ? [
+          {
+            danger: true,
+            label: "차단",
+            onPress: () => setIsBlockConfirmOpen(true),
+          } satisfies ActionSheetItem,
+        ]
+      : []),
+    ...(!isOwnPost && onReport
+      ? [
+          {
+            danger: true,
+            label: "신고",
+            onPress: () => setIsReportConfirmOpen(true),
+          } satisfies ActionSheetItem,
+        ]
+      : []),
+    {
+      label: "취소",
+      onPress: () => undefined,
+    },
+  ];
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -42,7 +92,17 @@ export function FeedPostCard({
           onPress={onUserPress}
           style={styles.userInline}
         />
-        <MoreHorizontal color={colors.textFaint} size={26} strokeWidth={2.7} />
+        <Pressable
+          accessibilityLabel="게시물 더보기"
+          accessibilityRole="button"
+          onPress={() => setIsActionSheetOpen(true)}
+          style={({ pressed }) => [
+            styles.iconButton,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <MoreHorizontal color={colors.textFaint} size={26} strokeWidth={2.7} />
+        </Pressable>
       </View>
 
       <FeedMediaCarousel aspectRatio={post.aspect_ratio} media={post.media} />
@@ -66,7 +126,22 @@ export function FeedPostCard({
             <Text style={styles.actionText}>{formatCount(post.comments_count)}</Text>
           </Pressable>
         </View>
-        <Bookmark color={colors.text} size={30} strokeWidth={2.5} />
+        <Pressable
+          accessibilityLabel={isBookmarked ? "저장 취소" : "게시물 저장"}
+          accessibilityRole="button"
+          onPress={() => onBookmark?.(post.id)}
+          style={({ pressed }) => [
+            styles.bookmarkButton,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Bookmark
+            color={colors.text}
+            fill={isBookmarked ? colors.text : "transparent"}
+            size={30}
+            strokeWidth={2.5}
+          />
+        </Pressable>
       </View>
 
       {post.content ? (
@@ -75,6 +150,36 @@ export function FeedPostCard({
           {post.content}
         </Text>
       ) : null}
+
+      <ActionSheet
+        isOpen={isActionSheetOpen}
+        items={actionSheetItems}
+        onClose={() => setIsActionSheetOpen(false)}
+      />
+      <ConfirmDialog
+        confirmLabel="차단"
+        danger
+        description="이 사용자의 게시물이 피드에서 숨겨집니다."
+        isOpen={isBlockConfirmOpen}
+        onCancel={() => setIsBlockConfirmOpen(false)}
+        onConfirm={() => {
+          setIsBlockConfirmOpen(false);
+          onBlockUser?.(post.user.id);
+        }}
+        title={`${post.user.nickname} 님을 차단할까요?`}
+      />
+      <ConfirmDialog
+        confirmLabel="신고"
+        danger
+        description="검토를 위해 이 게시물을 신고합니다."
+        isOpen={isReportConfirmOpen}
+        onCancel={() => setIsReportConfirmOpen(false)}
+        onConfirm={() => {
+          setIsReportConfirmOpen(false);
+          onReport?.(post.id);
+        }}
+        title="게시물을 신고할까요?"
+      />
     </View>
   );
 }
@@ -129,5 +234,21 @@ const styles = StyleSheet.create({
   },
   contentNickname: {
     fontWeight: "900",
+  },
+  bookmarkButton: {
+    minHeight: 40,
+    minWidth: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconButton: {
+    minHeight: 40,
+    minWidth: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+  },
+  pressed: {
+    opacity: 0.62,
   },
 });
