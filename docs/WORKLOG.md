@@ -7,6 +7,13 @@
 ## 2026-06-26
 
 ### 완료
+- **앱 채팅방 `...` 메뉴 연결**
+  - 웹 채팅방과 동일하게 앱 채팅방 헤더 우측 `...` 메뉴를 추가하고 `ActionSheet` → 차단 확인 `ConfirmDialog` → `blockUser` RPC → 메시지 목록 이동 흐름 연결
+  - 새 API/DB 변경 없이 기존 앱 `blockUser`/`ActionSheet`/`ConfirmDialog` 재사용. `cd apps/mobile && npx tsc --noEmit` 통과
+- **앱 게시물 메뉴 액션 연결**
+  - 앱 피드/게시물 상세 카드의 저장 아이콘과 `...` 메뉴를 실제 기능에 연결 — 북마크 상태 조회/토글, 차단 RPC, 신고 API 연결
+  - 저장은 낙관적 토글+실패 롤백, 차단은 피드에서 해당 작성자 게시물을 즉시 제거, 신고/차단/저장 결과는 인라인 피드백으로 표시
+  - 기존 `ActionSheet`/`ConfirmDialog` 재사용, 웹/서버/DB 스키마 변경 없음. `cd apps/mobile && npx tsc --noEmit` 통과
 - **푸시 Phase 2 — 서버 전송(댓글/대댓글/DM) + 실기기 검증**
   - 방식: `notifications`/`messages` insert 트리거에서 **`pg_net`으로 Expo Push API 직접 POST**(Edge Function 없이 마이그레이션만, Expo Push는 인증키 불필요). 받는 사람 `fcm_token` 없으면 no-op
   - **댓글 푸시**(`push_on_comment_notification`): notifications insert(type=post_comment) → 게시물 작성자에게 푸시, data `{targetType:post,targetId}` → 탭 시 게시물
