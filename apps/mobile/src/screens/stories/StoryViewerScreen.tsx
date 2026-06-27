@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Eye, Heart, MoreHorizontal, Pause, X } from "lucide-react-native";
+import { Eye, Heart } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,8 +13,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ActionSheet, type ActionSheetItem } from "../../components/common/ActionSheet";
-import { Avatar } from "../../components/common/Avatar";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
+import { StoryHeader } from "../../components/stories/StoryHeader";
+import { StoryProgressBar } from "../../components/stories/StoryProgressBar";
 import { StoryViewersSheet } from "../../components/stories/StoryViewersSheet";
 import { createReport } from "../../features/reports/api";
 import {
@@ -341,63 +342,23 @@ export function StoryViewerScreen() {
       />
 
       <SafeAreaView edges={["top"]} style={styles.topLayer}>
-        <View style={styles.progressRow}>
-          {currentGroup.stories.map((story, index) => (
-            <View key={story.id} style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width:
-                      index < storyIndex
-                        ? "100%"
-                        : index === storyIndex
-                          ? `${progress}%`
-                          : "0%",
-                  },
-                ]}
-              />
-            </View>
-          ))}
-        </View>
+        <StoryProgressBar
+          count={currentGroup.stories.length}
+          currentIndex={storyIndex}
+          progress={progress}
+        />
 
-        <View style={styles.header}>
-          <View style={styles.author}>
-            <Avatar
-              imageUrl={currentGroup.user.avatar_url}
-              label={currentGroup.user.nickname}
-              size={36}
-            />
-            <Text style={styles.authorName}>{currentGroup.user.nickname}</Text>
-            <Text style={styles.time}>
-              {getRelativeTimeLabel(currentStory.created_at)}
-            </Text>
-          </View>
-          <View style={styles.headerActions}>
-            {isPaused ? (
-              <Pause color={colors.white} fill={colors.white} size={20} />
-            ) : null}
-            <Pressable
-              accessibilityLabel="스토리 메뉴"
-              accessibilityRole="button"
-              hitSlop={10}
-              onPress={() => {
-                setIsPaused(true);
-                setIsActionOpen(true);
-              }}
-            >
-              <MoreHorizontal color={colors.white} size={26} strokeWidth={2.6} />
-            </Pressable>
-            <Pressable
-              accessibilityLabel="닫기"
-              accessibilityRole="button"
-              hitSlop={10}
-              onPress={() => router.back()}
-            >
-              <X color={colors.white} size={26} strokeWidth={2.6} />
-            </Pressable>
-          </View>
-        </View>
+        <StoryHeader
+          avatarUrl={currentGroup.user.avatar_url}
+          isPaused={isPaused}
+          nickname={currentGroup.user.nickname}
+          onClose={() => router.back()}
+          onMenu={() => {
+            setIsPaused(true);
+            setIsActionOpen(true);
+          }}
+          timeLabel={getRelativeTimeLabel(currentStory.created_at)}
+        />
       </SafeAreaView>
 
       <SafeAreaView edges={["bottom"]} style={styles.bottomLayer}>
@@ -549,49 +510,6 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     paddingHorizontal: 12,
-  },
-  progressRow: {
-    flexDirection: "row",
-    gap: 4,
-    paddingTop: 8,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 3,
-    overflow: "hidden",
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.34)",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 999,
-    backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-  },
-  author: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  authorName: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  time: {
-    color: "rgba(255,255,255,0.78)",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
   },
   bottomLayer: {
     position: "absolute",
