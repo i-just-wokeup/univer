@@ -11,6 +11,9 @@
 - **앱 StoryPlayer 로직 훅 분리** (UI규칙 위반 해소)
   - `components/stories/StoryPlayer.tsx`에 박혀있던 재생 타이머/이전·다음 이동/조회기록·좋아요/삭제·신고/일시정지 조율 로직을 `features/stories/useStoryPlayer.ts`로 분리. 컴포넌트는 이제 api import 없이 렌더+다이얼로그 연결만
   - `StoryPlayer.tsx` 495줄 → 291줄(+훅 291). 동작/재생/타이머 변경 없음, 실기기 확인, tsc 통과
+- **앱 PostDetailScreen 로직 훅 분리**
+  - 게시물 상세의 로드/좋아요/저장(토스트)/차단/신고/삭제/댓글수 갱신/피드백 로직을 `features/feed/usePostDetail.ts`로 분리. 차단·삭제는 성공여부 반환→화면이 `router.back`
+  - 화면은 currentUserId·댓글시트 UI상태·네비게이션·렌더만. `PostDetailScreen.tsx` 295줄 → 164줄(+훅 195). 동작 변경 없음, 실기기 확인, tsc 통과
 
 ## 2026-06-27
 
