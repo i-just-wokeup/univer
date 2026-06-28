@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-06-28
+
+### 완료
+- **앱 컴포넌트/화면 로직 전수조사** — `screens/`만 봤던 누락 보완. `components/`인데 api 직접 호출(UI규칙 위반) + 훅 미경유 화면을 import 단위로 전수 확인. 발견: StoryPlayer(컴포넌트), PostDetail/Connections/Explore/Search/Messages/Blocked/Notifications(화면), HomeScreen 일부 잔여. 순차 분리 진행
+- **앱 StoryPlayer 로직 훅 분리** (UI규칙 위반 해소)
+  - `components/stories/StoryPlayer.tsx`에 박혀있던 재생 타이머/이전·다음 이동/조회기록·좋아요/삭제·신고/일시정지 조율 로직을 `features/stories/useStoryPlayer.ts`로 분리. 컴포넌트는 이제 api import 없이 렌더+다이얼로그 연결만
+  - `StoryPlayer.tsx` 495줄 → 291줄(+훅 291). 동작/재생/타이머 변경 없음, 실기기 확인, tsc 통과
+
 ## 2026-06-27
 
 ### 완료
