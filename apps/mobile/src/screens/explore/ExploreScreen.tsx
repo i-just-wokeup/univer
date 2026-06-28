@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { Heart } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -16,12 +16,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateView } from "../../components/common/StateView";
-import { getExplorePosts } from "../../features/explore/api";
+import { useExploreFeed } from "../../features/explore/useExploreFeed";
 import type { ExplorePost } from "../../features/explore/types";
 import type { PostAspectRatio } from "../../features/feed/types";
 import { colors } from "../../lib/theme";
 
-const PAGE_SIZE = 24;
 const H_PADDING = 10;
 const GAP = 8;
 
@@ -38,6 +37,16 @@ export function ExploreScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const tileWidth = (width - H_PADDING * 2 - GAP) / 2;
+  const {
+    errorMessage,
+    handleLoadMore,
+    handleRefresh,
+    isInitialLoading,
+    isLoadingMore,
+    isRefreshing,
+    posts,
+    retry,
+  } = useExploreFeed();
 
   const handlePressPost = useCallback(
     (postId: string) => {
@@ -45,14 +54,6 @@ export function ExploreScreen() {
     },
     [router],
   );
-
-  const [errorMessage, setErrorMessage] = useState("");
-  const [hasMore, setHasMore] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [posts, setPosts] = useState<ExplorePost[]>([]);
-  const offsetRef = useRef(0);
 
   // 높이 낮은 열에 번갈아 쌓아 들쭉날쭉(masonry) 배치를 만든다.
   const columns = useMemo(() => {
@@ -75,59 +76,6 @@ export function ExploreScreen() {
 
     return { left, right };
   }, [posts, tileWidth]);
-
-  const loadFirstPage = useCallback(async () => {
-    try {
-      setErrorMessage("");
-      const result = await getExplorePosts({ limit: PAGE_SIZE, offset: 0 });
-      setPosts(result.posts);
-      setHasMore(result.hasMore);
-      offsetRef.current = PAGE_SIZE;
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "탐색 게시물을 불러오지 못했습니다.",
-      );
-    } finally {
-      setIsInitialLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadFirstPage();
-  }, [loadFirstPage]);
-
-  async function handleRefresh() {
-    setIsRefreshing(true);
-    await loadFirstPage();
-  }
-
-  const handleLoadMore = useCallback(async () => {
-    if (!hasMore || isLoadingMore) {
-      return;
-    }
-
-    try {
-      setIsLoadingMore(true);
-      const result = await getExplorePosts({
-        limit: PAGE_SIZE,
-        offset: offsetRef.current,
-      });
-      setPosts((current) => [...current, ...result.posts]);
-      setHasMore(result.hasMore);
-      offsetRef.current += PAGE_SIZE;
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "탐색 게시물을 더 불러오지 못했습니다.",
-      );
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [hasMore, isLoadingMore]);
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -157,10 +105,7 @@ export function ExploreScreen() {
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
-          onAction={() => {
-            setIsInitialLoading(true);
-            void loadFirstPage();
-          }}
+          onAction={retry}
           title="탐색 게시물을 불러오지 못했습니다"
           type="error"
         />

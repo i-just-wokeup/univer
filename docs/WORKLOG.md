@@ -14,6 +14,9 @@
 - **앱 PostDetailScreen 로직 훅 분리**
   - 게시물 상세의 로드/좋아요/저장(토스트)/차단/신고/삭제/댓글수 갱신/피드백 로직을 `features/feed/usePostDetail.ts`로 분리. 차단·삭제는 성공여부 반환→화면이 `router.back`
   - 화면은 currentUserId·댓글시트 UI상태·네비게이션·렌더만. `PostDetailScreen.tsx` 295줄 → 164줄(+훅 195). 동작 변경 없음, 실기기 확인, tsc 통과
+- **앱 ExploreScreen 데이터 로직 훅 분리**
+  - 탐색 그리드의 로드/무한스크롤/새로고침 로직을 `features/explore/useExploreFeed.ts`로 분리. masonry 2열 배치·타일 렌더는 화면에 유지(레이아웃은 UI). 로컬 `PAGE_SIZE=24`는 공용 `PAGE_SIZE.explore`로 통일(값 동일)
+  - `ExploreScreen.tsx` 312줄 → 257줄(+훅 85). 동작 변경 없음, tsc 통과
 - **앱 ConnectionsScreen 로직 훅 분리 + 친구 삭제 버그 수정/확인·토스트**
   - 크루 관리 탭별 로딩 + 수락/거절/취소/삭제(낙관적) 로직을 `features/profile/useConnections.ts`로 분리. `ConnectionsScreen.tsx` 274줄 → 206줄(+훅 199)
   - **버그 수정**: 낙관적 업데이트 객체에 `friends` 키가 `[tab]`과 중복돼 친구 탭 삭제 시 자기 자신을 원본으로 덮어쓰던 문제(친구 삭제가 화면에 반영 안 됨). 객체를 단계적으로 만들고 `invalidateFriends && tab !== "friends"`일 때만 친구 캐시 무효화하도록 수정. (리팩토링 전부터 있던 버그)
