@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   RefreshControl,
   ScrollView,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { KrewSurface } from "../../components/common/KrewSurface";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
@@ -18,14 +19,7 @@ import {
   type ConnectionTab,
 } from "../../components/profile/ConnectionTabs";
 import { ConnectionUserRow } from "../../components/profile/ConnectionUserRow";
-import {
-  acceptFriendRequest,
-  getFriends,
-  getPendingRequests,
-  getSentRequests,
-  rejectFriendRequest,
-  removeFriend,
-} from "../../features/profile/api";
+import { useConnections } from "../../features/profile/useConnections";
 import type { ConnectionUser } from "../../features/profile/types";
 import { colors } from "../../lib/theme";
 
@@ -35,64 +29,26 @@ const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
   sent: "보낸 크루 요청이 없습니다.",
 };
 
-const INITIAL_CONNECTIONS: Record<ConnectionTab, ConnectionUser[] | null> = {
-  friends: null,
-  received: null,
-  sent: null,
-};
-
 export function ConnectionsScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<ConnectionTab>("friends");
-  const [connectionsByTab, setConnectionsByTab] =
-    useState<Record<ConnectionTab, ConnectionUser[] | null>>(INITIAL_CONNECTIONS);
-  const [busyUserId, setBusyUserId] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loadingTab, setLoadingTab] = useState<ConnectionTab | null>("friends");
-  const [refreshingTab, setRefreshingTab] = useState<ConnectionTab | null>(null);
-
-  const loadConnections = useCallback(
-    async (tab: ConnectionTab, force = false) => {
-      if (!force && connectionsByTab[tab] !== null) {
-        return;
-      }
-
-      try {
-        setErrorMessage("");
-        setLoadingTab(tab);
-
-        const nextConnections =
-          tab === "friends"
-            ? await getFriends()
-            : tab === "received"
-              ? await getPendingRequests()
-              : await getSentRequests();
-
-        setConnectionsByTab((current) => ({
-          ...current,
-          [tab]: nextConnections,
-        }));
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "크루 목록을 불러오지 못했습니다.",
-        );
-        setConnectionsByTab((current) => ({
-          ...current,
-          [tab]: [],
-        }));
-      } finally {
-        setLoadingTab(null);
-        setRefreshingTab(null);
-      }
-    },
-    [connectionsByTab],
-  );
-
-  useEffect(() => {
-    void loadConnections(activeTab);
-  }, [activeTab, loadConnections]);
+  const {
+    acceptUser,
+    activeTab,
+    busyUserId,
+    currentConnections,
+    errorMessage,
+    feedbackMessage,
+    isLoading,
+    isRefreshing,
+    refresh,
+    rejectUser,
+    removeUser,
+    retry,
+    setActiveTab,
+    shouldShowLoadError,
+    showFeedback,
+  } = useConnections();
+  const [removeTarget, setRemoveTarget] = useState<ConnectionUser | null>(null);
 
   const handlePressUser = useCallback(
     (nickname: string) => {
@@ -101,47 +57,18 @@ export function ConnectionsScreen() {
     [router],
   );
 
-  async function handleConnectionAction({
-    action,
-    invalidateFriends = false,
-    tab,
-    userId,
-  }: {
-    action: () => Promise<void>;
-    invalidateFriends?: boolean;
-    tab: ConnectionTab;
-    userId: string;
-  }) {
-    const previousConnections = connectionsByTab[tab] ?? [];
+  async function handleConfirmRemove() {
+    if (!removeTarget) {
+      return;
+    }
 
-    setBusyUserId(userId);
-    setErrorMessage("");
-    setConnectionsByTab((current) => ({
-      ...current,
-      [tab]: previousConnections.filter((user) => user.id !== userId),
-      friends: invalidateFriends ? null : current.friends,
-    }));
-
-    try {
-      await action();
-    } catch (error) {
-      setConnectionsByTab((current) => ({
-        ...current,
-        [tab]: previousConnections,
-      }));
-      setErrorMessage(
-        error instanceof Error ? error.message : "크루 요청 처리에 실패했습니다.",
-      );
-    } finally {
-      setBusyUserId(null);
+    const targetId = removeTarget.id;
+    setRemoveTarget(null);
+    const removed = await removeUser(targetId);
+    if (removed) {
+      showFeedback("크루에서 삭제했어요");
     }
   }
-
-  const currentConnections = connectionsByTab[activeTab];
-  const isLoading = loadingTab === activeTab && currentConnections === null;
-  const shouldShowLoadError =
-    Boolean(errorMessage) &&
-    (!currentConnections || currentConnections.length === 0);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -155,11 +82,8 @@ export function ConnectionsScreen() {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            onRefresh={() => {
-              setRefreshingTab(activeTab);
-              void loadConnections(activeTab, true);
-            }}
-            refreshing={refreshingTab === activeTab}
+            onRefresh={refresh}
+            refreshing={isRefreshing}
             tintColor={colors.accent}
           />
         }
@@ -177,9 +101,7 @@ export function ConnectionsScreen() {
             <StateView
               actionLabel="다시 시도"
               message={errorMessage}
-              onAction={() => {
-                void loadConnections(activeTab, true);
-              }}
+              onAction={retry}
               title="크루 목록을 불러오지 못했습니다"
               type="error"
             />
@@ -193,36 +115,11 @@ export function ConnectionsScreen() {
               <ConnectionUserRow
                 isBusy={busyUserId === user.id}
                 key={user.id}
-                onAccept={() => {
-                  void handleConnectionAction({
-                    action: () => acceptFriendRequest(user.id),
-                    invalidateFriends: true,
-                    tab: activeTab,
-                    userId: user.id,
-                  });
-                }}
-                onCancel={() => {
-                  void handleConnectionAction({
-                    action: () => removeFriend(user.id),
-                    tab: activeTab,
-                    userId: user.id,
-                  });
-                }}
+                onAccept={() => acceptUser(user.id)}
+                onCancel={() => removeUser(user.id)}
                 onPressUser={handlePressUser}
-                onReject={() => {
-                  void handleConnectionAction({
-                    action: () => rejectFriendRequest(user.id),
-                    tab: activeTab,
-                    userId: user.id,
-                  });
-                }}
-                onRemove={() => {
-                  void handleConnectionAction({
-                    action: () => removeFriend(user.id),
-                    tab: activeTab,
-                    userId: user.id,
-                  });
-                }}
+                onReject={() => rejectUser(user.id)}
+                onRemove={() => setRemoveTarget(user)}
                 tab={activeTab}
                 user={user}
               />
@@ -238,6 +135,25 @@ export function ConnectionsScreen() {
           </KrewSurface>
         )}
       </ScrollView>
+
+      {feedbackMessage ? (
+        <View style={styles.feedback}>
+          <Text style={styles.feedbackText}>{feedbackMessage}</Text>
+        </View>
+      ) : null}
+
+      <ConfirmDialog
+        cancelLabel="취소"
+        confirmLabel="삭제"
+        danger
+        description="크루에서 삭제하면 다시 추가하려면 크루 요청을 보내야 합니다."
+        isOpen={removeTarget !== null}
+        onCancel={() => setRemoveTarget(null)}
+        onConfirm={() => {
+          void handleConfirmRemove();
+        }}
+        title={`${removeTarget?.nickname ?? ""}님을 크루에서 삭제할까요?`}
+      />
     </SafeAreaView>
   );
 }
@@ -270,5 +186,21 @@ const styles = StyleSheet.create({
   emptySurface: {
     minHeight: 280,
     justifyContent: "center",
+  },
+  feedback: {
+    position: "absolute",
+    right: 16,
+    bottom: 24,
+    left: 16,
+    borderRadius: 16,
+    backgroundColor: colors.text,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  feedbackText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "800",
+    textAlign: "center",
   },
 });
