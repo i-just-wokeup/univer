@@ -1,3 +1,4 @@
+// 내 활동 데이터 계층 — 내 스토리 보관함/조회자, 저장·좋아요·댓글 단 게시물, 즐겨찾기 계정.
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { getCurrentUserContext } from "../shared/userContext";
@@ -51,6 +52,9 @@ export type ActivityFavoriteUser = Pick<
   favorited_at: string;
 };
 
+// 게시물 id 목록 → ActivityPost[] (미디어/작성자 합침). 입력 id 순서를 유지하고,
+// savedAtByPostId가 있으면 각 게시물의 저장/좋아요/댓글 시각을 saved_at으로 주입한다.
+// 저장/좋아요/댓글 탭이 공용으로 쓰는 헬퍼.
 async function getActivityPostsByIds(
   postIds: string[],
   savedAtByPostId?: Map<string, string>,
@@ -158,6 +162,7 @@ async function getActivityPostsByIds(
   }, []);
 }
 
+// 내가 올린 스토리 보관함(삭제 제외, 최신순).
 export async function getMyStories(): Promise<ActivityStory[]> {
   const supabase = getSupabaseMobileClient();
   const { userId } = await getCurrentUserContext();
@@ -178,6 +183,7 @@ export async function getMyStories(): Promise<ActivityStory[]> {
   return data;
 }
 
+// 내 스토리 조회자 목록(최신순) + 각자의 좋아요 여부. 본인 스토리만 조회 가능.
 export async function getActivityStoryViewers(
   storyId: string,
 ): Promise<ActivityStoryViewer[]> {
@@ -268,6 +274,7 @@ export async function getActivityStoryViewers(
   }, []);
 }
 
+// 저장(북마크)한 게시물 목록(저장 시각 순).
 export async function getSavedPosts(): Promise<ActivityPost[]> {
   const supabase = getSupabaseMobileClient();
   const { userId } = await getCurrentUserContext();
@@ -295,6 +302,7 @@ export async function getSavedPosts(): Promise<ActivityPost[]> {
   return getActivityPostsByIds(postIds, savedAtByPostId);
 }
 
+// 좋아요한 게시물 목록(좋아요 시각 순).
 export async function getLikedPosts(): Promise<ActivityPost[]> {
   const supabase = getSupabaseMobileClient();
   const { userId } = await getCurrentUserContext();
@@ -323,6 +331,7 @@ export async function getLikedPosts(): Promise<ActivityPost[]> {
   return getActivityPostsByIds(postIds, likedAtByPostId);
 }
 
+// 댓글 단 게시물 목록(게시물당 1회, 가장 최근 댓글 시각 순).
 export async function getCommentedPosts(): Promise<ActivityPost[]> {
   const supabase = getSupabaseMobileClient();
   const { userId } = await getCurrentUserContext();
@@ -351,6 +360,7 @@ export async function getCommentedPosts(): Promise<ActivityPost[]> {
   return getActivityPostsByIds(postIds, commentedAtByPostId);
 }
 
+// 즐겨찾기한 계정 목록(같은 학교·미삭제만, 즐겨찾기 시각 순).
 export async function getFavoriteUsers(): Promise<ActivityFavoriteUser[]> {
   const supabase = getSupabaseMobileClient();
   const { universityId, userId } = await getCurrentUserContext();

@@ -1,3 +1,6 @@
+// 채팅 데이터 계층 — 대화방 조회/생성, 메시지 송수신/읽음, 요청 수락, 안읽은 수.
+// 모든 조회는 차단 관계 대화를 제외하고, 메시지 접근은 참가자 본인인지 확인한다.
+// Realtime/낙관적 전송은 features/chat/hooks.ts.
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import {
@@ -35,11 +38,13 @@ export type Message = Pick<
   | "sender_id"
 >;
 
+// 두 유저 id를 정렬해 participant_1/2로 — 같은 쌍이 항상 같은 순서가 되게(대화방 유일성 보장).
 function getParticipantIds(userId: string, targetUserId: string) {
   const [participant1Id, participant2Id] = [userId, targetUserId].sort();
   return { participant1Id, participant2Id };
 }
 
+// DB 메시지 행 → 화면용 Message로 변환.
 function toMessage(row: MessageRow): Message {
   return {
     content: row.content,
@@ -52,6 +57,7 @@ function toMessage(row: MessageRow): Message {
   };
 }
 
+// 대화방 접근 권한 확인 — 참가자 본인인지 + 상대와 차단 관계 아닌지. 통과 시 {상대id, supabase, userId}.
 async function getConversationAccessContext(
   conversationId: string,
   blockedMessage = "차단 관계인 대화는 볼 수 없습니다.",
@@ -90,6 +96,8 @@ async function getConversationAccessContext(
   return { otherUserId, supabase, userId };
 }
 
+// 상대와의 대화방을 찾거나 새로 만든다. 크루(accepted)면 active, 아니면 pending(요청)으로 생성.
+// 본인/차단 상대는 거부. → conversationId 반환.
 export async function getOrCreateConversation(
   targetUserId: string,
 ): Promise<string> {
@@ -159,6 +167,7 @@ export async function getOrCreateConversation(
   return createdConversation.id;
 }
 
+// 내 대화 목록을 active/pending으로 분리. 차단 관계 대화 제외, 상대 정보·안읽은 수를 합쳐 반환.
 export async function getConversations(): Promise<{
   active: ConversationWithUser[];
   pending: ConversationWithUser[];
@@ -288,6 +297,7 @@ export async function getConversations(): Promise<{
   };
 }
 
+// 대화 메시지 목록(접근 권한 체크). 최신 limit개를 받아 오래된→최신 순으로 뒤집어 반환. before로 이전 페이지.
 export async function getMessages(
   conversationId: string,
   options: { before?: string; limit?: number } = {},
@@ -318,6 +328,7 @@ export async function getMessages(
   return (messages as MessageRow[]).map(toMessage).reverse();
 }
 
+// 메시지 전송(접근 권한 체크 + 빈 내용 거부) → 생성된 Message.
 export async function sendMessage(
   conversationId: string,
   content: string,
@@ -355,6 +366,7 @@ export async function sendMessage(
   return toMessage(createdMessage as MessageRow);
 }
 
+// 대화방의 안읽은(상대가 보낸) 메시지를 읽음 처리(mark_messages_read RPC).
 export async function markMessagesRead(conversationId: string): Promise<void> {
   const { supabase } = await getConversationAccessContext(conversationId);
 
@@ -367,6 +379,7 @@ export async function markMessagesRead(conversationId: string): Promise<void> {
   }
 }
 
+// 받은 메시지 요청 수락 → 대화 active로 전환(accept_chat_request RPC).
 export async function acceptChatRequest(conversationId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
 
@@ -379,6 +392,7 @@ export async function acceptChatRequest(conversationId: string): Promise<void> {
   }
 }
 
+// 안읽은 메시지 총 개수(하단 탭/홈 뱃지용). 차단 관계 대화는 제외.
 export async function getChatUnreadCount(): Promise<number> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
