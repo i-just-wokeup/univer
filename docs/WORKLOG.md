@@ -7,6 +7,9 @@
 ## 2026-06-28
 
 ### 완료
+- **앱 HomeScreen 잔여 로직 훅 분리 (전수조사 8개 완료)**
+  - 피드는 이미 `useHomeFeed`였고, 화면에 남아있던 스토리바·안읽은 알림/메시지 뱃지 로딩(`getStories`/`getUnreadCount`/`getChatUnreadCount`) + 포커스 갱신을 `features/feed/useHomeMeta.ts`로 분리. HomeScreen은 이제 api 직접 호출 없음(두 훅 연결+네비게이션+렌더만). `HomeScreen.tsx` 309줄 → 278줄(+훅 47). 동작 변경 없음, 실기기 확인, tsc 통과
+  - 이로써 전수조사로 찾은 8개(StoryPlayer/PostDetail/Connections/Explore/Search/Messages/Blocked/Notifications/HomeScreen 잔여) 모두 로직 분리 완료
 - **앱 NotificationsScreen 로직 훅 분리**
   - 알림 목록 로드/모두읽음/개별 읽음 처리 로직을 `features/notifications/useNotifications.ts`로 분리. 알림 탭 시 라우팅(`routeToNotificationTarget`)은 화면. `NotificationsScreen.tsx` 179줄 → 140줄(+훅 68). 동작 변경 없음, 실기기 확인, tsc 통과
 - **앱 BlockedAccountsScreen 로직 훅 분리**

@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   FlatList,
@@ -15,10 +15,8 @@ import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { HomeHeader } from "../../components/home/HomeHeader";
 import { StoryBar } from "../../components/stories/StoryBar";
 import { signOutMobile } from "../../features/auth/api";
-import { getChatUnreadCount } from "../../features/chat/api";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
-import { getUnreadCount } from "../../features/notifications/api";
-import { getStories } from "../../features/stories/api";
+import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { StoryGroup } from "../../features/stories/types";
 import { useSession } from "../../lib/session";
 import { colors } from "../../lib/theme";
@@ -28,9 +26,6 @@ export function HomeScreen() {
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
-  const [storyGroups, setStoryGroups] = useState<StoryGroup[]>([]);
-  const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
   const {
     bookmarkedPostIds,
     errorMessage,
@@ -50,33 +45,7 @@ export function HomeScreen() {
     likedPostIds,
     posts,
   } = useHomeFeed();
-
-  const loadHomeMeta = useCallback(async () => {
-    try {
-      setStoryGroups(await getStories());
-    } catch {
-      // 스토리바 로딩 실패는 피드 사용을 막지 않는다.
-    }
-
-    try {
-      setUnreadCount(await getUnreadCount());
-    } catch {
-      // 안읽은 알림 수 로딩 실패는 무시한다.
-    }
-
-    try {
-      setUnreadChatCount(await getChatUnreadCount());
-    } catch {
-      // 안읽은 메시지 수 로딩 실패는 무시한다.
-    }
-  }, []);
-
-  // 화면에 다시 진입할 때마다(작성/뷰어/알림에서 복귀 포함) 스토리바·알림 뱃지를 갱신한다.
-  useFocusEffect(
-    useCallback(() => {
-      void loadHomeMeta();
-    }, [loadHomeMeta]),
-  );
+  const { storyGroups, unreadChatCount, unreadCount } = useHomeMeta();
 
   async function handleSignOut() {
     await signOutMobile();
