@@ -1,7 +1,10 @@
+// 이미지 업로드 공용 — 리사이즈/압축 후 Supabase Storage 버킷에 올리고 공개 URL 반환.
+// 게시물/스토리/아바타 업로드가 모두 이걸 쓴다.
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
+// 버킷 안 저장 경로 생성: "<folder>/<랜덤id>.jpg".
 function createStoragePath(folder: string) {
   const id =
     globalThis.crypto?.randomUUID?.() ??
@@ -39,6 +42,7 @@ function decodeBase64(base64: string): ArrayBuffer {
   return new Uint8Array(bytes).buffer;
 }
 
+// 이미지를 width로 리사이즈 + JPEG 80% 압축해 바이트로. fetch 실패 시 base64 폴백.
 async function getManipulatedImageBytes(
   uri: string,
   width: number,

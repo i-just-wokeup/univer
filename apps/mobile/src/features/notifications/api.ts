@@ -1,3 +1,5 @@
+// 알림 데이터 계층 — 알림 목록(행위자/썸네일/탭 대상까지 보강)·안읽은 수·읽음 처리.
+// (수신/푸시 토큰은 push.ts, 알림 탭 라우팅은 navigation.ts)
 import type { Database } from "../../types/database.types";
 import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -20,6 +22,7 @@ type NotificationMeta = {
   storyId: string | null;
 };
 
+// 같은 대상(target)별 행들 중 가장 최근 것만 남긴 맵 — 한 게시물에 좋아요 여러 개여도 대표 1개만.
 function getLatestRowsByTargetId<T extends { created_at: string }>(
   rows: T[],
   getTargetId: (row: T) => string,
@@ -38,6 +41,7 @@ function getLatestRowsByTargetId<T extends { created_at: string }>(
   return latestRowsByTargetId;
 }
 
+// 현재 로그인 유저 id(없으면 에러). 이 파일 내부 공용.
 async function getCurrentUserId() {
   const supabase = getSupabaseMobileClient();
   const {
@@ -52,6 +56,7 @@ async function getCurrentUserId() {
   return user.id;
 }
 
+// 보강 정보를 못 찾았을 때 reference_type/id만으로 만드는 최소 메타(게시물/스토리).
 function getFallbackMeta(notification: NotificationRow): NotificationMeta {
   if (notification.reference_type === "post" && notification.reference_id) {
     return {
@@ -72,6 +77,8 @@ function getFallbackMeta(notification: NotificationRow): NotificationMeta {
   return { actorUserId: null, postId: null, storyId: null };
 }
 
+// 알림 목록 조회 + 보강. notifications 행만으론 부족해서 타입별로(좋아요/댓글/친구 등)
+// 행위자(actor)·게시물/스토리·썸네일을 추가 조회해 합치고, 탭 시 이동할 대상(target)을 정한다.
 export async function getNotifications(): Promise<NotificationItem[]> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
@@ -430,6 +437,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
   });
 }
 
+// 안읽은 알림 수(헤더 뱃지용).
 export async function getUnreadCount(): Promise<number> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
@@ -447,6 +455,7 @@ export async function getUnreadCount(): Promise<number> {
   return count ?? 0;
 }
 
+// 알림 하나 읽음 처리(본인 것만).
 export async function markAsRead(notificationId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
@@ -462,6 +471,7 @@ export async function markAsRead(notificationId: string): Promise<void> {
   }
 }
 
+// 안읽은 알림 전체 읽음 처리.
 export async function markAllAsRead(): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();

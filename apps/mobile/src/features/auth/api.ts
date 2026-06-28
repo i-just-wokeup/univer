@@ -1,3 +1,5 @@
+// 인증/온보딩 데이터 계층 — 현재 유저 프로필 조회, 온보딩 필요 판정/저장, 로그아웃.
+// (구글 로그인은 별도 모듈, 세션·가드는 lib/session.tsx)
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import {
@@ -57,6 +59,7 @@ export async function signOutMobile(): Promise<void> {
   await supabase.auth.signOut();
 }
 
+// 온보딩 필요 여부 판정(가드용 순수함수). 미완료거나 닉네임이 임시값/이메일 앞부분과 같으면 true.
 export function shouldRequireOnboarding(profile: {
   email: string | null;
   is_onboarded: boolean;
@@ -75,6 +78,7 @@ export function shouldRequireOnboarding(profile: {
   );
 }
 
+// 현재 로그인 유저의 전체 프로필(+실명 RPC). 비로그인/없으면 null.
 export async function getCurrentUserProfile(): Promise<CurrentUserProfile | null> {
   const supabase = getSupabaseMobileClient();
   const {
@@ -118,6 +122,7 @@ export async function getCurrentUserProfile(): Promise<CurrentUserProfile | null
   };
 }
 
+// 현재 유저가 온보딩을 더 거쳐야 하는지(가드용).
 export async function getUserOnboardingRequired(): Promise<boolean> {
   const profile = await getCurrentUserProfile();
   if (!profile) {
@@ -127,6 +132,7 @@ export async function getUserOnboardingRequired(): Promise<boolean> {
   return shouldRequireOnboarding(profile);
 }
 
+// 온보딩 완료 저장 — 실명/닉네임/학과 검증 + 닉네임 중복 확인 후 저장(is_onboarded).
 export async function updateOnboardingProfile({
   department,
   nickname,
