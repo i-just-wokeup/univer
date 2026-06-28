@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { signOutMobile } from "../../features/auth/api";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
@@ -61,7 +62,7 @@ export function SettingsScreen() {
     setErrorMessage("");
 
     try {
-      await getSupabaseMobileClient().auth.signOut();
+      await signOutMobile();
     } catch {
       setErrorMessage("로그아웃에 실패했습니다.");
     }

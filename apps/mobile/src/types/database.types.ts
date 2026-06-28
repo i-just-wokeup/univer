@@ -610,6 +610,12 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      claim_push_token: {
+        Args: {
+          p_token: string
+        }
+        Returns: undefined
+      }
       delete_account: {
         Args: Record<PropertyKey, never>
         Returns: Json

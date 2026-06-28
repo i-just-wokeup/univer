@@ -79,10 +79,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
     throw new Error("로그인이 필요합니다.");
   }
 
-  const { error } = await supabase
-    .from("users")
-    .update({ fcm_token: expoPushToken })
-    .eq("id", user.id);
+  // 이 토큰을 다른 계정에서 떼어내고 현재 유저에 등록한다(한 기기 = 한 계정 수신).
+  const { error } = await supabase.rpc("claim_push_token", {
+    p_token: expoPushToken,
+  });
 
   if (error) {
     throw new Error("푸시 토큰을 저장하지 못했습니다.");

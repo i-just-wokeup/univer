@@ -332,6 +332,11 @@ take_action_on_report(report_id uuid)
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
 
+**푸시 토큰 (한 기기 = 한 계정)**
+- `claim_push_token(p_token text)` — SECURITY DEFINER. 등록 시 `p_token`을 가진 **다른 유저 행에서 `fcm_token`을 NULL로** 떼어내고(`id <> auth.uid()`) 현재 유저에 등록. 클라가 RLS로 남의 행을 못 비우므로 definer로 처리. (2026-06-28 추가)
+- 앱 `registerForPushNotifications`가 `users.fcm_token` 직접 UPDATE 대신 이 RPC 호출. 로그아웃 시에도 본인 토큰 NULL(`signOutMobile`). → 같은 기기로 계정 전환해도 이전 계정으로 푸시 안 감.
+- 멀티기기(한 계정이 여러 기기 동시 수신)는 단일 `fcm_token` 컬럼이라 미지원(마지막 로그인 기기만 수신). 별도 토큰 테이블은 백로그.
+
 **계정 탈퇴/복구 정책**
 - `delete_account()`
   - `users.deleted_at = now()`, `fcm_token = null`

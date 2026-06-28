@@ -14,13 +14,13 @@ import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { HomeHeader } from "../../components/home/HomeHeader";
 import { StoryBar } from "../../components/stories/StoryBar";
+import { signOutMobile } from "../../features/auth/api";
 import { getChatUnreadCount } from "../../features/chat/api";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
 import { getUnreadCount } from "../../features/notifications/api";
 import { getStories } from "../../features/stories/api";
 import type { StoryGroup } from "../../features/stories/types";
 import { useSession } from "../../lib/session";
-import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
 export function HomeScreen() {
@@ -79,7 +79,7 @@ export function HomeScreen() {
   );
 
   async function handleSignOut() {
-    await getSupabaseMobileClient().auth.signOut();
+    await signOutMobile();
   }
 
   const handleUserPress = useCallback(

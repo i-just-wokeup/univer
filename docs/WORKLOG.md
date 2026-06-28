@@ -7,6 +7,11 @@
 ## 2026-06-28
 
 ### 완료
+- **앱 푸시 토큰 "한 기기 = 한 계정" 수정 (자기 메시지 알림 버그)**
+  - 증상: 같은 폰으로 두 계정 번갈아 로그인 후, 내가 보낸 메시지 알림이 이 폰에 뜸. 원인은 푸시 트리거(정상, 수신자에게만 발송)가 아니라 **`fcm_token`이 로그아웃/계정전환 시 안 떼져서** 두 계정 모두 이 폰을 수신처로 갖고 있던 것
+  - `claim_push_token(p_token)` RPC 추가(SECURITY DEFINER) — 등록 시 그 토큰을 다른 계정에서 NULL로 떼고 현재 유저에 등록. `registerForPushNotifications`가 직접 UPDATE 대신 이 RPC 호출
+  - `signOutMobile()` 추가 — 로그아웃 시 본인 `fcm_token` NULL 후 signOut. 로그아웃 2곳(Settings/Home)을 이걸로 통일(탈퇴는 RPC가 이미 NULL 처리해 그대로)
+  - DB 마이그레이션 적용 + `database.types.ts`/`docs/DATABASE.md` 반영. 적용하려면 **앱 완전 재시작**(등록 재실행) 필요. 멀티기기 동시 수신은 별도 토큰 테이블 필요 → 백로그. tsc 통과
 - **앱 컴포넌트/화면 로직 전수조사** — `screens/`만 봤던 누락 보완. `components/`인데 api 직접 호출(UI규칙 위반) + 훅 미경유 화면을 import 단위로 전수 확인. 발견: StoryPlayer(컴포넌트), PostDetail/Connections/Explore/Search/Messages/Blocked/Notifications(화면), HomeScreen 일부 잔여. 순차 분리 진행
 - **앱 StoryPlayer 로직 훅 분리** (UI규칙 위반 해소)
   - `components/stories/StoryPlayer.tsx`에 박혀있던 재생 타이머/이전·다음 이동/조회기록·좋아요/삭제·신고/일시정지 조율 로직을 `features/stories/useStoryPlayer.ts`로 분리. 컴포넌트는 이제 api import 없이 렌더+다이얼로그 연결만

@@ -36,6 +36,27 @@ type UpdateOnboardingParams = {
   realName: string;
 };
 
+// 로그아웃. 이 기기의 푸시 토큰을 현재 유저에서 떼어낸 뒤 세션을 종료한다.
+// (안 떼면 로그아웃한 계정 앞으로 온 푸시가 계속 이 기기에 옴 — 계정 전환 시 남의 알림 수신)
+export async function signOutMobile(): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    // 토큰 정리 실패가 로그아웃을 막지 않도록 best-effort 처리.
+    await supabase
+      .from("users")
+      .update({ fcm_token: null })
+      .eq("id", user.id)
+      .then(undefined, () => undefined);
+  }
+
+  await supabase.auth.signOut();
+}
+
 export function shouldRequireOnboarding(profile: {
   email: string | null;
   is_onboarded: boolean;
