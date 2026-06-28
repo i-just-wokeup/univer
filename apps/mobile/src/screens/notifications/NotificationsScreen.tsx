@@ -1,69 +1,33 @@
 import { useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NotificationRow } from "../../components/notifications/NotificationRow";
 import { StateView } from "../../components/common/StateView";
-import {
-  getNotifications,
-  markAllAsRead,
-  markAsRead,
-} from "../../features/notifications/api";
 import { routeToNotificationTarget } from "../../features/notifications/navigation";
 import type { NotificationItem } from "../../features/notifications/types";
+import { useNotifications } from "../../features/notifications/useNotifications";
 import { colors } from "../../lib/theme";
 
 export function NotificationsScreen() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const load = useCallback(async () => {
-    try {
-      setErrorMessage("");
-      setNotifications(await getNotifications());
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "알림을 불러오지 못했습니다.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function handleMarkAllAsRead() {
-    setNotifications((current) =>
-      current.map((notification) => ({ ...notification, is_read: true })),
-    );
-
-    try {
-      await markAllAsRead();
-    } catch {
-      void load();
-    }
-  }
+  const {
+    errorMessage,
+    isLoading,
+    markAllRead,
+    markRead,
+    notifications,
+    retry,
+  } = useNotifications();
 
   const handlePress = useCallback(
     (notification: NotificationItem) => {
-      if (!notification.is_read) {
-        setNotifications((current) =>
-          current.map((item) =>
-            item.id === notification.id ? { ...item, is_read: true } : item,
-          ),
-        );
-        void markAsRead(notification.id).catch(() => undefined);
-      }
-
+      markRead(notification);
       routeToNotificationTarget(router, notification.target);
     },
-    [router],
+    [markRead, router],
   );
 
   return (
@@ -81,7 +45,7 @@ export function NotificationsScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => {
-            void handleMarkAllAsRead();
+            void markAllRead();
           }}
           style={({ pressed }) => [
             styles.markAllButton,
@@ -102,10 +66,7 @@ export function NotificationsScreen() {
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
-          onAction={() => {
-            setIsLoading(true);
-            void load();
-          }}
+          onAction={retry}
           title="알림을 불러오지 못했습니다"
           type="error"
         />

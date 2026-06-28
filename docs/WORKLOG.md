@@ -7,6 +7,8 @@
 ## 2026-06-28
 
 ### 완료
+- **앱 NotificationsScreen 로직 훅 분리**
+  - 알림 목록 로드/모두읽음/개별 읽음 처리 로직을 `features/notifications/useNotifications.ts`로 분리. 알림 탭 시 라우팅(`routeToNotificationTarget`)은 화면. `NotificationsScreen.tsx` 179줄 → 140줄(+훅 68). 동작 변경 없음, 실기기 확인, tsc 통과
 - **앱 BlockedAccountsScreen 로직 훅 분리**
   - 차단 목록 로드 + 차단 해제(낙관적/롤백) 로직을 `features/blocks/useBlockedAccounts.ts`로 분리. 해제 확인 다이얼로그 대상(UI)·렌더는 화면. `BlockedAccountsScreen.tsx` 234줄 → 200줄(+훅 64). 동작 변경 없음, tsc 통과
   - (발견) 차단해도 스토리는 안 가려짐 — `stories/api.ts`에 차단 필터 없음 → 백로그
