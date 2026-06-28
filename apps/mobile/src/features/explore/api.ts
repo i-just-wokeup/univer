@@ -1,3 +1,4 @@
+// 탐색 데이터 계층 — 같은 학교 전체공개 인기 게시물 그리드 조회(offset 페이지네이션).
 import type { Database } from "../../types/database.types";
 import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -22,6 +23,7 @@ type ExplorePostRow = Pick<
   aspect_ratio?: PostAspectRatio;
 };
 
+// PostgREST `in` 필터용 문자열: ["a","b"] → "(a,b)".
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
 }

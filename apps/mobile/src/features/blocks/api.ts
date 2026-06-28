@@ -1,3 +1,5 @@
+// 차단 데이터 계층 — 차단/해제/목록. 모두 RPC 래퍼.
+// (양방향 차단 관계 id 조회는 features/shared/userContext.ts)
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
 export type BlockedUser = {
@@ -8,6 +10,7 @@ export type BlockedUser = {
   created_at: string;
 };
 
+// 대상 유저 차단(block_user RPC: 친구관계·상호 즐겨찾기도 함께 정리).
 export async function blockUser(userId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
 
@@ -20,6 +23,7 @@ export async function blockUser(userId: string): Promise<void> {
   }
 }
 
+// 내가 차단한 계정 목록(id/닉네임/아바타/학과/차단 시각).
 export async function getBlockedUsers(): Promise<BlockedUser[]> {
   const supabase = getSupabaseMobileClient();
 
@@ -38,6 +42,7 @@ export async function getBlockedUsers(): Promise<BlockedUser[]> {
   }));
 }
 
+// 차단 해제(unblock_user RPC. 친구 관계 자동 복구는 없음).
 export async function unblockUser(userId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
 

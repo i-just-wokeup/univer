@@ -1,3 +1,4 @@
+// 검색 데이터 계층 — 유저 검색(search_users RPC + 차단 제외). 최근 검색은 ./history.ts.
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { getBlockRelatedUserIds } from "../shared/userContext";
 

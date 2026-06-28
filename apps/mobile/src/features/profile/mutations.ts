@@ -1,3 +1,4 @@
+// 프로필 편집 쓰기 계층 — 프로필 수정·닉네임 중복확인·아바타 업로드. (읽기는 ./api.ts)
 import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -17,6 +18,8 @@ type UpdateProfileParams = {
   profileLinks?: string[];
 };
 
+// 프로필 수정. 닉네임/소개/아바타는 users 테이블 부분 업데이트, 대표 링크는 전체 삭제 후 재삽입.
+// profileLinks가 undefined면 링크는 건드리지 않는다(닉네임만 바꾸는 경우 등).
 export async function updateProfile(
   params: UpdateProfileParams,
 ): Promise<void> {
@@ -114,6 +117,7 @@ export async function updateProfile(
   }
 }
 
+// 닉네임이 본인 외 다른 유저와 겹치는지 여부(true=중복).
 export async function checkNicknameDuplicate(
   nickname: string,
 ): Promise<boolean> {
@@ -139,6 +143,7 @@ export async function checkNicknameDuplicate(
   return Boolean(data);
 }
 
+// 아바타 이미지를 avatars 버킷의 유저 폴더에 업로드(512px) → 공개 URL.
 export async function uploadAvatar(uri: string): Promise<string> {
   const userId = await getCurrentUserId();
   const [publicUrl] = await uploadImagesToBucket(

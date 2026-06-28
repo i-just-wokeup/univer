@@ -1,3 +1,5 @@
+// 스토리 데이터 계층 — 스토리 생성/삭제·이미지 업로드·조회 기록·좋아요·조회자 목록.
+// 스토리 좋아요는 post_likes 테이블에 target_type='story'로 저장(게시물과 공용).
 import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -7,6 +9,7 @@ import type { Story, StoryGroup, StoryViewer, StoryVisibility } from "./types";
 
 type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
 
+// 현재 로그인 유저 id(없으면 에러). 이 파일 내부 공용.
 async function getCurrentUserId(): Promise<string> {
   const supabase = getSupabaseMobileClient();
   const {
@@ -37,6 +40,7 @@ export async function uploadStoryImage(uri: string): Promise<string> {
   return url;
 }
 
+// 스토리 생성(24시간 후 만료). 같은 학교/작성자/공개범위와 함께 insert.
 export async function createStory(
   imageUrl: string,
   visibility: StoryVisibility = "public",
@@ -59,6 +63,7 @@ export async function createStory(
 }
 
 // 같은 학교의 만료 전 스토리를 유저별로 묶고, 본인 → 크루 → 그 외 순으로 정렬한다.
+// ⚠️ 현재 차단 유저 제외 필터 없음(백로그) — 피드/탐색 등은 getBlockRelatedUserIds로 거른다.
 export async function getStories(): Promise<StoryGroup[]> {
   const supabase = getSupabaseMobileClient();
   const { universityId, userId } = await getCurrentUserContext();
@@ -194,6 +199,7 @@ export async function getStories(): Promise<StoryGroup[]> {
   });
 }
 
+// 스토리 조회 기록(중복 무시 upsert). 새로 기록된 경우에만 recount_story_views RPC로 조회수 갱신.
 export async function recordStoryView(storyId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
@@ -229,6 +235,7 @@ export async function recordStoryView(storyId: string): Promise<void> {
   }
 }
 
+// 스토리 좋아요 토글 → { liked }. post_likes(target_type='story')에 insert/delete.
 export async function toggleStoryLike(
   storyId: string,
 ): Promise<{ liked: boolean }> {
@@ -277,6 +284,7 @@ export async function toggleStoryLike(
   return { liked: true };
 }
 
+// 현재 유저가 이 스토리에 좋아요했는지 여부.
 export async function getMyStoryLikedStatus(storyId: string): Promise<boolean> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
@@ -296,6 +304,7 @@ export async function getMyStoryLikedStatus(storyId: string): Promise<boolean> {
   return Boolean(data);
 }
 
+// 본인 스토리 soft delete(deleted_at). user_id 일치만, 결과 없으면 실패.
 export async function deleteStory(storyId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
@@ -315,6 +324,7 @@ export async function deleteStory(storyId: string): Promise<void> {
   }
 }
 
+// 스토리 조회자 목록(최신순) + 각자의 좋아요 여부. 조회 순서를 유지해 반환.
 export async function getStoryViewers(storyId: string): Promise<StoryViewer[]> {
   const supabase = getSupabaseMobileClient();
 

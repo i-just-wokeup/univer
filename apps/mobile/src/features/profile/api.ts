@@ -1,3 +1,5 @@
+// 프로필 데이터 계층 — 프로필/게시물 그리드/카운트 조회, 크루(친구) 신청·수락·거절·삭제·목록, 즐겨찾기.
+// 크루 동작은 대부분 *_friend_request 등 RPC 래퍼. 실명은 get_user_real_name RPC(본인/크루만).
 import type { Database } from "../../types/database.types";
 import type { Json } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -16,6 +18,7 @@ type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 type PostMediaRow = Database["public"]["Tables"]["post_media"]["Row"];
 type ProfileLinkRow = Database["public"]["Tables"]["profile_links"]["Row"];
 
+// get_connection_status RPC 응답이 ConnectionStatus 형태인지 런타임 검증(타입 가드).
 function isConnectionStatus(value: Json | null): value is ConnectionStatus {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return false;
@@ -35,6 +38,7 @@ function isConnectionStatus(value: Json | null): value is ConnectionStatus {
   );
 }
 
+// 크루 RPC 응답에서 화면에 쓰는 필드(아바타/학과/id/닉네임)만 추린다.
 function normalizeConnectionUsers(users: ConnectionUser[]): ConnectionUser[] {
   return users.map(({ avatar_url, department, id, nickname }) => ({
     avatar_url,
@@ -44,6 +48,7 @@ function normalizeConnectionUsers(users: ConnectionUser[]): ConnectionUser[] {
   }));
 }
 
+// 현재 로그인 유저 id(없으면 에러). 이 파일 내부 공용.
 async function getCurrentUserId(): Promise<string> {
   const supabase = getSupabaseMobileClient();
   const {
@@ -72,6 +77,7 @@ async function getRealName(userId: string): Promise<string | null> {
   return data;
 }
 
+// 프로필 대표 링크 목록(order_index 순). 실패해도 빈 배열로 (프로필 조회를 막지 않게).
 async function getProfileLinks(userId: string): Promise<ProfileLink[]> {
   const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase
@@ -143,6 +149,7 @@ export async function getProfile(
   };
 }
 
+// 프로필 그리드용 게시물 목록(각 게시물 첫 이미지 url). 삭제 제외, 최신순.
 export async function getProfilePosts(
   userId: string,
 ): Promise<ProfileGridPost[]> {
@@ -192,6 +199,7 @@ export async function getProfilePosts(
   }));
 }
 
+// 프로필 통계 { posts, crew } — 게시물 수 + 크루 수(연결 상태 RPC의 friends_count).
 export async function getProfileCounts(userId: string): Promise<ProfileCounts> {
   const supabase = getSupabaseMobileClient();
 
@@ -210,6 +218,7 @@ export async function getProfileCounts(userId: string): Promise<ProfileCounts> {
   return { crew: connectionStatus.friends_count, posts: count ?? 0 };
 }
 
+// 대상과의 크루 상태(get_connection_status RPC) → status/is_requester/friends_count.
 export async function getConnectionStatus(
   userId: string,
 ): Promise<ConnectionStatus> {
@@ -231,6 +240,7 @@ export async function getConnectionStatus(
   return normalizedData;
 }
 
+// 크루 신청(send_friend_request RPC).
 export async function sendFriendRequest(userId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { error } = await supabase.rpc("send_friend_request", {
@@ -242,6 +252,7 @@ export async function sendFriendRequest(userId: string): Promise<void> {
   }
 }
 
+// 받은 크루 요청 수락(accept_friend_request RPC).
 export async function acceptFriendRequest(userId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { error } = await supabase.rpc("accept_friend_request", {
@@ -253,6 +264,7 @@ export async function acceptFriendRequest(userId: string): Promise<void> {
   }
 }
 
+// 받은 크루 요청 거절(reject_friend_request RPC).
 export async function rejectFriendRequest(userId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { error } = await supabase.rpc("reject_friend_request", {
@@ -264,6 +276,7 @@ export async function rejectFriendRequest(userId: string): Promise<void> {
   }
 }
 
+// 크루 연결 해제 / 보낸 요청 취소(remove_friend RPC).
 export async function removeFriend(userId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { error } = await supabase.rpc("remove_friend", {
@@ -275,6 +288,7 @@ export async function removeFriend(userId: string): Promise<void> {
   }
 }
 
+// 내 크루(친구) 목록.
 export async function getFriends(): Promise<ConnectionUser[]> {
   const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase.rpc("get_friends");
@@ -286,6 +300,7 @@ export async function getFriends(): Promise<ConnectionUser[]> {
   return normalizeConnectionUsers(data);
 }
 
+// 받은 크루 요청 목록.
 export async function getPendingRequests(): Promise<ConnectionUser[]> {
   const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase.rpc("get_pending_requests");
@@ -297,6 +312,7 @@ export async function getPendingRequests(): Promise<ConnectionUser[]> {
   return normalizeConnectionUsers(data);
 }
 
+// 보낸 크루 요청 목록.
 export async function getSentRequests(): Promise<ConnectionUser[]> {
   const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase.rpc("get_sent_requests");
@@ -308,6 +324,7 @@ export async function getSentRequests(): Promise<ConnectionUser[]> {
   return normalizeConnectionUsers(data);
 }
 
+// 대상을 즐겨찾기했는지 여부(본인이면 false).
 export async function getFavoriteUserStatus(userId: string): Promise<boolean> {
   const supabase = getSupabaseMobileClient();
   const currentUserId = await getCurrentUserId();
@@ -330,6 +347,7 @@ export async function getFavoriteUserStatus(userId: string): Promise<boolean> {
   return Boolean(data);
 }
 
+// 즐겨찾기 추가/해제 토글 → { favorited }. 같은 학교 + 미삭제 유저만 추가 가능.
 export async function toggleUserFavorite(
   favoriteUserId: string,
 ): Promise<{ favorited: boolean }> {
