@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -7,11 +7,7 @@ import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { Avatar } from "../../components/common/Avatar";
-import {
-  getBlockedUsers,
-  unblockUser,
-  type BlockedUser,
-} from "../../features/blocks/api";
+import { useBlockedAccounts } from "../../features/blocks/useBlockedAccounts";
 import { colors } from "../../lib/theme";
 
 function formatBlockedAt(createdAt: string) {
@@ -26,51 +22,24 @@ function formatBlockedAt(createdAt: string) {
 
 export function BlockedAccountsScreen() {
   const router = useRouter();
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUnblocking, setIsUnblocking] = useState(false);
+  const {
+    blockedUsers,
+    errorMessage,
+    isLoading,
+    isUnblocking,
+    retry,
+    unblockUserById,
+  } = useBlockedAccounts();
   const [unblockTargetId, setUnblockTargetId] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setErrorMessage("");
-      setBlockedUsers(await getBlockedUsers());
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "차단 목록을 불러오지 못했습니다.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function handleConfirmUnblock() {
-    if (!unblockTargetId || isUnblocking) {
+  function handleConfirmUnblock() {
+    if (!unblockTargetId) {
       return;
     }
 
-    const previousUsers = blockedUsers;
     const targetId = unblockTargetId;
-
-    setIsUnblocking(true);
     setUnblockTargetId(null);
-    setBlockedUsers((current) => current.filter((user) => user.id !== targetId));
-
-    try {
-      await unblockUser(targetId);
-    } catch (error) {
-      setBlockedUsers(previousUsers);
-      setErrorMessage(
-        error instanceof Error ? error.message : "차단 해제에 실패했습니다.",
-      );
-    } finally {
-      setIsUnblocking(false);
-    }
+    void unblockUserById(targetId);
   }
 
   const unblockTarget =
@@ -90,10 +59,7 @@ export function BlockedAccountsScreen() {
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
-          onAction={() => {
-            setIsLoading(true);
-            void load();
-          }}
+          onAction={retry}
           title="차단 목록을 불러오지 못했습니다"
           type="error"
         />

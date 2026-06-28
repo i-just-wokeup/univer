@@ -7,6 +7,9 @@
 ## 2026-06-28
 
 ### 완료
+- **앱 BlockedAccountsScreen 로직 훅 분리**
+  - 차단 목록 로드 + 차단 해제(낙관적/롤백) 로직을 `features/blocks/useBlockedAccounts.ts`로 분리. 해제 확인 다이얼로그 대상(UI)·렌더는 화면. `BlockedAccountsScreen.tsx` 234줄 → 200줄(+훅 64). 동작 변경 없음, tsc 통과
+  - (발견) 차단해도 스토리는 안 가려짐 — `stories/api.ts`에 차단 필터 없음 → 백로그
 - **앱 푸시 토큰 "한 기기 = 한 계정" 수정 (자기 메시지 알림 버그)**
   - 증상: 같은 폰으로 두 계정 번갈아 로그인 후, 내가 보낸 메시지 알림이 이 폰에 뜸. 원인은 푸시 트리거(정상, 수신자에게만 발송)가 아니라 **`fcm_token`이 로그아웃/계정전환 시 안 떼져서** 두 계정 모두 이 폰을 수신처로 갖고 있던 것
   - `claim_push_token(p_token)` RPC 추가(SECURITY DEFINER) — 등록 시 그 토큰을 다른 계정에서 NULL로 떼고 현재 유저에 등록. `registerForPushNotifications`가 직접 UPDATE 대신 이 RPC 호출
