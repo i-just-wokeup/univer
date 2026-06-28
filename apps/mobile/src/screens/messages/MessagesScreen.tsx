@@ -1,5 +1,5 @@
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -7,66 +7,33 @@ import { ConversationRow } from "../../components/chat/ConversationRow";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchUserRow } from "../../components/search/SearchUserRow";
-import { getOrCreateConversation } from "../../features/chat/api";
-import { useConversations } from "../../features/chat/hooks";
-import { searchUsers, type SearchUser } from "../../features/search/api";
-import { getCurrentUserId } from "../../features/shared/userContext";
+import { useMessagesList } from "../../features/chat/useMessagesList";
 import { colors } from "../../lib/theme";
 
 type ConversationTab = "active" | "pending";
 
 export function MessagesScreen() {
   const router = useRouter();
-  const { active, isLoading, pending, reload } = useConversations();
-  const [currentUserId, setCurrentUserId] = useState("");
+  const {
+    active,
+    currentUserId,
+    isLoading,
+    isSearching,
+    pending,
+    query,
+    searchResults,
+    setQuery,
+    startConversation,
+  } = useMessagesList();
   const [activeTab, setActiveTab] = useState<ConversationTab>("active");
-  const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    void getCurrentUserId()
-      .then(setCurrentUserId)
-      .catch(() => setCurrentUserId(""));
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      void reload();
-    }, [reload]),
-  );
-
-  useEffect(() => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    const timer = setTimeout(async () => {
-      try {
-        setSearchResults(await searchUsers(query));
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [query]);
 
   async function openConversation(userId: string) {
-    try {
-      const conversationId = await getOrCreateConversation(userId);
-      setQuery("");
+    const conversationId = await startConversation(userId);
+    if (conversationId) {
       router.push({
         pathname: "/messages/[conversationId]",
         params: { conversationId },
       });
-    } catch {
-      // 차단 등으로 대화 시작 실패 시 조용히 무시한다.
     }
   }
 

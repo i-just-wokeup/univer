@@ -13,9 +13,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ActionSheet } from "../../components/common/ActionSheet";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
+import { ChatRoomHeader } from "../../components/chat/ChatRoomHeader";
 import { MessageBubble } from "../../components/chat/MessageBubble";
 import { MessageInput } from "../../components/chat/MessageInput";
-import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { type ChatMessage, useChatRoom } from "../../features/chat/useChatRoom";
 import { useStableInsets } from "../../lib/useStableInsets";
@@ -79,8 +79,19 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
       <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
-        <ScreenHeader
+        <ChatRoomHeader
+          avatarUrl={conversation?.other_user.avatar_url ?? null}
+          nickname={conversation?.other_user.nickname ?? "메시지"}
           onBack={() => router.back()}
+          onPressProfile={
+            conversation
+              ? (nickname) =>
+                  router.push({
+                    pathname: "/profile/[nickname]",
+                    params: { nickname },
+                  })
+              : undefined
+          }
           right={
             conversation ? (
               <Pressable
@@ -100,7 +111,6 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
               </Pressable>
             ) : null
           }
-          title={conversation?.other_user.nickname ?? "메시지"}
         />
 
         {isPending ? (

@@ -14,6 +14,10 @@
 - **앱 PostDetailScreen 로직 훅 분리**
   - 게시물 상세의 로드/좋아요/저장(토스트)/차단/신고/삭제/댓글수 갱신/피드백 로직을 `features/feed/usePostDetail.ts`로 분리. 차단·삭제는 성공여부 반환→화면이 `router.back`
   - 화면은 currentUserId·댓글시트 UI상태·네비게이션·렌더만. `PostDetailScreen.tsx` 295줄 → 164줄(+훅 195). 동작 변경 없음, 실기기 확인, tsc 통과
+- **앱 MessagesScreen 로직 훅 분리 + 채팅방 헤더 프로필 링크 추가**
+  - 대화 목록 화면의 현재 유저/포커스 리로드/"대화 시작" 유저 검색(디바운스)/대화방 생성 로직을 `features/chat/useMessagesList.ts`로 분리(`useConversations` wrap). 대화방 생성은 conversationId 반환→화면이 이동. `MessagesScreen.tsx` 268줄 → 235줄(+훅 74)
+  - **채팅방 헤더 기능 추가**: 기존엔 닉네임 텍스트만(`ScreenHeader`) 있어 프사·프로필 진입이 없었음. 전용 `components/chat/ChatRoomHeader.tsx`로 교체 — 뒤로 \| 상대 아바타+이름(기존 `UserInline` 재사용, 탭→`/profile/[nickname]`) \| ⋯ 메뉴. 데이터는 기존 `conversation.other_user`에서 그대로(훅 변경 없음)
+  - 실기기 확인, tsc 통과
 - **앱 SearchScreen 로직 훅 분리**
   - 유저 검색 상태/300ms 디바운스 검색/포커스 시 최근검색 갱신·블러 시 입력 정리/최근검색 추가·삭제·전체삭제 로직을 `features/search/useUserSearch.ts`로 분리. 프로필 이동은 화면(`recordSearch` 후 `router.push`)
   - `SearchScreen.tsx` 272줄 → 226줄(+훅 83). 동작 변경 없음, 실기기 확인, tsc 통과
