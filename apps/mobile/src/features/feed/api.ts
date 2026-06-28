@@ -1,3 +1,5 @@
+// 피드/게시물 데이터 계층 — 피드 조회·게시물 작성/삭제·좋아요·저장(북마크)·이미지 업로드.
+// 모든 Supabase 쿼리는 features/*/api.ts 에서만 (CLAUDE.md 규칙).
 import type { Database } from "../../types/database.types";
 import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
@@ -36,10 +38,12 @@ type CreatePostParams = {
   visibility: PostVisibility;
 };
 
+// PostgREST `in` 필터용 문자열로 변환: ["a","b"] → "(a,b)".
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
 }
 
+// 게시물 이미지들을 post-images 버킷에 업로드(1600px 리사이즈) → 공개 URL 배열.
 export async function uploadPostImages(uris: string[]): Promise<string[]> {
   return uploadImagesToBucket(
     STORAGE_BUCKETS.postImages,
@@ -49,6 +53,7 @@ export async function uploadPostImages(uris: string[]): Promise<string[]> {
   );
 }
 
+// 게시물 작성. posts insert 후 이미지가 있으면 post_media에 순서대로 insert. 새 postId 반환.
 export async function createPost({
   aspectRatio,
   content,
@@ -93,6 +98,7 @@ export async function createPost({
   return post.id;
 }
 
+// 본인 글 soft delete(deleted_at 기록). user_id 일치 + 미삭제만, 결과 없으면 실패 처리.
 export async function deletePost(postId: string): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { userId } = await getCurrentUserContext();
@@ -111,6 +117,8 @@ export async function deletePost(postId: string): Promise<void> {
   }
 }
 
+// 홈 피드 조회. 같은 학교 + 차단 관계 제외, created_at cursor 무한스크롤.
+// limit+1개를 가져와 다음 페이지 유무를 판단하고, 작성자/미디어는 별도 조회해 합친다.
 export async function getFeed({
   cursor,
   limit = PAGE_SIZE.feed,
@@ -236,6 +244,7 @@ export async function getFeed({
   };
 }
 
+// 주어진 게시물들 중 현재 유저가 좋아요한 id 목록.
 export async function getLikedPostIds(postIds: string[]) {
   if (postIds.length === 0) {
     return [];
@@ -265,6 +274,7 @@ export async function getLikedPostIds(postIds: string[]) {
   return data.map((like: Pick<PostLikeRow, "target_id">) => like.target_id);
 }
 
+// 주어진 게시물들 중 현재 유저가 저장(북마크)한 id 목록.
 export async function getBookmarkedPostIds(postIds: string[]) {
   if (postIds.length === 0) {
     return [];
@@ -293,6 +303,7 @@ export async function getBookmarkedPostIds(postIds: string[]) {
   return data.map((bookmark: Pick<BookmarkRow, "post_id">) => bookmark.post_id);
 }
 
+// 게시물 저장/저장취소 토글 → { bookmarked }.
 export async function toggleBookmark(postId: string) {
   const supabase = getSupabaseMobileClient();
   const {
@@ -340,6 +351,7 @@ export async function toggleBookmark(postId: string) {
   return { bookmarked: true };
 }
 
+// 게시물 좋아요 토글 + recount_post_likes RPC로 likes_count 재계산. RPC 실패 시 insert/delete 롤백.
 export async function togglePostLike(postId: string) {
   const supabase = getSupabaseMobileClient();
   const {

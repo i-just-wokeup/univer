@@ -1,3 +1,5 @@
+// 댓글 데이터 계층 — 댓글/대댓글 조회·작성·삭제, 댓글 좋아요.
+// 댓글 수는 원댓글만 recount_post_comments RPC로 반영(대댓글 제외).
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type { Comment, CommentUser } from "./types";
@@ -8,6 +10,7 @@ type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type CommentLikeRow = Database["public"]["Tables"]["comment_likes"]["Row"];
 type CommentLikeInsert = Database["public"]["Tables"]["comment_likes"]["Insert"];
 
+// DB 행 + 작성자 → 화면용 Comment(빈 replies 포함)로 변환.
 function toComment(comment: CommentRow, user: CommentUser): Comment {
   return {
     content: comment.content,
@@ -20,6 +23,7 @@ function toComment(comment: CommentRow, user: CommentUser): Comment {
   };
 }
 
+// 유저 id들 → { id → CommentUser } 맵 (중복 제거 후 한 번에 조회).
 async function getUsersById(userIds: string[]) {
   const supabase = getSupabaseMobileClient();
   const uniqueUserIds = Array.from(new Set(userIds));
@@ -49,6 +53,7 @@ async function getUsersById(userIds: string[]) {
   );
 }
 
+// 평평한 댓글 목록을 트리로: 원댓글은 최신순, 각 원댓글의 대댓글은 오래된순으로 묶는다.
 function buildCommentTree(comments: Comment[]) {
   const parentComments = comments
     .filter((comment) => comment.parent_id === null)
@@ -83,6 +88,7 @@ function buildCommentTree(comments: Comment[]) {
   }));
 }
 
+// 현재 로그인 유저 id(없으면 null) — 댓글 본인 여부 판정용.
 export async function getCurrentCommentUserId() {
   const supabase = getSupabaseMobileClient();
   const {
@@ -97,6 +103,7 @@ export async function getCurrentCommentUserId() {
   return user.id;
 }
 
+// 게시물 댓글을 트리(원댓글+대댓글)로 조회. 작성자 정보를 별도 조회해 합친다.
 export async function getComments(postId: string): Promise<Comment[]> {
   const supabase = getSupabaseMobileClient();
 
@@ -126,6 +133,7 @@ export async function getComments(postId: string): Promise<Comment[]> {
   );
 }
 
+// 댓글/대댓글 작성(parentId 있으면 대댓글). 원댓글이면 recount_post_comments RPC로 댓글 수 갱신.
 export async function createComment(
   postId: string,
   content: string,
