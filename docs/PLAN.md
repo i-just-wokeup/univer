@@ -187,6 +187,7 @@
 - [x] **앱 영상 업로드 OOM 수정** — 큰 영상은 JS `ArrayBuffer`로 읽지 않고 `expo-file-system/legacy.uploadAsync` native binary upload 공용 유틸로 Supabase Storage에 직접 업로드
 - [x] **앱 스토리 배경색 선택** — 사진/영상 스토리 프레임을 단색 배경 + contain 레터박스로 통일하고, 작성 팔레트 선택값을 `stories.background_color`로 저장/뷰어 반영
 - [x] **앱 스토리 작성 미리보기 풀스크린 UI** — 카드형 미리보기를 풀스크린 오버레이로 전환하고, 무채색 배경색 바텀시트/하단 공개범위+공유 버튼 배치
+- [x] **앱 게시물 작성 영상 1개 선택 추가** — 작성 화면에서 사진 여러 장 OR 영상 1개 배타 선택, 영상 썸네일/업로드/createPost(video) 제출 분기 연결
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요

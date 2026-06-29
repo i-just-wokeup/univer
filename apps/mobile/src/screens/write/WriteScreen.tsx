@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { Film, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -14,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { VisibilityPicker } from "../../components/common/VisibilityPicker";
+import { StoryVideoView } from "../../components/stories/StoryVideoView";
 import { PostAspectRatioPicker } from "../../components/write/PostAspectRatioPicker";
 import { PostImageUploader } from "../../components/write/PostImageUploader";
 import { MAX_IMAGES, useWriteForm } from "../../features/feed/useWriteForm";
@@ -31,8 +33,11 @@ export function WriteScreen() {
     imageUris,
     isSubmitting,
     pickImages,
+    pickVideo,
     removeImage,
+    removeVideo,
     resetForm,
+    selectedVideo,
     setAspectRatio,
     setContent,
     setVisibility,
@@ -108,15 +113,63 @@ export function WriteScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.card}>
-            <PostImageUploader
-              aspectRatio={aspectRatio}
-              imageUris={imageUris}
-              maxCount={MAX_IMAGES}
-              onAdd={() => {
-                void pickImages();
-              }}
-              onRemove={removeImage}
-            />
+            {selectedVideo ? (
+              <View style={styles.videoUploader}>
+                <View style={styles.mediaHeader}>
+                  <Text style={styles.mediaTitle}>영상</Text>
+                  <Text style={styles.mediaCount}>1/1</Text>
+                </View>
+                <View style={styles.videoPreviewWrap}>
+                  <StoryVideoView
+                    key={selectedVideo.uri}
+                    loop
+                    style={styles.videoPreview}
+                    uri={selectedVideo.uri}
+                  />
+                  <Pressable
+                    accessibilityLabel="영상 삭제"
+                    accessibilityRole="button"
+                    disabled={isSubmitting}
+                    onPress={removeVideo}
+                    style={({ pressed }) => [
+                      styles.removeVideoButton,
+                      pressed ? styles.pressed : null,
+                    ]}
+                  >
+                    <X color={colors.white} size={18} strokeWidth={3} />
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <>
+                <PostImageUploader
+                  aspectRatio={aspectRatio}
+                  imageUris={imageUris}
+                  maxCount={MAX_IMAGES}
+                  onAdd={() => {
+                    void pickImages();
+                  }}
+                  onRemove={removeImage}
+                />
+                {imageUris.length === 0 ? (
+                  <Pressable
+                    accessibilityLabel="영상 선택"
+                    accessibilityRole="button"
+                    disabled={isSubmitting}
+                    onPress={() => {
+                      void pickVideo();
+                    }}
+                    style={({ pressed }) => [
+                      styles.videoPickButton,
+                      pressed ? styles.pressed : null,
+                    ]}
+                  >
+                    <Film color={colors.accent} size={20} strokeWidth={2.5} />
+                    <Text style={styles.videoPickText}>영상 선택</Text>
+                  </Pressable>
+                ) : null}
+              </>
+            )}
           </View>
 
           <View style={styles.card}>
@@ -234,6 +287,61 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: colors.text,
     fontSize: 15,
+    fontWeight: "900",
+  },
+  videoUploader: {
+    gap: 12,
+  },
+  mediaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mediaTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  mediaCount: {
+    color: colors.textFaint,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  videoPreviewWrap: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 20,
+    backgroundColor: colors.black,
+  },
+  videoPreview: {
+    width: "100%",
+    borderRadius: 20,
+  },
+  removeVideoButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    height: 34,
+    width: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 17,
+    backgroundColor: "rgba(21,22,27,0.72)",
+  },
+  videoPickButton: {
+    height: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.22)",
+    borderRadius: 16,
+    backgroundColor: colors.white,
+  },
+  videoPickText: {
+    color: colors.accent,
+    fontSize: 14,
     fontWeight: "900",
   },
   textInput: {
