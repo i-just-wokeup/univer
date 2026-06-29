@@ -4,10 +4,18 @@ import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
-import { getCurrentUserContext } from "../shared/userContext";
+import {
+  getBlockRelatedUserIds,
+  getCurrentUserContext,
+} from "../shared/userContext";
 import type { Story, StoryGroup, StoryViewer, StoryVisibility } from "./types";
 
 type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
+
+// PostgREST `in` 필터용 문자열: ["a","b"] → "(a,b)".
+function toPostgrestInFilter(values: string[]) {
+  return `(${values.join(",")})`;
+}
 
 // 현재 로그인 유저 id(없으면 에러). 이 파일 내부 공용.
 async function getCurrentUserId(): Promise<string> {
@@ -63,13 +71,14 @@ export async function createStory(
 }
 
 // 같은 학교의 만료 전 스토리를 유저별로 묶고, 본인 → 크루 → 그 외 순으로 정렬한다.
-// ⚠️ 현재 차단 유저 제외 필터 없음(백로그) — 피드/탐색 등은 getBlockRelatedUserIds로 거른다.
+// 차단 관계(내가 차단 + 나를 차단)인 유저의 스토리는 제외한다.
 export async function getStories(): Promise<StoryGroup[]> {
   const supabase = getSupabaseMobileClient();
   const { universityId, userId } = await getCurrentUserContext();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
   const now = new Date().toISOString();
 
-  const { data: stories, error: storiesError } = await supabase
+  let storiesQuery = supabase
     .from("stories")
     .select(
       "id, user_id, image_url, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
@@ -78,6 +87,16 @@ export async function getStories(): Promise<StoryGroup[]> {
     .gt("expires_at", now)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
+
+  if (blockRelatedUserIds.length > 0) {
+    storiesQuery = storiesQuery.not(
+      "user_id",
+      "in",
+      toPostgrestInFilter(blockRelatedUserIds),
+    );
+  }
+
+  const { data: stories, error: storiesError } = await storiesQuery;
 
   if (storiesError) {
     throw new Error("스토리 목록을 불러오지 못했습니다.");

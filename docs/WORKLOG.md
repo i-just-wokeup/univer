@@ -4,9 +4,17 @@
 
 ---
 
+## 2026-06-29
+
+### 완료
+- **앱 차단 시 스토리 숨김 (버그 수정)** — `stories/api.ts` `getStories`에 차단 필터가 없어 차단해도 그 사람 스토리가 스토리바에 떴음. 피드/탐색과 동일하게 `getBlockRelatedUserIds` + `.not(user_id in ...)`로 차단 관계(양방향) 유저 제외. 실기기 확인(차단 시 사라짐/해제 시 복귀), tsc 통과
+
+---
+
 ## 2026-06-28
 
 ### 완료
+- **앱 데이터 계층 주석 추가** — `features/*/api.ts` 전 파일 헤더 + 함수별 역할 한 줄 주석(feed/comments/stories/profile/explore/blocks/reports/search/chat/activity/notifications/auth/shared 등). 변수별 주석은 생략(이름이 설명). 파일·함수 상세는 노션 코드구조/API명세 유지. `docs:` 커밋 4개로 분할. (주석 깊이=헤더+함수마다 한 줄로 사용자와 합의)
 - **앱 HomeScreen 잔여 로직 훅 분리 (전수조사 8개 완료)**
   - 피드는 이미 `useHomeFeed`였고, 화면에 남아있던 스토리바·안읽은 알림/메시지 뱃지 로딩(`getStories`/`getUnreadCount`/`getChatUnreadCount`) + 포커스 갱신을 `features/feed/useHomeMeta.ts`로 분리. HomeScreen은 이제 api 직접 호출 없음(두 훅 연결+네비게이션+렌더만). `HomeScreen.tsx` 309줄 → 278줄(+훅 47). 동작 변경 없음, 실기기 확인, tsc 통과
   - 이로써 전수조사로 찾은 8개(StoryPlayer/PostDetail/Connections/Explore/Search/Messages/Blocked/Notifications/HomeScreen 잔여) 모두 로직 분리 완료
