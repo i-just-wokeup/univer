@@ -1,11 +1,10 @@
 // 스토리 데이터 계층 — 스토리 생성/삭제·미디어 업로드·조회 기록·좋아요·조회자 목록.
 // 스토리 좋아요는 post_likes 테이블에 target_type='story'로 저장(게시물과 공용).
-import { File } from "expo-file-system";
-
 import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
+import { uploadFileUriToBucket } from "../shared/storageUpload";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -24,15 +23,6 @@ type CreateVideoStoryParams = {
 // PostgREST `in` 필터용 문자열: ["a","b"] → "(a,b)".
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
-}
-
-// 버킷 안 저장 경로 생성: "<folder>/<랜덤id>.<extension>".
-function createStoragePath(folder: string, extension: string) {
-  const id =
-    globalThis.crypto?.randomUUID?.() ??
-    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-  return `${folder}/${id}.${extension}`;
 }
 
 // 현재 로그인 유저 id(없으면 에러). 이 파일 내부 공용.
@@ -68,39 +58,13 @@ export async function uploadStoryImage(uri: string): Promise<string> {
 
 // 로컬 영상 파일을 변환 없이 story-videos 버킷에 올리고 공개 URL을 반환한다.
 export async function uploadStoryVideo(uri: string): Promise<string> {
-  const supabase = getSupabaseMobileClient();
-  const path = createStoragePath(STORAGE_FOLDERS.stories, "mp4");
-
-  let bytes: ArrayBuffer;
-
-  try {
-    // RN에선 fetch(file://).arrayBuffer()가 불안정(특히 영상) → expo-file-system으로 직접 읽는다.
-    // (Supabase도 RN에선 Blob/FormData 대신 ArrayBuffer 업로드를 권장)
-    bytes = await new File(uri).arrayBuffer();
-  } catch {
-    throw new Error("스토리 영상 파일을 읽지 못했습니다.");
-  }
-
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKETS.storyVideos)
-    .upload(path, bytes, {
-      contentType: "video/mp4",
-      upsert: false,
-    });
-
-  if (error) {
-    throw new Error("스토리 영상 업로드에 실패했습니다.");
-  }
-
-  const { data } = supabase.storage
-    .from(STORAGE_BUCKETS.storyVideos)
-    .getPublicUrl(path);
-
-  if (!data.publicUrl) {
-    throw new Error("스토리 영상 URL을 만들지 못했습니다.");
-  }
-
-  return data.publicUrl;
+  return uploadFileUriToBucket({
+    bucket: STORAGE_BUCKETS.storyVideos,
+    contentType: "video/mp4",
+    extension: "mp4",
+    folder: STORAGE_FOLDERS.stories,
+    uri,
+  });
 }
 
 // 스토리 생성(24시간 후 만료). 같은 학교/작성자/공개범위와 함께 insert.

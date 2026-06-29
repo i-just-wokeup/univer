@@ -18,6 +18,9 @@
   - 뷰어: `useStoryPlayer`가 영상이면 5초 타이머 skip하고 영상이 `setVideoProgress`/`goNext`를 구동, StoryPlayer 영상 분기(`key=story.id`로 스토리별 새 플레이어)
   - tsc 통과. **EAS 빌드 후 실기기 테스트 필요** (재생 타이밍/업로드 확인)
   - follow-up: 내 활동 보관함 그리드/미리보기 영상 썸네일(`getMyStories`에 type/thumbnail_url), 카메라 녹화, notifee(별도 빌드)
+- **앱 영상 업로드 OOM 수정**
+  - 43MB 영상에서 `File.arrayBuffer()`가 Android OOM으로 실패하는 문제 확인. 영상 업로드를 Supabase JS ArrayBuffer 방식에서 `expo-file-system/legacy.uploadAsync` native binary upload 공용 유틸로 교체
+  - 스토리 영상은 새 `uploadFileUriToBucket` 경로 사용. 디버그 로그 제거, tsc 통과
 - **앱 스토리 작성 폴리시 (빌드 불필요, 영상 전 정리)**
   - **셔터 무음** — `takePictureAsync({ shutterSound:false })` + CameraView `animateShutter={false}`(흰 플래시 제거). 인스타처럼 소리/번쩍임 없이 촬영
   - **미리보기 = 실제 스토리** — 공용 `components/stories/StoryMediaFrame`(9:16 + 블러 배경 + 레터박스: 세로 cover/그 외 contain) 만들어 작성 미리보기에 적용. 미리보기와 뷰어 모양 일치(인스타식 깔끔). 뷰어(StoryPlayer)도 같은 프레임으로 통일은 다음에

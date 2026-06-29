@@ -183,6 +183,7 @@
 - [x] **앱 채팅방 `...` 메뉴 연결** — 웹 채팅방과 동일하게 상대 차단 액션시트/확인 다이얼로그/차단 후 메시지 목록 이동 흐름 연결
 - [x] **앱 게시물 본인 글 삭제 메뉴 연결** — `deletePost` soft delete API 추가, 본인 글 `...` 메뉴 삭제/확인 다이얼로그 연결, 홈 피드 낙관적 제거와 상세 뒤로가기 처리
 - [x] **앱 스토리 영상 1단계 API plumbing** — `story-videos` 버킷 상수, 영상 raw 업로드(`uploadStoryVideo`), 영상 스토리 insert(`createVideoStory`) 추가. UI/재생/촬영은 다음 단계
+- [x] **앱 영상 업로드 OOM 수정** — 큰 영상은 JS `ArrayBuffer`로 읽지 않고 `expo-file-system/legacy.uploadAsync` native binary upload 공용 유틸로 Supabase Storage에 직접 업로드
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요
