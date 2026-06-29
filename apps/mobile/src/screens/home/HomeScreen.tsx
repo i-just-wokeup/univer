@@ -1,11 +1,12 @@
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   FlatList,
   RefreshControl,
   StyleSheet,
   Text,
   View,
+  type ViewToken,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -26,6 +27,15 @@ export function HomeScreen() {
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
+  // 화면에 보이는(활성) 게시물 id — 영상 자동재생용. 가장 위 보이는 항목 1개만 활성.
+  const [activePostId, setActivePostId] = useState<string | null>(null);
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
+  const handleViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const firstVisibleId = viewableItems[0]?.item?.id ?? null;
+      setActivePostId(firstVisibleId);
+    },
+  ).current;
   const {
     bookmarkedPostIds,
     errorMessage,
@@ -165,6 +175,8 @@ export function HomeScreen() {
           void handleLoadMore();
         }}
         onEndReachedThreshold={0.7}
+        onViewableItemsChanged={handleViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         refreshControl={
           <RefreshControl
             onRefresh={() => {
@@ -177,6 +189,7 @@ export function HomeScreen() {
         renderItem={({ item }) => (
           <FeedPostCard
             currentUserId={currentUserId}
+            isActive={item.id === activePostId}
             isBookmarked={bookmarkedPostIds.has(item.id)}
             isLiked={likedPostIds.has(item.id)}
             onBlockUser={(userId) => {

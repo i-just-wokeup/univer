@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { Play, Volume2, VolumeX } from "lucide-react-native";
-import { useState } from "react";
+import { Volume2, VolumeX } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -15,35 +15,36 @@ import type { PostAspectRatio } from "../../features/feed/types";
 
 type FeedVideoPlayerProps = {
   aspectRatio: PostAspectRatio;
+  // 피드에서 지금 보이는(활성) 카드면 자동재생, 아니면 일시정지(썸네일).
+  isActive: boolean;
   thumbnailUrl: string | null;
   uri: string;
 };
 
-// 피드 영상 1개 재생기. 처음엔 썸네일 포스터 + 재생(▶) 버튼, 탭하면 재생/일시정지.
-// 음소거 토글 제공. (보이는 1개만 자동재생은 4단계에서 추가)
+// 피드 영상 재생기 (릴스식). 활성 카드면 음소거 자동재생(loop), 화면 밖이면 멈춤.
+// 탭하면 음소거 ↔ 소리. 비활성 동안은 썸네일 포스터를 덮어 깜빡임을 줄인다.
 export function FeedVideoPlayer({
   aspectRatio,
+  isActive,
   thumbnailUrl,
   uri,
 }: FeedVideoPlayerProps) {
   const { width } = useWindowDimensions();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   const player = useVideoPlayer(uri, (instance) => {
     instance.loop = true;
-    instance.muted = false;
+    instance.muted = true;
   });
 
-  function togglePlay() {
-    if (isPlaying) {
-      player.pause();
-      setIsPlaying(false);
-    } else {
+  // 활성 카드만 재생. 스크롤로 화면 밖이면 멈춰서 1개만 재생되게 한다.
+  useEffect(() => {
+    if (isActive) {
       player.play();
-      setIsPlaying(true);
+    } else {
+      player.pause();
     }
-  }
+  }, [isActive, player]);
 
   function toggleMute() {
     const next = !isMuted;
@@ -57,7 +58,11 @@ export function FeedVideoPlayer({
   };
 
   return (
-    <Pressable onPress={togglePlay} style={[styles.frame, frameStyle]}>
+    <Pressable
+      accessibilityLabel={isMuted ? "소리 켜기" : "음소거"}
+      onPress={toggleMute}
+      style={[styles.frame, frameStyle]}
+    >
       <VideoView
         contentFit="cover"
         nativeControls={false}
@@ -65,41 +70,24 @@ export function FeedVideoPlayer({
         style={StyleSheet.absoluteFill}
       />
 
-      {/* 재생 전: 썸네일 포스터 + 재생 버튼 */}
-      {!isPlaying ? (
-        <View style={StyleSheet.absoluteFill}>
-          {thumbnailUrl ? (
-            <Image
-              cachePolicy="memory-disk"
-              contentFit="cover"
-              source={{ uri: thumbnailUrl }}
-              style={StyleSheet.absoluteFill}
-            />
-          ) : null}
-          <View style={styles.playOverlay}>
-            <View style={styles.playButton}>
-              <Play color={colors.white} fill={colors.white} size={26} />
-            </View>
-          </View>
-        </View>
+      {/* 비활성(정지) 카드는 썸네일을 덮어 검은 화면/깜빡임 방지 */}
+      {!isActive && thumbnailUrl ? (
+        <Image
+          cachePolicy="memory-disk"
+          contentFit="cover"
+          source={{ uri: thumbnailUrl }}
+          style={StyleSheet.absoluteFill}
+        />
       ) : null}
 
-      {/* 음소거 토글 (재생 중에만) */}
-      {isPlaying ? (
-        <Pressable
-          accessibilityLabel={isMuted ? "소리 켜기" : "음소거"}
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={toggleMute}
-          style={styles.muteButton}
-        >
-          {isMuted ? (
-            <VolumeX color={colors.white} size={18} strokeWidth={2.4} />
-          ) : (
-            <Volume2 color={colors.white} size={18} strokeWidth={2.4} />
-          )}
-        </Pressable>
-      ) : null}
+      {/* 음소거 표시(항상). 탭하면 토글 */}
+      <View style={styles.muteBadge}>
+        {isMuted ? (
+          <VolumeX color={colors.white} size={16} strokeWidth={2.4} />
+        ) : (
+          <Volume2 color={colors.white} size={16} strokeWidth={2.4} />
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -109,28 +97,15 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: colors.imagePlaceholder,
   },
-  playOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playButton: {
-    height: 64,
-    width: 64,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 32,
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
-  muteButton: {
+  muteBadge: {
     position: "absolute",
     right: 14,
     bottom: 14,
-    height: 36,
-    width: 36,
+    height: 32,
+    width: 32,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 18,
+    borderRadius: 16,
     backgroundColor: "rgba(0,0,0,0.5)",
   },
 });

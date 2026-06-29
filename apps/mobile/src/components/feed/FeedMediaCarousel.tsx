@@ -17,10 +17,15 @@ import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
 
 type FeedMediaCarouselProps = {
   aspectRatio: PostAspectRatio;
+  isActive?: boolean;
   media: PostMedia[];
 };
 
-export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps) {
+export function FeedMediaCarousel({
+  aspectRatio,
+  isActive = false,
+  media,
+}: FeedMediaCarouselProps) {
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   // 게시물은 영상 1개 OR 사진 여러 장. 영상이면 영상 플레이어로 렌더.
@@ -37,6 +42,7 @@ export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps
     return (
       <FeedVideoPlayer
         aspectRatio={aspectRatio}
+        isActive={isActive}
         thumbnailUrl={videoMedia.thumbnail_url}
         uri={videoMedia.url}
       />

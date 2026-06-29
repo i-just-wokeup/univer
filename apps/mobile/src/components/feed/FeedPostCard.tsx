@@ -12,6 +12,8 @@ import { getRelativeTimeLabel } from "../../lib/utils/time";
 
 type FeedPostCardProps = {
   currentUserId?: string;
+  // 피드에서 지금 보이는 카드면 영상 자동재생.
+  isActive?: boolean;
   isBookmarked?: boolean;
   isLiked: boolean;
   onBlockUser?: (userId: string) => void;
@@ -34,6 +36,7 @@ function formatCount(count: number) {
 
 export function FeedPostCard({
   currentUserId = "",
+  isActive = false,
   isBookmarked = false,
   isLiked,
   onBlockUser,
@@ -117,7 +120,11 @@ export function FeedPostCard({
         </Pressable>
       </View>
 
-      <FeedMediaCarousel aspectRatio={post.aspect_ratio} media={post.media} />
+      <FeedMediaCarousel
+        aspectRatio={post.aspect_ratio}
+        isActive={isActive}
+        media={post.media}
+      />
 
       <View style={styles.actionRow}>
         <View style={styles.leftActions}>

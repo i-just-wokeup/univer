@@ -172,11 +172,11 @@ export async function getProfilePosts(
 
   const postIds = postsData.map((post) => post.id);
 
+  // 첫 미디어(order_index=0). 이미지면 url, 영상이면 thumbnail_url(포스터)을 썸네일로 쓴다.
   const { data: imagesData, error: imagesError } = await supabase
     .from("post_media")
-    .select("post_id, url, order_index")
+    .select("post_id, url, thumbnail_url, type, order_index")
     .in("post_id", postIds)
-    .eq("type", "image")
     .eq("order_index", 0);
 
   if (imagesError || !imagesData) {
@@ -185,13 +185,19 @@ export async function getProfilePosts(
 
   const imageByPostId = new Map<string, string>();
 
-  (imagesData as Pick<PostMediaRow, "order_index" | "post_id" | "url">[]).forEach(
-    (image) => {
-      if (!imageByPostId.has(image.post_id)) {
-        imageByPostId.set(image.post_id, image.url);
-      }
-    },
-  );
+  (
+    imagesData as Pick<
+      PostMediaRow,
+      "order_index" | "post_id" | "thumbnail_url" | "type" | "url"
+    >[]
+  ).forEach((media) => {
+    const thumbnail =
+      media.type === "video" ? media.thumbnail_url ?? media.url : media.url;
+
+    if (!imageByPostId.has(media.post_id)) {
+      imageByPostId.set(media.post_id, thumbnail);
+    }
+  });
 
   return (postsData as Pick<PostRow, "created_at" | "id">[]).map((post) => ({
     id: post.id,
