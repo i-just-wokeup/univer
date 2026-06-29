@@ -28,7 +28,11 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
 
     try {
       setIsCapturing(true);
-      const photo = await cameraRef.current?.takePictureAsync({ quality: 1 });
+      // 인스타처럼 셔터음 없이 촬영(흰 플래시는 CameraView animateShutter={false}).
+      const photo = await cameraRef.current?.takePictureAsync({
+        quality: 1,
+        shutterSound: false,
+      });
 
       if (photo?.uri) {
         onSelected(photo.uri);
@@ -102,6 +106,7 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
   return (
     <View style={styles.cameraScreen}>
       <CameraView
+        animateShutter={false}
         facing={facing}
         flash={flash}
         ref={cameraRef}

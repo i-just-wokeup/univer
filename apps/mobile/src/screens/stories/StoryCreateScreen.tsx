@@ -1,10 +1,11 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { BackHandler, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { VisibilityPicker } from "../../components/common/VisibilityPicker";
 import { StoryCamera } from "../../components/stories/StoryCamera";
+import { StoryMediaFrame } from "../../components/stories/StoryMediaFrame";
 import { useStoryCreate } from "../../features/stories/useStoryCreate";
 import { colors } from "../../lib/theme";
 
@@ -27,6 +28,19 @@ export function StoryCreateScreen() {
       router.back();
     }
   }
+
+  // 미리보기 상태에서 하드웨어 뒤로가기 = 홈으로 나가지 않고 카메라로 복귀(다시 찍기).
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (capturedUri) {
+        retake();
+        return true;
+      }
+      return false;
+    });
+
+    return () => subscription.remove();
+  }, [capturedUri, retake]);
 
   // 카메라 모드: 촬영하거나 고른 사진을 받으면 미리보기로 전환.
   if (!capturedUri) {
@@ -71,12 +85,7 @@ export function StoryCreateScreen() {
 
       <View style={styles.previewBody}>
         <View style={styles.preview}>
-          <Image
-            cachePolicy="memory-disk"
-            contentFit="cover"
-            source={{ uri: capturedUri }}
-            style={styles.previewImage}
-          />
+          <StoryMediaFrame imageUrl={capturedUri} style={styles.previewFrame} />
         </View>
 
         <View style={styles.controls}>
@@ -147,13 +156,11 @@ const styles = StyleSheet.create({
   },
   preview: {
     flex: 1,
-    overflow: "hidden",
-    borderRadius: 24,
-    backgroundColor: colors.black,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  previewImage: {
-    height: "100%",
-    width: "100%",
+  previewFrame: {
+    borderRadius: 20,
   },
   controls: {
     gap: 12,
