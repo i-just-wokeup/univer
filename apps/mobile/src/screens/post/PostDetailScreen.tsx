@@ -95,6 +95,7 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <FeedPostCard
             currentUserId={currentUserId}
+            isActive
             isBookmarked={isBookmarked}
             isLiked={isLiked}
             onBlockUser={(userId) => {
