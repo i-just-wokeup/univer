@@ -206,6 +206,7 @@ export type Database = {
           type: 'image' | 'video'
           thumbnail_url: string | null
           duration: number | null
+          background_color: string | null
           university_id: string
           views_count: number
           expires_at: string
@@ -221,6 +222,7 @@ export type Database = {
           type?: 'image' | 'video'
           thumbnail_url?: string | null
           duration?: number | null
+          background_color?: string | null
           university_id: string
           views_count?: number
           expires_at?: string
@@ -236,6 +238,7 @@ export type Database = {
           type?: 'image' | 'video'
           thumbnail_url?: string | null
           duration?: number | null
+          background_color?: string | null
           university_id?: string
           views_count?: number
           expires_at?: string
