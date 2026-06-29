@@ -209,6 +209,9 @@ export function HomeScreen() {
               void handleReportPost(postId);
             }}
             onUserPress={handleUserPress}
+            onVideoPress={(postId) =>
+              router.push({ pathname: "/reels", params: { postId } })
+            }
             post={item}
           />
         )}

@@ -1,0 +1,168 @@
+import { useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
+import { useCallback, useRef, useState } from "react";
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewToken,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { ReelItem } from "../../components/feed/ReelItem";
+import { CommentsSheet } from "../../components/comments/CommentsSheet";
+import { StateView } from "../../components/common/StateView";
+import { useReels } from "../../features/feed/useReels";
+import { colors } from "../../lib/theme";
+
+type ReelsScreenProps = {
+  startPostId?: string;
+};
+
+// 릴스(영상 전용 세로 풀스크린 피드). 위아래 스와이프로 다음 영상, 보이는 1개만 재생.
+export function ReelsScreen({ startPostId }: ReelsScreenProps) {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { height, width } = useWindowDimensions();
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const {
+    activeIndex,
+    bookmarkedPostIds,
+    errorMessage,
+    handleCommentCountChange,
+    isLoading,
+    likedPostIds,
+    loadMore,
+    posts,
+    setActiveIndex,
+    toggleBookmarkPost,
+    toggleLike,
+  } = useReels(startPostId);
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 80 }).current;
+  const handleViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const index = viewableItems[0]?.index;
+      if (typeof index === "number") {
+        setActiveIndex(index);
+      }
+    },
+  ).current;
+
+  const handleUserPress = useCallback(
+    (nickname: string) => {
+      router.push({ pathname: "/profile/[nickname]", params: { nickname } });
+    },
+    [router],
+  );
+
+  if (isLoading) {
+    return (
+      <View style={styles.center}>
+        <StateView
+          message="영상을 불러오는 중입니다."
+          title="릴스 준비 중"
+          type="loading"
+        />
+      </View>
+    );
+  }
+
+  if (errorMessage && posts.length === 0) {
+    return (
+      <View style={styles.center}>
+        <StateView
+          message={errorMessage}
+          title="영상을 불러오지 못했습니다"
+          type="error"
+        />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.screen}>
+      <FlatList
+        data={posts}
+        getItemLayout={(_, index) => ({
+          index,
+          length: height,
+          offset: height * index,
+        })}
+        initialScrollIndex={activeIndex}
+        keyExtractor={(post) => post.id}
+        onEndReached={() => {
+          void loadMore();
+        }}
+        onEndReachedThreshold={1.2}
+        onViewableItemsChanged={handleViewableItemsChanged}
+        pagingEnabled
+        renderItem={({ index, item }) => (
+          <ReelItem
+            height={height}
+            isActive={index === activeIndex}
+            isBookmarked={bookmarkedPostIds.has(item.id)}
+            isLiked={likedPostIds.has(item.id)}
+            onBookmark={() => {
+              void toggleBookmarkPost(item.id);
+            }}
+            onComment={() => setCommentPostId(item.id)}
+            onLike={() => {
+              void toggleLike(item.id);
+            }}
+            onPressUser={() => handleUserPress(item.user.nickname)}
+            post={item}
+            width={width}
+          />
+        )}
+        showsVerticalScrollIndicator={false}
+        viewabilityConfig={viewabilityConfig}
+      />
+
+      <Pressable
+        accessibilityLabel="뒤로"
+        accessibilityRole="button"
+        onPress={() => router.back()}
+        style={[styles.backButton, { top: insets.top + 8 }]}
+      >
+        <ChevronLeft color={colors.white} size={28} strokeWidth={2.6} />
+      </Pressable>
+
+      <CommentsSheet
+        isOpen={commentPostId !== null}
+        onClose={() => setCommentPostId(null)}
+        onCommentCountChange={handleCommentCountChange}
+        onUserPress={(nickname) => {
+          setCommentPostId(null);
+          handleUserPress(nickname);
+        }}
+        postId={commentPostId}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.black,
+  },
+  center: {
+    flex: 1,
+    backgroundColor: colors.black,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButton: {
+    position: "absolute",
+    left: 12,
+    height: 44,
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+});

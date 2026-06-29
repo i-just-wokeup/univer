@@ -17,15 +17,18 @@ type FeedVideoPlayerProps = {
   aspectRatio: PostAspectRatio;
   // 피드에서 지금 보이는(활성) 카드면 자동재생, 아니면 일시정지(썸네일).
   isActive: boolean;
+  // 영상 영역(음소거 아이콘 제외)을 누르면 호출 — 릴스 상세로 이동용.
+  onPress?: () => void;
   thumbnailUrl: string | null;
   uri: string;
 };
 
-// 피드 영상 재생기 (릴스식). 활성 카드면 음소거 자동재생(loop), 화면 밖이면 멈춤.
-// 탭하면 음소거 ↔ 소리. 비활성 동안은 썸네일 포스터를 덮어 깜빡임을 줄인다.
+// 피드 영상 재생기. 활성 카드면 음소거 자동재생(loop), 화면 밖이면 멈춤.
+// 영상 영역 탭=onPress(릴스 이동), 음소거 아이콘 탭=음소거 토글. 비활성은 썸네일로 덮는다.
 export function FeedVideoPlayer({
   aspectRatio,
   isActive,
+  onPress,
   thumbnailUrl,
   uri,
 }: FeedVideoPlayerProps) {
@@ -58,11 +61,7 @@ export function FeedVideoPlayer({
   };
 
   return (
-    <Pressable
-      accessibilityLabel={isMuted ? "소리 켜기" : "음소거"}
-      onPress={toggleMute}
-      style={[styles.frame, frameStyle]}
-    >
+    <View style={[styles.frame, frameStyle]}>
       <VideoView
         contentFit="cover"
         nativeControls={false}
@@ -80,15 +79,28 @@ export function FeedVideoPlayer({
         />
       ) : null}
 
-      {/* 음소거 표시(항상). 탭하면 토글 */}
-      <View style={styles.muteBadge}>
+      {/* 영상 위 투명 오버레이 — 네이티브 VideoView가 터치를 먹으므로 여기서 영역 탭을 받는다(릴스 이동) */}
+      <Pressable
+        accessibilityLabel="영상 크게 보기"
+        onPress={onPress}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* 음소거 버튼 — 오버레이 위에 얹혀 이 아이콘만 음소거 토글 */}
+      <Pressable
+        accessibilityLabel={isMuted ? "소리 켜기" : "음소거"}
+        accessibilityRole="button"
+        hitSlop={8}
+        onPress={toggleMute}
+        style={styles.muteBadge}
+      >
         {isMuted ? (
           <VolumeX color={colors.white} size={16} strokeWidth={2.4} />
         ) : (
           <Volume2 color={colors.white} size={16} strokeWidth={2.4} />
         )}
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 }
 

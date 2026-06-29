@@ -19,12 +19,14 @@ type FeedMediaCarouselProps = {
   aspectRatio: PostAspectRatio;
   isActive?: boolean;
   media: PostMedia[];
+  onVideoPress?: () => void;
 };
 
 export function FeedMediaCarousel({
   aspectRatio,
   isActive = false,
   media,
+  onVideoPress,
 }: FeedMediaCarouselProps) {
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,6 +45,7 @@ export function FeedMediaCarousel({
       <FeedVideoPlayer
         aspectRatio={aspectRatio}
         isActive={isActive}
+        onPress={onVideoPress}
         thumbnailUrl={videoMedia.thumbnail_url}
         uri={videoMedia.url}
       />

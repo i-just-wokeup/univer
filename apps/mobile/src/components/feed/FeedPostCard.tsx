@@ -23,6 +23,8 @@ type FeedPostCardProps = {
   onLike: (postId: string) => void;
   onReport?: (postId: string) => void;
   onUserPress: (nickname: string) => void;
+  // 영상 영역 탭 시(릴스 상세 이동용).
+  onVideoPress?: (postId: string) => void;
   post: FeedPost;
 };
 
@@ -46,6 +48,7 @@ export function FeedPostCard({
   onLike,
   onReport,
   onUserPress,
+  onVideoPress,
   post,
 }: FeedPostCardProps) {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
@@ -124,6 +127,7 @@ export function FeedPostCard({
         aspectRatio={post.aspect_ratio}
         isActive={isActive}
         media={post.media}
+        onVideoPress={onVideoPress ? () => onVideoPress(post.id) : undefined}
       />
 
       <View style={styles.actionRow}>

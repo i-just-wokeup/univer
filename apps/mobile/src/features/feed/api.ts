@@ -280,6 +280,132 @@ export async function getFeed({
   };
 }
 
+// 영상 전용 피드(릴스). getFeed와 동일하되 post_media에 영상이 있는 게시물만(inner join 필터).
+export async function getVideoFeed({
+  cursor,
+  limit = PAGE_SIZE.feed,
+}: {
+  cursor?: string;
+  limit?: number;
+} = {}): Promise<GetFeedResult> {
+  const supabase = getSupabaseMobileClient();
+  const { universityId } = await getCurrentUserContext();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  const fetchLimit = limit + 1;
+
+  let postsQuery = supabase
+    .from("posts")
+    .select(
+      "id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, post_media!inner(type)",
+    )
+    .eq("university_id", universityId)
+    .eq("post_media.type", "video")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(fetchLimit);
+
+  if (blockRelatedUserIds.length > 0) {
+    postsQuery = postsQuery.not(
+      "user_id",
+      "in",
+      toPostgrestInFilter(blockRelatedUserIds),
+    );
+  }
+
+  if (cursor) {
+    postsQuery = postsQuery.lt("created_at", cursor);
+  }
+
+  const { data: postsData, error: postsError } = await postsQuery;
+
+  if (postsError || !postsData) {
+    throw new Error("영상을 불러오지 못했습니다.");
+  }
+
+  const normalizedPosts = postsData as unknown as FeedPostRow[];
+  const hasMore = normalizedPosts.length > limit;
+  const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
+
+  if (slicedPosts.length === 0) {
+    return { nextCursor: null, posts: [] };
+  }
+
+  const postIds = slicedPosts.map((post) => post.id);
+  const userIds = Array.from(new Set(slicedPosts.map((post) => post.user_id)));
+
+  const [{ data: usersData, error: usersError }, { data: mediaData, error: mediaError }] =
+    await Promise.all([
+      supabase
+        .from("users")
+        .select("id, nickname, department, avatar_url")
+        .in("id", userIds),
+      supabase
+        .from("post_media")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index")
+        .in("post_id", postIds)
+        .order("order_index", { ascending: true }),
+    ]);
+
+  if (usersError || !usersData) {
+    throw new Error("작성자 정보를 불러오지 못했습니다.");
+  }
+
+  if (mediaError || !mediaData) {
+    throw new Error("게시물 미디어를 불러오지 못했습니다.");
+  }
+
+  const usersById = new Map<string, FeedUser>(
+    usersData.map((user: Pick<UserRow, "id" | "nickname" | "department" | "avatar_url">) => [
+      user.id,
+      {
+        avatar_url: user.avatar_url,
+        department: user.department,
+        id: user.id,
+        nickname: user.nickname,
+      },
+    ]),
+  );
+
+  const mediaByPostId = new Map<string, PostMedia[]>();
+
+  (mediaData as PostMediaRow[]).forEach((media) => {
+    const currentMedia = mediaByPostId.get(media.post_id) ?? [];
+    currentMedia.push({
+      duration: media.duration,
+      id: media.id,
+      order_index: media.order_index,
+      thumbnail_url: media.thumbnail_url,
+      type: media.type,
+      url: media.url,
+    });
+    mediaByPostId.set(media.post_id, currentMedia);
+  });
+
+  const posts: FeedPost[] = slicedPosts.map((post) => {
+    const user = usersById.get(post.user_id);
+
+    if (!user) {
+      throw new Error("게시물 작성자 정보를 찾을 수 없습니다.");
+    }
+
+    return {
+      aspect_ratio: post.aspect_ratio ?? "portrait",
+      comments_count: post.comments_count,
+      content: post.content,
+      created_at: post.created_at,
+      id: post.id,
+      likes_count: post.likes_count,
+      media: mediaByPostId.get(post.id) ?? [],
+      user,
+    };
+  });
+
+  return {
+    nextCursor: hasMore ? posts[posts.length - 1]?.created_at ?? null : null,
+    posts,
+  };
+}
+
 // 주어진 게시물들 중 현재 유저가 좋아요한 id 목록.
 export async function getLikedPostIds(postIds: string[]) {
   if (postIds.length === 0) {
