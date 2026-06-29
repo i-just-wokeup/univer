@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Keyboard } from "react-native";
 
 import { blockUser } from "../blocks/api";
+import { setActiveConversationId } from "./activeConversation";
 import {
   acceptChatRequest,
   markMessagesRead,
@@ -71,12 +72,15 @@ export function useChatRoom(conversationId: string) {
   useFocusEffect(
     useCallback(() => {
       setIsFocused(true);
+      // 이 방을 보고 있는 동안엔 같은 방 메시지 푸시 배너를 띄우지 않게 활성 방으로 표시.
+      setActiveConversationId(conversationId);
       void reload();
 
       return () => {
         setIsFocused(false);
+        setActiveConversationId(null);
       };
-    }, [reload]),
+    }, [conversationId, reload]),
   );
 
   // 방을 열고 있고 안 읽은 상대 메시지가 있으면 읽음 처리 + 상대에게 읽음 broadcast.

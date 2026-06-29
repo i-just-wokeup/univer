@@ -3,16 +3,29 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
+import { getActiveConversationId } from "../chat/activeConversation";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
+// 포그라운드 알림 표시 규칙. 지금 보고 있는 채팅방의 새 메시지면 배너/목록을 띄우지 않는다.
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async (notification) => {
+    const data = notification.request.content.data as {
+      conversationId?: unknown;
+      targetType?: unknown;
+    };
+    const isActiveChatMessage =
+      data?.targetType === "chat" &&
+      typeof data.conversationId === "string" &&
+      data.conversationId === getActiveConversationId();
+
+    return {
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+      shouldShowBanner: !isActiveChatMessage,
+      shouldShowList: !isActiveChatMessage,
+    };
+  },
 });
 
 async function ensureAndroidNotificationChannel() {
