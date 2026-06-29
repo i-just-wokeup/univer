@@ -1,5 +1,7 @@
 // 스토리 데이터 계층 — 스토리 생성/삭제·미디어 업로드·조회 기록·좋아요·조회자 목록.
 // 스토리 좋아요는 post_likes 테이블에 target_type='story'로 저장(게시물과 공용).
+import { File } from "expo-file-system";
+
 import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -72,8 +74,9 @@ export async function uploadStoryVideo(uri: string): Promise<string> {
   let bytes: ArrayBuffer;
 
   try {
-    const response = await fetch(uri);
-    bytes = await response.arrayBuffer();
+    // RN에선 fetch(file://).arrayBuffer()가 불안정(특히 영상) → expo-file-system으로 직접 읽는다.
+    // (Supabase도 RN에선 Blob/FormData 대신 ArrayBuffer 업로드를 권장)
+    bytes = await new File(uri).arrayBuffer();
   } catch {
     throw new Error("스토리 영상 파일을 읽지 못했습니다.");
   }
