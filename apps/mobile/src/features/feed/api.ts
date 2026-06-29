@@ -5,6 +5,7 @@ import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
+import { uploadFileUriToBucket } from "../shared/storageUpload";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -31,10 +32,18 @@ type FeedPostRow = Pick<
   aspect_ratio?: PostAspectRatio;
 };
 
+// 게시물은 사진 여러 장 OR 영상 1개(섞지 않음, 인스타식). video가 있으면 영상 게시물.
+type CreatePostVideo = {
+  durationSeconds: number | null;
+  thumbnailUrl: string | null;
+  url: string;
+};
+
 type CreatePostParams = {
   aspectRatio: PostAspectRatio;
   content: string;
   imageUrls: string[];
+  video?: CreatePostVideo | null;
   visibility: PostVisibility;
 };
 
@@ -53,11 +62,24 @@ export async function uploadPostImages(uris: string[]): Promise<string[]> {
   );
 }
 
-// 게시물 작성. posts insert 후 이미지가 있으면 post_media에 순서대로 insert. 새 postId 반환.
+// 게시물 영상을 변환 없이 post-videos 버킷에 native 스트리밍 업로드 → 공개 URL.
+// (압축은 다음 빌드에서 react-native-compressor로 추가 예정 — 지금은 원본)
+export async function uploadPostVideo(uri: string): Promise<string> {
+  return uploadFileUriToBucket({
+    bucket: STORAGE_BUCKETS.postVideos,
+    contentType: "video/mp4",
+    extension: "mp4",
+    folder: STORAGE_FOLDERS.posts,
+    uri,
+  });
+}
+
+// 게시물 작성. posts insert 후 미디어(영상 1개 OR 이미지 여러 장)를 post_media에 넣는다. 새 postId 반환.
 export async function createPost({
   aspectRatio,
   content,
   imageUrls,
+  video,
   visibility,
 }: CreatePostParams): Promise<string> {
   const supabase = getSupabaseMobileClient();
@@ -80,7 +102,21 @@ export async function createPost({
     throw new Error("게시물 작성에 실패했습니다.");
   }
 
-  if (imageUrls.length > 0) {
+  if (video) {
+    // 영상 게시물: post_media에 영상 1개(type=video, 포스터/길이 포함).
+    const { error: mediaError } = await supabase.from("post_media").insert({
+      duration: video.durationSeconds,
+      order_index: 0,
+      post_id: post.id,
+      thumbnail_url: video.thumbnailUrl,
+      type: "video" as const,
+      url: video.url,
+    });
+
+    if (mediaError) {
+      throw new Error("게시물 영상을 저장하지 못했습니다.");
+    }
+  } else if (imageUrls.length > 0) {
     const { error: mediaError } = await supabase.from("post_media").insert(
       imageUrls.map((url, index) => ({
         order_index: index,
