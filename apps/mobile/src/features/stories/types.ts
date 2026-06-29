@@ -8,10 +8,14 @@ export type StoryUser = {
 
 export type Story = {
   created_at: string;
+  // 영상 길이(초). 사진은 null.
+  duration_seconds: number | null;
   expires_at: string;
   id: string;
+  // 미디어 URL — 사진이면 이미지, 영상(mediaType==='video')이면 영상 URL.
   image_url: string;
   isMine: boolean;
+  mediaType: "image" | "video";
   user: StoryUser;
   user_id: string;
   views_count: number;

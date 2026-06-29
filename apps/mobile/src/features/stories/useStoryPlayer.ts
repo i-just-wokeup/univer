@@ -99,9 +99,9 @@ export function useStoryPlayer({
     }
   }, [currentStory]);
 
-  // 일시정지 상태가 아니면 진행바를 채우고, 다 차면 다음 스토리로 넘어간다.
+  // 사진은 5초 타이머로 진행바를 채운다. 영상은 StoryVideoView가 재생 위치로 진행/종료를 구동하므로 제외.
   useEffect(() => {
-    if (!currentStory || isPaused) {
+    if (!currentStory || isPaused || currentStory.mediaType === "video") {
       return;
     }
 
@@ -132,6 +132,12 @@ export function useStoryPlayer({
 
   function markPortrait(portrait: boolean) {
     setIsPortrait(portrait);
+  }
+
+  // 영상 재생 위치(0~100)를 진행바에 반영. StoryVideoView가 호출한다.
+  function setVideoProgress(percent: number) {
+    progressRef.current = percent;
+    setProgress(percent);
   }
 
   async function toggleLike() {
@@ -283,6 +289,7 @@ export function useStoryPlayer({
     progress,
     requestDelete,
     requestReport,
+    setVideoProgress,
     storyIndex,
     toggleLike,
     togglePause,

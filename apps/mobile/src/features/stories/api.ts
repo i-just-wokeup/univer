@@ -160,7 +160,7 @@ export async function getStories(): Promise<StoryGroup[]> {
   let storiesQuery = supabase
     .from("stories")
     .select(
-      "id, user_id, image_url, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
+      "id, user_id, image_url, type, duration, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
     )
     .eq("university_id", universityId)
     .gt("expires_at", now)
@@ -243,10 +243,12 @@ export async function getStories(): Promise<StoryGroup[]> {
 
     const storyItem: Story = {
       created_at: story.created_at,
+      duration_seconds: story.duration,
       expires_at: story.expires_at,
       id: story.id,
       image_url: story.image_url,
       isMine: story.user_id === userId,
+      mediaType: story.type === "video" ? "video" : "image",
       user: storyUser,
       user_id: story.user_id,
       views_count: story.views_count,

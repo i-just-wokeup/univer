@@ -6,17 +6,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { VisibilityPicker } from "../../components/common/VisibilityPicker";
 import { StoryCamera } from "../../components/stories/StoryCamera";
 import { StoryMediaFrame } from "../../components/stories/StoryMediaFrame";
+import { StoryVideoView } from "../../components/stories/StoryVideoView";
 import { useStoryCreate } from "../../features/stories/useStoryCreate";
 import { colors } from "../../lib/theme";
 
 export function StoryCreateScreen() {
   const router = useRouter();
   const {
-    capturedUri,
+    captured,
     errorMessage,
     isSubmitting,
     retake,
-    setCapturedUri,
+    setCaptured,
     setVisibility,
     submit,
     visibility,
@@ -32,7 +33,7 @@ export function StoryCreateScreen() {
   // 미리보기 상태에서 하드웨어 뒤로가기 = 홈으로 나가지 않고 카메라로 복귀(다시 찍기).
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (capturedUri) {
+      if (captured) {
         retake();
         return true;
       }
@@ -40,12 +41,12 @@ export function StoryCreateScreen() {
     });
 
     return () => subscription.remove();
-  }, [capturedUri, retake]);
+  }, [captured, retake]);
 
-  // 카메라 모드: 촬영하거나 고른 사진을 받으면 미리보기로 전환.
-  if (!capturedUri) {
+  // 카메라 모드: 촬영하거나 고른 미디어를 받으면 미리보기로 전환.
+  if (!captured) {
     return (
-      <StoryCamera onClose={() => router.back()} onSelected={setCapturedUri} />
+      <StoryCamera onClose={() => router.back()} onSelected={setCaptured} />
     );
   }
 
@@ -85,7 +86,16 @@ export function StoryCreateScreen() {
 
       <View style={styles.previewBody}>
         <View style={styles.preview}>
-          <StoryMediaFrame imageUrl={capturedUri} style={styles.previewFrame} />
+          {captured.kind === "video" ? (
+            <StoryVideoView
+              key={captured.uri}
+              loop
+              style={styles.previewFrame}
+              uri={captured.uri}
+            />
+          ) : (
+            <StoryMediaFrame imageUrl={captured.uri} style={styles.previewFrame} />
+          )}
         </View>
 
         <View style={styles.controls}>

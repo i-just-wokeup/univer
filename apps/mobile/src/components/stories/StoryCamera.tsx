@@ -5,11 +5,12 @@ import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import type { StoryCaptureMedia } from "../../features/stories/useStoryCreate";
 import { colors } from "../../lib/theme";
 
 type StoryCameraProps = {
   onClose: () => void;
-  onSelected: (uri: string) => void;
+  onSelected: (media: StoryCaptureMedia) => void;
 };
 
 // 스토리용 카메라/갤러리 입력. 촬영하거나 고른 사진 uri를 onSelected로 넘긴다.
@@ -35,7 +36,7 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
       });
 
       if (photo?.uri) {
-        onSelected(photo.uri);
+        onSelected({ durationSeconds: null, kind: "image", uri: photo.uri });
       }
     } catch {
       setErrorMessage("사진을 촬영하지 못했습니다.");
@@ -57,7 +58,7 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsMultipleSelection: false,
-      mediaTypes: ["images"],
+      mediaTypes: ["images", "videos"],
       quality: 1,
     });
 
@@ -65,7 +66,16 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
       return;
     }
 
-    onSelected(result.assets[0].uri);
+    const asset = result.assets[0];
+    const isVideo = asset.type === "video";
+
+    onSelected({
+      // asset.duration은 밀리초 → 초로.
+      durationSeconds:
+        isVideo && asset.duration ? Math.round(asset.duration / 1000) : null,
+      kind: isVideo ? "video" : "image",
+      uri: asset.uri,
+    });
   }
 
   // 카메라 권한이 없으면 권한 요청 + 갤러리 선택 안내를 보여준다.

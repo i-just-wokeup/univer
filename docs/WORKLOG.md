@@ -10,6 +10,14 @@
 - **앱 스토리 영상 1단계 API plumbing**
   - `story-videos` Storage 버킷 상수 추가. `stories/api.ts`에 영상 파일 raw 업로드(`uploadStoryVideo`)와 영상 스토리 insert(`createVideoStory`) 추가
   - 영상은 `image_url=videoUrl`, `type='video'`, `thumbnail_url`/`duration` nullable로 저장. 기존 사진 업로드/생성 경로와 UI/스키마는 변경 없음. tsc 통과
+- **앱 스토리 영상 2단계 — 빌드 묶음 코드(갤러리 영상 선택+재생), EAS 빌드 대기**
+  - `expo-video`(재생)/`expo-video-thumbnails`(썸네일) 설치 + app.json `expo-video` 플러그인
+  - `Story` 타입에 `mediaType`/`duration_seconds` 추가, `getStories`가 `type,duration` 셀렉트·매핑(image_url=미디어 URL)
+  - `components/stories/StoryVideoView` 신규 — 공용 9:16 영상 재생기(`timeUpdate`로 진행/`playToEnd`로 종료/일시정지/loop)
+  - 작성: StoryCamera 갤러리 `["images","videos"]` 허용 + onSelected가 `{uri,kind,durationSeconds}` 전달, `useStoryCreate`가 `captured` 객체로 보관 + submit 영상 분기(썸네일 추출→이미지 업로드 + `uploadStoryVideo` + `createVideoStory`), StoryCreateScreen 미리보기 영상 분기(loop)
+  - 뷰어: `useStoryPlayer`가 영상이면 5초 타이머 skip하고 영상이 `setVideoProgress`/`goNext`를 구동, StoryPlayer 영상 분기(`key=story.id`로 스토리별 새 플레이어)
+  - tsc 통과. **EAS 빌드 후 실기기 테스트 필요** (재생 타이밍/업로드 확인)
+  - follow-up: 내 활동 보관함 그리드/미리보기 영상 썸네일(`getMyStories`에 type/thumbnail_url), 카메라 녹화, notifee(별도 빌드)
 - **앱 스토리 작성 폴리시 (빌드 불필요, 영상 전 정리)**
   - **셔터 무음** — `takePictureAsync({ shutterSound:false })` + CameraView `animateShutter={false}`(흰 플래시 제거). 인스타처럼 소리/번쩍임 없이 촬영
   - **미리보기 = 실제 스토리** — 공용 `components/stories/StoryMediaFrame`(9:16 + 블러 배경 + 레터박스: 세로 cover/그 외 contain) 만들어 작성 미리보기에 적용. 미리보기와 뷰어 모양 일치(인스타식 깔끔). 뷰어(StoryPlayer)도 같은 프레임으로 통일은 다음에

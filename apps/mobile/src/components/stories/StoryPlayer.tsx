@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StoryHeader } from "./StoryHeader";
 import { StoryProgressBar } from "./StoryProgressBar";
+import { StoryVideoView } from "./StoryVideoView";
 import { StoryViewersSheet } from "./StoryViewersSheet";
 import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 import { ConfirmDialog } from "../common/ConfirmDialog";
@@ -53,6 +54,7 @@ export function StoryPlayer({
     progress,
     requestDelete,
     requestReport,
+    setVideoProgress,
     storyIndex,
     toggleLike,
     togglePause,
@@ -69,24 +71,35 @@ export function StoryPlayer({
 
   return (
     <View style={styles.screen}>
-      <View style={[styles.frame, { marginTop: insets.top + 6 }]}>
-        <Image
-          blurRadius={28}
-          cachePolicy="memory-disk"
-          contentFit="cover"
-          source={{ uri: currentStory.image_url }}
-          style={styles.frameBlur}
+      {currentStory.mediaType === "video" ? (
+        <StoryVideoView
+          isPaused={isPaused}
+          key={currentStory.id}
+          onEnd={goNext}
+          onProgress={setVideoProgress}
+          style={{ marginTop: insets.top + 6 }}
+          uri={currentStory.image_url}
         />
-        <Image
-          cachePolicy="memory-disk"
-          contentFit={isPortrait ? "cover" : "contain"}
-          onLoad={(event) => {
-            markPortrait(event.source.height > event.source.width);
-          }}
-          source={{ uri: currentStory.image_url }}
-          style={styles.frameImage}
-        />
-      </View>
+      ) : (
+        <View style={[styles.frame, { marginTop: insets.top + 6 }]}>
+          <Image
+            blurRadius={28}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            source={{ uri: currentStory.image_url }}
+            style={styles.frameBlur}
+          />
+          <Image
+            cachePolicy="memory-disk"
+            contentFit={isPortrait ? "cover" : "contain"}
+            onLoad={(event) => {
+              markPortrait(event.source.height > event.source.width);
+            }}
+            source={{ uri: currentStory.image_url }}
+            style={styles.frameImage}
+          />
+        </View>
+      )}
 
       <LinearGradient
         colors={["rgba(0,0,0,0.5)", "transparent"]}
