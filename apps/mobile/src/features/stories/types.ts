@@ -7,6 +7,7 @@ export type StoryUser = {
 };
 
 export type Story = {
+  backgroundColor: string | null;
   created_at: string;
   // 영상 길이(초). 사진은 null.
   duration_seconds: number | null;

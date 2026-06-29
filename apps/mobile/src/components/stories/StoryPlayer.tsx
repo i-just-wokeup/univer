@@ -1,10 +1,10 @@
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, Heart } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StoryHeader } from "./StoryHeader";
+import { StoryMediaFrame } from "./StoryMediaFrame";
 import { StoryProgressBar } from "./StoryProgressBar";
 import { StoryVideoView } from "./StoryVideoView";
 import { StoryViewersSheet } from "./StoryViewersSheet";
@@ -45,10 +45,8 @@ export function StoryPlayer({
     isDeleteOpen,
     isLiked,
     isPaused,
-    isPortrait,
     isReportOpen,
     isViewerSheetOpen,
-    markPortrait,
     openMenu,
     openViewerSheet,
     progress,
@@ -73,6 +71,7 @@ export function StoryPlayer({
     <View style={styles.screen}>
       {currentStory.mediaType === "video" ? (
         <StoryVideoView
+          backgroundColor={currentStory.backgroundColor}
           isPaused={isPaused}
           key={currentStory.id}
           onEnd={goNext}
@@ -81,24 +80,11 @@ export function StoryPlayer({
           uri={currentStory.image_url}
         />
       ) : (
-        <View style={[styles.frame, { marginTop: insets.top + 6 }]}>
-          <Image
-            blurRadius={28}
-            cachePolicy="memory-disk"
-            contentFit="cover"
-            source={{ uri: currentStory.image_url }}
-            style={styles.frameBlur}
-          />
-          <Image
-            cachePolicy="memory-disk"
-            contentFit={isPortrait ? "cover" : "contain"}
-            onLoad={(event) => {
-              markPortrait(event.source.height > event.source.width);
-            }}
-            source={{ uri: currentStory.image_url }}
-            style={styles.frameImage}
-          />
-        </View>
+        <StoryMediaFrame
+          backgroundColor={currentStory.backgroundColor}
+          imageUrl={currentStory.image_url}
+          style={{ marginTop: insets.top + 6 }}
+        />
       )}
 
       <LinearGradient
@@ -225,20 +211,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.black,
-  },
-  frame: {
-    width: "100%",
-    aspectRatio: 9 / 16,
-    maxHeight: "100%",
-    overflow: "hidden",
-    borderRadius: 6,
-    backgroundColor: colors.black,
-  },
-  frameBlur: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  frameImage: {
-    ...StyleSheet.absoluteFillObject,
   },
   scrimTop: {
     position: "absolute",

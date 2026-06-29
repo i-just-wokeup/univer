@@ -14,6 +14,7 @@ import type { Story, StoryGroup, StoryViewer, StoryVisibility } from "./types";
 type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
 
 type CreateVideoStoryParams = {
+  backgroundColor?: string | null;
   durationSeconds?: number | null;
   thumbnailUrl?: string | null;
   videoUrl: string;
@@ -71,12 +72,14 @@ export async function uploadStoryVideo(uri: string): Promise<string> {
 export async function createStory(
   imageUrl: string,
   visibility: StoryVisibility = "public",
+  backgroundColor: string | null = null,
 ): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { universityId, userId } = await getCurrentUserContext();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
   const { error } = await supabase.from("stories").insert({
+    background_color: backgroundColor,
     expires_at: expiresAt,
     image_url: imageUrl,
     university_id: universityId,
@@ -91,6 +94,7 @@ export async function createStory(
 
 // 영상 스토리 생성. image_url에는 영상 URL을 저장하고 포스터/재생시간은 nullable로 둔다.
 export async function createVideoStory({
+  backgroundColor = null,
   durationSeconds = null,
   thumbnailUrl = null,
   videoUrl,
@@ -101,6 +105,7 @@ export async function createVideoStory({
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
   const { error } = await supabase.from("stories").insert({
+    background_color: backgroundColor,
     duration: durationSeconds,
     expires_at: expiresAt,
     image_url: videoUrl,
@@ -127,7 +132,7 @@ export async function getStories(): Promise<StoryGroup[]> {
   let storiesQuery = supabase
     .from("stories")
     .select(
-      "id, user_id, image_url, type, duration, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
+      "id, user_id, image_url, type, thumbnail_url, duration, background_color, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
     )
     .eq("university_id", universityId)
     .gt("expires_at", now)
@@ -209,6 +214,7 @@ export async function getStories(): Promise<StoryGroup[]> {
     }
 
     const storyItem: Story = {
+      backgroundColor: story.background_color,
       created_at: story.created_at,
       duration_seconds: story.duration,
       expires_at: story.expires_at,

@@ -30,7 +30,6 @@ export function useStoryPlayer({
   const [storyIndex, setStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isActionOpen, setIsActionOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -84,7 +83,6 @@ export function useStoryPlayer({
 
     setProgress(0);
     progressRef.current = 0;
-    setIsPortrait(false);
     setIsLiked(false);
 
     if (!currentStory.isMine) {
@@ -128,10 +126,6 @@ export function useStoryPlayer({
 
   function togglePause() {
     setIsPaused((current) => !current);
-  }
-
-  function markPortrait(portrait: boolean) {
-    setIsPortrait(portrait);
   }
 
   // 영상 재생 위치(0~100)를 진행바에 반영. StoryVideoView가 호출한다.
@@ -280,10 +274,8 @@ export function useStoryPlayer({
     isDeleteOpen,
     isLiked,
     isPaused,
-    isPortrait,
     isReportOpen,
     isViewerSheetOpen,
-    markPortrait,
     openMenu,
     openViewerSheet,
     progress,

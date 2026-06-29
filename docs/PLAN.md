@@ -158,6 +158,7 @@
 - [x] **앱 게시물 상세 화면 1차** — `getPost(postId)` + `app/post/[id]`(탭바 숨김), FeedPostCard/CommentsSheet 재사용, 탐색·프로필 그리드 탭 → 상세 이동. 저장/신고/차단/삭제·연속피드는 다음 단계
 - [x] **앱 댓글 고도화** — 대댓글(@멘션/접기펼치기) + 댓글 좋아요(낙관적+롤백) + 본인 삭제. `deleteComment`/`toggleCommentLike`/`getLikedCommentIds` 추가(기존 테이블·RPC), `CommentRow` 분리. 스키마 변경 없음
 - [x] **앱 상대 프로필 크루 액션** — 친구 신청/수락/거절/삭제 RPC, 즐겨찾기 토글, 상대 프로필 `...` 액션시트, 낙관적 업데이트+롤백, 크루 수 갱신. 메시지 버튼은 앱 채팅 라우트 전까지 제외
+- [x] **앱 스토리 작성 미리보기 뷰어 위치 통일** — 작성 미리보기 미디어를 StoryPlayer와 같은 `useStableInsets`/상단 정렬/검정 배경 기준으로 맞춤
 - [x] **앱 크루 관리 화면** — `app/profile/connections`(탭바 숨김), 내 크루/받은 요청/보낸 요청 3탭, 수락/거절/취소/삭제, 유저 프로필 이동, 내 프로필 크루 통계 진입점 연결
 - [x] **앱 게시물 작성 화면(사진 업로드)** — 작성 탭에서 사진 다중 선택/압축 업로드, 본문, 비율 자동감지+수동 선택, 공개범위 선택, `posts`/`post_media` 저장, 게시 후 홈 이동
 - [x] **앱 상대방 프로필 라우트 1차 연결** — `(tabs)` 바깥 `app/profile/[nickname].tsx` 추가, 기존 `ProfileScreen` 재사용, 세션/파라미터 리다이렉트 처리
@@ -184,6 +185,8 @@
 - [x] **앱 게시물 본인 글 삭제 메뉴 연결** — `deletePost` soft delete API 추가, 본인 글 `...` 메뉴 삭제/확인 다이얼로그 연결, 홈 피드 낙관적 제거와 상세 뒤로가기 처리
 - [x] **앱 스토리 영상 1단계 API plumbing** — `story-videos` 버킷 상수, 영상 raw 업로드(`uploadStoryVideo`), 영상 스토리 insert(`createVideoStory`) 추가. UI/재생/촬영은 다음 단계
 - [x] **앱 영상 업로드 OOM 수정** — 큰 영상은 JS `ArrayBuffer`로 읽지 않고 `expo-file-system/legacy.uploadAsync` native binary upload 공용 유틸로 Supabase Storage에 직접 업로드
+- [x] **앱 스토리 배경색 선택** — 사진/영상 스토리 프레임을 단색 배경 + contain 레터박스로 통일하고, 작성 팔레트 선택값을 `stories.background_color`로 저장/뷰어 반영
+- [x] **앱 스토리 작성 미리보기 풀스크린 UI** — 카드형 미리보기를 풀스크린 오버레이로 전환하고, 무채색 배경색 바텀시트/하단 공개범위+공유 버튼 배치
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요

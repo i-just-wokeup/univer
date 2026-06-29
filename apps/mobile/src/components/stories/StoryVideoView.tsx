@@ -1,10 +1,12 @@
-import { useVideoPlayer, VideoView } from "expo-video";
+import { useVideoPlayer, VideoView, type VideoContentFit } from "expo-video";
 import { useEffect, useRef } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { DEFAULT_STORY_BACKGROUND_COLOR } from "../../features/stories/backgroundColors";
 
 type StoryVideoViewProps = {
+  backgroundColor?: string | null;
+  contentFit?: VideoContentFit;
   // 0~100. 영상 재생 위치를 진행바에 반영하고 싶을 때.
   onProgress?: (percent: number) => void;
   // 영상이 끝까지 재생됐을 때(뷰어가 다음 스토리로 넘어가게).
@@ -19,6 +21,8 @@ type StoryVideoViewProps = {
 // 스토리 영상 재생기 — 9:16 프레임 안에서 영상을 재생하고, 진행/종료를 콜백으로 알린다.
 // 작성 미리보기와 뷰어가 같은 모양이 되도록 공용으로 쓴다.
 export function StoryVideoView({
+  backgroundColor = DEFAULT_STORY_BACKGROUND_COLOR,
+  contentFit = "contain",
   isPaused = false,
   loop = false,
   onEnd,
@@ -69,9 +73,15 @@ export function StoryVideoView({
   }, [isPaused, player]);
 
   return (
-    <View style={[styles.frame, style]}>
+    <View
+      style={[
+        styles.frame,
+        { backgroundColor: backgroundColor ?? DEFAULT_STORY_BACKGROUND_COLOR },
+        style,
+      ]}
+    >
       <VideoView
-        contentFit="cover"
+        contentFit={contentFit}
         nativeControls={false}
         player={player}
         style={styles.fill}
@@ -87,7 +97,6 @@ const styles = StyleSheet.create({
     maxHeight: "100%",
     overflow: "hidden",
     borderRadius: 6,
-    backgroundColor: colors.black,
   },
   fill: {
     ...StyleSheet.absoluteFillObject,

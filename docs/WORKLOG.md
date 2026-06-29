@@ -7,6 +7,8 @@
 ## 2026-06-29
 
 ### 완료
+- **앱 스토리 작성 미리보기 뷰어 위치 통일**
+  - 작성 미리보기 미디어 배치를 StoryPlayer와 동일하게 `useStableInsets` + `marginTop: insets.top + 6` 기준으로 상단 정렬. 검정 루트 배경과 light 상태바를 적용하고, 기존 배경색/공개범위/공유 로직은 변경 없음. tsc 통과
 - **앱 스토리 영상 1단계 API plumbing**
   - `story-videos` Storage 버킷 상수 추가. `stories/api.ts`에 영상 파일 raw 업로드(`uploadStoryVideo`)와 영상 스토리 insert(`createVideoStory`) 추가
   - 영상은 `image_url=videoUrl`, `type='video'`, `thumbnail_url`/`duration` nullable로 저장. 기존 사진 업로드/생성 경로와 UI/스키마는 변경 없음. tsc 통과
@@ -21,6 +23,12 @@
 - **앱 영상 업로드 OOM 수정**
   - 43MB 영상에서 `File.arrayBuffer()`가 Android OOM으로 실패하는 문제 확인. 영상 업로드를 Supabase JS ArrayBuffer 방식에서 `expo-file-system/legacy.uploadAsync` native binary upload 공용 유틸로 교체
   - 스토리 영상은 새 `uploadFileUriToBucket` 경로 사용. 디버그 로그 제거, tsc 통과
+- **앱 스토리 배경색 선택**
+  - 작성 화면에 단색 배경 팔레트 추가. 선택 색을 `stories.background_color`에 저장하고 뷰어에서 반영
+  - 사진/영상 프레임을 블러·cover 대신 단색 배경 + `contain` 레터박스로 통일. 영상 진행바/재생 흐름은 유지, tsc 통과
+- **앱 스토리 작성 미리보기 풀스크린 UI**
+  - 미리보기 모드를 카드형 헤더/패널에서 인스타식 풀스크린 오버레이로 변경. 뒤로 버튼은 카메라 복귀, 우측 팔레트 버튼은 배경색 시트 호출, 하단에 공개범위+공유 버튼 배치
+  - 배경색 팔레트를 무채색 5개로 정리. 업로드/submit/사진·영상 분기 로직 변경 없음, tsc 통과
 - **앱 스토리 작성 폴리시 (빌드 불필요, 영상 전 정리)**
   - **셔터 무음** — `takePictureAsync({ shutterSound:false })` + CameraView `animateShutter={false}`(흰 플래시 제거). 인스타처럼 소리/번쩍임 없이 촬영
   - **미리보기 = 실제 스토리** — 공용 `components/stories/StoryMediaFrame`(9:16 + 블러 배경 + 레터박스: 세로 cover/그 외 contain) 만들어 작성 미리보기에 적용. 미리보기와 뷰어 모양 일치(인스타식 깔끔). 뷰어(StoryPlayer)도 같은 프레임으로 통일은 다음에
