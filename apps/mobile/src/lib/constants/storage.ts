@@ -3,6 +3,7 @@ export const STORAGE_BUCKETS = {
   postImages: "post-images",
   postVideos: "post-videos",
   storyImages: "story-images",
+  storyVideos: "story-videos",
 } as const;
 
 export const STORAGE_FOLDERS = {

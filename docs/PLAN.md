@@ -182,6 +182,7 @@
 - [x] **앱 게시물 메뉴 액션 연결** — `FeedPostCard` 저장 아이콘/`...` 메뉴를 저장·차단·신고 기능에 연결, 피드/상세 저장 상태 로드, 차단 후 피드 낙관적 제거, 신고 피드백 처리
 - [x] **앱 채팅방 `...` 메뉴 연결** — 웹 채팅방과 동일하게 상대 차단 액션시트/확인 다이얼로그/차단 후 메시지 목록 이동 흐름 연결
 - [x] **앱 게시물 본인 글 삭제 메뉴 연결** — `deletePost` soft delete API 추가, 본인 글 `...` 메뉴 삭제/확인 다이얼로그 연결, 홈 피드 낙관적 제거와 상세 뒤로가기 처리
+- [x] **앱 스토리 영상 1단계 API plumbing** — `story-videos` 버킷 상수, 영상 raw 업로드(`uploadStoryVideo`), 영상 스토리 insert(`createVideoStory`) 추가. UI/재생/촬영은 다음 단계
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요
@@ -194,6 +195,7 @@
    - WSL2 + 실기기 실행은 `cd apps/mobile && npx expo start --tunnel` (LAN 모드면 번들 다운로드 실패)
    - Google 로그인 dev build 재검증(Web client ID env, 구글 시트 취소/성공, 신규 가입자 온보딩 이동, 완료 후 홈 이동)
    - 푸시 클라이언트 dev build 재검증(권한 요청, `users.fcm_token` 저장, 포그라운드 표시, payload 탭 시 post/story/profile 이동)
+   - 스토리 영상 2단계(영상 선택/녹화, 썸네일 생성, `expo-video` 재생, 실기기/EAS 빌드 검증)
    - 작성 탭 실기기 확인(사진 여러 장 선택/삭제, 비율·공개범위 선택, 사진+본문/본문만 게시, 홈 피드 반영)
    - 상대 프로필 크루 액션 실기기 확인(친구 신청/취소, 수락/거절, 친구 삭제, 즐겨찾기 토글, 크루 수 갱신)
    - 크루 관리 화면 실기기 확인(내 프로필 크루 통계 → `/profile/connections`, 받은 요청 수락/거절, 보낸 요청 취소, 내 크루 삭제, 유저 프로필 이동)

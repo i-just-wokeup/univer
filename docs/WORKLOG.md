@@ -7,6 +7,9 @@
 ## 2026-06-29
 
 ### 완료
+- **앱 스토리 영상 1단계 API plumbing**
+  - `story-videos` Storage 버킷 상수 추가. `stories/api.ts`에 영상 파일 raw 업로드(`uploadStoryVideo`)와 영상 스토리 insert(`createVideoStory`) 추가
+  - 영상은 `image_url=videoUrl`, `type='video'`, `thumbnail_url`/`duration` nullable로 저장. 기존 사진 업로드/생성 경로와 UI/스키마는 변경 없음. tsc 통과
 - **앱 스토리 작성 폴리시 (빌드 불필요, 영상 전 정리)**
   - **셔터 무음** — `takePictureAsync({ shutterSound:false })` + CameraView `animateShutter={false}`(흰 플래시 제거). 인스타처럼 소리/번쩍임 없이 촬영
   - **미리보기 = 실제 스토리** — 공용 `components/stories/StoryMediaFrame`(9:16 + 블러 배경 + 레터박스: 세로 cover/그 외 contain) 만들어 작성 미리보기에 적용. 미리보기와 뷰어 모양 일치(인스타식 깔끔). 뷰어(StoryPlayer)도 같은 프레임으로 통일은 다음에

@@ -1,4 +1,4 @@
-// 스토리 데이터 계층 — 스토리 생성/삭제·이미지 업로드·조회 기록·좋아요·조회자 목록.
+// 스토리 데이터 계층 — 스토리 생성/삭제·미디어 업로드·조회 기록·좋아요·조회자 목록.
 // 스토리 좋아요는 post_likes 테이블에 target_type='story'로 저장(게시물과 공용).
 import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
@@ -12,9 +12,25 @@ import type { Story, StoryGroup, StoryViewer, StoryVisibility } from "./types";
 
 type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
 
+type CreateVideoStoryParams = {
+  durationSeconds?: number | null;
+  thumbnailUrl?: string | null;
+  videoUrl: string;
+  visibility?: StoryVisibility;
+};
+
 // PostgREST `in` 필터용 문자열: ["a","b"] → "(a,b)".
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
+}
+
+// 버킷 안 저장 경로 생성: "<folder>/<랜덤id>.<extension>".
+function createStoragePath(folder: string, extension: string) {
+  const id =
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `${folder}/${id}.${extension}`;
 }
 
 // 현재 로그인 유저 id(없으면 에러). 이 파일 내부 공용.
@@ -48,6 +64,42 @@ export async function uploadStoryImage(uri: string): Promise<string> {
   return url;
 }
 
+// 로컬 영상 파일을 변환 없이 story-videos 버킷에 올리고 공개 URL을 반환한다.
+export async function uploadStoryVideo(uri: string): Promise<string> {
+  const supabase = getSupabaseMobileClient();
+  const path = createStoragePath(STORAGE_FOLDERS.stories, "mp4");
+
+  let bytes: ArrayBuffer;
+
+  try {
+    const response = await fetch(uri);
+    bytes = await response.arrayBuffer();
+  } catch {
+    throw new Error("스토리 영상 파일을 읽지 못했습니다.");
+  }
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKETS.storyVideos)
+    .upload(path, bytes, {
+      contentType: "video/mp4",
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error("스토리 영상 업로드에 실패했습니다.");
+  }
+
+  const { data } = supabase.storage
+    .from(STORAGE_BUCKETS.storyVideos)
+    .getPublicUrl(path);
+
+  if (!data.publicUrl) {
+    throw new Error("스토리 영상 URL을 만들지 못했습니다.");
+  }
+
+  return data.publicUrl;
+}
+
 // 스토리 생성(24시간 후 만료). 같은 학교/작성자/공개범위와 함께 insert.
 export async function createStory(
   imageUrl: string,
@@ -67,6 +119,33 @@ export async function createStory(
 
   if (error) {
     throw new Error("스토리 저장에 실패했습니다.");
+  }
+}
+
+// 영상 스토리 생성. image_url에는 영상 URL을 저장하고 포스터/재생시간은 nullable로 둔다.
+export async function createVideoStory({
+  durationSeconds = null,
+  thumbnailUrl = null,
+  videoUrl,
+  visibility = "public",
+}: CreateVideoStoryParams): Promise<void> {
+  const supabase = getSupabaseMobileClient();
+  const { universityId, userId } = await getCurrentUserContext();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+  const { error } = await supabase.from("stories").insert({
+    duration: durationSeconds,
+    expires_at: expiresAt,
+    image_url: videoUrl,
+    thumbnail_url: thumbnailUrl,
+    type: "video",
+    university_id: universityId,
+    user_id: userId,
+    visibility,
+  });
+
+  if (error) {
+    throw new Error("영상 스토리 저장에 실패했습니다.");
   }
 }
 
