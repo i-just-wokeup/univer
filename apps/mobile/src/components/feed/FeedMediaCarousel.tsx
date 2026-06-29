@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { FeedVideoPlayer } from "./FeedVideoPlayer";
 import { colors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
@@ -22,10 +23,25 @@ type FeedMediaCarouselProps = {
 export function FeedMediaCarousel({ aspectRatio, media }: FeedMediaCarouselProps) {
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
+  // 게시물은 영상 1개 OR 사진 여러 장. 영상이면 영상 플레이어로 렌더.
+  const videoMedia = useMemo(
+    () => media.find((mediaItem) => mediaItem.type === "video"),
+    [media],
+  );
   const imageMedia = useMemo(
     () => media.filter((mediaItem) => mediaItem.type === "image"),
     [media],
   );
+
+  if (videoMedia) {
+    return (
+      <FeedVideoPlayer
+        aspectRatio={aspectRatio}
+        thumbnailUrl={videoMedia.thumbnail_url}
+        uri={videoMedia.url}
+      />
+    );
+  }
 
   if (imageMedia.length === 0) {
     return null;
