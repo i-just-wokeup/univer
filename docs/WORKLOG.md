@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-06-30
+
+### 완료
+- **릴스 영상 튕김(OOM) 완화 + 메모리 최적화** — 릴스 2~3개 보면 앱 크래시. 로그가 `OutOfMemoryError`(영상 받다가 RAM 초과). 원인=무압축 원본 영상이 통째로 메모리에 올라감
+  - 레퍼런스 서칭(Mux/TheWidlarzGroup TikTok 피드): 창 밖 영상 source=null로 메모리 해제 + FlashList/가상화 + preload 창 제한
+  - 적용(빌드X): ① ReelItem 플레이어 초기 source=null, 활성 ±1만 `replaceAsync`로 소스 물림(`isNearActive`), 멀면 null로 해제 ② FlatList `windowSize=3`/`removeClippedSubviews`/`snapToInterval` ③ **`bufferOptions.maxBufferBytes=8MB`**(안드, 영상을 통째로 버퍼 안 하게) — 이게 OOM 직접 완화
+  - 디버깅에서 잡은 버그: `replace`(동기·메인스레드 블락→`replaceAsync`), effect 의존성이 매 렌더 새 `video` 객체라 폭주→`videoUrl`(문자열)+`useMemo`
+  - 결과: **크래시 안 남**. 단 무압축이라 버퍼링/로딩은 남음 → 근본해결=압축(빌드). tsc 통과
+- **상태바 검정** — 릴스/스토리작성 풀스크린 상단바를 검정(`StatusBar style=light` + backgroundColor)
+- **탐색 그리드 영상 탭 → 릴스 진입** (`is_video` 분기 + ▶ 아이콘)
+
 ## 2026-06-29
 
 ### 완료

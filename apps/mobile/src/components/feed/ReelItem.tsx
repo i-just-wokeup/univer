@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Bookmark, Heart, MessageCircle, Volume2, VolumeX } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
@@ -11,6 +11,8 @@ import type { FeedPost, PostMedia } from "../../features/feed/types";
 type ReelItemProps = {
   height: number;
   isActive: boolean;
+  // 활성 ±1 이내면 영상 플레이어에 실제 소스를 물리고, 멀면 source=null로 메모리 해제.
+  isNearActive: boolean;
   isBookmarked: boolean;
   isLiked: boolean;
   onBookmark: () => void;
@@ -37,6 +39,7 @@ function getVideo(media: PostMedia[]) {
 export function ReelItem({
   height,
   isActive,
+  isNearActive,
   isBookmarked,
   isLiked,
   onBookmark,
@@ -46,19 +49,41 @@ export function ReelItem({
   post,
   width,
 }: ReelItemProps) {
-  const video = getVideo(post.media);
+  // getVideo는 매 렌더 새 객체를 반환하므로 메모이즈(아래 effect 무한 실행 방지).
+  const video = useMemo(() => getVideo(post.media), [post.media]);
+  const videoUrl = video?.url ?? null;
   const [isMuted, setIsMuted] = useState(true);
 
-  const player = useVideoPlayer(video?.url ?? "", (instance) => {
+  // 초기엔 빈 소스. 가까워지면 replace로 실제 영상을, 멀어지면 null로 교체해 메모리를 푼다.
+  const player = useVideoPlayer(null, (instance) => {
     instance.loop = true;
     instance.muted = true;
+    // OOM 방지: 무압축 원본 영상을 통째로 메모리에 올리지 않게 버퍼를 제한한다(안드로이드).
+    instance.bufferOptions = {
+      maxBufferBytes: 8 * 1024 * 1024, // 8MB까지만 버퍼
+      preferredForwardBufferDuration: 5, // 앞 5초만 미리 받기
+      minBufferForPlayback: 1,
+    };
   });
 
+  // 활성 ±1만 소스를 물린다(Mux/TikTok 방식: 창 밖은 source=null로 메모리 해제).
+  // 의존성은 문자열 videoUrl(안정)로 — video 객체를 쓰면 매 렌더 재실행돼 폭주한다.
+  // replaceAsync로 메인 스레드 블락(UI 프리즈)을 피한다.
   useEffect(() => {
-    if (isActive) {
-      player.play();
-    } else {
-      player.pause();
+    void player
+      .replaceAsync(isNearActive && videoUrl ? videoUrl : null)
+      .catch(() => undefined);
+  }, [isNearActive, player, videoUrl]);
+
+  useEffect(() => {
+    try {
+      if (isActive) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    } catch {
+      // 플레이어가 이미 release된 경우 무시.
     }
   }, [isActive, player]);
 

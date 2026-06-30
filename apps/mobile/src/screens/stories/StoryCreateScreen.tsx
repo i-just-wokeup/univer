@@ -62,7 +62,7 @@ export function StoryCreateScreen() {
   // 미리보기 모드: 사진 확인 + 공개범위 선택 후 공유.
   return (
     <View style={styles.previewScreen}>
-      <StatusBar style="light" />
+      <StatusBar style="light" backgroundColor={colors.black} />
 
       {captured.kind === "video" ? (
         <StoryVideoView

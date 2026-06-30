@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -84,25 +85,32 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
 
   return (
     <View style={styles.screen}>
+      <StatusBar style="light" backgroundColor={colors.black} />
       <FlatList
         data={posts}
+        decelerationRate="fast"
         getItemLayout={(_, index) => ({
           index,
           length: height,
           offset: height * index,
         })}
+        initialNumToRender={2}
         initialScrollIndex={activeIndex}
         keyExtractor={(post) => post.id}
+        maxToRenderPerBatch={2}
         onEndReached={() => {
           void loadMore();
         }}
         onEndReachedThreshold={1.2}
         onViewableItemsChanged={handleViewableItemsChanged}
         pagingEnabled
+        removeClippedSubviews
         renderItem={({ index, item }) => (
           <ReelItem
             height={height}
             isActive={index === activeIndex}
+            // 활성 ±1만 영상 플레이어를 살린다(나머지는 source=null로 메모리 해제, 썸네일만).
+            isNearActive={Math.abs(index - activeIndex) <= 1}
             isBookmarked={bookmarkedPostIds.has(item.id)}
             isLiked={likedPostIds.has(item.id)}
             onBookmark={() => {
@@ -118,7 +126,10 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
           />
         )}
         showsVerticalScrollIndicator={false}
+        snapToAlignment="start"
+        snapToInterval={height}
         viewabilityConfig={viewabilityConfig}
+        windowSize={3}
       />
 
       <Pressable
