@@ -6,6 +6,7 @@ import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
 import { uploadFileUriToBucket } from "../shared/storageUpload";
+import { compressVideoForUpload } from "../shared/videoCompress";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -62,15 +63,16 @@ export async function uploadPostImages(uris: string[]): Promise<string[]> {
   );
 }
 
-// 게시물 영상을 변환 없이 post-videos 버킷에 native 스트리밍 업로드 → 공개 URL.
-// (압축은 다음 빌드에서 react-native-compressor로 추가 예정 — 지금은 원본)
+// 게시물 영상을 업로드 전 압축하고 post-videos 버킷에 native 스트리밍 업로드 → 공개 URL.
 export async function uploadPostVideo(uri: string): Promise<string> {
+  const compressedUri = await compressVideoForUpload(uri);
+
   return uploadFileUriToBucket({
     bucket: STORAGE_BUCKETS.postVideos,
     contentType: "video/mp4",
     extension: "mp4",
     folder: STORAGE_FOLDERS.posts,
-    uri,
+    uri: compressedUri,
   });
 }
 

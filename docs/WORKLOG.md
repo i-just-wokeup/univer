@@ -7,6 +7,10 @@
 ## 2026-06-30
 
 ### 완료
+- **앱 영상 업로드 전 압축 추가**
+  - `react-native-compressor` 설치 및 app.json config plugin 추가. 공용 `compressVideoForUpload` 헬퍼를 만들어 `Video.compress(uri, { compressionMethod:"auto" })`로 업로드 전 압축
+  - 스토리/피드 영상 업로드 진입점(`uploadStoryVideo`, `uploadPostVideo`)에서 압축된 file URI를 `uploadFileUriToBucket` native streaming 업로드로 넘기도록 연결. 압축 실패 시 원본 URI로 폴백해 업로드는 계속 진행
+  - 이미지 업로드/UI/DB/스키마 변경 없음. tsc 통과. **네이티브 모듈 추가라 다음 EAS 리빌드 후 실제 동작**
 - **릴스 영상 튕김(OOM) 완화 + 메모리 최적화** — 릴스 2~3개 보면 앱 크래시. 로그가 `OutOfMemoryError`(영상 받다가 RAM 초과). 원인=무압축 원본 영상이 통째로 메모리에 올라감
   - 레퍼런스 서칭(Mux/TheWidlarzGroup TikTok 피드): 창 밖 영상 source=null로 메모리 해제 + FlashList/가상화 + preload 창 제한
   - 적용(빌드X): ① ReelItem 플레이어 초기 source=null, 활성 ±1만 `replaceAsync`로 소스 물림(`isNearActive`), 멀면 null로 해제 ② FlatList `windowSize=3`/`removeClippedSubviews`/`snapToInterval` ③ **`bufferOptions.maxBufferBytes=8MB`**(안드, 영상을 통째로 버퍼 안 하게) — 이게 OOM 직접 완화

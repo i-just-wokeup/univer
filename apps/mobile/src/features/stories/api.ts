@@ -5,6 +5,7 @@ import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
 import { uploadFileUriToBucket } from "../shared/storageUpload";
+import { compressVideoForUpload } from "../shared/videoCompress";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -57,14 +58,16 @@ export async function uploadStoryImage(uri: string): Promise<string> {
   return url;
 }
 
-// 로컬 영상 파일을 변환 없이 story-videos 버킷에 올리고 공개 URL을 반환한다.
+// 로컬 영상 파일을 업로드 전 압축하고 story-videos 버킷에 올려 공개 URL을 반환한다.
 export async function uploadStoryVideo(uri: string): Promise<string> {
+  const compressedUri = await compressVideoForUpload(uri);
+
   return uploadFileUriToBucket({
     bucket: STORAGE_BUCKETS.storyVideos,
     contentType: "video/mp4",
     extension: "mp4",
     folder: STORAGE_FOLDERS.stories,
-    uri,
+    uri: compressedUri,
   });
 }
 

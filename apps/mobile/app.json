@@ -32,7 +32,8 @@
           "color": "#7C3AED"
         }
       ],
-      "expo-video"
+      "expo-video",
+      "react-native-compressor"
     ],
     "ios": {
       "supportsTablet": true
