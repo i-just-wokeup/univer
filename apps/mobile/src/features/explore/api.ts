@@ -83,19 +83,23 @@ export async function getExplorePosts({
     throw new Error("탐색 게시물 이미지를 불러오지 못했습니다.");
   }
 
-  const thumbnailByPostId = new Map<string, string>(
-    (
-      mediaData as Pick<
-        PostMediaRow,
-        "order_index" | "post_id" | "thumbnail_url" | "type" | "url"
-      >[]
-    )
-      .map((media): [string, string | null] => [
-        media.post_id,
-        media.type === "video" ? media.thumbnail_url ?? media.url : media.url,
-      ])
-      .filter((entry): entry is [string, string] => entry[1] !== null),
-  );
+  const thumbnailByPostId = new Map<string, string>();
+  const isVideoByPostId = new Map<string, boolean>();
+
+  (
+    mediaData as Pick<
+      PostMediaRow,
+      "order_index" | "post_id" | "thumbnail_url" | "type" | "url"
+    >[]
+  ).forEach((media) => {
+    const thumbnail =
+      media.type === "video" ? media.thumbnail_url ?? media.url : media.url;
+
+    if (thumbnail && !thumbnailByPostId.has(media.post_id)) {
+      thumbnailByPostId.set(media.post_id, thumbnail);
+      isVideoByPostId.set(media.post_id, media.type === "video");
+    }
+  });
 
   const posts: ExplorePost[] = slicedPosts.reduce<ExplorePost[]>(
     (items, post) => {
@@ -109,6 +113,7 @@ export async function getExplorePosts({
         aspect_ratio: post.aspect_ratio ?? "portrait",
         comments_count: post.comments_count,
         id: post.id,
+        is_video: isVideoByPostId.get(post.id) ?? false,
         likes_count: post.likes_count,
         thumbnail_url: thumbnailUrl,
       });

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { Heart } from "lucide-react-native";
+import { Heart, Play } from "lucide-react-native";
 import { useCallback, useMemo } from "react";
 import {
   NativeScrollEvent,
@@ -48,9 +48,14 @@ export function ExploreScreen() {
     retry,
   } = useExploreFeed();
 
+  // 영상이면 릴스로, 사진이면 게시물 상세로.
   const handlePressPost = useCallback(
-    (postId: string) => {
-      router.push({ pathname: "/post/[id]", params: { id: postId } });
+    (post: ExplorePost) => {
+      if (post.is_video) {
+        router.push({ pathname: "/reels", params: { postId: post.id } });
+        return;
+      }
+      router.push({ pathname: "/post/[id]", params: { id: post.id } });
     },
     [router],
   );
@@ -170,7 +175,7 @@ function MasonryColumn({
   posts,
   tileWidth,
 }: {
-  onPressPost: (postId: string) => void;
+  onPressPost: (post: ExplorePost) => void;
   posts: ExplorePost[];
   tileWidth: number;
 }) {
@@ -182,7 +187,7 @@ function MasonryColumn({
         return (
           <Pressable
             key={post.id}
-            onPress={() => onPressPost(post.id)}
+            onPress={() => onPressPost(post)}
             style={[styles.tile, { height: tileHeight }]}
           >
             <Image
@@ -191,6 +196,11 @@ function MasonryColumn({
               source={{ uri: post.thumbnail_url }}
               style={styles.tileImage}
             />
+            {post.is_video ? (
+              <View style={styles.videoBadge}>
+                <Play color={colors.white} fill={colors.white} size={14} />
+              </View>
+            ) : null}
             <View style={styles.likeBadge}>
               <Heart color={colors.danger} fill={colors.danger} size={13} />
               <Text style={styles.likeText}>{post.likes_count}</Text>
@@ -236,6 +246,17 @@ const styles = StyleSheet.create({
   tileImage: {
     height: "100%",
     width: "100%",
+  },
+  videoBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    height: 26,
+    width: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 13,
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
   likeBadge: {
     position: "absolute",
