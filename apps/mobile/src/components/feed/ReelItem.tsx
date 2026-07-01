@@ -125,7 +125,7 @@ export function ReelItem({
       {!isReady ? (
         <View style={styles.processingOverlay}>
           <Text style={styles.processingText}>
-            {video.processing_status === "failed" ? "영상 처리 실패" : "영상 처리 중"}
+            {video.processing_status === "failed" ? "영상 업로드 실패" : "영상 업로드 중"}
           </Text>
         </View>
       ) : null}

@@ -7,6 +7,7 @@ import {
   getBookmarkedPostIds,
   getFeed,
   getLikedPostIds,
+  getVideoStatuses,
   toggleBookmark,
   togglePostLike,
 } from "./api";
@@ -84,6 +85,87 @@ export function useHomeFeed() {
   useEffect(() => {
     void loadFirstPage();
   }, [loadFirstPage]);
+
+  // 인코딩 중(processing)인 Cloudflare 영상의 asset id 집합. 이 값이 바뀔 때만 폴링을 다시 건다.
+  const processingAssetKey = posts
+    .flatMap((post) => post.media)
+    .filter(
+      (media) =>
+        media.type === "video" &&
+        media.provider === "cloudflare_stream" &&
+        media.provider_asset_id !== null &&
+        media.processing_status === "processing",
+    )
+    .map((media) => media.provider_asset_id)
+    .sort()
+    .join(",");
+
+  // 업로드 후 인코딩 중인 영상이 있으면 DB를 폴링해 ready가 되는 순간 자동으로 재생 상태로 갱신한다.
+  useEffect(() => {
+    if (!processingAssetKey) {
+      return;
+    }
+
+    const assetIds = processingAssetKey.split(",");
+    let attempts = 0;
+    let isFetching = false;
+    const MAX_ATTEMPTS = 45; // 4초 × 45 ≈ 3분
+
+    const intervalId = setInterval(async () => {
+      if (isFetching) {
+        return;
+      }
+
+      attempts += 1;
+      isFetching = true;
+
+      try {
+        const statuses = await getVideoStatuses(assetIds);
+        const resolved = statuses.filter(
+          (status) => status.processingStatus !== "processing",
+        );
+
+        if (resolved.length > 0) {
+          setPosts((currentPosts) =>
+            currentPosts.map((post) => ({
+              ...post,
+              media: post.media.map((media) => {
+                const update = resolved.find(
+                  (status) =>
+                    status.providerAssetId === media.provider_asset_id,
+                );
+
+                if (!update) {
+                  return media;
+                }
+
+                return {
+                  ...media,
+                  processing_status: update.processingStatus,
+                  thumbnail_url: update.thumbnailUrl ?? media.thumbnail_url,
+                  url: update.url,
+                };
+              }),
+            })),
+          );
+
+          if (resolved.some((status) => status.processingStatus === "ready")) {
+            showFeedback("게시물 업로드가 완료됐어요", "success");
+          }
+        }
+      } catch {
+        // 폴링 실패는 조용히 무시(다음 tick에서 재시도).
+      } finally {
+        isFetching = false;
+      }
+
+      if (attempts >= MAX_ATTEMPTS) {
+        clearInterval(intervalId);
+      }
+    }, 4000);
+
+    return () => clearInterval(intervalId);
+  }, [processingAssetKey, showFeedback]);
 
   async function handleRefresh() {
     setIsRefreshing(true);

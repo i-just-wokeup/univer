@@ -94,7 +94,7 @@ export function FeedVideoPlayer({
       {!isReady ? (
         <View style={styles.processingOverlay}>
           <Text style={styles.processingText}>
-            {processingStatus === "failed" ? "영상 처리 실패" : "영상 처리 중"}
+            {processingStatus === "failed" ? "영상 업로드 실패" : "영상 업로드 중"}
           </Text>
         </View>
       ) : null}

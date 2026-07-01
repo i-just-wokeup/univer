@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -54,8 +54,18 @@ export function HomeScreen() {
     isRefreshing,
     likedPostIds,
     posts,
+    showFeedback,
   } = useHomeFeed();
   const { storyGroups, unreadChatCount, unreadCount } = useHomeMeta();
+  // 사진/글 게시 후 홈 도착 시 완료 토스트(영상은 홈 폴링이 별도로 띄움).
+  const { posted } = useLocalSearchParams<{ posted?: string }>();
+
+  useEffect(() => {
+    if (posted === "1") {
+      showFeedback("게시물 업로드가 완료됐어요", "success");
+      router.setParams({ posted: "" });
+    }
+  }, [posted, showFeedback, router]);
 
   async function handleSignOut() {
     await signOutMobile();

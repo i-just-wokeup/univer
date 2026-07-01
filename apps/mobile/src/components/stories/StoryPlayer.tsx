@@ -94,8 +94,8 @@ export function StoryPlayer({
           <View style={styles.processingOverlay}>
             <Text style={styles.processingText}>
               {currentStory.processing_status === "failed"
-                ? "영상 처리 실패"
-                : "영상 처리 중"}
+                ? "영상 업로드 실패"
+                : "영상 업로드 중"}
             </Text>
           </View>
         </View>

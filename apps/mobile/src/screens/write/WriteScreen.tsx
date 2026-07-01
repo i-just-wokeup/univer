@@ -65,9 +65,16 @@ export function WriteScreen() {
   }
 
   async function handleSubmit() {
+    // 영상은 업로드 후에도 인코딩이 남아 즉시 "완료"가 아니므로 홈 폴링이 완료 토스트를 띄운다.
+    // 사진/글은 게시 즉시 완료이므로 홈에 신호를 넘겨 완료 토스트를 띄운다.
+    const wasVideo = selectedVideo !== null;
     const created = await submit();
     if (created) {
-      router.replace("/");
+      if (wasVideo) {
+        router.replace("/");
+      } else {
+        router.replace({ pathname: "/", params: { posted: "1" } });
+      }
     }
   }
 
@@ -103,7 +110,11 @@ export function WriteScreen() {
             ]}
           >
             <Text style={styles.submitText}>
-              {isSubmitting ? "게시 중" : "게시"}
+              {isSubmitting
+                ? selectedVideo
+                  ? "업로드 중"
+                  : "게시 중"
+                : "게시"}
             </Text>
           </Pressable>
         </View>

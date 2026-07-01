@@ -75,6 +75,51 @@ export async function uploadPostVideo(
   return uploadVideoToCloudflareStream(uri);
 }
 
+export type VideoProcessingStatus = {
+  processingStatus: "processing" | "ready" | "failed";
+  providerAssetId: string;
+  thumbnailUrl: string | null;
+  url: string;
+};
+
+// Cloudflare Stream 영상들의 현재 처리 상태를 asset id로 조회한다(업로드 후 ready 폴링용).
+export async function getVideoStatuses(
+  assetIds: string[],
+): Promise<VideoProcessingStatus[]> {
+  if (assetIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase
+    .from("post_media")
+    .select("provider_asset_id, processing_status, url, thumbnail_url")
+    .eq("provider", "cloudflare_stream")
+    .in("provider_asset_id", assetIds);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.flatMap((row) => {
+    if (!row.provider_asset_id) {
+      return [];
+    }
+
+    return [
+      {
+        processingStatus: row.processing_status as
+          | "processing"
+          | "ready"
+          | "failed",
+        providerAssetId: row.provider_asset_id,
+        thumbnailUrl: row.thumbnail_url,
+        url: row.url,
+      },
+    ];
+  });
+}
+
 // 게시물 작성. posts insert 후 미디어(영상 1개 OR 이미지 여러 장)를 post_media에 넣는다. 새 postId 반환.
 export async function createPost({
   aspectRatio,
