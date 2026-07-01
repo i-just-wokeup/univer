@@ -46,6 +46,7 @@ export function FeedMediaCarousel({
         aspectRatio={aspectRatio}
         isActive={isActive}
         onPress={onVideoPress}
+        processingStatus={videoMedia.processing_status}
         thumbnailUrl={videoMedia.thumbnail_url}
         uri={videoMedia.url}
       />

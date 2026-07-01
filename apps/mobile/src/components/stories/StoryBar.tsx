@@ -51,7 +51,9 @@ function StoryCard({
 export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps) {
   const myGroup = groups.find((group) => group.stories[0]?.isMine);
   const otherGroups = groups.filter((group) => !group.stories[0]?.isMine);
-  const myThumbnail = myGroup?.stories[myGroup.stories.length - 1]?.image_url ?? null;
+  const latestMyStory = myGroup?.stories[myGroup.stories.length - 1] ?? null;
+  const myThumbnail =
+    latestMyStory?.thumbnail_url ?? latestMyStory?.image_url ?? null;
 
   return (
     <ScrollView
@@ -112,7 +114,9 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
             hasUnviewed={group.hasUnviewed}
             nickname={group.user.nickname}
             thumbnailUrl={
-              group.stories[group.stories.length - 1]?.image_url ?? null
+              group.stories[group.stories.length - 1]?.thumbnail_url ??
+              group.stories[group.stories.length - 1]?.image_url ??
+              null
             }
           />
         </Pressable>

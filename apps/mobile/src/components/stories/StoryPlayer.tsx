@@ -66,10 +66,12 @@ export function StoryPlayer({
   const actionItems: ActionSheetItem[] = currentStory.isMine
     ? [{ danger: true, label: "삭제", onPress: requestDelete }]
     : [{ danger: true, label: "신고", onPress: requestReport }];
+  const isVideoReady =
+    currentStory.mediaType === "video" && currentStory.processing_status === "ready";
 
   return (
     <View style={styles.screen}>
-      {currentStory.mediaType === "video" ? (
+      {isVideoReady ? (
         <StoryVideoView
           backgroundColor={currentStory.backgroundColor}
           isPaused={isPaused}
@@ -79,6 +81,24 @@ export function StoryPlayer({
           style={{ marginTop: insets.top + 6 }}
           uri={currentStory.image_url}
         />
+      ) : currentStory.mediaType === "video" ? (
+        <View style={{ marginTop: insets.top + 6 }}>
+          {currentStory.thumbnail_url ? (
+            <StoryMediaFrame
+              backgroundColor={currentStory.backgroundColor}
+              imageUrl={currentStory.thumbnail_url}
+            />
+          ) : (
+            <View style={styles.processingFrame} />
+          )}
+          <View style={styles.processingOverlay}>
+            <Text style={styles.processingText}>
+              {currentStory.processing_status === "failed"
+                ? "영상 처리 실패"
+                : "영상 처리 중"}
+            </Text>
+          </View>
+        </View>
       ) : (
         <StoryMediaFrame
           backgroundColor={currentStory.backgroundColor}
@@ -211,6 +231,29 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.black,
+  },
+  processingFrame: {
+    width: "100%",
+    aspectRatio: 9 / 16,
+    maxHeight: "100%",
+    borderRadius: 6,
+    backgroundColor: colors.black,
+  },
+  processingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.34)",
+  },
+  processingText: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.66)",
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "900",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
   scrimTop: {
     position: "absolute",

@@ -52,6 +52,7 @@ export function ReelItem({
   // getVideo는 매 렌더 새 객체를 반환하므로 메모이즈(아래 effect 무한 실행 방지).
   const video = useMemo(() => getVideo(post.media), [post.media]);
   const videoUrl = video?.url ?? null;
+  const isReady = video?.processing_status === "ready";
   const [isMuted, setIsMuted] = useState(true);
 
   // 초기엔 빈 소스. 가까워지면 replace로 실제 영상을, 멀어지면 null로 교체해 메모리를 푼다.
@@ -71,13 +72,13 @@ export function ReelItem({
   // replaceAsync로 메인 스레드 블락(UI 프리즈)을 피한다.
   useEffect(() => {
     void player
-      .replaceAsync(isNearActive && videoUrl ? videoUrl : null)
+      .replaceAsync(isNearActive && isReady && videoUrl ? videoUrl : null)
       .catch(() => undefined);
-  }, [isNearActive, player, videoUrl]);
+  }, [isNearActive, isReady, player, videoUrl]);
 
   useEffect(() => {
     try {
-      if (isActive) {
+      if (isActive && isReady) {
         player.play();
       } else {
         player.pause();
@@ -85,7 +86,7 @@ export function ReelItem({
     } catch {
       // 플레이어가 이미 release된 경우 무시.
     }
-  }, [isActive, player]);
+  }, [isActive, isReady, player]);
 
   function toggleMute() {
     const next = !isMuted;
@@ -113,8 +114,26 @@ export function ReelItem({
           style={StyleSheet.absoluteFill}
         />
       ) : null}
+      {!isReady && video.thumbnail_url ? (
+        <Image
+          cachePolicy="memory-disk"
+          contentFit="contain"
+          source={{ uri: video.thumbnail_url }}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
+      {!isReady ? (
+        <View style={styles.processingOverlay}>
+          <Text style={styles.processingText}>
+            {video.processing_status === "failed" ? "영상 처리 실패" : "영상 처리 중"}
+          </Text>
+        </View>
+      ) : null}
       {/* 영상 위 투명 오버레이 — 네이티브 VideoView 위에서 탭(음소거 토글)을 받는다 */}
-      <Pressable onPress={toggleMute} style={StyleSheet.absoluteFill} />
+      <Pressable
+        onPress={isReady ? toggleMute : undefined}
+        style={StyleSheet.absoluteFill}
+      />
 
       {/* 우측 액션 버튼 */}
       <View style={styles.actions}>
@@ -141,13 +160,15 @@ export function ReelItem({
             strokeWidth={2.4}
           />
         </Pressable>
-        <Pressable onPress={toggleMute} style={styles.actionButton}>
-          {isMuted ? (
-            <VolumeX color={colors.white} size={28} strokeWidth={2.4} />
-          ) : (
-            <Volume2 color={colors.white} size={28} strokeWidth={2.4} />
-          )}
-        </Pressable>
+        {isReady ? (
+          <Pressable onPress={toggleMute} style={styles.actionButton}>
+            {isMuted ? (
+              <VolumeX color={colors.white} size={28} strokeWidth={2.4} />
+            ) : (
+              <Volume2 color={colors.white} size={28} strokeWidth={2.4} />
+            )}
+          </Pressable>
+        ) : null}
       </View>
 
       {/* 하단 작성자 + 캡션 */}
@@ -213,5 +234,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,
+  },
+  processingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.38)",
+  },
+  processingText: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.66)",
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "900",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
 });
