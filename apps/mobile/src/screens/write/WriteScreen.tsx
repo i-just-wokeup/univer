@@ -183,6 +183,10 @@ export function WriteScreen() {
             )}
           </View>
 
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>내용</Text>
             <TextInput
@@ -209,10 +213,6 @@ export function WriteScreen() {
             <Text style={styles.sectionTitle}>공개 범위</Text>
             <VisibilityPicker onChange={setVisibility} value={visibility} />
           </View>
-
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
 

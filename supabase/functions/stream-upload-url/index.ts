@@ -73,7 +73,8 @@ Deno.serve(async (request) => {
       `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/stream/direct_upload`,
       {
         body: JSON.stringify({
-          maxDurationSeconds: 600,
+          // 클라 제한(60초)에 맞춘 서버 이중 안전망. 약간의 버퍼(65초).
+          maxDurationSeconds: 65,
           meta: {
             source: "univer-mobile",
             userId: user.id,
