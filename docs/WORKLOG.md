@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-07-01
+
+### 완료
+- **Cloudflare Stream webhook 등록 + 파이프라인 자동화 검증 완료** ✅
+  - 증상: 영상 업로드는 성공(앱 로그 200)하는데 게시물이 계속 `영상 처리 중`. 재생 안 됨
+  - 진단: edge-function 로그에 `stream-upload-url` 호출만 있고 `stream-webhook` 호출 0건 → **Cloudflare에 webhook 구독 미등록**이라 인코딩 완료를 DB에 못 알림 → 영원히 `processing`. 코드(edge function/마이그레이션/앱)는 정상
+  - 조치: Cloudflare API `PUT /accounts/{acct}/stream/webhook`로 `notificationUrl`=`stream-webhook` 등록(`success:true`). 멈춰있던 기존 테스트 asset은 SQL로 `processing→ready` 복구
+  - 검증(실기기): 새 영상 업로드 → 인코딩 ~46초 → **webhook 자동 호출(로그 200) → DB `processing→ready` 자동 전환** → 앱 리로드 시 HLS 재생 확인. 인코딩 결과 5단계 적응형(240p~1080p, 60fps 유지)
+  - 노출 토큰 정리 완료: curl 등록 때 대화에 노출된 Stream 토큰을 새로 발급→Supabase secret `CLOUDFLARE_STREAM_TOKEN` 교체→옛 토큰 폐기. 교체 후 새 영상 업로드 정상 확인
+  - 남은 후속(백로그): ① webhook 서명(`Webhook-Signature`) 미검증 → 위조 POST 가능(위험 낮음, 나중에 검증 추가) ② webhook 놓칠 때 대비 polling 안전망(`stream-status` 서버 함수) ③ 앱에서 `processing→ready` 자동 갱신(현재 수동 리로드 필요, 다음 작업 예정)
+- **Cloudflare Stream direct upload 모바일 전송 방식 교체**
+  - 25MB 테스트 영상도 게시 화면에서 10분 이상 멈추는 문제 확인. 파일 크기/압축 문제가 아니라 Cloudflare direct upload POST가 완료되지 않는 문제로 판단
+  - `expo-file-system` `uploadAsync(MULTIPART)` 단일 await 경로를 `XMLHttpRequest + FormData(file)` 업로드로 교체. 로컬 파일 크기/업로드 URL 요청/진행률/완료 status 로그와 5분 타임아웃 추가
+  - DB/Edge Function/네이티브/스키마 변경 없음. tsc 통과. 다음 실기기 테스트에서 Cloudflare Videos 목록 생성 여부와 앱 로그 확인 필요
+- **Cloudflare Stream 영상 업로드/트랜스코딩 1차 전환**
+  - Supabase Edge Function `stream-upload-url`/`stream-webhook` 추가 및 배포. 앱은 로그인 세션으로 `stream-upload-url`을 호출해 Cloudflare direct upload URL을 받고, 영상 파일을 Cloudflare Stream으로 직접 업로드
+  - DB에 `post_media`/`stories` 공용 Cloudflare 메타 컬럼(`provider`, `provider_asset_id`, `processing_status`) 추가. 기존 Supabase Storage 영상/이미지는 `provider=null`, `processing_status=ready`로 하위호환
+  - 게시물/스토리 영상 업로드 진입점을 Supabase Storage 원본 업로드에서 Cloudflare Stream 업로드로 교체. `url`/`image_url`에는 HLS URL, `provider_asset_id`에는 Cloudflare uid 저장
+  - 피드/상세/릴스/스토리뷰어/스토리바가 `processing` 상태를 썸네일+처리 중 UI로 표시하고, `ready`일 때만 HLS를 재생하도록 조정
+  - 원격 DB SQL 직접 적용(`db query --linked --file`, 로컬 migration history 불일치로 `db push` 불가), Edge Function 배포 완료. 앱 tsc 통과
+- **클라이언트 영상 압축 폐기 결정** — `react-native-compressor`가 이 스택에서 사용 불가로 확정
+  - 증상: `Video.compress` 호출 시 매번 `Invalid to call at Released state; only valid in executing state` (네이티브 MediaCodec 단계, `VideoCompressorClass.kt:92`)
+  - 가설 검증: "작성 화면 미리보기(expo-video)가 코덱을 점유해 충돌" → 제출 직전 미리보기를 언마운트 후 압축 실행하도록 시도 → **여전히 동일 에러**. 코덱 점유 문제 아님
+  - 결론: `react-native-compressor@2.x` + RN 0.81 + New Architecture + 삼성 MediaCodec 조합 자체의 문제. 클라 압축은 막다른 길로 확정
+  - 조치: 검증용 미리보기 언마운트 로직 원복(`rendering.ts` 삭제), `compressVideoForUpload`를 원본 통과(no-op)로 정리해 매 업로드마다 뜨던 실패 로그/스택 제거. **영상 기능 자체는 정상 동작**(업로드·재생·OOM 방어 유지), 파일만 무압축(무거움)
+  - 후속(백로그): 실제 압축은 출시 준비 때 **서버 트랜스코딩(Cloudflare Stream)**으로. `compressVideoForUpload`를 단일 진입점으로 남겨둠
+  - tsc 통과. 네이티브/DB/이미지 업로드 경로 변경 없음
+
 ## 2026-06-30
 
 ### 완료

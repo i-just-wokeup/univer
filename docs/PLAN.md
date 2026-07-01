@@ -185,10 +185,11 @@
 - [x] **앱 게시물 본인 글 삭제 메뉴 연결** — `deletePost` soft delete API 추가, 본인 글 `...` 메뉴 삭제/확인 다이얼로그 연결, 홈 피드 낙관적 제거와 상세 뒤로가기 처리
 - [x] **앱 스토리 영상 1단계 API plumbing** — `story-videos` 버킷 상수, 영상 raw 업로드(`uploadStoryVideo`), 영상 스토리 insert(`createVideoStory`) 추가. UI/재생/촬영은 다음 단계
 - [x] **앱 영상 업로드 OOM 수정** — 큰 영상은 JS `ArrayBuffer`로 읽지 않고 `expo-file-system/legacy.uploadAsync` native binary upload 공용 유틸로 Supabase Storage에 직접 업로드
-- [x] **앱 영상 업로드 전 압축 추가** — `react-native-compressor`로 스토리/피드 영상 업로드 전 자동 압축, 실패 시 원본 URI 폴백. 네이티브 모듈이라 EAS 리빌드 필요
+- [~] **앱 영상 업로드 전 압축 (폐기)** — `react-native-compressor`가 이 스택(RN 0.81 + New Architecture + 삼성 MediaCodec)에서 `Invalid to call at Released state`로 매번 실패. 미리보기 코덱 점유 가설도 검증 실패(언마운트 후에도 동일). 클라 압축 폐기, `compressVideoForUpload` 원본 통과로 정리. 실제 압축은 아래 Cloudflare Stream(출시 준비)로 이관
 - [x] **앱 스토리 배경색 선택** — 사진/영상 스토리 프레임을 단색 배경 + contain 레터박스로 통일하고, 작성 팔레트 선택값을 `stories.background_color`로 저장/뷰어 반영
 - [x] **앱 스토리 작성 미리보기 풀스크린 UI** — 카드형 미리보기를 풀스크린 오버레이로 전환하고, 무채색 배경색 바텀시트/하단 공개범위+공유 버튼 배치
 - [x] **앱 게시물 작성 영상 1개 선택 추가** — 작성 화면에서 사진 여러 장 OR 영상 1개 배타 선택, 영상 썸네일/업로드/createPost(video) 제출 분기 연결
+- [x] **Cloudflare Stream 영상 업로드/트랜스코딩 1차 전환** — 앱 영상 업로드를 Supabase Storage 원본 업로드에서 Cloudflare Stream direct upload로 전환. `post_media`/`stories`에 provider/asset/status 저장, Edge Function `stream-upload-url`/`stream-webhook` 배포, 처리 중 썸네일 UI 연결
 
 ### 보안 후속 과제 (영상 들어가기 전 점검)
 - [x] **#1 인증 토큰 SecureStore 전환** — `supabase.ts` 저장소를 AsyncStorage→expo-secure-store(2KB 청크 어댑터)로 교체. 기존 AsyncStorage 세션 1회 마이그레이션 포함. dev build 재빌드 후 실기기 확인 필요
@@ -245,6 +246,12 @@
    - 스토리 보관함 월별 그룹/캘린더 뷰
 12. Resend 연동 (비밀번호 재설정용, 이메일 인증은 OFF 유지)
 13. 계정 탈퇴/복구 실사용 테스트
+14. **영상 서버 트랜스코딩 (Cloudflare Stream) — 파이프라인 완료(실기기 검증됨), 고도화 남음**
+   - 완료: Cloudflare direct upload URL Edge Function, 앱 업로드 경로(XHR FormData), `post_media`/`stories` provider/asset/status 저장, 처리 중 UI, HLS URL 저장
+   - 완료: **Cloudflare webhook 등록(`PUT stream/webhook`) + 실기기 end-to-end 검증** — 업로드→인코딩(~46초)→webhook 자동 호출→DB `processing→ready` 자동 전환→HLS 재생. 5단계 적응형(240p~1080p/60fps) 확인
+   - 완료: 노출된 Stream 토큰 rotate + Supabase secret 교체 (교체 후 업로드 정상 확인)
+   - 남음: ① 앱에서 `processing→ready` 자동 갱신 + 준비완료 알림(현재 수동 리로드) — **다음 작업** ② webhook 서명(`Webhook-Signature`) 검증 추가(위조 방지) ③ webhook 놓침 대비 polling 안전망(`stream-status` 서버 함수) ④ 오래된 Supabase Storage 영상 마이그레이션 여부 결정
+   - 비용: Cloudflare Stream 저장 $5/1000분·전송 $1/1000분, 인코딩·업로드 무료 (MVP 규모 사실상 무시 가능)
 
 ### 검증 필요
 - [ ] Google OAuth 신규 가입 시 이름+학과 자동 저장 확인
