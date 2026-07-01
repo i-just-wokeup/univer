@@ -4,8 +4,10 @@ import type { Database } from "../../types/database.types";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
-import { uploadFileUriToBucket } from "../shared/storageUpload";
-import { compressVideoForUpload } from "../shared/videoCompress";
+import {
+  uploadVideoToCloudflareStream,
+  type CloudflareStreamUploadResult,
+} from "../shared/streamUpload";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -15,8 +17,11 @@ import type { Story, StoryGroup, StoryViewer, StoryVisibility } from "./types";
 type PostLikeInsert = Database["public"]["Tables"]["post_likes"]["Insert"];
 
 type CreateVideoStoryParams = {
+  assetId: string;
   backgroundColor?: string | null;
   durationSeconds?: number | null;
+  provider: "cloudflare_stream";
+  status: "processing";
   thumbnailUrl?: string | null;
   videoUrl: string;
   visibility?: StoryVisibility;
@@ -58,17 +63,11 @@ export async function uploadStoryImage(uri: string): Promise<string> {
   return url;
 }
 
-// 로컬 영상 파일을 업로드 전 압축하고 story-videos 버킷에 올려 공개 URL을 반환한다.
-export async function uploadStoryVideo(uri: string): Promise<string> {
-  const compressedUri = await compressVideoForUpload(uri);
-
-  return uploadFileUriToBucket({
-    bucket: STORAGE_BUCKETS.storyVideos,
-    contentType: "video/mp4",
-    extension: "mp4",
-    folder: STORAGE_FOLDERS.stories,
-    uri: compressedUri,
-  });
+// 로컬 영상 파일을 Cloudflare Stream에 직접 업로드하고 HLS 재생 URL/asset id를 반환한다.
+export async function uploadStoryVideo(
+  uri: string,
+): Promise<CloudflareStreamUploadResult> {
+  return uploadVideoToCloudflareStream(uri);
 }
 
 // 스토리 생성(24시간 후 만료). 같은 학교/작성자/공개범위와 함께 insert.
@@ -97,8 +96,11 @@ export async function createStory(
 
 // 영상 스토리 생성. image_url에는 영상 URL을 저장하고 포스터/재생시간은 nullable로 둔다.
 export async function createVideoStory({
+  assetId,
   backgroundColor = null,
   durationSeconds = null,
+  provider,
+  status,
   thumbnailUrl = null,
   videoUrl,
   visibility = "public",
@@ -112,6 +114,9 @@ export async function createVideoStory({
     duration: durationSeconds,
     expires_at: expiresAt,
     image_url: videoUrl,
+    processing_status: status,
+    provider,
+    provider_asset_id: assetId,
     thumbnail_url: thumbnailUrl,
     type: "video",
     university_id: universityId,
@@ -135,7 +140,7 @@ export async function getStories(): Promise<StoryGroup[]> {
   let storiesQuery = supabase
     .from("stories")
     .select(
-      "id, user_id, image_url, type, thumbnail_url, duration, background_color, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
+      "id, user_id, image_url, type, thumbnail_url, duration, background_color, provider, provider_asset_id, processing_status, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
     )
     .eq("university_id", universityId)
     .gt("expires_at", now)
@@ -225,6 +230,10 @@ export async function getStories(): Promise<StoryGroup[]> {
       image_url: story.image_url,
       isMine: story.user_id === userId,
       mediaType: story.type === "video" ? "video" : "image",
+      processing_status: story.processing_status,
+      provider: story.provider,
+      provider_asset_id: story.provider_asset_id,
+      thumbnail_url: story.thumbnail_url,
       user: storyUser,
       user_id: story.user_id,
       views_count: story.views_count,

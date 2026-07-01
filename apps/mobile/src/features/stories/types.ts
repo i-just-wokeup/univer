@@ -17,6 +17,10 @@ export type Story = {
   image_url: string;
   isMine: boolean;
   mediaType: "image" | "video";
+  processing_status: "processing" | "ready" | "failed";
+  provider: "cloudflare_stream" | null;
+  provider_asset_id: string | null;
+  thumbnail_url: string | null;
   user: StoryUser;
   user_id: string;
   views_count: number;

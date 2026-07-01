@@ -164,15 +164,18 @@ export function useWriteForm() {
           thumbnailUrl = null;
         }
 
-        const videoUrl = await uploadPostVideo(selectedVideo.uri);
+        const videoUpload = await uploadPostVideo(selectedVideo.uri);
         await createPost({
           aspectRatio,
           content,
           imageUrls: [],
           video: {
+            assetId: videoUpload.assetId,
             durationSeconds: selectedVideo.durationSeconds,
-            thumbnailUrl,
-            url: videoUrl,
+            provider: videoUpload.provider,
+            status: videoUpload.status,
+            thumbnailUrl: thumbnailUrl ?? videoUpload.thumbnailUrl,
+            url: videoUpload.playbackUrl,
           },
           visibility,
         });

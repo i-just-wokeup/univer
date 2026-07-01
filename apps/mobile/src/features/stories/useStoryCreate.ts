@@ -52,12 +52,15 @@ export function useStoryCreate() {
           thumbnailUrl = null;
         }
 
-        const videoUrl = await uploadStoryVideo(captured.uri);
+        const videoUpload = await uploadStoryVideo(captured.uri);
         await createVideoStory({
+          assetId: videoUpload.assetId,
           backgroundColor,
           durationSeconds: captured.durationSeconds,
-          thumbnailUrl,
-          videoUrl,
+          provider: videoUpload.provider,
+          status: videoUpload.status,
+          thumbnailUrl: thumbnailUrl ?? videoUpload.thumbnailUrl,
+          videoUrl: videoUpload.playbackUrl,
           visibility,
         });
       } else {

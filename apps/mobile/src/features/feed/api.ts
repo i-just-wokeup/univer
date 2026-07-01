@@ -5,8 +5,10 @@ import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { STORAGE_BUCKETS, STORAGE_FOLDERS } from "../../lib/constants/storage";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { uploadImagesToBucket } from "../shared/imageUpload";
-import { uploadFileUriToBucket } from "../shared/storageUpload";
-import { compressVideoForUpload } from "../shared/videoCompress";
+import {
+  uploadVideoToCloudflareStream,
+  type CloudflareStreamUploadResult,
+} from "../shared/streamUpload";
 import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
@@ -35,7 +37,10 @@ type FeedPostRow = Pick<
 
 // 게시물은 사진 여러 장 OR 영상 1개(섞지 않음, 인스타식). video가 있으면 영상 게시물.
 type CreatePostVideo = {
+  assetId: string;
   durationSeconds: number | null;
+  provider: "cloudflare_stream";
+  status: "processing";
   thumbnailUrl: string | null;
   url: string;
 };
@@ -63,17 +68,11 @@ export async function uploadPostImages(uris: string[]): Promise<string[]> {
   );
 }
 
-// 게시물 영상을 업로드 전 압축하고 post-videos 버킷에 native 스트리밍 업로드 → 공개 URL.
-export async function uploadPostVideo(uri: string): Promise<string> {
-  const compressedUri = await compressVideoForUpload(uri);
-
-  return uploadFileUriToBucket({
-    bucket: STORAGE_BUCKETS.postVideos,
-    contentType: "video/mp4",
-    extension: "mp4",
-    folder: STORAGE_FOLDERS.posts,
-    uri: compressedUri,
-  });
+// 게시물 영상을 Cloudflare Stream에 직접 업로드하고 HLS 재생 URL/asset id를 반환한다.
+export async function uploadPostVideo(
+  uri: string,
+): Promise<CloudflareStreamUploadResult> {
+  return uploadVideoToCloudflareStream(uri);
 }
 
 // 게시물 작성. posts insert 후 미디어(영상 1개 OR 이미지 여러 장)를 post_media에 넣는다. 새 postId 반환.
@@ -110,6 +109,9 @@ export async function createPost({
       duration: video.durationSeconds,
       order_index: 0,
       post_id: post.id,
+      processing_status: video.status,
+      provider: video.provider,
+      provider_asset_id: video.assetId,
       thumbnail_url: video.thumbnailUrl,
       type: "video" as const,
       url: video.url,
@@ -217,7 +219,7 @@ export async function getFeed({
         .in("id", userIds),
       supabase
         .from("post_media")
-        .select("id, post_id, type, url, thumbnail_url, duration, order_index")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index, provider, provider_asset_id, processing_status")
         .in("post_id", postIds)
         .order("order_index", { ascending: true }),
     ]);
@@ -250,6 +252,9 @@ export async function getFeed({
       duration: media.duration,
       id: media.id,
       order_index: media.order_index,
+      processing_status: media.processing_status,
+      provider: media.provider,
+      provider_asset_id: media.provider_asset_id,
       thumbnail_url: media.thumbnail_url,
       type: media.type,
       url: media.url,
@@ -343,7 +348,7 @@ export async function getVideoFeed({
         .in("id", userIds),
       supabase
         .from("post_media")
-        .select("id, post_id, type, url, thumbnail_url, duration, order_index")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index, provider, provider_asset_id, processing_status")
         .in("post_id", postIds)
         .order("order_index", { ascending: true }),
     ]);
@@ -376,6 +381,9 @@ export async function getVideoFeed({
       duration: media.duration,
       id: media.id,
       order_index: media.order_index,
+      processing_status: media.processing_status,
+      provider: media.provider,
+      provider_asset_id: media.provider_asset_id,
       thumbnail_url: media.thumbnail_url,
       type: media.type,
       url: media.url,
@@ -625,7 +633,7 @@ export async function getPost(postId: string): Promise<FeedPost> {
       .maybeSingle(),
     supabase
       .from("post_media")
-      .select("id, post_id, type, url, thumbnail_url, duration, order_index")
+      .select("id, post_id, type, url, thumbnail_url, duration, order_index, provider, provider_asset_id, processing_status")
       .eq("post_id", postId)
       .order("order_index", { ascending: true }),
   ]);
@@ -653,6 +661,9 @@ export async function getPost(postId: string): Promise<FeedPost> {
     duration: mediaItem.duration,
     id: mediaItem.id,
     order_index: mediaItem.order_index,
+    processing_status: mediaItem.processing_status,
+    provider: mediaItem.provider,
+    provider_asset_id: mediaItem.provider_asset_id,
     thumbnail_url: mediaItem.thumbnail_url,
     type: mediaItem.type,
     url: mediaItem.url,

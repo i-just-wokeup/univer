@@ -12,6 +12,9 @@ export type PostMedia = {
   duration: number | null;
   id: string;
   order_index: number;
+  processing_status: "processing" | "ready" | "failed";
+  provider: "cloudflare_stream" | null;
+  provider_asset_id: string | null;
   thumbnail_url: string | null;
   type: "image" | "video";
   url: string;
