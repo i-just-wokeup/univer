@@ -168,13 +168,17 @@ export function useReels(startPostId?: string) {
     }
   }
 
-  function handleCommentCountChange(postId: string, nextCount: number) {
-    setPosts((current) =>
-      current.map((post) =>
-        post.id === postId ? { ...post, comments_count: nextCount } : post,
-      ),
-    );
-  }
+  // 참조 안정화(useCallback) — 댓글 시트 effect가 매 렌더 재실행돼 깜빡이는 것 방지.
+  const handleCommentCountChange = useCallback(
+    (postId: string, nextCount: number) => {
+      setPosts((current) =>
+        current.map((post) =>
+          post.id === postId ? { ...post, comments_count: nextCount } : post,
+        ),
+      );
+    },
+    [],
+  );
 
   return {
     activeIndex,

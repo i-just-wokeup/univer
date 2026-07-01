@@ -38,6 +38,12 @@ export function FeedVideoPlayer({
   const player = useVideoPlayer(uri, (instance) => {
     instance.loop = true;
     instance.muted = true;
+    // OOM 방지: 무압축 원본 영상을 통째로 버퍼링하지 않게 제한(안드로이드).
+    instance.bufferOptions = {
+      maxBufferBytes: 8 * 1024 * 1024,
+      preferredForwardBufferDuration: 5,
+      minBufferForPlayback: 1,
+    };
   });
 
   // 활성 카드만 재생. 스크롤로 화면 밖이면 멈춰서 1개만 재생되게 한다.

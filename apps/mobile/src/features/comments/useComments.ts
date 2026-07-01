@@ -84,6 +84,10 @@ export function useComments({
     null,
   );
   const inputRef = useRef<TextInput | null>(null);
+  // onCommentCountChange를 ref로 담아 로드 effect 의존성에서 제거한다.
+  // (부모가 함수를 useCallback으로 안 감싸도 effect가 재실행돼 깜빡이지 않게)
+  const onCommentCountChangeRef = useRef(onCommentCountChange);
+  onCommentCountChangeRef.current = onCommentCountChange;
 
   useEffect(() => {
     if (!isOpen || !postId) {
@@ -119,7 +123,11 @@ export function useComments({
         setComments(loadedComments);
         setCurrentUserId(loadedUserId);
         setLikedCommentIds(new Set(likedIds));
-        onCommentCountChange(postId, loadedComments.length);
+        // 부모 상태 갱신은 이 렌더 사이클 밖으로 미룬다(렌더 중 부모 setState 경고 방지).
+        const nextCount = loadedComments.length;
+        queueMicrotask(() => {
+          onCommentCountChangeRef.current(postId, nextCount);
+        });
       } catch (error) {
         if (!isMounted) {
           return;
@@ -140,7 +148,7 @@ export function useComments({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, onCommentCountChange, postId]);
+  }, [isOpen, postId]);
 
   async function handleSubmit() {
     const trimmed = content.trim();

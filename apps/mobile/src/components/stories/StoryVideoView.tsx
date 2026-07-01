@@ -40,6 +40,12 @@ export function StoryVideoView({
     instance.loop = loop;
     instance.muted = false;
     instance.timeUpdateEventInterval = 0.1;
+    // OOM 방지: 무압축 원본 영상(미리보기)을 통째로 버퍼링하지 않게 제한(안드로이드).
+    instance.bufferOptions = {
+      maxBufferBytes: 8 * 1024 * 1024,
+      preferredForwardBufferDuration: 5,
+      minBufferForPlayback: 1,
+    };
     instance.play();
   });
 
