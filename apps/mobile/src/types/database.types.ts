@@ -174,6 +174,9 @@ export type Database = {
           thumbnail_url: string | null
           duration: number | null
           order_index: number
+          provider: 'cloudflare_stream' | null
+          provider_asset_id: string | null
+          processing_status: 'processing' | 'ready' | 'failed'
           created_at: string
         }
         Insert: {
@@ -184,6 +187,9 @@ export type Database = {
           thumbnail_url?: string | null
           duration?: number | null
           order_index?: number
+          provider?: 'cloudflare_stream' | null
+          provider_asset_id?: string | null
+          processing_status?: 'processing' | 'ready' | 'failed'
           created_at?: string
         }
         Update: {
@@ -194,6 +200,9 @@ export type Database = {
           thumbnail_url?: string | null
           duration?: number | null
           order_index?: number
+          provider?: 'cloudflare_stream' | null
+          provider_asset_id?: string | null
+          processing_status?: 'processing' | 'ready' | 'failed'
           created_at?: string
         }
         Relationships: []
@@ -207,6 +216,9 @@ export type Database = {
           thumbnail_url: string | null
           duration: number | null
           background_color: string | null
+          provider: 'cloudflare_stream' | null
+          provider_asset_id: string | null
+          processing_status: 'processing' | 'ready' | 'failed'
           university_id: string
           views_count: number
           expires_at: string
@@ -223,6 +235,9 @@ export type Database = {
           thumbnail_url?: string | null
           duration?: number | null
           background_color?: string | null
+          provider?: 'cloudflare_stream' | null
+          provider_asset_id?: string | null
+          processing_status?: 'processing' | 'ready' | 'failed'
           university_id: string
           views_count?: number
           expires_at?: string
@@ -239,6 +254,9 @@ export type Database = {
           thumbnail_url?: string | null
           duration?: number | null
           background_color?: string | null
+          provider?: 'cloudflare_stream' | null
+          provider_asset_id?: string | null
+          processing_status?: 'processing' | 'ready' | 'failed'
           university_id?: string
           views_count?: number
           expires_at?: string

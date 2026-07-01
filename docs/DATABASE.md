@@ -104,10 +104,13 @@ post_media (
   id            uuid PK default gen_random_uuid(),
   post_id       uuid FK → posts on delete cascade,
   type          text not null default 'image', -- 'image' | 'video'
-  url           text not null,
+  url           text not null,                  -- Cloudflare 영상은 HLS URL
   thumbnail_url text,
   duration      int,
   order_index   int default 0,
+  provider      text,                           -- null | 'cloudflare_stream'
+  provider_asset_id text,                       -- Cloudflare Stream uid
+  processing_status text default 'ready',       -- 'processing' | 'ready' | 'failed'
   created_at    timestamptz default now()
 )
 ```
@@ -121,6 +124,10 @@ stories (
   type          text not null default 'image', -- 'image' | 'video' (2026-06-26 추가)
   thumbnail_url text,                           -- 영상 미리보기 썸네일
   duration      int,                            -- 영상 길이(초)
+  background_color text,                        -- 스토리 레터박스 배경색
+  provider      text,                           -- null | 'cloudflare_stream'
+  provider_asset_id text,                       -- Cloudflare Stream uid
+  processing_status text default 'ready',       -- 'processing' | 'ready' | 'failed'
   university_id uuid FK → universities not null,
   views_count   int default 0,
   expires_at    timestamptz not null,         -- 생성 후 24시간 (피드에서 안 보임)
@@ -471,10 +478,11 @@ community_comments (
 |---|---|---|---|---|
 | avatars | public | 5MB | image/jpeg·png·webp | `{userId}/{uuid}.jpg` |
 | post-images | public | 10MB | image/jpeg·png·webp | `posts/{uuid}.jpg` |
-| post-videos | public | 100MB | video/mp4·quicktime·webm | (게시물 영상, 클라이언트 미구현) |
+| post-videos | public | 100MB | video/mp4·quicktime·webm | 레거시/폴백용. 신규 게시물 영상은 Cloudflare Stream |
 | story-images | public | 10MB | image/jpeg·png·webp | `stories/{uuid}.jpg` |
+| story-videos | public | 50MB | video/mp4·quicktime | 레거시/폴백용. 신규 스토리 영상은 Cloudflare Stream |
 
 - 정책(`storage.objects` RLS): 읽기/업로드 모두 `authenticated`(로그인 유저)만. 익명 업로드 불가. 삭제는 post-videos만 `owner` 기준 정책 있음.
 - 용량/형식 제한은 2026-06-26 추가(`20260626100000_set_image_bucket_limits`). 거대/비이미지 파일 업로드 악용 방지.
 - ⚠️ **공개범위 한계**: 모든 버킷이 `public=true`라 **공개 URL은 RLS를 거치지 않음** → 크루공개/비공개 콘텐츠도 URL만 알면 비로그인 조회 가능. 민감 범위(크루공개/DM/비공개 영상)는 추후 private 버킷 + signed URL 전환 필요(보안 검토 #2).
-- 스토리 영상용 `story-videos` 버킷은 아직 없음(스토리 영상 구현 시 생성).
+- 신규 영상은 Cloudflare Stream direct upload 사용. 앱은 Supabase Edge Function `stream-upload-url`에서 1회용 업로드 URL을 받고, 처리 완료는 `stream-webhook`이 `processing_status`를 갱신한다.
