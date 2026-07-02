@@ -203,38 +203,48 @@ export function ReelItem({
         style={styles.bottomGradient}
       />
 
-      {/* 우측 액션 버튼 */}
+      {/* 우측 액션 버튼 — 모든 버튼을 아이콘 박스(고정) + 라벨 슬롯(고정)으로 맞춰 아이콘 간격을 균등하게 */}
       <View style={[styles.actions, { bottom: insets.bottom + 96 }]}>
-        <Pressable onPress={onLike} style={styles.actionButton}>
-          <Heart
-            color={isLiked ? colors.danger : colors.white}
-            fill={isLiked ? colors.danger : "transparent"}
-            size={34}
-            strokeWidth={2.4}
-          />
+        <Pressable hitSlop={6} onPress={onLike} style={styles.actionButton}>
+          <View style={styles.iconBox}>
+            <Heart
+              color={isLiked ? colors.danger : colors.white}
+              fill={isLiked ? colors.danger : "transparent"}
+              size={32}
+              strokeWidth={2.4}
+            />
+          </View>
           <Text style={styles.actionText}>{formatCount(post.likes_count)}</Text>
         </Pressable>
-        <Pressable onPress={onComment} style={styles.actionButton}>
-          <MessageCircle color={colors.white} size={32} strokeWidth={2.4} />
+        <Pressable hitSlop={6} onPress={onComment} style={styles.actionButton}>
+          <View style={styles.iconBox}>
+            <MessageCircle color={colors.white} size={30} strokeWidth={2.4} />
+          </View>
           <Text style={styles.actionText}>
             {formatCount(post.comments_count)}
           </Text>
         </Pressable>
-        <Pressable onPress={onBookmark} style={styles.actionButton}>
-          <Bookmark
-            color={colors.white}
-            fill={isBookmarked ? colors.white : "transparent"}
-            size={31}
-            strokeWidth={2.4}
-          />
+        <Pressable hitSlop={6} onPress={onBookmark} style={styles.actionButton}>
+          <View style={styles.iconBox}>
+            <Bookmark
+              color={colors.white}
+              fill={isBookmarked ? colors.white : "transparent"}
+              size={29}
+              strokeWidth={2.4}
+            />
+          </View>
+          <View style={styles.labelSpacer} />
         </Pressable>
         {isReady ? (
-          <Pressable onPress={toggleMute} style={styles.actionButton}>
-            {isMuted ? (
-              <VolumeX color={colors.white} size={28} strokeWidth={2.4} />
-            ) : (
-              <Volume2 color={colors.white} size={28} strokeWidth={2.4} />
-            )}
+          <Pressable hitSlop={6} onPress={toggleMute} style={styles.actionButton}>
+            <View style={styles.iconBox}>
+              {isMuted ? (
+                <VolumeX color={colors.white} size={27} strokeWidth={2.4} />
+              ) : (
+                <Volume2 color={colors.white} size={27} strokeWidth={2.4} />
+              )}
+            </View>
+            <View style={styles.labelSpacer} />
           </Pressable>
         ) : null}
       </View>
@@ -327,23 +337,35 @@ const styles = StyleSheet.create({
     width: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.35)",
   },
   actions: {
     position: "absolute",
-    right: 12,
+    right: 10,
     alignItems: "center",
-    gap: 22,
+    gap: 14,
   },
   actionButton: {
     alignItems: "center",
-    gap: 4,
+    gap: 5,
+  },
+  // 아이콘을 고정 높이 박스에 담아 크기가 달라도 세로 리듬을 맞춘다.
+  iconBox: {
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
   },
   actionText: {
+    height: 15,
+    lineHeight: 15,
     color: colors.white,
     fontSize: 13,
     fontWeight: "800",
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowRadius: 3,
+  },
+  // 숫자가 없는 버튼(저장/음소거)도 같은 높이를 차지하게 하는 빈 라벨 자리.
+  labelSpacer: {
+    height: 15,
   },
   bottom: {
     position: "absolute",

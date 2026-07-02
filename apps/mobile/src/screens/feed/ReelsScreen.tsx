@@ -200,8 +200,6 @@ const styles = StyleSheet.create({
     width: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.35)",
   },
   feedback: {
     position: "absolute",
