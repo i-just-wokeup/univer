@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ChevronLeft } from "lucide-react-native";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -69,6 +69,33 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     [router],
   );
 
+  const flatListRef = useRef<FlatList>(null);
+  const prevPostCountRef = useRef(0);
+  const hadPostsRef = useRef(false);
+
+  // 차단/삭제로 영상이 목록에서 빠졌을 때: 남은 영상이 있으면 그 자리(다음 영상)로 스크롤,
+  // 마지막 영상까지 사라졌으면 릴스를 닫는다. (초기 로딩/에러의 빈 상태는 hadPostsRef로 구분해 안 닫음)
+  useEffect(() => {
+    const prevCount = prevPostCountRef.current;
+    prevPostCountRef.current = posts.length;
+
+    if (posts.length > 0) {
+      hadPostsRef.current = true;
+    }
+
+    if (posts.length === 0) {
+      if (hadPostsRef.current) {
+        router.back();
+      }
+      return;
+    }
+
+    if (posts.length < prevCount) {
+      const target = Math.min(activeIndex, posts.length - 1);
+      flatListRef.current?.scrollToIndex({ animated: false, index: target });
+    }
+  }, [activeIndex, posts.length, router]);
+
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -97,6 +124,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     <View style={styles.screen}>
       <StatusBar style="light" backgroundColor={colors.black} />
       <FlatList
+        ref={flatListRef}
         data={posts}
         decelerationRate="fast"
         getItemLayout={(_, index) => ({

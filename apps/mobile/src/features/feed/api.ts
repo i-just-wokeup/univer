@@ -528,6 +528,8 @@ export async function getBookmarkedPostIds(postIds: string[]) {
 }
 
 // 주어진 게시물들의 현재 좋아요/댓글 수(다른 화면에서 바꾸고 돌아왔을 때 목록 갱신용).
+// 삭제된(deleted_at) 글은 제외하므로, 반환 목록에 없는 id = 삭제된 글로 판단할 수 있다.
+// 에러 시엔 던진다(호출부가 조용히 무시 → 잘못된 빈 결과로 목록을 지워버리는 것 방지).
 export async function getPostCounts(
   postIds: string[],
 ): Promise<{ id: string; likes_count: number; comments_count: number }[]> {
@@ -539,10 +541,11 @@ export async function getPostCounts(
   const { data, error } = await supabase
     .from("posts")
     .select("id, likes_count, comments_count")
+    .is("deleted_at", null)
     .in("id", postIds);
 
   if (error || !data) {
-    return [];
+    throw new Error("게시물 정보를 불러오지 못했습니다.");
   }
 
   return data.map(

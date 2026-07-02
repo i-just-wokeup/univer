@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { blockUser } from "../blocks/api";
 import { createReport } from "../reports/api";
+import { getBlockRelatedUserIds } from "../shared/userContext";
 import {
   deletePost,
   getBookmarkedPostIds,
@@ -98,25 +99,34 @@ export function useHomeFeed() {
       return;
     }
     try {
-      const [likedIds, bookmarkedIds, counts] = await Promise.all([
-        getLikedPostIds(ids),
-        getBookmarkedPostIds(ids),
-        getPostCounts(ids),
-      ]);
+      const [likedIds, bookmarkedIds, counts, blockRelatedUserIds] =
+        await Promise.all([
+          getLikedPostIds(ids),
+          getBookmarkedPostIds(ids),
+          getPostCounts(ids),
+          getBlockRelatedUserIds(),
+        ]);
       const countsById = new Map(counts.map((count) => [count.id, count]));
+      const blockedUserIds = new Set(blockRelatedUserIds);
       setLikedPostIds(new Set(likedIds));
       setBookmarkedPostIds(new Set(bookmarkedIds));
       setPosts((current) =>
-        current.map((post) => {
-          const count = countsById.get(post.id);
-          return count
-            ? {
-                ...post,
-                comments_count: count.comments_count,
-                likes_count: count.likes_count,
-              }
-            : post;
-        }),
+        current
+          // 다른 화면(릴스/상세)에서 삭제된 글(카운트 조회에 없음)·차단한 유저 글을 목록에서 제거.
+          .filter(
+            (post) =>
+              countsById.has(post.id) && !blockedUserIds.has(post.user.id),
+          )
+          .map((post) => {
+            const count = countsById.get(post.id);
+            return count
+              ? {
+                  ...post,
+                  comments_count: count.comments_count,
+                  likes_count: count.likes_count,
+                }
+              : post;
+          }),
       );
     } catch {
       // 갱신 실패는 조용히 무시(다음 포커스에서 재시도).
