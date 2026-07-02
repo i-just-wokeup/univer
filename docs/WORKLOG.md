@@ -7,6 +7,13 @@
 ## 2026-07-01
 
 ### 완료
+- **[보안] 노출된 google-services.json Firebase Android API 키 잠금** — `git push`로 `apps/mobile/google-services.json`(6/26 커밋, 그동안 미push)이 GitHub에 처음 공개되며 secret 스캐닝 경고 발생
+  - 성격: Firebase Android(FCM) 클라이언트 키 — APK에 박혀 배포되는 반(半)공개 키라 실제 위험은 낮음(서버 키·보안 규칙이 별도 방어). 이 파일엔 oauth_client 없음(구글 로그인과 무관)
+  - 조치: Google Cloud(`univer-783b0`) 콘솔에서 해당 Android 키에 **애플리케이션 제한(Android 앱: `com.univer.app` + keystore SHA-1)** 적용 → 키가 노출돼도 우리 앱 밖에선 사용 불가. API 제한은 FCM 유지 위해 그대로 둠
+  - 교훈/후속: push 전 추적 파일에 시크릿 없는지 확인 필요. GitHub 경고는 히스토리에 파일이 남아있어 유지됨(완전 제거하려면 history 스크럽+force push, 위험 낮아 보류). `.gitignore` 추가 여부는 미정
+- **본문 더보기 (ExpandableText 공용 컴포넌트)** — 긴 본문이 잘리는데 펼치기가 없던 문제. 숨김 측정 텍스트로 실제 줄 수를 재서(안드/iOS 안정) 접힘 + "더보기"로 펼침. `components/common/ExpandableText.tsx` 신설
+  - **피드**(FeedPostCard, 3줄): 실기기 확인 + 커밋 완료
+  - **릴스**(ReelItem, 2줄): 흰 글자가 밝은 영상 위라 가독성 문제 → **하단 어두운 그라데이션 + 더보기 바텀시트(인스타식)로 재작업 예정** (이번 커밋 제외). 게시물 상세도 같은 FeedPostCard라 더보기 적용됨 — 상세 전체표시 여부 결정 남음
 - **영상 업로드 길이/용량 제한** — 게시 영상 60초/250MB 초과 시 `pickVideo`에서 업로드 전 차단(안내는 영상 선택 카드 바로 밑에 표시해 스크롤 없이 보이게). 서버 `stream-upload-url` `maxDurationSeconds` 600→65로 이중 안전망(재배포 완료). 스토리 영상 제한은 후속
 - **영상 업로드 상태 UX (자동 갱신 + 완료 토스트 + 라벨)** — "언제 되는지 몰라 답답" 문제 해결
   - 홈 피드에 인코딩 중(processing)인 Cloudflare 영상이 있으면 `getVideoStatuses`(post_media 상태 조회)로 4초 폴링(최대 ~3분) → ready 되는 순간 자동으로 재생 상태로 갱신(수동 리로드 불필요) + "게시물 업로드가 완료됐어요" 토스트

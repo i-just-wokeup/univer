@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FeedMediaCarousel } from "./FeedMediaCarousel";
 import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 import { ConfirmDialog } from "../common/ConfirmDialog";
+import { ExpandableText } from "../common/ExpandableText";
 import { UserInline } from "../common/UserInline";
 import { colors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
@@ -168,10 +169,16 @@ export function FeedPostCard({
       </View>
 
       {post.content ? (
-        <Text numberOfLines={3} style={styles.content}>
-          <Text style={styles.contentNickname}>{post.user.nickname} </Text>
-          {post.content}
-        </Text>
+        <View style={styles.contentWrap}>
+          <ExpandableText
+            collapsedLines={3}
+            moreStyle={styles.contentMore}
+            textStyle={styles.content}
+          >
+            <Text style={styles.contentNickname}>{post.user.nickname} </Text>
+            {post.content}
+          </ExpandableText>
+        </View>
       ) : null}
 
       <ActionSheet
@@ -258,14 +265,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "900",
   },
-  content: {
+  contentWrap: {
     paddingHorizontal: 24,
     paddingBottom: 24,
     paddingTop: 12,
+  },
+  content: {
     color: colors.text,
     fontSize: 16,
     fontWeight: "600",
     lineHeight: 22,
+  },
+  contentMore: {
+    marginTop: 4,
+    color: colors.muted,
+    fontSize: 14,
+    fontWeight: "800",
   },
   contentNickname: {
     fontWeight: "900",
