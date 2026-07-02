@@ -18,6 +18,7 @@ type ExpandableTextProps = {
 };
 
 // 본문을 collapsedLines로 접고, 잘렸을 때만 "더보기"를 띄워 펼치는 공용 텍스트.
+// 잘렸을 땐 본문을 탭해서 펼치고, 펼친 상태에서 다시 탭하면 접힌다(인스타식, 접기 버튼 없음).
 // 잘림 판정은 clamp 없는 숨김 텍스트로 전체 줄 수를 재서 안드로이드/iOS 모두 안정적으로 처리한다.
 export function ExpandableText({
   children,
@@ -28,6 +29,8 @@ export function ExpandableText({
 }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState<boolean | null>(null);
+
+  const canToggle = isTruncated === true;
 
   return (
     <View>
@@ -42,14 +45,19 @@ export function ExpandableText({
         </Text>
       ) : null}
 
-      <Text
-        numberOfLines={isExpanded ? undefined : collapsedLines}
-        style={textStyle}
+      <Pressable
+        disabled={!canToggle}
+        onPress={() => setIsExpanded((prev) => !prev)}
       >
-        {children}
-      </Text>
+        <Text
+          numberOfLines={isExpanded ? undefined : collapsedLines}
+          style={textStyle}
+        >
+          {children}
+        </Text>
+      </Pressable>
 
-      {isTruncated && !isExpanded ? (
+      {canToggle && !isExpanded ? (
         <Pressable hitSlop={6} onPress={() => setIsExpanded(true)}>
           <Text style={moreStyle}>{moreLabel}</Text>
         </Pressable>

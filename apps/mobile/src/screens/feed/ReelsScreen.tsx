@@ -103,7 +103,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         }}
         onEndReachedThreshold={1.2}
         onViewableItemsChanged={handleViewableItemsChanged}
-        pagingEnabled
+        disableIntervalMomentum
         removeClippedSubviews
         renderItem={({ index, item }) => (
           <ReelItem

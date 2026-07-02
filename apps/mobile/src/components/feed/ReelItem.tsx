@@ -1,10 +1,13 @@
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Bookmark, Heart, MessageCircle, Volume2, VolumeX } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Avatar } from "../common/Avatar";
+import { ExpandableText } from "../common/ExpandableText";
 import { colors } from "../../lib/theme";
 import type { FeedPost, PostMedia } from "../../features/feed/types";
 
@@ -54,6 +57,7 @@ export function ReelItem({
   const videoUrl = video?.url ?? null;
   const isReady = video?.processing_status === "ready";
   const [isMuted, setIsMuted] = useState(true);
+  const insets = useSafeAreaInsets();
 
   // 초기엔 빈 소스. 가까워지면 replace로 실제 영상을, 멀어지면 null로 교체해 메모리를 푼다.
   const player = useVideoPlayer(null, (instance) => {
@@ -135,8 +139,15 @@ export function ReelItem({
         style={StyleSheet.absoluteFill}
       />
 
+      {/* 하단 가독성 그라데이션 — 밝은 영상 위에서도 프로필/본문이 읽히게 */}
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.6)"]}
+        pointerEvents="none"
+        style={styles.bottomGradient}
+      />
+
       {/* 우측 액션 버튼 */}
-      <View style={styles.actions}>
+      <View style={[styles.actions, { bottom: insets.bottom + 96 }]}>
         <Pressable onPress={onLike} style={styles.actionButton}>
           <Heart
             color={isLiked ? colors.danger : colors.white}
@@ -171,8 +182,8 @@ export function ReelItem({
         ) : null}
       </View>
 
-      {/* 하단 작성자 + 캡션 */}
-      <View style={styles.bottom}>
+      {/* 하단 작성자 + 캡션 — 세이프에어리어 기준 고정 위치(영상/본문 길이와 무관하게 통일) */}
+      <View style={[styles.bottom, { bottom: insets.bottom + 14 }]}>
         <Pressable onPress={onPressUser} style={styles.userRow}>
           <Avatar
             imageUrl={post.user.avatar_url}
@@ -181,11 +192,18 @@ export function ReelItem({
           />
           <Text style={styles.nickname}>{post.user.nickname}</Text>
         </Pressable>
-        {post.content ? (
-          <Text numberOfLines={2} style={styles.caption}>
-            {post.content}
-          </Text>
-        ) : null}
+        {/* 본문 자리를 항상 확보 — 본문 유무와 상관없이 프로필 위치를 고정한다(접힘 기준) */}
+        <View style={styles.captionSlot}>
+          {post.content ? (
+            <ExpandableText
+              collapsedLines={1}
+              moreStyle={styles.captionMore}
+              textStyle={styles.caption}
+            >
+              {post.content}
+            </ExpandableText>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -196,10 +214,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black,
     justifyContent: "flex-end",
   },
+  bottomGradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 340,
+  },
   actions: {
     position: "absolute",
     right: 12,
-    bottom: 130,
     alignItems: "center",
     gap: 22,
   },
@@ -216,8 +240,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
     right: 80,
-    bottom: 40,
     gap: 8,
+  },
+  // 접힌 본문(1줄) + 더보기 높이만큼 항상 확보 → 프로필 위치 고정. 펼치면 이 이상으로 늘어남.
+  captionSlot: {
+    minHeight: 42,
   },
   userRow: {
     flexDirection: "row",
@@ -228,12 +255,22 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 15,
     fontWeight: "900",
+    textShadowColor: "rgba(0,0,0,0.55)",
+    textShadowRadius: 4,
   },
   caption: {
     color: colors.white,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,
+    textShadowColor: "rgba(0,0,0,0.55)",
+    textShadowRadius: 4,
+  },
+  captionMore: {
+    marginTop: 4,
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 13,
+    fontWeight: "800",
   },
   processingOverlay: {
     ...StyleSheet.absoluteFillObject,
