@@ -32,6 +32,8 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const currentUserId = session?.user.id ?? "";
   const { height, width } = useWindowDimensions();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  // 음소거는 릴스 전체 공유 — 한 번 켜면 다음 영상에서도 유지.
+  const [isMuted, setIsMuted] = useState(true);
   const {
     activeIndex,
     blockAuthor,
@@ -122,6 +124,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
             isNearActive={Math.abs(index - activeIndex) <= 1}
             isBookmarked={bookmarkedPostIds.has(item.id)}
             isLiked={likedPostIds.has(item.id)}
+            isMuted={isMuted}
             onBlockUser={() => {
               void blockAuthor(item.user.id);
             }}
@@ -139,6 +142,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
             onReport={() => {
               void reportPost(item.id);
             }}
+            onToggleMute={() => setIsMuted((muted) => !muted)}
             post={item}
             width={width}
           />

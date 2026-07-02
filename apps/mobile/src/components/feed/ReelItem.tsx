@@ -6,6 +6,7 @@ import {
   Heart,
   MessageCircle,
   MoreHorizontal,
+  Play,
   Volume2,
   VolumeX,
 } from "lucide-react-native";
@@ -29,6 +30,8 @@ type ReelItemProps = {
   isNearActive: boolean;
   isBookmarked: boolean;
   isLiked: boolean;
+  // 음소거는 릴스 전체가 공유(부모가 소유) — 한 번 켜면 다음 영상에서도 유지.
+  isMuted: boolean;
   onBlockUser: () => void;
   onBookmark: () => void;
   onComment: () => void;
@@ -36,6 +39,7 @@ type ReelItemProps = {
   onLike: () => void;
   onPressUser: () => void;
   onReport: () => void;
+  onToggleMute: () => void;
   post: FeedPost;
   width: number;
 };
@@ -51,7 +55,7 @@ function getVideo(media: PostMedia[]) {
   return media.find((item) => item.type === "video") ?? null;
 }
 
-// 릴스 1개(세로 풀스크린). 활성이면 음소거 자동재생(loop), 탭하면 음소거 토글.
+// 릴스 1개(세로 풀스크린). 활성이면 자동재생(loop), 탭하면 일시정지/재생, 음소거 버튼은 전역 토글.
 // 우측 좋아요/댓글/저장 세로 버튼 + 하단 작성자/캡션 오버레이.
 export function ReelItem({
   currentUserId,
@@ -60,6 +64,7 @@ export function ReelItem({
   isNearActive,
   isBookmarked,
   isLiked,
+  isMuted,
   onBlockUser,
   onBookmark,
   onComment,
@@ -67,6 +72,7 @@ export function ReelItem({
   onLike,
   onPressUser,
   onReport,
+  onToggleMute,
   post,
   width,
 }: ReelItemProps) {
@@ -74,7 +80,8 @@ export function ReelItem({
   const video = useMemo(() => getVideo(post.media), [post.media]);
   const videoUrl = video?.url ?? null;
   const isReady = video?.processing_status === "ready";
-  const [isMuted, setIsMuted] = useState(true);
+  // 탭 일시정지는 이 영상에만 유지(음소거는 전역이라 부모가 소유).
+  const [isPaused, setIsPaused] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
@@ -102,9 +109,21 @@ export function ReelItem({
       .catch(() => undefined);
   }, [isNearActive, isReady, player, videoUrl]);
 
+  // 전역 음소거 상태를 플레이어에 반영.
+  useEffect(() => {
+    player.muted = isMuted;
+  }, [isMuted, player]);
+
+  // 화면 밖으로 벗어나면 탭 일시정지는 초기화(다시 활성될 때 자동재생).
+  useEffect(() => {
+    if (!isActive) {
+      setIsPaused(false);
+    }
+  }, [isActive]);
+
   useEffect(() => {
     try {
-      if (isActive && isReady) {
+      if (isActive && isReady && !isPaused) {
         player.play();
       } else {
         player.pause();
@@ -112,13 +131,7 @@ export function ReelItem({
     } catch {
       // 플레이어가 이미 release된 경우 무시.
     }
-  }, [isActive, isReady, player]);
-
-  function toggleMute() {
-    const next = !isMuted;
-    player.muted = next;
-    setIsMuted(next);
-  }
+  }, [isActive, isPaused, isReady, player]);
 
   if (!video) {
     return <View style={{ backgroundColor: colors.black, height, width }} />;
@@ -179,11 +192,18 @@ export function ReelItem({
           </Text>
         </View>
       ) : null}
-      {/* 영상 위 투명 오버레이 — 네이티브 VideoView 위에서 탭(음소거 토글)을 받는다 */}
+      {/* 영상 위 투명 오버레이 — 네이티브 VideoView 위에서 탭(일시정지/재생)을 받는다 */}
       <Pressable
-        onPress={isReady ? toggleMute : undefined}
+        onPress={isReady ? () => setIsPaused((paused) => !paused) : undefined}
         style={StyleSheet.absoluteFill}
       />
+
+      {/* 일시정지 표시 — 탭을 막지 않게 pointerEvents none */}
+      {isActive && isReady && isPaused ? (
+        <View pointerEvents="none" style={styles.pauseOverlay}>
+          <Play color="rgba(255,255,255,0.92)" fill="rgba(255,255,255,0.92)" size={62} />
+        </View>
+      ) : null}
 
       {/* 우측 상단 더보기 — 신고/차단(내 영상이면 삭제). 오버레이보다 뒤에 그려 탭이 먼저 닿게 한다 */}
       <Pressable
@@ -236,7 +256,7 @@ export function ReelItem({
           <View style={styles.labelSpacer} />
         </Pressable>
         {isReady ? (
-          <Pressable hitSlop={6} onPress={toggleMute} style={styles.actionButton}>
+          <Pressable hitSlop={6} onPress={onToggleMute} style={styles.actionButton}>
             <View style={styles.iconBox}>
               {isMuted ? (
                 <VolumeX color={colors.white} size={27} strokeWidth={2.4} />
@@ -329,6 +349,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 340,
+  },
+  pauseOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
   },
   menuButton: {
     position: "absolute",
