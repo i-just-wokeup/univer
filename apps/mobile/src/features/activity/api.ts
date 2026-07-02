@@ -1,7 +1,10 @@
 // 내 활동 데이터 계층 — 내 스토리 보관함/조회자, 저장·좋아요·댓글 단 게시물, 즐겨찾기 계정.
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import { getCurrentUserContext } from "../shared/userContext";
+import {
+  getBlockRelatedUserIds,
+  getCurrentUserContext,
+} from "../shared/userContext";
 
 type BookmarkRow = Database["public"]["Tables"]["bookmarks"]["Row"];
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
@@ -68,17 +71,23 @@ async function getActivityPostsByIds(
 
   const supabase = getSupabaseMobileClient();
   const { universityId } = await getCurrentUserContext();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  const blockedUserIds = new Set(blockRelatedUserIds);
 
-  const { data: posts, error: postsError } = await supabase
+  const { data: postsData, error: postsError } = await supabase
     .from("posts")
     .select("id, user_id, content, created_at, likes_count, comments_count")
     .eq("university_id", universityId)
     .is("deleted_at", null)
     .in("id", postIds);
 
-  if (postsError || !posts) {
+  if (postsError || !postsData) {
     throw new Error("게시물을 불러오지 못했습니다.");
   }
+
+  // 차단한(또는 나를 차단한) 유저의 게시물은 내 활동 목록에서 숨긴다.
+  // 좋아요/저장/댓글 기록 자체는 지우지 않음 → 언블락하면 다시 보인다.
+  const posts = postsData.filter((post) => !blockedUserIds.has(post.user_id));
 
   if (posts.length === 0) {
     return [];
