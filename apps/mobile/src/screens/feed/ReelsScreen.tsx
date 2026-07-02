@@ -6,6 +6,7 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
+  Text,
   useWindowDimensions,
   View,
   type ViewToken,
@@ -16,6 +17,7 @@ import { ReelItem } from "../../components/feed/ReelItem";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { StateView } from "../../components/common/StateView";
 import { useReels } from "../../features/feed/useReels";
+import { useSession } from "../../lib/session";
 import { colors } from "../../lib/theme";
 
 type ReelsScreenProps = {
@@ -26,17 +28,23 @@ type ReelsScreenProps = {
 export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { session } = useSession();
+  const currentUserId = session?.user.id ?? "";
   const { height, width } = useWindowDimensions();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const {
     activeIndex,
+    blockAuthor,
     bookmarkedPostIds,
     errorMessage,
+    feedback,
     handleCommentCountChange,
     isLoading,
     likedPostIds,
     loadMore,
     posts,
+    removePost,
+    reportPost,
     setActiveIndex,
     toggleBookmarkPost,
     toggleLike,
@@ -107,20 +115,30 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         removeClippedSubviews
         renderItem={({ index, item }) => (
           <ReelItem
+            currentUserId={currentUserId}
             height={height}
             isActive={index === activeIndex}
             // 활성 ±1만 영상 플레이어를 살린다(나머지는 source=null로 메모리 해제, 썸네일만).
             isNearActive={Math.abs(index - activeIndex) <= 1}
             isBookmarked={bookmarkedPostIds.has(item.id)}
             isLiked={likedPostIds.has(item.id)}
+            onBlockUser={() => {
+              void blockAuthor(item.user.id);
+            }}
             onBookmark={() => {
               void toggleBookmarkPost(item.id);
             }}
             onComment={() => setCommentPostId(item.id)}
+            onDelete={() => {
+              void removePost(item.id);
+            }}
             onLike={() => {
               void toggleLike(item.id);
             }}
             onPressUser={() => handleUserPress(item.user.nickname)}
+            onReport={() => {
+              void reportPost(item.id);
+            }}
             post={item}
             width={width}
           />
@@ -151,6 +169,15 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         }}
         postId={commentPostId}
       />
+
+      {feedback ? (
+        <View
+          pointerEvents="none"
+          style={[styles.feedback, { bottom: insets.bottom + 120 }]}
+        >
+          <Text style={styles.feedbackText}>{feedback}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -175,5 +202,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 22,
     backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  feedback: {
+    position: "absolute",
+    left: 24,
+    right: 24,
+    alignItems: "center",
+  },
+  feedbackText: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.78)",
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "800",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    textAlign: "center",
   },
 });

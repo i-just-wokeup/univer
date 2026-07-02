@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { blockUser } from "../blocks/api";
+import { createReport } from "../reports/api";
 import {
+  deletePost,
   getBookmarkedPostIds,
   getLikedPostIds,
   getVideoFeed,
@@ -22,10 +25,12 @@ export function useReels(startPostId?: string) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [feedback, setFeedback] = useState("");
   const cursorRef = useRef<string | null>(null);
   const hasMoreRef = useRef(true);
   const pendingLikeRef = useRef<Set<string>>(new Set());
   const pendingBookmarkRef = useRef<Set<string>>(new Set());
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadStatuses = useCallback(async (loadedPosts: FeedPost[]) => {
     const ids = loadedPosts.map((post) => post.id);
@@ -43,6 +48,30 @@ export function useReels(startPostId?: string) {
       // 좋아요/저장 상태 로딩 실패는 무시(재생은 막지 않음).
     }
   }, []);
+
+  const showFeedback = useCallback((message: string) => {
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+    }
+    setFeedback(message);
+    feedbackTimerRef.current = setTimeout(() => {
+      setFeedback("");
+      feedbackTimerRef.current = null;
+    }, 1800);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
+
+  // 차단/삭제로 목록이 줄면 활성 인덱스가 범위를 벗어나지 않게 맞춘다.
+  useEffect(() => {
+    setActiveIndex((current) => Math.min(current, Math.max(0, posts.length - 1)));
+  }, [posts.length]);
 
   const loadFirstPage = useCallback(async () => {
     try {
@@ -168,6 +197,38 @@ export function useReels(startPostId?: string) {
     }
   }
 
+  async function reportPost(postId: string) {
+    try {
+      await createReport({ targetId: postId, targetType: "post" });
+      showFeedback("신고가 접수됐어요");
+    } catch {
+      showFeedback("신고에 실패했습니다.");
+    }
+  }
+
+  async function blockAuthor(userId: string) {
+    try {
+      await blockUser(userId);
+      // 차단한 유저의 영상은 목록에서 즉시 제거(활성 인덱스는 위 effect가 보정).
+      setPosts((current) => current.filter((post) => post.user.id !== userId));
+      showFeedback("차단했어요");
+    } catch {
+      showFeedback("차단에 실패했습니다.");
+    }
+  }
+
+  async function removePost(postId: string) {
+    const previousPosts = posts;
+    setPosts((current) => current.filter((post) => post.id !== postId));
+    try {
+      await deletePost(postId);
+      showFeedback("삭제했어요");
+    } catch {
+      setPosts(previousPosts);
+      showFeedback("삭제에 실패했습니다.");
+    }
+  }
+
   // 참조 안정화(useCallback) — 댓글 시트 effect가 매 렌더 재실행돼 깜빡이는 것 방지.
   const handleCommentCountChange = useCallback(
     (postId: string, nextCount: number) => {
@@ -182,14 +243,18 @@ export function useReels(startPostId?: string) {
 
   return {
     activeIndex,
+    blockAuthor,
     bookmarkedPostIds,
     errorMessage,
+    feedback,
     handleCommentCountChange,
     isLoading,
     isLoadingMore,
     likedPostIds,
     loadMore,
     posts,
+    removePost,
+    reportPost,
     setActiveIndex,
     toggleBookmarkPost,
     toggleLike,

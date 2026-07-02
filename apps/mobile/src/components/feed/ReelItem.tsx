@@ -1,27 +1,41 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { Bookmark, Heart, MessageCircle, Volume2, VolumeX } from "lucide-react-native";
+import {
+  Bookmark,
+  Heart,
+  MessageCircle,
+  MoreHorizontal,
+  Volume2,
+  VolumeX,
+} from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 import { Avatar } from "../common/Avatar";
+import { ConfirmDialog } from "../common/ConfirmDialog";
 import { ExpandableText } from "../common/ExpandableText";
 import { colors } from "../../lib/theme";
 import type { FeedPost, PostMedia } from "../../features/feed/types";
 
 type ReelItemProps = {
+  // 본인 영상이면 메뉴에 삭제, 아니면 차단/신고를 노출한다.
+  currentUserId: string;
   height: number;
   isActive: boolean;
   // 활성 ±1 이내면 영상 플레이어에 실제 소스를 물리고, 멀면 source=null로 메모리 해제.
   isNearActive: boolean;
   isBookmarked: boolean;
   isLiked: boolean;
+  onBlockUser: () => void;
   onBookmark: () => void;
   onComment: () => void;
+  onDelete: () => void;
   onLike: () => void;
   onPressUser: () => void;
+  onReport: () => void;
   post: FeedPost;
   width: number;
 };
@@ -40,15 +54,19 @@ function getVideo(media: PostMedia[]) {
 // 릴스 1개(세로 풀스크린). 활성이면 음소거 자동재생(loop), 탭하면 음소거 토글.
 // 우측 좋아요/댓글/저장 세로 버튼 + 하단 작성자/캡션 오버레이.
 export function ReelItem({
+  currentUserId,
   height,
   isActive,
   isNearActive,
   isBookmarked,
   isLiked,
+  onBlockUser,
   onBookmark,
   onComment,
+  onDelete,
   onLike,
   onPressUser,
+  onReport,
   post,
   width,
 }: ReelItemProps) {
@@ -57,6 +75,10 @@ export function ReelItem({
   const videoUrl = video?.url ?? null;
   const isReady = video?.processing_status === "ready";
   const [isMuted, setIsMuted] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
   // 초기엔 빈 소스. 가까워지면 replace로 실제 영상을, 멀어지면 null로 교체해 메모리를 푼다.
@@ -102,6 +124,30 @@ export function ReelItem({
     return <View style={{ backgroundColor: colors.black, height, width }} />;
   }
 
+  const isOwnPost = currentUserId === post.user.id;
+  const menuItems: ActionSheetItem[] = isOwnPost
+    ? [
+        {
+          danger: true,
+          label: "삭제",
+          onPress: () => setIsDeleteConfirmOpen(true),
+        },
+        { label: "취소", onPress: () => undefined },
+      ]
+    : [
+        {
+          danger: true,
+          label: "차단",
+          onPress: () => setIsBlockConfirmOpen(true),
+        },
+        {
+          danger: true,
+          label: "신고",
+          onPress: () => setIsReportConfirmOpen(true),
+        },
+        { label: "취소", onPress: () => undefined },
+      ];
+
   return (
     <View style={[styles.page, { height, width }]}>
       <VideoView
@@ -138,6 +184,17 @@ export function ReelItem({
         onPress={isReady ? toggleMute : undefined}
         style={StyleSheet.absoluteFill}
       />
+
+      {/* 우측 상단 더보기 — 신고/차단(내 영상이면 삭제). 오버레이보다 뒤에 그려 탭이 먼저 닿게 한다 */}
+      <Pressable
+        accessibilityLabel="더보기"
+        accessibilityRole="button"
+        hitSlop={8}
+        onPress={() => setIsMenuOpen(true)}
+        style={[styles.menuButton, { top: insets.top + 8 }]}
+      >
+        <MoreHorizontal color={colors.white} size={26} strokeWidth={2.6} />
+      </Pressable>
 
       {/* 하단 가독성 그라데이션 — 밝은 영상 위에서도 프로필/본문이 읽히게 */}
       <LinearGradient
@@ -205,6 +262,48 @@ export function ReelItem({
           ) : null}
         </View>
       </View>
+
+      <ActionSheet
+        isOpen={isMenuOpen}
+        items={menuItems}
+        onClose={() => setIsMenuOpen(false)}
+      />
+      <ConfirmDialog
+        confirmLabel="차단"
+        danger
+        description="이 사용자의 영상이 릴스에서 숨겨집니다."
+        isOpen={isBlockConfirmOpen}
+        onCancel={() => setIsBlockConfirmOpen(false)}
+        onConfirm={() => {
+          setIsBlockConfirmOpen(false);
+          onBlockUser();
+        }}
+        title={`${post.user.nickname} 님을 차단할까요?`}
+      />
+      <ConfirmDialog
+        confirmLabel="신고"
+        danger
+        description="검토를 위해 이 영상을 신고합니다."
+        isOpen={isReportConfirmOpen}
+        onCancel={() => setIsReportConfirmOpen(false)}
+        onConfirm={() => {
+          setIsReportConfirmOpen(false);
+          onReport();
+        }}
+        title="영상을 신고할까요?"
+      />
+      <ConfirmDialog
+        confirmLabel="삭제"
+        danger
+        description="되돌릴 수 없습니다."
+        isOpen={isDeleteConfirmOpen}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          setIsDeleteConfirmOpen(false);
+          onDelete();
+        }}
+        title="이 영상을 삭제할까요?"
+      />
     </View>
   );
 }
@@ -220,6 +319,16 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 340,
+  },
+  menuButton: {
+    position: "absolute",
+    right: 8,
+    height: 44,
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   actions: {
     position: "absolute",

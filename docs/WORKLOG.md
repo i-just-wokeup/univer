@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-07-02
+
+### 완료
+- **릴스 신고/차단/삭제 메뉴 추가** — 릴스(`ReelItem`)에 `...` 더보기 버튼이 없어 남의 영상을 신고·차단할 방법이 없던 문제(UGC 신고 미제공 → 스토어 심사 리스크). 홈 피드(`FeedPostCard`)와 **동일한 재사용 패턴**으로 붙임
+  - UI: `ReelItem` 우측 상단 `...` → `ActionSheet`(공용) → 남의 영상이면 **차단/신고**, 내 영상이면 **삭제**. 확인은 기존 `ConfirmDialog` 재사용. 음소거 오버레이보다 뒤에 그려 탭이 먼저 닿게 함
+  - 로직: `useReels`에 `reportPost`(→`createReport` target_type=post) / `blockAuthor`(→`blockUser` RPC, 차단 유저 영상 목록에서 즉시 제거) / `removePost`(→`deletePost` soft delete, 실패 시 롤백) 추가. 차단/삭제로 목록이 줄면 `activeIndex`가 범위를 벗어나지 않게 effect로 보정
+  - 결과 피드백: 릴스 화면 하단에 토스트("신고가 접수됐어요"/"차단했어요"/"삭제했어요")
+  - `createReport`/`blockUser`/`deletePost`/`ActionSheet`/`ConfirmDialog` 전부 기존 것 재사용(신규 API·마이그레이션 없음). tsc 통과. 실기기 확인 남음
+  - 후속(릴스 남은 갭): 처리중→완료 폴링(릴스/스토리 미적용), 빈 화면·startPostId 못 찾을 때 엉뚱한 영상 재생, 전역 음소거, 더블탭 좋아요
+
 ## 2026-07-01
 
 ### 완료
