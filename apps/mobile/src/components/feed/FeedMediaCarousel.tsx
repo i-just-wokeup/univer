@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { FeedVideoPlayer } from "./FeedVideoPlayer";
+import { DoubleTapLike } from "../common/DoubleTapLike";
 import { colors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
@@ -19,6 +20,8 @@ type FeedMediaCarouselProps = {
   aspectRatio: PostAspectRatio;
   isActive?: boolean;
   media: PostMedia[];
+  // 사진/영상 더블탭 시 좋아요("이미 좋아요면 무시" 판단은 호출부).
+  onDoubleLike?: () => void;
   onVideoPress?: () => void;
 };
 
@@ -26,6 +29,7 @@ export function FeedMediaCarousel({
   aspectRatio,
   isActive = false,
   media,
+  onDoubleLike,
   onVideoPress,
 }: FeedMediaCarouselProps) {
   const { width } = useWindowDimensions();
@@ -45,6 +49,7 @@ export function FeedMediaCarousel({
       <FeedVideoPlayer
         aspectRatio={aspectRatio}
         isActive={isActive}
+        onDoubleLike={onDoubleLike}
         onPress={onVideoPress}
         processingStatus={videoMedia.processing_status}
         thumbnailUrl={videoMedia.thumbnail_url}
@@ -76,17 +81,34 @@ export function FeedMediaCarousel({
         keyExtractor={(mediaItem) => mediaItem.id}
         onMomentumScrollEnd={handleMomentumScrollEnd}
         pagingEnabled
-        renderItem={({ item }) => (
-          <Image
-            cachePolicy="memory-disk"
-            contentFit="cover"
-            placeholderContentFit="cover"
-            recyclingKey={item.id}
-            source={{ uri: item.url }}
-            style={[styles.image, { aspectRatio: imageAspectRatio, width }]}
-            transition={160}
-          />
-        )}
+        renderItem={({ item }) =>
+          onDoubleLike ? (
+            <DoubleTapLike
+              onDoubleTap={onDoubleLike}
+              style={[styles.image, { aspectRatio: imageAspectRatio, width }]}
+            >
+              <Image
+                cachePolicy="memory-disk"
+                contentFit="cover"
+                placeholderContentFit="cover"
+                recyclingKey={item.id}
+                source={{ uri: item.url }}
+                style={StyleSheet.absoluteFill}
+                transition={160}
+              />
+            </DoubleTapLike>
+          ) : (
+            <Image
+              cachePolicy="memory-disk"
+              contentFit="cover"
+              placeholderContentFit="cover"
+              recyclingKey={item.id}
+              source={{ uri: item.url }}
+              style={[styles.image, { aspectRatio: imageAspectRatio, width }]}
+              transition={160}
+            />
+          )
+        }
         scrollEnabled={imageMedia.length > 1}
         showsHorizontalScrollIndicator={false}
       />

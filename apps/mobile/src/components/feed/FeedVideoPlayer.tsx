@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { DoubleTapLike } from "../common/DoubleTapLike";
 import { colors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio } from "../../features/feed/types";
@@ -18,6 +19,8 @@ type FeedVideoPlayerProps = {
   aspectRatio: PostAspectRatio;
   // 피드에서 지금 보이는(활성) 카드면 자동재생, 아니면 일시정지(썸네일).
   isActive: boolean;
+  // 영상 더블탭 시 좋아요(있으면 영역 오버레이가 더블탭을 처리).
+  onDoubleLike?: () => void;
   // 영상 영역(음소거 아이콘 제외)을 누르면 호출 — 릴스 상세로 이동용.
   onPress?: () => void;
   processingStatus?: "processing" | "ready" | "failed";
@@ -30,6 +33,7 @@ type FeedVideoPlayerProps = {
 export function FeedVideoPlayer({
   aspectRatio,
   isActive,
+  onDoubleLike,
   onPress,
   processingStatus = "ready",
   thumbnailUrl,
@@ -99,12 +103,20 @@ export function FeedVideoPlayer({
         </View>
       ) : null}
 
-      {/* 영상 위 투명 오버레이 — 네이티브 VideoView가 터치를 먹으므로 여기서 영역 탭을 받는다(릴스 이동) */}
-      <Pressable
-        accessibilityLabel="영상 크게 보기"
-        onPress={onPress}
-        style={StyleSheet.absoluteFill}
-      />
+      {/* 영상 위 오버레이 — 단일 탭=릴스 이동, 더블탭=좋아요(핸들러 있을 때). 네이티브 VideoView가 터치를 먹으므로 여기서 받는다 */}
+      {onDoubleLike ? (
+        <DoubleTapLike
+          onDoubleTap={onDoubleLike}
+          onSingleTap={onPress}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : (
+        <Pressable
+          accessibilityLabel="영상 크게 보기"
+          onPress={onPress}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
 
       {/* 음소거 버튼 — 오버레이 위에 얹혀 이 아이콘만 음소거 토글 */}
       {isReady ? (

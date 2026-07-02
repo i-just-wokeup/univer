@@ -128,6 +128,12 @@ export function FeedPostCard({
         aspectRatio={post.aspect_ratio}
         isActive={isActive}
         media={post.media}
+        onDoubleLike={() => {
+          // 인스타식: 더블탭은 좋아요만(이미 좋아요면 애니메이션만).
+          if (!isLiked) {
+            onLike(post.id);
+          }
+        }}
         onVideoPress={onVideoPress ? () => onVideoPress(post.id) : undefined}
       />
 

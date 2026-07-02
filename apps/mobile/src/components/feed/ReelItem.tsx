@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 import { Avatar } from "../common/Avatar";
 import { ConfirmDialog } from "../common/ConfirmDialog";
+import { DoubleTapLike } from "../common/DoubleTapLike";
 import { ExpandableText } from "../common/ExpandableText";
 import { colors } from "../../lib/theme";
 import type { FeedPost, PostMedia } from "../../features/feed/types";
@@ -192,9 +193,14 @@ export function ReelItem({
           </Text>
         </View>
       ) : null}
-      {/* 영상 위 투명 오버레이 — 네이티브 VideoView 위에서 탭(일시정지/재생)을 받는다 */}
-      <Pressable
-        onPress={isReady ? () => setIsPaused((paused) => !paused) : undefined}
+      {/* 영상 위 오버레이 — 단일 탭=일시정지/재생, 더블탭=좋아요(중앙 하트) */}
+      <DoubleTapLike
+        onDoubleTap={() => {
+          if (!isLiked) {
+            onLike();
+          }
+        }}
+        onSingleTap={isReady ? () => setIsPaused((paused) => !paused) : undefined}
         style={StyleSheet.absoluteFill}
       />
 
