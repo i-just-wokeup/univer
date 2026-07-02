@@ -19,6 +19,9 @@ export type ActivityStory = Pick<
   | "id"
   | "image_url"
   | "is_archived"
+  | "processing_status"
+  | "thumbnail_url"
+  | "type"
   | "visibility"
   | "views_count"
 >;
@@ -170,7 +173,7 @@ export async function getMyStories(): Promise<ActivityStory[]> {
   const { data, error } = await supabase
     .from("stories")
     .select(
-      "id, image_url, views_count, expires_at, is_archived, visibility, created_at",
+      "id, image_url, type, thumbnail_url, processing_status, views_count, expires_at, is_archived, visibility, created_at",
     )
     .eq("user_id", userId)
     .is("deleted_at", null)

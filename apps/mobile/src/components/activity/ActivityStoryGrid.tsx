@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { Play } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStory } from "../../features/activity/api";
@@ -66,9 +67,20 @@ export function ActivityStoryGrid({
               <Image
                 cachePolicy="memory-disk"
                 contentFit="cover"
-                source={{ uri: story.image_url }}
+                source={{
+                  // 영상 스토리는 image_url이 영상 URL이라 썸네일(thumbnail_url)을 써야 한다.
+                  uri:
+                    story.type === "video"
+                      ? story.thumbnail_url ?? story.image_url
+                      : story.image_url,
+                }}
                 style={styles.image}
               />
+              {story.type === "video" ? (
+                <View style={styles.videoBadge}>
+                  <Play color={colors.white} fill={colors.white} size={12} />
+                </View>
+              ) : null}
               <View style={styles.dateBadge}>
                 <Text style={styles.dateText}>
                   {formatStoryArchiveDate(story.created_at)}
@@ -124,6 +136,17 @@ const styles = StyleSheet.create({
   image: {
     height: "100%",
     width: "100%",
+  },
+  videoBadge: {
+    position: "absolute",
+    top: 7,
+    right: 7,
+    height: 22,
+    width: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 11,
+    backgroundColor: "rgba(0,0,0,0.55)",
   },
   dateBadge: {
     position: "absolute",

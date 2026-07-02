@@ -18,6 +18,7 @@ import type {
 } from "../../features/activity/api";
 import { colors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
+import { StoryVideoView } from "../stories/StoryVideoView";
 import { activityStoryDisplay } from "./ActivityStoryGrid";
 
 type ActivityStoryPreviewSheetProps = {
@@ -75,6 +76,9 @@ export function ActivityStoryPreviewSheet({
   }
 
   const likedViewers = viewers.filter((viewer) => viewer.isLiked);
+  // 영상 스토리는 image_url에 영상 URL이 들어있어 사진처럼 못 띄운다. 준비되면 재생, 아니면 썸네일.
+  const isVideo = story.type === "video";
+  const isVideoReady = isVideo && story.processing_status === "ready";
   const panelTranslateY = slideAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [VIEWER_PANEL_HEIGHT, 0],
@@ -93,12 +97,32 @@ export function ActivityStoryPreviewSheet({
         </Pressable>
         <View style={styles.sheet}>
           <View style={styles.preview}>
-            <Image
-              cachePolicy="memory-disk"
-              contentFit="contain"
-              source={{ uri: story.image_url }}
-              style={styles.previewImage}
-            />
+            {isVideoReady ? (
+              <StoryVideoView loop style={styles.previewMedia} uri={story.image_url} />
+            ) : isVideo ? (
+              <>
+                <Image
+                  cachePolicy="memory-disk"
+                  contentFit="contain"
+                  source={{ uri: story.thumbnail_url ?? story.image_url }}
+                  style={styles.previewImage}
+                />
+                <View style={styles.processingOverlay}>
+                  <Text style={styles.processingText}>
+                    {story.processing_status === "failed"
+                      ? "영상 처리 실패"
+                      : "영상 처리 중"}
+                  </Text>
+                </View>
+              </>
+            ) : (
+              <Image
+                cachePolicy="memory-disk"
+                contentFit="contain"
+                source={{ uri: story.image_url }}
+                style={styles.previewImage}
+              />
+            )}
             <View style={styles.dateBadge}>
               <Text style={styles.dateText}>
                 {formatKoreanDateTime(story.created_at)}
@@ -241,6 +265,27 @@ const styles = StyleSheet.create({
   previewImage: {
     height: "100%",
     width: "100%",
+  },
+  previewMedia: {
+    height: "100%",
+    width: "100%",
+    borderRadius: 0,
+  },
+  processingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.34)",
+  },
+  processingText: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.66)",
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "900",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
   dateBadge: {
     position: "absolute",
