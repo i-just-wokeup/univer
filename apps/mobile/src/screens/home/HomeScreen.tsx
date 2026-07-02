@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -54,6 +54,7 @@ export function HomeScreen() {
     isRefreshing,
     likedPostIds,
     posts,
+    refreshInteractions,
     showFeedback,
   } = useHomeFeed();
   const { storyGroups, unreadChatCount, unreadCount } = useHomeMeta();
@@ -66,6 +67,19 @@ export function HomeScreen() {
       router.setParams({ posted: "" });
     }
   }, [posted, showFeedback, router]);
+
+  // 릴스/상세/프로필에서 좋아요·저장을 바꾸고 홈으로 돌아오면 목록 상태를 다시 맞춘다.
+  // 첫 진입(마운트)은 loadFirstPage가 이미 처리하므로 건너뛴다.
+  const hasFocusedRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedRef.current) {
+        hasFocusedRef.current = true;
+        return;
+      }
+      void refreshInteractions();
+    }, [refreshInteractions]),
+  );
 
   async function handleSignOut() {
     await signOutMobile();

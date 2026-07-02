@@ -7,6 +7,7 @@ import {
   getBookmarkedPostIds,
   getFeed,
   getLikedPostIds,
+  getPostCounts,
   getVideoStatuses,
   toggleBookmark,
   togglePostLike,
@@ -37,6 +38,9 @@ export function useHomeFeed() {
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingBookmarkPostIdsRef = useRef<Set<string>>(new Set());
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
+  // 포커스 갱신에서 현재 로드된 게시물 id를 참조하기 위한 최신 posts 미러(콜백 재생성 방지).
+  const postsRef = useRef<FeedPost[]>([]);
+  postsRef.current = posts;
 
   const showFeedback = useCallback((message: string, type: FeedbackType) => {
     if (feedbackTimerRef.current) {
@@ -85,6 +89,39 @@ export function useHomeFeed() {
   useEffect(() => {
     void loadFirstPage();
   }, [loadFirstPage]);
+
+  // 릴스/상세/프로필 등에서 좋아요·저장·댓글을 바꾸고 홈으로 돌아왔을 때 목록 상태를 다시 맞춘다.
+  // (스크롤/페이지는 유지한 채 로드된 게시물의 좋아요·저장 여부 + 좋아요·댓글 수만 재조회)
+  const refreshInteractions = useCallback(async () => {
+    const ids = postsRef.current.map((post) => post.id);
+    if (ids.length === 0) {
+      return;
+    }
+    try {
+      const [likedIds, bookmarkedIds, counts] = await Promise.all([
+        getLikedPostIds(ids),
+        getBookmarkedPostIds(ids),
+        getPostCounts(ids),
+      ]);
+      const countsById = new Map(counts.map((count) => [count.id, count]));
+      setLikedPostIds(new Set(likedIds));
+      setBookmarkedPostIds(new Set(bookmarkedIds));
+      setPosts((current) =>
+        current.map((post) => {
+          const count = countsById.get(post.id);
+          return count
+            ? {
+                ...post,
+                comments_count: count.comments_count,
+                likes_count: count.likes_count,
+              }
+            : post;
+        }),
+      );
+    } catch {
+      // 갱신 실패는 조용히 무시(다음 포커스에서 재시도).
+    }
+  }, []);
 
   // 인코딩 중(processing)인 Cloudflare 영상의 asset id 집합. 이 값이 바뀔 때만 폴링을 다시 건다.
   const processingAssetKey = posts
@@ -384,6 +421,7 @@ export function useHomeFeed() {
     likedPostIds,
     loadFirstPage,
     posts,
+    refreshInteractions,
     showFeedback,
   };
 }

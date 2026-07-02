@@ -520,6 +520,33 @@ export async function getBookmarkedPostIds(postIds: string[]) {
   return data.map((bookmark: Pick<BookmarkRow, "post_id">) => bookmark.post_id);
 }
 
+// 주어진 게시물들의 현재 좋아요/댓글 수(다른 화면에서 바꾸고 돌아왔을 때 목록 갱신용).
+export async function getPostCounts(
+  postIds: string[],
+): Promise<{ id: string; likes_count: number; comments_count: number }[]> {
+  if (postIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, likes_count, comments_count")
+    .in("id", postIds);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map(
+    (row: Pick<PostRow, "id" | "likes_count" | "comments_count">) => ({
+      comments_count: row.comments_count,
+      id: row.id,
+      likes_count: row.likes_count,
+    }),
+  );
+}
+
 // 게시물 저장/저장취소 토글 → { bookmarked }.
 export async function toggleBookmark(postId: string) {
   const supabase = getSupabaseMobileClient();
