@@ -333,10 +333,13 @@ export async function getFeed({
 }
 
 // 영상 전용 피드(릴스). getFeed와 동일하되 post_media에 영상이 있는 게시물만(inner join 필터).
+// anchorCreatedAt이 있으면 그 시각 "이하" 영상부터 로딩한다(누른 영상을 목록 맨 위에 포함시키기 위함).
 export async function getVideoFeed({
+  anchorCreatedAt,
   cursor,
   limit = PAGE_SIZE.feed,
 }: {
+  anchorCreatedAt?: string;
   cursor?: string;
   limit?: number;
 } = {}): Promise<GetFeedResult> {
@@ -365,7 +368,11 @@ export async function getVideoFeed({
   }
 
   if (cursor) {
+    // 더 불러오기: 마지막 항목보다 오래된 것만.
     postsQuery = postsQuery.lt("created_at", cursor);
+  } else if (anchorCreatedAt) {
+    // 첫 페이지를 누른 영상 시각 이하로 시작 → 그 영상이 목록 맨 위에 온다.
+    postsQuery = postsQuery.lte("created_at", anchorCreatedAt);
   }
 
   const { data: postsData, error: postsError } = await postsQuery;

@@ -6,6 +6,7 @@ import {
   deletePost,
   getBookmarkedPostIds,
   getLikedPostIds,
+  getPost,
   getVideoFeed,
   toggleBookmark,
   togglePostLike,
@@ -76,20 +77,34 @@ export function useReels(startPostId?: string) {
   const loadFirstPage = useCallback(async () => {
     try {
       setErrorMessage("");
-      const result = await getVideoFeed({ limit: PAGE_SIZE.feed });
+
+      // 특정 영상을 눌러 들어온 경우: 그 영상의 작성 시각을 앵커로 삼아 "그 시각 이하"부터 로딩한다.
+      // → 누른 영상이 항상 목록 맨 위에 온다(최신 20개 밖의 오래된 영상도 정확히 그 영상에서 시작).
+      // 삭제/차단된 영상이면 앵커 없이 최신 피드로 폴백.
+      let anchorCreatedAt: string | undefined;
+      if (startPostId) {
+        try {
+          const anchorPost = await getPost(startPostId);
+          anchorCreatedAt = anchorPost.created_at;
+        } catch {
+          anchorCreatedAt = undefined;
+        }
+      }
+
+      const result = await getVideoFeed({
+        anchorCreatedAt,
+        limit: PAGE_SIZE.feed,
+      });
       cursorRef.current = result.nextCursor;
       hasMoreRef.current = result.nextCursor !== null;
 
-      // 진입한 영상이 첫 페이지에 있으면 그 위치를 시작 인덱스로.
-      const startIndex = startPostId
-        ? Math.max(
-            0,
-            result.posts.findIndex((post) => post.id === startPostId),
-          )
-        : 0;
+      // 앵커 로딩이면 보통 0번째지만, 못 찾으면(폴백 등) 안전하게 0에서 시작.
+      const foundIndex = startPostId
+        ? result.posts.findIndex((post) => post.id === startPostId)
+        : -1;
 
       setPosts(result.posts);
-      setActiveIndex(startIndex);
+      setActiveIndex(foundIndex >= 0 ? foundIndex : 0);
       void loadStatuses(result.posts);
     } catch (error) {
       setErrorMessage(
