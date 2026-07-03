@@ -13,11 +13,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StateView } from "../../components/common/StateView";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
+import { PostShareSheet } from "../../components/feed/PostShareSheet";
 import { HomeHeader } from "../../components/home/HomeHeader";
 import { StoryBar } from "../../components/stories/StoryBar";
 import { signOutMobile } from "../../features/auth/api";
+import { usePostShare, type PostShareTarget } from "../../features/chat/usePostShare";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
 import { useHomeMeta } from "../../features/feed/useHomeMeta";
+import type { FeedPost } from "../../features/feed/types";
 import type { StoryGroup } from "../../features/stories/types";
 import { useSession } from "../../lib/session";
 import { colors } from "../../lib/theme";
@@ -27,6 +30,7 @@ export function HomeScreen() {
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
+  const [sharePost, setSharePost] = useState<FeedPost | null>(null);
   // 화면에 보이는(활성) 게시물 id — 영상 자동재생용. 가장 위 보이는 항목 1개만 활성.
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
@@ -58,6 +62,16 @@ export function HomeScreen() {
     showFeedback,
   } = useHomeFeed();
   const { storyGroups, unreadChatCount, unreadCount } = useHomeMeta();
+  const {
+    errorMessage: shareErrorMessage,
+    isLoading: isShareLoading,
+    isSearching: isShareSearching,
+    query: shareQuery,
+    sendingTargetId,
+    setQuery: setShareQuery,
+    sharePostToTarget,
+    visibleTargets: shareTargets,
+  } = usePostShare(Boolean(sharePost));
   // 사진/글 게시 후 홈 도착 시 완료 토스트(영상은 홈 폴링이 별도로 띄움).
   const { posted } = useLocalSearchParams<{ posted?: string }>();
 
@@ -123,6 +137,28 @@ export function HomeScreen() {
       });
     },
     [router],
+  );
+
+  const handleSelectShareTarget = useCallback(
+    async (target: PostShareTarget) => {
+      if (!sharePost) {
+        return;
+      }
+
+      const conversationId = await sharePostToTarget(sharePost.id, target.id);
+
+      if (!conversationId) {
+        return;
+      }
+
+      setSharePost(null);
+      showFeedback("게시물을 보냈어요", "success");
+      router.push({
+        pathname: "/messages/[conversationId]",
+        params: { conversationId },
+      });
+    },
+    [router, sharePost, sharePostToTarget, showFeedback],
   );
 
   if (isInitialLoading) {
@@ -232,6 +268,7 @@ export function HomeScreen() {
             onReport={(postId) => {
               void handleReportPost(postId);
             }}
+            onShare={setSharePost}
             onUserPress={handleUserPress}
             onVideoPress={(postId) =>
               router.push({ pathname: "/reels", params: { postId } })
@@ -264,6 +301,20 @@ export function HomeScreen() {
         onCommentCountChange={handleCommentCountChange}
         onUserPress={handleCommentUserPress}
         postId={commentSheetPostId}
+      />
+      <PostShareSheet
+        errorMessage={shareErrorMessage}
+        isLoading={isShareLoading}
+        isOpen={Boolean(sharePost)}
+        isSearching={isShareSearching}
+        onClose={() => setSharePost(null)}
+        onQueryChange={setShareQuery}
+        onSelectTarget={(target) => {
+          void handleSelectShareTarget(target);
+        }}
+        query={shareQuery}
+        sendingTargetId={sendingTargetId}
+        targets={shareTargets}
       />
     </SafeAreaView>
   );

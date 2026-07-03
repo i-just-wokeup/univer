@@ -1,4 +1,10 @@
-import { Bookmark, Heart, MessageCircle, MoreHorizontal } from "lucide-react-native";
+import {
+  Bookmark,
+  Heart,
+  MessageCircle,
+  MoreHorizontal,
+  Share2,
+} from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -23,6 +29,7 @@ type FeedPostCardProps = {
   onDelete?: (postId: string) => void;
   onLike: (postId: string) => void;
   onReport?: (postId: string) => void;
+  onShare?: (post: FeedPost) => void;
   onUserPress: (nickname: string) => void;
   // 영상 영역 탭 시(릴스 상세 이동용).
   onVideoPress?: (postId: string) => void;
@@ -48,6 +55,7 @@ export function FeedPostCard({
   onDelete,
   onLike,
   onReport,
+  onShare,
   onUserPress,
   onVideoPress,
   post,
@@ -63,6 +71,14 @@ export function FeedPostCard({
           {
             label: isBookmarked ? "저장 취소" : "저장",
             onPress: () => onBookmark(post.id),
+          } satisfies ActionSheetItem,
+        ]
+      : []),
+    ...(onShare
+      ? [
+          {
+            label: "공유",
+            onPress: () => onShare(post),
           } satisfies ActionSheetItem,
         ]
       : []),
@@ -155,6 +171,16 @@ export function FeedPostCard({
             <MessageCircle color={colors.text} size={25} strokeWidth={2} />
             <Text style={styles.actionText}>{formatCount(post.comments_count)}</Text>
           </Pressable>
+          {onShare ? (
+            <Pressable
+              accessibilityLabel="게시물 공유"
+              accessibilityRole="button"
+              onPress={() => onShare(post)}
+              style={styles.actionButton}
+            >
+              <Share2 color={colors.text} size={24} strokeWidth={2} />
+            </Pressable>
+          ) : null}
         </View>
         <Pressable
           accessibilityLabel={isBookmarked ? "저장 취소" : "게시물 저장"}

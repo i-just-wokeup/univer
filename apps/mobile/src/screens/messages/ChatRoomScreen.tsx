@@ -192,6 +192,12 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
                   <MessageBubble
                     isMine={item.sender_id === currentUserId}
                     message={item}
+                    onPostPress={(postId) =>
+                      router.push({
+                        pathname: "/post/[id]",
+                        params: { id: postId },
+                      })
+                    }
                   />
                 </View>
               </View>
