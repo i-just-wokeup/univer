@@ -5,6 +5,7 @@ import { PAGE_SIZE } from "../../lib/constants/pagination";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import {
   getConversations,
+  hydrateMessagesWithSharedPosts,
   getMessages,
   type ConversationWithUser,
   type Message,
@@ -112,6 +113,7 @@ export function useMessages(conversationId: string) {
         message_type: "text",
         read_at: null,
         sender_id: senderId,
+        shared_post_id: null,
       };
 
       setMessages((prevMessages) => [...prevMessages, optimisticMessage]);
@@ -143,6 +145,7 @@ export function useMessages(conversationId: string) {
       return;
     }
 
+    let isSubscribed = true;
     const supabase = getSupabaseMobileClient();
     const channel = supabase
       .channel(`messages:${conversationId}:${createRuntimeId()}`)
@@ -155,28 +158,36 @@ export function useMessages(conversationId: string) {
           table: "messages",
         },
         (payload) => {
-          const nextMessage = payload.new as Message;
+          void hydrateMessagesWithSharedPosts([payload.new as Message]).then(
+            ([nextMessage]) => {
+              if (!isSubscribed || !nextMessage) {
+                return;
+              }
 
-          setMessages((prevMessages) => {
-            if (prevMessages.some((message) => message.id === nextMessage.id)) {
-              return prevMessages;
-            }
+              setMessages((prevMessages) => {
+                if (
+                  prevMessages.some((message) => message.id === nextMessage.id)
+                ) {
+                  return prevMessages;
+                }
 
-            const optimisticIndex = prevMessages.findIndex(
-              (message) =>
-                message.isOptimistic === true &&
-                message.sender_id === nextMessage.sender_id &&
-                message.content === nextMessage.content,
-            );
+                const optimisticIndex = prevMessages.findIndex(
+                  (message) =>
+                    message.isOptimistic === true &&
+                    message.sender_id === nextMessage.sender_id &&
+                    message.content === nextMessage.content,
+                );
 
-            if (optimisticIndex === -1) {
-              return [...prevMessages, nextMessage];
-            }
+                if (optimisticIndex === -1) {
+                  return [...prevMessages, nextMessage];
+                }
 
-            return prevMessages.map((message, index) =>
-              index === optimisticIndex ? nextMessage : message,
-            );
-          });
+                return prevMessages.map((message, index) =>
+                  index === optimisticIndex ? nextMessage : message,
+                );
+              });
+            },
+          );
         },
       )
       .on(
@@ -203,6 +214,7 @@ export function useMessages(conversationId: string) {
       .subscribe();
 
     return () => {
+      isSubscribed = false;
       void supabase.removeChannel(channel);
     };
   }, [conversationId, error]);

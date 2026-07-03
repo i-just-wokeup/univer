@@ -8,6 +8,8 @@ import {
   getCurrentUserId,
   isBlockRelatedUser,
 } from "../shared/userContext";
+import { getPost } from "../feed/api";
+import type { FeedPost } from "../feed/types";
 
 type ConversationRow = Database["public"]["Tables"]["conversations"]["Row"];
 type ConversationInsert =
@@ -36,7 +38,20 @@ export type Message = Pick<
   | "message_type"
   | "read_at"
   | "sender_id"
->;
+  | "shared_post_id"
+> & {
+  sharedPost?: SharedPostPreview | null;
+};
+
+export type SharedPostPreview = {
+  aspect_ratio: FeedPost["aspect_ratio"];
+  authorAvatarUrl: string | null;
+  authorNickname: string;
+  content: string | null;
+  id: string;
+  mediaType: FeedPost["media"][number]["type"] | null;
+  thumbnailUrl: string | null;
+};
 
 // 두 유저 id를 정렬해 participant_1/2로 — 같은 쌍이 항상 같은 순서가 되게(대화방 유일성 보장).
 function getParticipantIds(userId: string, targetUserId: string) {
@@ -54,7 +69,72 @@ function toMessage(row: MessageRow): Message {
     message_type: row.message_type,
     read_at: row.read_at,
     sender_id: row.sender_id,
+    shared_post_id: row.shared_post_id,
   };
+}
+
+function toSharedPostPreview(post: FeedPost): SharedPostPreview {
+  const firstMedia = post.media[0] ?? null;
+
+  return {
+    aspect_ratio: post.aspect_ratio,
+    authorAvatarUrl: post.user.avatar_url,
+    authorNickname: post.user.nickname,
+    content: post.content,
+    id: post.id,
+    mediaType: firstMedia?.type ?? null,
+    thumbnailUrl: firstMedia?.thumbnail_url ?? firstMedia?.url ?? null,
+  };
+}
+
+function getPostMessageContent(post: FeedPost) {
+  const trimmedContent = post.content?.trim();
+
+  if (trimmedContent) {
+    return trimmedContent.slice(0, 80);
+  }
+
+  return "[게시물]";
+}
+
+// post 메시지에 게시물 미리보기를 붙인다. 접근 불가/삭제/차단이면 sharedPost=null 폴백.
+export async function hydrateMessagesWithSharedPosts(
+  messages: Message[],
+): Promise<Message[]> {
+  const postIds = Array.from(
+    new Set(
+      messages
+        .filter((message) => message.message_type === "post")
+        .map((message) => message.shared_post_id)
+        .filter((postId): postId is string => Boolean(postId)),
+    ),
+  );
+
+  if (postIds.length === 0) {
+    return messages;
+  }
+
+  const postEntries = await Promise.all(
+    postIds.map(async (postId) => {
+      try {
+        return [postId, toSharedPostPreview(await getPost(postId))] as const;
+      } catch {
+        return [postId, null] as const;
+      }
+    }),
+  );
+  const postsById = new Map<string, SharedPostPreview | null>(postEntries);
+
+  return messages.map((message) => {
+    if (message.message_type !== "post" || !message.shared_post_id) {
+      return message;
+    }
+
+    return {
+      ...message,
+      sharedPost: postsById.get(message.shared_post_id) ?? null,
+    };
+  });
 }
 
 // 대화방 접근 권한 확인 — 참가자 본인인지 + 상대와 차단 관계 아닌지. 통과 시 {상대id, supabase, userId}.
@@ -308,7 +388,7 @@ export async function getMessages(
   let query = supabase
     .from("messages")
     .select(
-      "id, conversation_id, sender_id, message_type, content, read_at, deleted_at, created_at",
+      "id, conversation_id, sender_id, message_type, content, shared_post_id, read_at, deleted_at, created_at",
     )
     .eq("conversation_id", conversationId)
     .is("deleted_at", null)
@@ -325,7 +405,9 @@ export async function getMessages(
     throw new Error("메시지를 불러오지 못했습니다.");
   }
 
-  return (messages as MessageRow[]).map(toMessage).reverse();
+  return hydrateMessagesWithSharedPosts(
+    (messages as MessageRow[]).map(toMessage).reverse(),
+  );
 }
 
 // 메시지 전송(접근 권한 체크 + 빈 내용 거부) → 생성된 Message.
@@ -355,7 +437,7 @@ export async function sendMessage(
     .from("messages")
     .insert(messageInsert)
     .select(
-      "id, conversation_id, sender_id, message_type, content, read_at, deleted_at, created_at",
+      "id, conversation_id, sender_id, message_type, content, shared_post_id, read_at, deleted_at, created_at",
     )
     .single();
 
@@ -364,6 +446,43 @@ export async function sendMessage(
   }
 
   return toMessage(createdMessage as MessageRow);
+}
+
+// 게시물 공유 메시지 전송. content CHECK와 대화 미리보기를 위해 content는 항상 채운다.
+export async function sendPostMessage(
+  conversationId: string,
+  postId: string,
+): Promise<Message> {
+  const post = await getPost(postId);
+  const { supabase, userId } = await getConversationAccessContext(
+    conversationId,
+    "차단 관계에서는 게시물을 보낼 수 없습니다.",
+  );
+
+  const messageInsert: MessageInsert = {
+    content: getPostMessageContent(post),
+    conversation_id: conversationId,
+    message_type: "post",
+    sender_id: userId,
+    shared_post_id: postId,
+  };
+
+  const { data: createdMessage, error: messageError } = await supabase
+    .from("messages")
+    .insert(messageInsert)
+    .select(
+      "id, conversation_id, sender_id, message_type, content, shared_post_id, read_at, deleted_at, created_at",
+    )
+    .single();
+
+  if (messageError || !createdMessage) {
+    throw new Error("게시물을 보내지 못했습니다.");
+  }
+
+  return {
+    ...toMessage(createdMessage as MessageRow),
+    sharedPost: toSharedPostPreview(post),
+  };
 }
 
 // 대화방의 안읽은(상대가 보낸) 메시지를 읽음 처리(mark_messages_read RPC).
