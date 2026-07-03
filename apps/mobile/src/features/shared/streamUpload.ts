@@ -5,6 +5,19 @@ import { getSupabaseMobileClient } from "../../lib/supabase";
 const CLOUDFLARE_UPLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const PROGRESS_LOG_STEP = 10;
 
+// 개발 빌드에서만 콘솔에 찍는다(프로덕션엔 파일크기/asset id 등 노이즈·정보 노출 방지).
+function logDev(...args: unknown[]) {
+  if (__DEV__) {
+    console.log(...args);
+  }
+}
+
+function warnDev(...args: unknown[]) {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+}
+
 export type CloudflareStreamUploadResult = {
   assetId: string;
   playbackUrl: string;
@@ -78,17 +91,17 @@ async function logFileInfo(uri: string) {
     const info = await FileSystem.getInfoAsync(uri);
 
     if (info.exists) {
-      console.log("[stream-upload] local file", {
+      logDev("[stream-upload] local file", {
         size: formatBytes(info.size),
         uriPrefix: uri.slice(0, 48),
       });
     } else {
-      console.warn("[stream-upload] local file not found", {
+      warnDev("[stream-upload] local file not found", {
         uriPrefix: uri.slice(0, 48),
       });
     }
   } catch (error) {
-    console.warn("[stream-upload] failed to inspect local file", {
+    warnDev("[stream-upload] failed to inspect local file", {
       error,
       uriPrefix: uri.slice(0, 48),
     });
@@ -107,13 +120,14 @@ function uploadMultipartToCloudflare(uploadUrl: string, uri: string) {
         return;
       }
 
-      const progress = Math.floor((event.loaded / event.total) * 100);
+      // 멀티파트 오버헤드로 loaded가 total을 넘을 수 있어 100%로 clamp.
+      const progress = Math.min(100, Math.floor((event.loaded / event.total) * 100));
       const progressBucket =
         Math.floor(progress / PROGRESS_LOG_STEP) * PROGRESS_LOG_STEP;
 
       if (progressBucket !== lastLoggedProgress) {
         lastLoggedProgress = progressBucket;
-        console.log("[stream-upload] upload progress", {
+        logDev("[stream-upload] upload progress", {
           loaded: formatBytes(event.loaded),
           progress: `${progress}%`,
           total: formatBytes(event.total),
@@ -124,7 +138,7 @@ function uploadMultipartToCloudflare(uploadUrl: string, uri: string) {
     xhr.onload = () => {
       const body = xhr.responseText ?? "";
 
-      console.log("[stream-upload] upload finished", {
+      logDev("[stream-upload] upload finished", {
         status: xhr.status,
       });
 
@@ -158,7 +172,7 @@ function uploadMultipartToCloudflare(uploadUrl: string, uri: string) {
 
     formData.append("file", file as unknown as Blob);
 
-    console.log("[stream-upload] upload started", {
+    logDev("[stream-upload] upload started", {
       timeoutMs: CLOUDFLARE_UPLOAD_TIMEOUT_MS,
     });
 
@@ -174,7 +188,7 @@ export async function uploadVideoToCloudflareStream(
 
   await logFileInfo(uri);
 
-  console.log("[stream-upload] requesting upload url");
+  logDev("[stream-upload] requesting upload url");
   const { data, error } = await supabase.functions.invoke("stream-upload-url", {
     method: "POST",
   });
@@ -183,7 +197,7 @@ export async function uploadVideoToCloudflareStream(
     throw new Error(error?.message ?? "Cloudflare 업로드 URL을 받지 못했습니다.");
   }
 
-  console.log("[stream-upload] upload url received", {
+  logDev("[stream-upload] upload url received", {
     assetId: data.uid,
   });
 

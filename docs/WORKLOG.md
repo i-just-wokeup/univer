@@ -7,6 +7,7 @@
 ## 2026-07-03
 
 ### 완료
+- **보안/위생 Round 1** — (1) 보안 advisor 확인: 관리자 RPC(`get_admin_*`/`handle_admin_report`)는 전부 내부에서 `role='admin'` 체크 → 구멍 없음, `get_user_real_name`도 본인/크루만 → 안전. 33개 경고 대부분은 린터 노이즈(RPC 다 플래그). (2) `push_on_message`/`push_on_notification`(트리거 함수)의 anon/authenticated EXECUTE 회수 — 트리거라 직접 호출 불필요, 푸시 정상. (3) 코덱스 #3: `streamUpload.ts` 콘솔 로그를 `__DEV__` 가드 헬퍼(`logDev`/`warnDev`)로 전환(프로덕션 노이즈/정보노출 방지) + progress `Math.min(100, …)` clamp. tsc 통과. (남은 Round1: 님이 대시보드에서 Leaked Password Protection 켜기)
 - **Vercel 웹 배포 실패 수정** — 최근 3개 배포 연속 ERROR. 원인 2개(앱만 만졌는데 DB 스키마 변경 여파로 웹이 깨짐): ① `src/features/feed/api.ts`가 영상 컬럼(`provider`/`provider_asset_id`/`processing_status`)을 select 안 해 `PostMediaRow` 타입 불일치 → select에 추가 ② `tsconfig.json`이 `supabase/functions`(Deno 엣지함수)를 웹 빌드 타입체크에 포함 → exclude 추가. 로컬 `npm run build` 성공 확인.
 - **🔴 Supabase egress 폭발 사고 대응** — Free 무료 한도 초과 메일/경고(cached egress 38.9GB / 5GB = 780%, MAU 2명인데 비정상). 조사 결과 **Cloudflare Stream 전환 전 옛날 영상(Supabase Storage `post-videos`/`story-videos`)이 반복 다운로드**되던 게 원인 — 영상은 스트리밍 서비스가 아닌 파일저장소에서 `loop=true`로 통째 반복 다운로드(+8MB 버퍼 제한). 대응: 활성 옛날 영상 게시물 3개+스토리 2개 soft delete, `post-videos`/`story-videos` 버킷 private 전환, Storage 옛 `.mp4` 파일 대시보드에서 실삭제. **새 영상은 이미 Cloudflare 직행이라 재발 구조적 불가.** 남은 것: 사용량 알림/모니터링(2주간 미감지=관측도구 0), 이미지 버킷 private+signed URL(출시 전).
 
