@@ -253,7 +253,9 @@
    - 완료: 앱에서 `processing→ready` 자동 갱신(홈 피드 4초 폴링) + 완료 토스트 + "업로드 중" 라벨(사진/글/영상 통일)
    - 완료: 영상 길이(60초)/용량(250MB) 사전 제한(pickVideo 체크, 에러는 영상 선택 카드 밑 표시) + 서버 `maxDurationSeconds` 65초 이중 안전망
    - 완료: **릴스 신고/차단/삭제 메뉴**(`ReelItem` `...` → ActionSheet/ConfirmDialog 재사용, `useReels`에 reportPost/blockAuthor/removePost) — 릴스에 UGC 신고가 없어 심사 리스크였던 것 해소. tsc 통과, 실기기 확인 남음
-   - 남음: ① webhook 서명(`Webhook-Signature`) 검증 추가(위조 방지) ② webhook 놓침 대비 polling 안전망(`stream-status` 서버 함수) ③ 오래된 Supabase Storage 영상 마이그레이션 여부 결정 ④ 스토리 영상 길이 제한(현재 피드만 적용)
+   - 완료: **`stream-status` Edge Function**(2026-07-03) — webhook 놓쳐도 폴링이 Cloudflare 직접 조회→DB 갱신으로 영상 ready 자가복구. `getVideoStatuses`가 DB 읽기→함수 호출로 전환. 배포·tsc 통과(커밋 `cba8bc8`), 실기기 런타임 확인 남음
+   - 완료: **옛날 Supabase Storage 영상 정리**(2026-07-03) — Cloudflare 전환 전 레거시 영상 9개가 loop 재생으로 반복 다운로드돼 cached egress 38GB 폭발한 사고. 게시물/스토리 soft delete + `.mp4` 실삭제 + `post-videos`/`story-videos` 버킷 private 전환
+   - 남음: ① webhook 서명(`Webhook-Signature`) 검증 추가(위조 방지) ② 스토리 영상 길이 제한(현재 피드만 적용)
    - 릴스 후속 갭: ⑤ 처리중→완료 폴링 릴스/스토리 미적용(방금 올린 영상 그 화면에서 안 갱신) ⑥ 영상 글 0개일 때 빈 화면·startPostId 첫 페이지 밖이면 엉뚱한 영상 재생 ⑦ 전역 음소거(현재 영상마다 따로) ⑧ 더블탭 좋아요
    - 비용: Cloudflare Stream 저장 $5/1000분·전송 $1/1000분, 인코딩·업로드 무료 (MVP 규모 사실상 무시 가능)
 
