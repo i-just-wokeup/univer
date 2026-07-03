@@ -29,7 +29,7 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
       style={[
         styles.bottomNav,
         {
-          height: 78 + insets.bottom,
+          height: 54 + insets.bottom,
           paddingBottom: insets.bottom,
         },
       ]}
@@ -72,8 +72,8 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
           >
             <Icon
               color={iconColor}
-              size={meta.primary ? 36 : 31}
-              strokeWidth={meta.primary ? 2.8 : 2.5}
+              size={meta.primary ? 27 : 25}
+              strokeWidth={meta.primary ? 2.4 : 2}
             />
           </Pressable>
         );
@@ -88,24 +88,24 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    height: 78,
+    height: 54,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    backgroundColor: "rgba(255,255,255,0.94)",
+    backgroundColor: colors.white,
   },
   navTab: {
-    height: 48,
-    width: 48,
+    height: 44,
+    width: 44,
     alignItems: "center",
     justifyContent: "center",
   },
   primaryTab: {
-    height: 58,
-    width: 58,
+    height: 46,
+    width: 46,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 18,
+    borderRadius: 14,
     backgroundColor: colors.accent,
   },
 });

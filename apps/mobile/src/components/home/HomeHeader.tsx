@@ -29,7 +29,7 @@ export function HomeHeader({
             onPress={onPressNotifications}
             style={styles.circleButton}
           >
-            <Bell color={colors.text} size={27} strokeWidth={2.6} />
+            <Bell color={colors.text} size={23} strokeWidth={2} />
             {unreadCount > 0 ? (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
@@ -45,7 +45,7 @@ export function HomeHeader({
             onPress={onPressMessages}
             style={styles.circleButton}
           >
-            <MessageCircle color={colors.text} size={28} strokeWidth={2.6} />
+            <MessageCircle color={colors.text} size={24} strokeWidth={2} />
             {unreadChatCount > 0 ? (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
@@ -62,14 +62,14 @@ export function HomeHeader({
 
 const styles = StyleSheet.create({
   headerArea: {
-    paddingBottom: 14,
+    paddingBottom: 6,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 24,
-    paddingBottom: 18,
+    paddingBottom: 10,
     paddingTop: 12,
   },
   logo: {
@@ -82,11 +82,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   circleButton: {
-    height: 52,
-    width: 52,
+    height: 44,
+    width: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 26,
+    borderRadius: 22,
     backgroundColor: colors.white,
   },
   badge: {

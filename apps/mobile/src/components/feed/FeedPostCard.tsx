@@ -103,11 +103,11 @@ export function FeedPostCard({
     <View style={styles.card}>
       <View style={styles.header}>
         <UserInline
-          avatarSize={42}
+          avatarSize={34}
           imageUrl={post.user.avatar_url}
           meta={`${post.user.department} · ${getRelativeTimeLabel(post.created_at)}`}
           nickname={post.user.nickname}
-          nicknameSize={16}
+          nicknameSize={14}
           onPress={onUserPress}
           style={styles.userInline}
         />
@@ -120,7 +120,7 @@ export function FeedPostCard({
             pressed ? styles.pressed : null,
           ]}
         >
-          <MoreHorizontal color={colors.textFaint} size={26} strokeWidth={2.7} />
+          <MoreHorizontal color={colors.textFaint} size={22} strokeWidth={2.2} />
         </Pressable>
       </View>
 
@@ -143,8 +143,8 @@ export function FeedPostCard({
             <Heart
               color={isLiked ? colors.danger : colors.text}
               fill={isLiked ? colors.danger : "transparent"}
-              size={33}
-              strokeWidth={2.5}
+              size={26}
+              strokeWidth={2}
             />
             <Text style={styles.actionText}>{formatCount(post.likes_count)}</Text>
           </Pressable>
@@ -152,7 +152,7 @@ export function FeedPostCard({
             onPress={() => onComment(post.id)}
             style={styles.actionButton}
           >
-            <MessageCircle color={colors.text} size={29} strokeWidth={2.5} />
+            <MessageCircle color={colors.text} size={25} strokeWidth={2} />
             <Text style={styles.actionText}>{formatCount(post.comments_count)}</Text>
           </Pressable>
         </View>
@@ -168,8 +168,8 @@ export function FeedPostCard({
           <Bookmark
             color={colors.text}
             fill={isBookmarked ? colors.text : "transparent"}
-            size={30}
-            strokeWidth={2.5}
+            size={25}
+            strokeWidth={2}
           />
         </Pressable>
       </View>
@@ -234,17 +234,17 @@ export function FeedPostCard({
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 16,
+    marginBottom: 10,
     overflow: "hidden",
-    borderRadius: 22,
+    borderRadius: 18,
     backgroundColor: colors.white,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
   },
   userInline: {
     flex: 1,
@@ -253,13 +253,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingTop: 9,
+    paddingBottom: 11,
   },
   leftActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 24,
+    gap: 18,
   },
   actionButton: {
     flexDirection: "row",
@@ -268,19 +269,19 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: colors.text,
-    fontSize: 16,
-    fontWeight: "900",
+    fontSize: 13,
+    fontWeight: "700",
   },
   contentWrap: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 0,
   },
   content: {
     color: colors.text,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
-    lineHeight: 22,
+    lineHeight: 20,
   },
   contentMore: {
     marginTop: 4,

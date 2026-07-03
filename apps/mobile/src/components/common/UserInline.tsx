@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
   },
   metaLine: {
     color: colors.textFaint,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "500",
   },
   nickname: {
     color: colors.text,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     color: colors.textFaint,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "500",
   },
 });

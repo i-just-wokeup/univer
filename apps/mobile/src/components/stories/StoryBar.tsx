@@ -11,8 +11,8 @@ type StoryBarProps = {
   onPressGroup: (group: StoryGroup) => void;
 };
 
-const CARD_WIDTH = 128;
-const CARD_HEIGHT = 176;
+const CARD_WIDTH = 100;
+const CARD_HEIGHT = 140;
 
 // 미리보기 이미지 + 닉네임 + 미열람 테두리로 구성된 단일 스토리 카드.
 function StoryCard({
@@ -96,7 +96,7 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
           ]}
         >
           <View style={styles.createPlus}>
-            <Plus color={colors.white} size={30} strokeWidth={2.6} />
+            <Plus color={colors.white} size={26} strokeWidth={2.6} />
           </View>
           <Text style={styles.createLabel}>내 스토리</Text>
         </Pressable>
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   list: {
     gap: 12,
     paddingBottom: 14,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   myStory: {
     position: "relative",
@@ -152,8 +152,8 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     justifyContent: "flex-end",
     overflow: "hidden",
-    borderRadius: 28,
-    borderWidth: 2.5,
+    borderRadius: 22,
+    borderWidth: 2,
     backgroundColor: "#D8CCF2",
   },
   cardUnviewed: {
@@ -170,13 +170,13 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    height: 64,
+    height: 52,
     backgroundColor: "rgba(13,13,18,0.42)",
   },
   cardName: {
-    margin: 10,
+    margin: 8,
     color: colors.white,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "900",
   },
   createCard: {
@@ -185,22 +185,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderColor: "#D9CCFA",
-    borderRadius: 28,
-    borderWidth: 3,
+    borderRadius: 22,
+    borderWidth: 2.5,
     backgroundColor: "rgba(255,255,255,0.3)",
   },
   createPlus: {
-    height: 52,
-    width: 52,
+    height: 42,
+    width: 42,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 26,
+    borderRadius: 21,
     backgroundColor: colors.accent,
   },
   createLabel: {
-    marginTop: 14,
+    marginTop: 10,
     color: colors.text,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "900",
   },
   pressed: {
