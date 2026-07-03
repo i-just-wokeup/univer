@@ -608,7 +608,7 @@ export type Database = {
         Row: {
           id: string
           reporter_id: string
-          target_type: 'post' | 'story' | 'user'
+          target_type: 'post' | 'comment' | 'story' | 'user'
           target_id: string
           reason: string | null
           status: 'pending' | 'reviewed' | 'dismissed' | 'action_taken'
@@ -617,7 +617,7 @@ export type Database = {
         Insert: {
           id?: string
           reporter_id: string
-          target_type: 'post' | 'story' | 'user'
+          target_type: 'post' | 'comment' | 'story' | 'user'
           target_id: string
           reason?: string | null
           status?: string

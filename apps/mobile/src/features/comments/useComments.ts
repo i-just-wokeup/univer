@@ -10,6 +10,7 @@ import {
   toggleCommentLike,
 } from "./api";
 import type { Comment } from "./types";
+import { createReport } from "../reports/api";
 
 type ReplyTarget = {
   nickname: string;
@@ -70,6 +71,7 @@ export function useComments({
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -84,10 +86,19 @@ export function useComments({
     null,
   );
   const inputRef = useRef<TextInput | null>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // onCommentCountChange를 ref로 담아 로드 effect 의존성에서 제거한다.
   // (부모가 함수를 useCallback으로 안 감싸도 effect가 재실행돼 깜빡이지 않게)
   const onCommentCountChangeRef = useRef(onCommentCountChange);
   onCommentCountChangeRef.current = onCommentCountChange;
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !postId) {
@@ -98,6 +109,7 @@ export function useComments({
     setReplyTarget(null);
     setExpandedReplyIds(new Set());
     setErrorMessage("");
+    setFeedbackMessage("");
     let isMounted = true;
 
     async function loadComments() {
@@ -312,6 +324,23 @@ export function useComments({
     [comments, onCommentCountChange, postId],
   );
 
+  // 댓글 신고. 스냅샷(작성자/내용)은 reports 테이블 트리거(fill_report_snapshot)가 채운다.
+  const handleReport = useCallback(async (commentId: string) => {
+    try {
+      setErrorMessage("");
+      await createReport({ targetId: commentId, targetType: "comment" });
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+      setFeedbackMessage("신고가 접수됐어요");
+      feedbackTimerRef.current = setTimeout(() => setFeedbackMessage(""), 1800);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "신고에 실패했습니다.",
+      );
+    }
+  }, []);
+
   return {
     comments,
     content,
@@ -319,9 +348,11 @@ export function useComments({
     deletingCommentId,
     errorMessage,
     expandedReplyIds,
+    feedbackMessage,
     handleCancelReply,
     handleDelete,
     handleReply,
+    handleReport,
     handleSubmit,
     handleToggleLike,
     inputRef,

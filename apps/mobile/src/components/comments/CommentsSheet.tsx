@@ -1,5 +1,5 @@
 import { Send } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CommentRow } from "./CommentRow";
+import { ConfirmDialog } from "../common/ConfirmDialog";
 import { useComments } from "../../features/comments/useComments";
 import { colors } from "../../lib/theme";
 
@@ -39,6 +40,7 @@ export function CommentsSheet({
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const isClosingRef = useRef(false);
+  const [reportCommentId, setReportCommentId] = useState<string | null>(null);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
   const {
     comments,
@@ -47,9 +49,11 @@ export function CommentsSheet({
     deletingCommentId,
     errorMessage,
     expandedReplyIds,
+    feedbackMessage,
     handleCancelReply,
     handleDelete,
     handleReply,
+    handleReport,
     handleSubmit,
     handleToggleLike,
     inputRef,
@@ -184,6 +188,7 @@ export function CommentsSheet({
                     isOwn={currentUserId === item.user.id}
                     onDelete={handleDelete}
                     onReply={handleReply}
+                    onReport={setReportCommentId}
                     onToggleLike={handleToggleLike}
                     onUserPress={onUserPress}
                   />
@@ -201,6 +206,7 @@ export function CommentsSheet({
                             mentionNickname={item.user.nickname}
                             onDelete={handleDelete}
                             onReply={handleReply}
+                            onReport={setReportCommentId}
                             onToggleLike={handleToggleLike}
                             onUserPress={onUserPress}
                           />
@@ -231,6 +237,10 @@ export function CommentsSheet({
 
           {errorMessage ? (
             <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+
+          {feedbackMessage ? (
+            <Text style={styles.feedbackText}>{feedbackMessage}</Text>
           ) : null}
 
           <View
@@ -276,6 +286,22 @@ export function CommentsSheet({
             </View>
           </View>
         </Animated.View>
+
+        <ConfirmDialog
+          confirmLabel="신고"
+          danger
+          description="검토를 위해 이 댓글을 신고합니다."
+          isOpen={reportCommentId !== null}
+          onCancel={() => setReportCommentId(null)}
+          onConfirm={() => {
+            const target = reportCommentId;
+            setReportCommentId(null);
+            if (target) {
+              void handleReport(target);
+            }
+          }}
+          title="댓글을 신고할까요?"
+        />
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -366,6 +392,13 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: colors.danger,
+    fontSize: 13,
+    fontWeight: "800",
+    paddingHorizontal: 18,
+    paddingBottom: 8,
+  },
+  feedbackText: {
+    color: colors.accent,
     fontSize: 13,
     fontWeight: "800",
     paddingHorizontal: 18,

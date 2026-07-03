@@ -1,7 +1,7 @@
 // 신고 데이터 계층 — 게시물/스토리/유저 신고 접수(사유 없음, MVP).
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
-export type ReportTargetType = "post" | "story" | "user";
+export type ReportTargetType = "post" | "comment" | "story" | "user";
 
 // 신고 접수. 같은 대상 중복 신고(23505)는 "이미 신고함"으로 안내.
 export async function createReport({

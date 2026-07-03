@@ -15,6 +15,7 @@ type CommentRowProps = {
   mentionNickname?: string;
   onDelete: (commentId: string) => void;
   onReply: (comment: Comment) => void;
+  onReport: (commentId: string) => void;
   onToggleLike: (commentId: string) => void;
   onUserPress: (nickname: string) => void;
 };
@@ -29,6 +30,7 @@ export function CommentRow({
   mentionNickname,
   onDelete,
   onReply,
+  onReport,
   onToggleLike,
   onUserPress,
 }: CommentRowProps) {
@@ -99,7 +101,11 @@ export function CommentRow({
           >
             <Text style={styles.deleteText}>삭제</Text>
           </Pressable>
-        ) : null}
+        ) : (
+          <Pressable onPress={() => onReport(comment.id)}>
+            <Text style={styles.deleteText}>신고</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
