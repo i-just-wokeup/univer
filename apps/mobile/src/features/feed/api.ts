@@ -82,7 +82,9 @@ export type VideoProcessingStatus = {
   url: string;
 };
 
-// Cloudflare Stream 영상들의 현재 처리 상태를 asset id로 조회한다(업로드 후 ready 폴링용).
+// Cloudflare Stream 영상들의 현재 처리 상태 조회(업로드 후 ready 폴링용).
+// stream-status 엣지 함수가 Cloudflare에 직접 물어 DB(post_media/stories)를 갱신하고 상태를 돌려준다.
+// → webhook을 놓쳐도 폴링이 스스로 ready로 복구(예전엔 DB만 읽어 webhook 실패 시 영원히 processing).
 export async function getVideoStatuses(
   assetIds: string[],
 ): Promise<VideoProcessingStatus[]> {
@@ -91,33 +93,17 @@ export async function getVideoStatuses(
   }
 
   const supabase = getSupabaseMobileClient();
-  const { data, error } = await supabase
-    .from("post_media")
-    .select("provider_asset_id, processing_status, url, thumbnail_url")
-    .eq("provider", "cloudflare_stream")
-    .in("provider_asset_id", assetIds);
+  const { data, error } = await supabase.functions.invoke("stream-status", {
+    body: { assetIds },
+  });
 
-  if (error || !data) {
+  if (error) {
     return [];
   }
 
-  return data.flatMap((row) => {
-    if (!row.provider_asset_id) {
-      return [];
-    }
-
-    return [
-      {
-        processingStatus: row.processing_status as
-          | "processing"
-          | "ready"
-          | "failed",
-        providerAssetId: row.provider_asset_id,
-        thumbnailUrl: row.thumbnail_url,
-        url: row.url,
-      },
-    ];
-  });
+  const statuses = (data as { statuses?: VideoProcessingStatus[] } | null)
+    ?.statuses;
+  return Array.isArray(statuses) ? statuses : [];
 }
 
 // 게시물 작성. posts insert 후 미디어(영상 1개 OR 이미지 여러 장)를 post_media에 넣는다. 새 postId 반환.
