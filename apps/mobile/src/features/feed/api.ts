@@ -149,6 +149,8 @@ export async function createPost({
     });
 
     if (mediaError) {
+      // 롤백: 미디어 없는 빈 게시물이 피드에 남지 않게 방금 만든 글을 삭제한다.
+      await supabase.from("posts").delete().eq("id", post.id);
       throw new Error("게시물 영상을 저장하지 못했습니다.");
     }
   } else if (imageUrls.length > 0) {
@@ -162,6 +164,8 @@ export async function createPost({
     );
 
     if (mediaError) {
+      // 롤백: 미디어 없는 빈 게시물이 피드에 남지 않게 방금 만든 글을 삭제한다.
+      await supabase.from("posts").delete().eq("id", post.id);
       throw new Error("게시물 이미지를 저장하지 못했습니다.");
     }
   }
