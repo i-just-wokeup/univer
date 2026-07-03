@@ -382,7 +382,7 @@ export async function getPost(postId: string): Promise<PostDetail> {
     await Promise.all([
       supabase
         .from("post_media")
-        .select("id, post_id, type, url, thumbnail_url, duration, order_index, created_at")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index, created_at, provider, provider_asset_id, processing_status")
         .eq("post_id", postId)
         .order("order_index", { ascending: true }),
       supabase
@@ -724,7 +724,7 @@ export async function getFeed({
         .in("id", userIds),
       supabase
         .from("post_media")
-        .select("id, post_id, type, url, thumbnail_url, duration, order_index, created_at")
+        .select("id, post_id, type, url, thumbnail_url, duration, order_index, created_at, provider, provider_asset_id, processing_status")
         .in("post_id", postIds)
         .order("order_index", { ascending: true }),
     ]);
