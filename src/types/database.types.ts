@@ -429,8 +429,9 @@ export type Database = {
           id: string
           conversation_id: string
           sender_id: string
-          message_type: 'text' | 'image' | 'system'
+          message_type: 'text' | 'image' | 'system' | 'post'
           content: string
+          shared_post_id: string | null
           read_at: string | null
           deleted_at: string | null
           created_at: string
@@ -439,13 +440,15 @@ export type Database = {
           id?: string
           conversation_id: string
           sender_id: string
-          message_type?: 'text' | 'image' | 'system'
+          message_type?: 'text' | 'image' | 'system' | 'post'
           content: string
+          shared_post_id?: string | null
           read_at?: string | null
           deleted_at?: string | null
           created_at?: string
         }
         Update: {
+          shared_post_id?: string | null
           read_at?: string | null
           deleted_at?: string | null
         }

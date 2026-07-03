@@ -387,8 +387,9 @@ messages (
   id              uuid PK default gen_random_uuid(),
   conversation_id uuid FK → conversations on delete cascade,
   sender_id       uuid FK → users,
-  message_type    text default 'text', -- 'text' | 'image' | 'system'
+  message_type    text default 'text', -- 'text' | 'image' | 'system' | 'post'
   content         text not null,
+  shared_post_id  uuid FK → posts on delete set null,
   read_at         timestamptz,
   deleted_at      timestamptz,
   created_at      timestamptz default now()
