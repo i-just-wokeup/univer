@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-07-05
+
+### 완료
+- **앱 게시물 공유 바텀시트 2단 detent 개선** — gorhom BottomSheetModal은 `present()` 호출 후 `onChange`가 불리지 않는 증상이 있어, 기존 동작하던 JS Modal/PanResponder 시트를 확장. `PostShareSheet`가 인스타식으로 **55% 반열림 → 위로 드래그 시 92% 확장 → 아래로 드래그 시 닫힘** 구조를 갖도록 변경. New Arch(`newArchEnabled=true`)·루트 `GestureHandlerRootView`/`BottomSheetModalProvider`·`react-native-worklets/plugin` 설정은 확인했고, 우선 동작 우선 fallback으로 마무리. 앱 tsc 통과.
+
 ## 2026-07-03
 
 ### 완료
