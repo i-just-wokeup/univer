@@ -7,6 +7,7 @@
 ## 2026-07-05
 
 ### 완료
+- **게시물 외부 공유 Phase 2: 공개 미리보기 페이지 + 앱 OS 공유** — 웹 공개 라우트 `/p/[postId]` 추가. 미들웨어에서 `/p/`를 비로그인 예외 처리하고, 서버 전용 service-role 클라이언트로 public+미삭제 게시물만 최소 필드 조회해 카드형 보기 전용 페이지와 OG 메타태그를 생성. 앱은 피드/상세 조회 타입에 `visibility`를 포함하고, 공유 바텀시트에서 `visibility='public'` 게시물에만 `https://univer-six.vercel.app/p/{postId}` 외부 공유 버튼을 표시. `close_friends`는 기존 인앱 DM 공유만 유지. 웹 build + 앱 tsc 통과. **배포 환경에 `SUPABASE_SERVICE_ROLE_KEY`/`NEXT_PUBLIC_SITE_URL`, 앱 env에 `EXPO_PUBLIC_SITE_URL` 필요.**
 - **앱 게시물 공유 바텀시트 2단 detent 개선** — gorhom BottomSheetModal은 `present()` 호출 후 `onChange`가 불리지 않는 증상이 있어, 기존 동작하던 JS Modal/PanResponder 시트를 확장. `PostShareSheet`가 인스타식으로 **55% 반열림 → 위로 드래그 시 92% 확장 → 아래로 드래그 시 닫힘** 구조를 갖도록 변경. New Arch(`newArchEnabled=true`)·루트 `GestureHandlerRootView`/`BottomSheetModalProvider`·`react-native-worklets/plugin` 설정은 확인했고, 우선 동작 우선 fallback으로 마무리. 앱 tsc 통과.
 
 ## 2026-07-03

@@ -30,7 +30,13 @@ type BookmarkRow = Database["public"]["Tables"]["bookmarks"]["Row"];
 
 type FeedPostRow = Pick<
   PostRow,
-  "comments_count" | "content" | "created_at" | "id" | "likes_count" | "user_id"
+  | "comments_count"
+  | "content"
+  | "created_at"
+  | "id"
+  | "likes_count"
+  | "user_id"
+  | "visibility"
 > & {
   aspect_ratio?: PostAspectRatio;
 };
@@ -208,7 +214,7 @@ export async function getFeed({
 
   let postsQuery = supabase
     .from("posts")
-    .select("id, aspect_ratio, content, created_at, likes_count, comments_count, user_id")
+    .select("id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, visibility")
     .eq("university_id", universityId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
@@ -313,6 +319,7 @@ export async function getFeed({
       likes_count: post.likes_count,
       media: mediaByPostId.get(post.id) ?? [],
       user,
+      visibility: post.visibility,
     };
   });
 
@@ -341,7 +348,7 @@ export async function getVideoFeed({
   let postsQuery = supabase
     .from("posts")
     .select(
-      "id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, post_media!inner(type)",
+      "id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, visibility, post_media!inner(type)",
     )
     .eq("university_id", universityId)
     .eq("post_media.type", "video")
@@ -449,6 +456,7 @@ export async function getVideoFeed({
       likes_count: post.likes_count,
       media: mediaByPostId.get(post.id) ?? [],
       user,
+      visibility: post.visibility,
     };
   });
 
@@ -679,7 +687,7 @@ export async function getPost(postId: string): Promise<FeedPost> {
 
   const { data: postData, error: postError } = await supabase
     .from("posts")
-    .select("id, aspect_ratio, content, created_at, likes_count, comments_count, user_id")
+    .select("id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, visibility")
     .eq("id", postId)
     .is("deleted_at", null)
     .maybeSingle();
@@ -750,5 +758,6 @@ export async function getPost(postId: string): Promise<FeedPost> {
     likes_count: post.likes_count,
     media,
     user,
+    visibility: post.visibility,
   };
 }

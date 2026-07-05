@@ -5,6 +5,10 @@ import type { Database } from "@/types/database.types";
 
 // 인증 진입점과 온보딩 단계는 미들웨어 리다이렉트를 건너뛴다.
 function isExcludedPath(pathname: string) {
+  if (pathname.startsWith("/p/")) {
+    return true;
+  }
+
   return [
     "/auth/login",
     "/auth/signup",

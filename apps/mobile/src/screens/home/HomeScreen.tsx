@@ -23,6 +23,7 @@ import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { FeedPost } from "../../features/feed/types";
 import type { StoryGroup } from "../../features/stories/types";
 import { useSession } from "../../lib/session";
+import { SITE_URL } from "../../lib/site";
 import { colors } from "../../lib/theme";
 
 export function HomeScreen() {
@@ -304,6 +305,11 @@ export function HomeScreen() {
       />
       <PostShareSheet
         errorMessage={shareErrorMessage}
+        externalShareUrl={
+          sharePost?.visibility === "public"
+            ? `${SITE_URL}/p/${sharePost.id}`
+            : null
+        }
         isLoading={isShareLoading}
         isOpen={Boolean(sharePost)}
         isSearching={isShareSearching}

@@ -5,6 +5,7 @@ import {
   PanResponder,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -25,6 +26,7 @@ const EXPAND_VELOCITY = -0.6;
 
 type PostShareSheetProps = {
   errorMessage: string | null;
+  externalShareUrl?: string | null;
   isLoading: boolean;
   isOpen: boolean;
   isSearching: boolean;
@@ -50,6 +52,7 @@ function getSourceLabel(source: PostShareTarget["source"]) {
 
 export function PostShareSheet({
   errorMessage,
+  externalShareUrl = null,
   isLoading,
   isOpen,
   isSearching,
@@ -159,6 +162,18 @@ export function PostShareSheet({
     [animateTo, closedOffset, halfSnapOffset, settleSheet, translateY],
   );
 
+  const handleExternalShare = useCallback(() => {
+    if (!externalShareUrl) {
+      return;
+    }
+
+    void Share.share({
+      message: externalShareUrl,
+      title: "UNIVER 게시물",
+      url: externalShareUrl,
+    });
+  }, [externalShareUrl]);
+
   // 열릴 때마다 화면 밖에서 시작해 반쯤 열린 detent로 슬라이드-인 + 배경 딤 페이드-인.
   useEffect(() => {
     if (!isOpen) {
@@ -243,7 +258,10 @@ export function PostShareSheet({
               <ScrollView
                 contentContainerStyle={[
                   styles.targetList,
-                  { paddingBottom: insets.bottom + 16 },
+                  {
+                    paddingBottom:
+                      insets.bottom + (externalShareUrl ? 10 : 16),
+                  },
                 ]}
                 keyboardShouldPersistTaps="handled"
               >
@@ -278,6 +296,30 @@ export function PostShareSheet({
                 })}
               </ScrollView>
             )}
+
+            {externalShareUrl ? (
+              <View
+                style={[
+                  styles.externalShare,
+                  { paddingBottom: insets.bottom + 16 },
+                ]}
+              >
+                <Text style={styles.externalTitle}>외부 공유</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={handleExternalShare}
+                  style={({ pressed }) => [
+                    styles.externalButton,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  <Text style={styles.externalButtonText}>공유하기</Text>
+                  <Text style={styles.externalButtonMeta} numberOfLines={1}>
+                    {externalShareUrl}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
           </SafeAreaView>
         </Animated.View>
       </View>
@@ -349,6 +391,35 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 8,
     paddingVertical: 10,
+  },
+  externalShare: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+  },
+  externalTitle: {
+    marginBottom: 8,
+    color: colors.textFaint,
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  externalButton: {
+    borderRadius: 18,
+    backgroundColor: colors.accentSoft,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  externalButtonText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  externalButtonMeta: {
+    marginTop: 3,
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700",
   },
   targetUser: {
     flex: 1,

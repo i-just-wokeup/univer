@@ -29,6 +29,7 @@ export type FeedPost = {
   media: PostMedia[];
   likes_count: number;
   user: FeedUser;
+  visibility: PostVisibility;
 };
 
 export type GetFeedResult = {
