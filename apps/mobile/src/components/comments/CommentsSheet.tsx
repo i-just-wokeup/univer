@@ -18,7 +18,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CommentRow } from "./CommentRow";
+import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 import { ConfirmDialog } from "../common/ConfirmDialog";
+import type { Comment } from "../../features/comments/types";
 import { useComments } from "../../features/comments/useComments";
 import { colors } from "../../lib/theme";
 
@@ -41,6 +43,8 @@ export function CommentsSheet({
   const { height } = useWindowDimensions();
   const isClosingRef = useRef(false);
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
+  // 댓글 길게 누르면 뜨는 액션시트 대상(삭제/신고).
+  const [menuComment, setMenuComment] = useState<Comment | null>(null);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
   const {
     comments,
@@ -135,6 +139,23 @@ export function CommentsSheet({
     isClosingRef.current = false;
   }, [isOpen, postId, sheetTranslateY]);
 
+  const commentMenuItems: ActionSheetItem[] = menuComment
+    ? [
+        currentUserId === menuComment.user.id
+          ? {
+              danger: true,
+              label: "삭제",
+              onPress: () => handleDelete(menuComment.id),
+            }
+          : {
+              danger: true,
+              label: "신고",
+              onPress: () => setReportCommentId(menuComment.id),
+            },
+        { label: "취소", onPress: () => undefined },
+      ]
+    : [];
+
   return (
     <Modal
       animationType="none"
@@ -185,10 +206,8 @@ export function CommentsSheet({
                     comment={item}
                     isDeleting={deletingCommentId === item.id}
                     isLiked={likedCommentIds.has(item.id)}
-                    isOwn={currentUserId === item.user.id}
-                    onDelete={handleDelete}
+                    onLongPress={setMenuComment}
                     onReply={handleReply}
-                    onReport={setReportCommentId}
                     onToggleLike={handleToggleLike}
                     onUserPress={onUserPress}
                   />
@@ -200,13 +219,11 @@ export function CommentsSheet({
                             comment={reply}
                             isDeleting={deletingCommentId === reply.id}
                             isLiked={likedCommentIds.has(reply.id)}
-                            isOwn={currentUserId === reply.user.id}
                             isReply
                             key={reply.id}
                             mentionNickname={item.user.nickname}
-                            onDelete={handleDelete}
+                            onLongPress={setMenuComment}
                             onReply={handleReply}
-                            onReport={setReportCommentId}
                             onToggleLike={handleToggleLike}
                             onUserPress={onUserPress}
                           />
@@ -287,6 +304,11 @@ export function CommentsSheet({
           </View>
         </Animated.View>
 
+        <ActionSheet
+          isOpen={menuComment !== null}
+          items={commentMenuItems}
+          onClose={() => setMenuComment(null)}
+        />
         <ConfirmDialog
           confirmLabel="신고"
           danger

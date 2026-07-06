@@ -1,5 +1,12 @@
 import { Heart } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  Vibration,
+  View,
+} from "react-native";
 
 import type { Comment } from "../../features/comments/types";
 import { colors } from "../../lib/theme";
@@ -10,12 +17,11 @@ type CommentRowProps = {
   comment: Comment;
   isDeleting: boolean;
   isLiked: boolean;
-  isOwn: boolean;
   isReply?: boolean;
   mentionNickname?: string;
-  onDelete: (commentId: string) => void;
+  // 길게 누르면 삭제/신고 액션시트(인스타식). 버튼 대신 롱프레스로.
+  onLongPress: (comment: Comment) => void;
   onReply: (comment: Comment) => void;
-  onReport: (commentId: string) => void;
   onToggleLike: (commentId: string) => void;
   onUserPress: (nickname: string) => void;
 };
@@ -25,12 +31,10 @@ export function CommentRow({
   comment,
   isDeleting,
   isLiked,
-  isOwn,
   isReply = false,
   mentionNickname,
-  onDelete,
+  onLongPress,
   onReply,
-  onReport,
   onToggleLike,
   onUserPress,
 }: CommentRowProps) {
@@ -45,7 +49,21 @@ export function CommentRow({
     (restContent.length === 0 || /^\s/.test(restContent));
 
   return (
-    <View style={[styles.row, isReply ? styles.replyRow : null]}>
+    <Pressable
+      delayLongPress={250}
+      onLongPress={() => {
+        // 인스타식: 길게 누르는 순간 짧은 진동으로 피드백.
+        if (Platform.OS === "android") {
+          Vibration.vibrate(18);
+        }
+        onLongPress(comment);
+      }}
+      style={[
+        styles.row,
+        isReply ? styles.replyRow : null,
+        isDeleting ? styles.deleting : null,
+      ]}
+    >
       <View style={styles.main}>
         <UserInline
           avatarSize={32}
@@ -54,6 +72,7 @@ export function CommentRow({
           nickname={comment.user.nickname}
           nicknameSize={13}
           onPress={onUserPress}
+          style={styles.commentUser}
         />
 
         {hasMention && mentionNickname ? (
@@ -92,22 +111,8 @@ export function CommentRow({
             {comment.likes_count}
           </Text>
         </Pressable>
-
-        {isOwn ? (
-          <Pressable
-            disabled={isDeleting}
-            onPress={() => onDelete(comment.id)}
-            style={isDeleting ? styles.deleteDisabled : null}
-          >
-            <Text style={styles.deleteText}>삭제</Text>
-          </Pressable>
-        ) : (
-          <Pressable onPress={() => onReport(comment.id)}>
-            <Text style={styles.deleteText}>신고</Text>
-          </Pressable>
-        )}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -121,9 +126,17 @@ const styles = StyleSheet.create({
   replyRow: {
     marginLeft: 36,
   },
+  deleting: {
+    opacity: 0.5,
+  },
   main: {
     flex: 1,
     minWidth: 0,
+  },
+  // 프로필 이동 탭 영역을 아바타+닉네임까지로만 제한(나머지는 롱프레스 메뉴 영역).
+  commentUser: {
+    alignSelf: "flex-start",
+    maxWidth: "82%",
   },
   content: {
     marginTop: 4,
@@ -162,13 +175,5 @@ const styles = StyleSheet.create({
   },
   likeCountOn: {
     color: colors.danger,
-  },
-  deleteText: {
-    color: colors.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  deleteDisabled: {
-    opacity: 0.5,
   },
 });
