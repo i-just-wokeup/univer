@@ -189,7 +189,11 @@ export function useComments({
       } else {
         setComments((current) => {
           const next = [created, ...current];
-          onCommentCountChange(postId, next.length);
+          // 부모 상태 갱신은 렌더 사이클 밖으로 미룬다(업데이터 안에서 부모 setState 금지).
+          const nextCount = next.length;
+          queueMicrotask(() => {
+            onCommentCountChange(postId, nextCount);
+          });
           return next;
         });
       }
