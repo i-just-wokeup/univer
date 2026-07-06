@@ -16,6 +16,8 @@ function isExcludedPath(pathname: string) {
     "/auth/forgot-password",
     "/auth/reset-password",
     "/onboarding",
+    "/terms",
+    "/privacy",
   ].includes(pathname);
 }
 

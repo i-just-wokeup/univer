@@ -1,0 +1,71 @@
+import { useEffect, useState } from "react";
+import { useVideoPlayer } from "expo-video";
+
+type UseReelVideoPlayerParams = {
+  isActive: boolean;
+  isMuted: boolean;
+  isNearActive: boolean;
+  isReady: boolean;
+  videoUrl: string | null;
+};
+
+export function useReelVideoPlayer({
+  isActive,
+  isMuted,
+  isNearActive,
+  isReady,
+  videoUrl,
+}: UseReelVideoPlayerParams) {
+  const [isPaused, setIsPaused] = useState(false);
+
+  // 초기엔 빈 소스. 가까워지면 replace로 실제 영상을, 멀어지면 null로 교체해 메모리를 푼다.
+  const player = useVideoPlayer(null, (instance) => {
+    instance.loop = true;
+    instance.muted = true;
+    // OOM 방지: 무압축 원본 영상을 통째로 메모리에 올리지 않게 버퍼를 제한한다(안드로이드).
+    instance.bufferOptions = {
+      maxBufferBytes: 8 * 1024 * 1024, // 8MB까지만 버퍼
+      preferredForwardBufferDuration: 5, // 앞 5초만 미리 받기
+      minBufferForPlayback: 1,
+    };
+  });
+
+  // 활성 ±1만 소스를 물린다(Mux/TikTok 방식: 창 밖은 source=null로 메모리 해제).
+  // 의존성은 문자열 videoUrl(안정)로 — video 객체를 쓰면 매 렌더 재실행돼 폭주한다.
+  // replaceAsync로 메인 스레드 블락(UI 프리즈)을 피한다.
+  useEffect(() => {
+    void player
+      .replaceAsync(isNearActive && isReady && videoUrl ? videoUrl : null)
+      .catch(() => undefined);
+  }, [isNearActive, isReady, player, videoUrl]);
+
+  // 전역 음소거 상태를 플레이어에 반영.
+  useEffect(() => {
+    player.muted = isMuted;
+  }, [isMuted, player]);
+
+  // 화면 밖으로 벗어나면 탭 일시정지는 초기화(다시 활성될 때 자동재생).
+  useEffect(() => {
+    if (!isActive) {
+      setIsPaused(false);
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    try {
+      if (isActive && isReady && !isPaused) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    } catch {
+      // 플레이어가 이미 release된 경우 무시.
+    }
+  }, [isActive, isPaused, isReady, player]);
+
+  return {
+    isPaused,
+    player,
+    togglePaused: () => setIsPaused((paused) => !paused),
+  };
+}
