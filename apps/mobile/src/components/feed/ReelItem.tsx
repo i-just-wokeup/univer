@@ -225,13 +225,6 @@ export function ReelItem({
         <MoreHorizontal color={colors.white} size={24} strokeWidth={2} />
       </Pressable>
 
-      {/* 하단 가독성 그라데이션 — 밝은 영상 위에서도 프로필/본문이 읽히게 */}
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.6)"]}
-        pointerEvents="none"
-        style={styles.bottomGradient}
-      />
-
       {/* 우측 액션 버튼 — 모든 버튼을 아이콘 박스(고정) + 라벨 슬롯(고정)으로 맞춰 아이콘 간격을 균등하게 */}
       <View style={[styles.actions, { bottom: insets.bottom + 96 }]}>
         <Pressable hitSlop={6} onPress={onLike} style={styles.actionButton}>
@@ -287,8 +280,14 @@ export function ReelItem({
         ) : null}
       </View>
 
-      {/* 하단 작성자 + 캡션 — 세이프에어리어 기준 고정 위치(영상/본문 길이와 무관하게 통일) */}
-      <View style={[styles.bottom, { bottom: insets.bottom + 14 }]}>
+      {/* 하단 작성자 + 캡션 — 본문 길이만큼 자라는 그라데이션 패널(위쪽 경계는 페이드).
+          본문 펼치면 패널이 커지며 페이드도 함께 위로 올라간다. */}
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.5)"]}
+        locations={[0, 0.45, 1]}
+        pointerEvents="box-none"
+        style={[styles.bottom, { paddingBottom: insets.bottom + 14 }]}
+      >
         <Pressable onPress={onPressUser} style={styles.userRow}>
           <Avatar
             imageUrl={post.user.avatar_url}
@@ -309,7 +308,7 @@ export function ReelItem({
             </ExpandableText>
           ) : null}
         </View>
-      </View>
+      </LinearGradient>
 
       <ActionSheet
         isOpen={isMenuOpen}
@@ -361,13 +360,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black,
     justifyContent: "flex-end",
   },
-  bottomGradient: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 340,
-  },
   pauseOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
@@ -386,6 +378,8 @@ const styles = StyleSheet.create({
     right: 10,
     alignItems: "center",
     gap: 10,
+    // 하단 그라데이션 패널보다 위에 그려 아이콘이 가려지지 않게.
+    zIndex: 2,
   },
   actionButton: {
     alignItems: "center",
@@ -408,9 +402,14 @@ const styles = StyleSheet.create({
   },
   bottom: {
     position: "absolute",
-    left: 16,
-    right: 80,
+    left: 0,
+    right: 0,
+    bottom: 0,
     gap: 8,
+    paddingLeft: 16,
+    paddingRight: 80,
+    paddingTop: 44,
+    zIndex: 1,
   },
   // 접힌 본문(1줄) + 더보기 높이만큼 항상 확보 → 프로필 위치 고정. 펼치면 이 이상으로 늘어남.
   captionSlot: {
