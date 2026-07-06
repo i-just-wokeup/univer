@@ -7,6 +7,7 @@
 ## 2026-07-06
 
 ### 완료
+- **앱 채팅방 화면 구조 분리 리팩토링** — 동작 변경 없이 `ChatRoomScreen`의 pending 요청 배너(`ChatRequestBanner`), inverted 메시지 리스트/시간 구분선(`ChatMessageList`), 차단 액션시트/확인 다이얼로그(`ChatRoomMoreMenu`)를 하위 컴포넌트로 분리. 화면은 `useChatRoom` 훅 연결과 라우팅 조합만 담당하도록 축소. 앱 tsc 통과.
 - **앱 피드 미디어 캐러셀 구조 분리 리팩토링** — 동작 변경 없이 `FeedMediaCarousel`에서 사진 캐러셀/인덱스 배지/더블탭 이미지 렌더를 `FeedImageCarousel`로 분리하고, 기존 파일은 영상(`FeedVideoPlayer`)과 사진 캐러셀 분기만 담당하도록 축소. 앱 tsc 통과.
 - **앱 피드 카드 구조 분리 리팩토링** — 동작 변경 없이 `FeedPostCard`의 작성자 헤더(`FeedPostHeader`), 액션 버튼 row(`FeedPostActions`), 본문(`FeedPostContent`), 더보기/저장/공유/차단/신고/삭제 메뉴(`FeedPostMoreMenu`)를 하위 컴포넌트로 분리. 앱 tsc 통과.
 - **앱 릴스 아이템 구조 분리 리팩토링** — 동작 변경 없이 `ReelItem`의 영상 플레이어 생명주기를 `useReelVideoPlayer` 훅으로 분리하고, 우측 액션 버튼(`ReelActions`)·하단 작성자/본문 오버레이(`ReelFooter`)·더보기/신고/차단/삭제 메뉴(`ReelMoreMenu`)를 하위 컴포넌트로 분리. 앱 tsc 통과.
