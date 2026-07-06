@@ -63,6 +63,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     removePost,
     reportPost,
     setActiveIndex,
+    showFeedback,
     toggleBookmarkPost,
     toggleLike,
   } = useReels(startPostId);
@@ -97,12 +98,9 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
       }
 
       setSharePost(null);
-      router.push({
-        pathname: "/messages/[conversationId]",
-        params: { conversationId },
-      });
+      showFeedback("게시물을 보냈어요");
     },
-    [router, sharePost, sharePostToTarget],
+    [sharePost, sharePostToTarget, showFeedback],
   );
 
   const flatListRef = useRef<FlatList>(null);

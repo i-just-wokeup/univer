@@ -154,12 +154,8 @@ export function HomeScreen() {
 
       setSharePost(null);
       showFeedback("게시물을 보냈어요", "success");
-      router.push({
-        pathname: "/messages/[conversationId]",
-        params: { conversationId },
-      });
     },
-    [router, sharePost, sharePostToTarget, showFeedback],
+    [sharePost, sharePostToTarget, showFeedback],
   );
 
   if (isInitialLoading) {

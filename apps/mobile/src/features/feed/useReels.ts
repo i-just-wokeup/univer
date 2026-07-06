@@ -271,6 +271,7 @@ export function useReels(startPostId?: string) {
     removePost,
     reportPost,
     setActiveIndex,
+    showFeedback,
     toggleBookmarkPost,
     toggleLike,
   };
