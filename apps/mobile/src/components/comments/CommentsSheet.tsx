@@ -257,7 +257,12 @@ export function CommentsSheet({
           ) : null}
 
           {feedbackMessage ? (
-            <Text style={styles.feedbackText}>{feedbackMessage}</Text>
+            <View
+              pointerEvents="none"
+              style={[styles.feedbackToast, { bottom: insets.bottom + 78 }]}
+            >
+              <Text style={styles.feedbackToastText}>{feedbackMessage}</Text>
+            </View>
           ) : null}
 
           <View
@@ -419,12 +424,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: 8,
   },
-  feedbackText: {
-    color: colors.accent,
+  // 신고 접수 등 피드백 — 하단 입력창 위에 뜨는 가운데 정렬 토스트 pill.
+  feedbackToast: {
+    position: "absolute",
+    left: 24,
+    right: 24,
+    alignItems: "center",
+  },
+  feedbackToastText: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: colors.text,
+    color: colors.white,
     fontSize: 13,
     fontWeight: "800",
-    paddingHorizontal: 18,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    textAlign: "center",
   },
   footer: {
     borderTopColor: colors.border,
