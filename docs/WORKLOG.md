@@ -7,6 +7,7 @@
 ## 2026-07-06
 
 ### 완료
+- **앱 게시물 공유 시트 구조 분리 리팩토링** — 동작 변경 없이 `PostShareSheet`의 2단 detent 드래그/닫기 애니메이션을 `usePostShareSheetDrag` 훅으로 분리하고, 공유 대상 리스트(`ShareTargetList`)와 외부 공유 영역(`ExternalShareSection`)을 하위 UI 컴포넌트로 분리. 앱 tsc 통과.
 - **댓글 신고 관리자 연동** — 사용자 댓글 신고(2026-07-03)를 관리자 페이지에서 처리 가능하게. `get_admin_reports` RPC에 `comment` 분기 추가(신고 시 저장된 `target_snapshot->>'content'`를 `target_content`로 반환), `handle_admin_report`에 댓글 삭제 분기(댓글은 `deleted_at` 없어 **하드 DELETE** — 대댓글/좋아요 ON DELETE CASCADE 확인 — + `recount_post_comments`로 게시물 댓글수 재계산). 마이그레이션 `20260706120000_admin_reports_comment_support` 원격 적용. 클라: `AdminReport.targetType`에 `comment` 추가+파싱, 신고 목록에 "댓글" 뱃지(violet), 댓글은 복구 불가라 action_taken 시 복구 버튼 숨김. 웹 tsc 통과. **E2E: 현재 댓글 신고 데이터 0건 → 앱에서 댓글 롱프레스 신고 하나 만들어 확인 필요.**
 - **릴스/피드/댓글 공유·UI 폴리시(다수 커밋)** — 릴스 상세 공유 버튼(종이비행기, `PostShareSheet` 재사용) 추가·피드/릴스 공유 아이콘 종이비행기 통일, 릴스 우측 아이콘 크기/굵기/간격 정리(숫자 없는 버튼은 라벨 슬롯 제거해 밀착·`zIndex`로 아이콘을 패널 위로), 댓글 신고/삭제를 버튼→**롱프레스 액션시트**로(인스타식·진동 피드백·프로필 탭 영역 아바타+닉네임으로 제한), 게시물 공유 후 메시지 화면 전환 대신 **토스트**, 릴스 하단 그라데이션을 본문 길이 따라 자라는 단일 연속 그라데이션으로. 전부 tsc 통과·커밋.
 
