@@ -26,7 +26,7 @@ export type AdminReport = {
   reporterNickname: string | null;
   status: AdminReportStatus;
   targetAuthorNickname: string | null;
-  targetType: "post" | "story";
+  targetType: "post" | "story" | "comment";
   thumbnailUrl: string | null;
 };
 
@@ -206,7 +206,12 @@ function normalizeReport(record: JsonRecord): AdminReport {
     targetAuthorNickname: targetAuthor
       ? readString(targetAuthor, ["nickname"])
       : readString(record, ["target_author_nickname", "author_nickname"]),
-    targetType: targetTypeValue === "story" ? "story" : "post",
+    targetType:
+      targetTypeValue === "story"
+        ? "story"
+        : targetTypeValue === "comment"
+          ? "comment"
+          : "post",
     thumbnailUrl: targetContent
       ? readString(targetContent, ["thumbnail_url"])
       : readString(record, ["thumbnail_url", "preview_image_url", "image_url"]),

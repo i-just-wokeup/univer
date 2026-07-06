@@ -207,10 +207,16 @@ export default function AdminReportsPage() {
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                       report.targetType === "story"
                         ? "bg-amber-100 text-amber-700"
-                        : "bg-sky-100 text-sky-700"
+                        : report.targetType === "comment"
+                          ? "bg-violet-100 text-violet-700"
+                          : "bg-sky-100 text-sky-700"
                     }`}
                   >
-                    {report.targetType === "story" ? "스토리" : "게시물"}
+                    {report.targetType === "story"
+                      ? "스토리"
+                      : report.targetType === "comment"
+                        ? "댓글"
+                        : "게시물"}
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -254,7 +260,8 @@ export default function AdminReportsPage() {
                     삭제
                   </button>
                 </div>
-              ) : report.status === "action_taken" ? (
+              ) : report.status === "action_taken" &&
+                report.targetType !== "comment" ? (
                 <div className="flex shrink-0 items-center gap-2">
                   <button
                     type="button"
