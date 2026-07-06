@@ -1,15 +1,16 @@
 import { Image } from "expo-image";
+import { Play } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { Message } from "../../features/chat/api";
+import type { Message, SharedPostPreview } from "../../features/chat/api";
 import { colors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 
 type MessageBubbleProps = {
   isMine: boolean;
   message: Message;
-  onPostPress?: (postId: string) => void;
+  onPostPress?: (postId: string, mediaType: SharedPostPreview["mediaType"]) => void;
 };
 
 // 버블을 탭하면 시간(내 메시지는 읽음/전송됨까지)을 보여준다. (웹의 hover와 동일 역할)
@@ -62,7 +63,7 @@ type PostMessageCardProps = {
   isMine: boolean;
   message: Message;
   onMetaToggle: () => void;
-  onPostPress?: (postId: string) => void;
+  onPostPress?: (postId: string, mediaType: SharedPostPreview["mediaType"]) => void;
 };
 
 function PostMessageCard({
@@ -96,25 +97,32 @@ function PostMessageCard({
     <Pressable
       accessibilityRole="button"
       onLongPress={onMetaToggle}
-      onPress={() => onPostPress?.(post.id)}
+      onPress={() => onPostPress?.(post.id, post.mediaType)}
       style={({ pressed }) => [
         styles.postCard,
         isMine ? styles.minePostCard : styles.otherPostCard,
         pressed ? styles.pressed : null,
       ]}
     >
-      {post.thumbnailUrl ? (
-        <Image
-          cachePolicy="memory-disk"
-          contentFit="cover"
-          source={{ uri: post.thumbnailUrl }}
-          style={styles.postThumb}
-        />
-      ) : (
-        <View style={styles.postThumbFallback}>
-          <Text style={styles.postThumbFallbackText}>게시물</Text>
-        </View>
-      )}
+      <View style={styles.postThumbWrap}>
+        {post.thumbnailUrl ? (
+          <Image
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            source={{ uri: post.thumbnailUrl }}
+            style={styles.postThumb}
+          />
+        ) : (
+          <View style={styles.postThumbFallback}>
+            <Text style={styles.postThumbFallbackText}>게시물</Text>
+          </View>
+        )}
+        {post.mediaType === "video" ? (
+          <View style={styles.playBadge}>
+            <Play color={colors.white} fill={colors.white} size={20} />
+          </View>
+        ) : null}
+      </View>
       <View style={styles.postBody}>
         <Text
           numberOfLines={1}
@@ -210,10 +218,26 @@ const styles = StyleSheet.create({
     borderColor: "rgba(124,58,237,0.12)",
     backgroundColor: colors.white,
   },
+  postThumbWrap: {
+    position: "relative",
+  },
   postThumb: {
     width: "100%",
     aspectRatio: 1,
     backgroundColor: colors.accentSoft,
+  },
+  playBadge: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    width: 44,
+    height: 44,
+    marginTop: -22,
+    marginLeft: -22,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+    backgroundColor: "rgba(0,0,0,0.42)",
   },
   postThumbFallback: {
     width: "100%",
