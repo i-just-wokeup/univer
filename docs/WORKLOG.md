@@ -7,6 +7,7 @@
 ## 2026-07-06
 
 ### 완료
+- **앱 피드 미디어 캐러셀 구조 분리 리팩토링** — 동작 변경 없이 `FeedMediaCarousel`에서 사진 캐러셀/인덱스 배지/더블탭 이미지 렌더를 `FeedImageCarousel`로 분리하고, 기존 파일은 영상(`FeedVideoPlayer`)과 사진 캐러셀 분기만 담당하도록 축소. 앱 tsc 통과.
 - **앱 피드 카드 구조 분리 리팩토링** — 동작 변경 없이 `FeedPostCard`의 작성자 헤더(`FeedPostHeader`), 액션 버튼 row(`FeedPostActions`), 본문(`FeedPostContent`), 더보기/저장/공유/차단/신고/삭제 메뉴(`FeedPostMoreMenu`)를 하위 컴포넌트로 분리. 앱 tsc 통과.
 - **앱 릴스 아이템 구조 분리 리팩토링** — 동작 변경 없이 `ReelItem`의 영상 플레이어 생명주기를 `useReelVideoPlayer` 훅으로 분리하고, 우측 액션 버튼(`ReelActions`)·하단 작성자/본문 오버레이(`ReelFooter`)·더보기/신고/차단/삭제 메뉴(`ReelMoreMenu`)를 하위 컴포넌트로 분리. 앱 tsc 통과.
 - **계정 탈퇴 영구삭제 + 재로그인 차단 (출시 필수, 코덱스 앱 리팩토링과 병렬)** — `delete_account` RPC(soft delete)는 있었으나 30일 후 실제 삭제/재로그인 차단이 없어 스토어 심사(진짜 삭제 요구) 미충족이던 것 보완. `purge_deleted_accounts(retention_days, dry_run)` SECURITY DEFINER 함수 + `pg_cron`(매일 04:10 UTC)로 30일 지난 탈퇴 계정을 **comments 명시삭제**(users FK가 SET NULL이라 잔존) + **`auth.users` 삭제**(→ `public.users` FK CASCADE로 posts/stories/messages/likes/follows 등 연쇄) 영구 제거. 테스트 계정으로 **E2E 검증**(auth+public 완전 삭제 확인). 재로그인 차단은 웹 미들웨어 + 앱 세션에서 `deleted_at` 체크 → 로그아웃. 마이그레이션 `20260706130000`, 원격 적용·검증. **남은 것: ① Storage 파일 정리(`storage.objects` 직접 DELETE는 protect_delete 트리거가 막고 owner FK도 없어 연쇄 안 됨 → Storage API 필요. 엣지함수 `purge-deleted-accounts` 배포돼 있으나 cron 자동연결엔 vault 인증 필요 — 후속) ② 재로그인 차단 배포/실기기 E2E 확인.**
