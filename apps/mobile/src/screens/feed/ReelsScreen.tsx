@@ -15,9 +15,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ReelItem } from "../../components/feed/ReelItem";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
+import { PostShareSheet } from "../../components/feed/PostShareSheet";
 import { StateView } from "../../components/common/StateView";
+import { usePostShare, type PostShareTarget } from "../../features/chat/usePostShare";
 import { useReels } from "../../features/feed/useReels";
+import type { FeedPost } from "../../features/feed/types";
 import { useSession } from "../../lib/session";
+import { SITE_URL } from "../../lib/site";
 import { colors } from "../../lib/theme";
 
 type ReelsScreenProps = {
@@ -32,8 +36,19 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const currentUserId = session?.user.id ?? "";
   const { height, width } = useWindowDimensions();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [sharePost, setSharePost] = useState<FeedPost | null>(null);
   // 음소거는 릴스 전체 공유 — 한 번 켜면 다음 영상에서도 유지.
   const [isMuted, setIsMuted] = useState(true);
+  const {
+    errorMessage: shareErrorMessage,
+    isLoading: isShareLoading,
+    isSearching: isShareSearching,
+    query: shareQuery,
+    sendingTargetId,
+    setQuery: setShareQuery,
+    sharePostToTarget,
+    visibleTargets: shareTargets,
+  } = usePostShare(Boolean(sharePost));
   const {
     activeIndex,
     blockAuthor,
@@ -67,6 +82,27 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
       router.push({ pathname: "/profile/[nickname]", params: { nickname } });
     },
     [router],
+  );
+
+  const handleSelectShareTarget = useCallback(
+    async (target: PostShareTarget) => {
+      if (!sharePost) {
+        return;
+      }
+
+      const conversationId = await sharePostToTarget(sharePost.id, target.id);
+
+      if (!conversationId) {
+        return;
+      }
+
+      setSharePost(null);
+      router.push({
+        pathname: "/messages/[conversationId]",
+        params: { conversationId },
+      });
+    },
+    [router, sharePost, sharePostToTarget],
   );
 
   const flatListRef = useRef<FlatList>(null);
@@ -170,6 +206,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
             onReport={() => {
               void reportPost(item.id);
             }}
+            onShare={() => setSharePost(item)}
             onToggleMute={() => setIsMuted((muted) => !muted)}
             post={item}
             width={width}
@@ -200,6 +237,26 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
           handleUserPress(nickname);
         }}
         postId={commentPostId}
+      />
+
+      <PostShareSheet
+        errorMessage={shareErrorMessage}
+        externalShareUrl={
+          sharePost?.visibility === "public"
+            ? `${SITE_URL}/p/${sharePost.id}`
+            : null
+        }
+        isLoading={isShareLoading}
+        isOpen={Boolean(sharePost)}
+        isSearching={isShareSearching}
+        onClose={() => setSharePost(null)}
+        onQueryChange={setShareQuery}
+        onSelectTarget={(target) => {
+          void handleSelectShareTarget(target);
+        }}
+        query={shareQuery}
+        sendingTargetId={sendingTargetId}
+        targets={shareTargets}
       />
 
       {feedback ? (

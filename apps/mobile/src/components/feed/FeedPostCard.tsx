@@ -3,7 +3,7 @@ import {
   Heart,
   MessageCircle,
   MoreHorizontal,
-  Share2,
+  Send,
 } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -153,7 +153,9 @@ export function FeedPostCard({
         onVideoPress={onVideoPress ? () => onVideoPress(post.id) : undefined}
       />
 
-      <View style={styles.actionRow}>
+      <View
+        style={[styles.actionRow, post.content ? styles.actionRowTight : null]}
+      >
         <View style={styles.leftActions}>
           <Pressable onPress={() => onLike(post.id)} style={styles.actionButton}>
             <Heart
@@ -178,7 +180,7 @@ export function FeedPostCard({
               onPress={() => onShare(post)}
               style={styles.actionButton}
             >
-              <Share2 color={colors.text} size={24} strokeWidth={2} />
+              <Send color={colors.text} size={23} strokeWidth={2} />
             </Pressable>
           ) : null}
         </View>
@@ -282,6 +284,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 9,
     paddingBottom: 11,
+  },
+  // 본문 있는 글은 아이콘과 본문을 더 붙인다(본문 없는 글은 위 11 여백 유지).
+  actionRowTight: {
+    paddingBottom: 6,
   },
   leftActions: {
     flexDirection: "row",

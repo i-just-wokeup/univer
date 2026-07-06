@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   mediaBadgeText: {
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: 12,
+    fontWeight: "500",
   },
 });

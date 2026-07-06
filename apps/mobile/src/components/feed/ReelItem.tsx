@@ -7,6 +7,7 @@ import {
   MessageCircle,
   MoreHorizontal,
   Play,
+  Send,
   Volume2,
   VolumeX,
 } from "lucide-react-native";
@@ -40,6 +41,7 @@ type ReelItemProps = {
   onLike: () => void;
   onPressUser: () => void;
   onReport: () => void;
+  onShare: () => void;
   onToggleMute: () => void;
   post: FeedPost;
   width: number;
@@ -73,6 +75,7 @@ export function ReelItem({
   onLike,
   onPressUser,
   onReport,
+  onShare,
   onToggleMute,
   post,
   width,
@@ -219,7 +222,7 @@ export function ReelItem({
         onPress={() => setIsMenuOpen(true)}
         style={[styles.menuButton, { top: insets.top + 8 }]}
       >
-        <MoreHorizontal color={colors.white} size={26} strokeWidth={2.6} />
+        <MoreHorizontal color={colors.white} size={24} strokeWidth={2} />
       </Pressable>
 
       {/* 하단 가독성 그라데이션 — 밝은 영상 위에서도 프로필/본문이 읽히게 */}
@@ -236,41 +239,50 @@ export function ReelItem({
             <Heart
               color={isLiked ? colors.danger : colors.white}
               fill={isLiked ? colors.danger : "transparent"}
-              size={32}
-              strokeWidth={2.4}
+              size={28}
+              strokeWidth={1.8}
             />
           </View>
           <Text style={styles.actionText}>{formatCount(post.likes_count)}</Text>
         </Pressable>
         <Pressable hitSlop={6} onPress={onComment} style={styles.actionButton}>
           <View style={styles.iconBox}>
-            <MessageCircle color={colors.white} size={30} strokeWidth={2.4} />
+            <MessageCircle color={colors.white} size={28} strokeWidth={1.8} />
           </View>
           <Text style={styles.actionText}>
             {formatCount(post.comments_count)}
           </Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel="공유"
+          accessibilityRole="button"
+          hitSlop={6}
+          onPress={onShare}
+          style={styles.actionButton}
+        >
+          <View style={styles.iconBox}>
+            <Send color={colors.white} size={28} strokeWidth={1.8} />
+          </View>
         </Pressable>
         <Pressable hitSlop={6} onPress={onBookmark} style={styles.actionButton}>
           <View style={styles.iconBox}>
             <Bookmark
               color={colors.white}
               fill={isBookmarked ? colors.white : "transparent"}
-              size={29}
-              strokeWidth={2.4}
+              size={28}
+              strokeWidth={1.8}
             />
           </View>
-          <View style={styles.labelSpacer} />
         </Pressable>
         {isReady ? (
           <Pressable hitSlop={6} onPress={onToggleMute} style={styles.actionButton}>
             <View style={styles.iconBox}>
               {isMuted ? (
-                <VolumeX color={colors.white} size={27} strokeWidth={2.4} />
+                <VolumeX color={colors.white} size={28} strokeWidth={1.8} />
               ) : (
-                <Volume2 color={colors.white} size={27} strokeWidth={2.4} />
+                <Volume2 color={colors.white} size={28} strokeWidth={1.8} />
               )}
             </View>
-            <View style={styles.labelSpacer} />
           </Pressable>
         ) : null}
       </View>
@@ -373,30 +385,26 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 10,
     alignItems: "center",
-    gap: 14,
+    gap: 10,
   },
   actionButton: {
     alignItems: "center",
-    gap: 5,
+    gap: 3,
   },
   // 아이콘을 고정 높이 박스에 담아 크기가 달라도 세로 리듬을 맞춘다.
   iconBox: {
-    height: 34,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
   },
   actionText: {
-    height: 15,
-    lineHeight: 15,
+    height: 14,
+    lineHeight: 14,
     color: colors.white,
     fontSize: 13,
     fontWeight: "800",
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowRadius: 3,
-  },
-  // 숫자가 없는 버튼(저장/음소거)도 같은 높이를 차지하게 하는 빈 라벨 자리.
-  labelSpacer: {
-    height: 15,
   },
   bottom: {
     position: "absolute",
