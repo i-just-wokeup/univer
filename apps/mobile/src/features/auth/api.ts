@@ -132,6 +132,12 @@ export async function getUserOnboardingRequired(): Promise<boolean> {
   return shouldRequireOnboarding(profile);
 }
 
+// 현재 계정이 탈퇴(soft delete)됐는지 — 탈퇴 계정은 재로그인 차단(세션 프로바이더에서 로그아웃).
+export async function isCurrentAccountDeleted(): Promise<boolean> {
+  const profile = await getCurrentUserProfile();
+  return Boolean(profile?.deleted_at);
+}
+
 // 온보딩 완료 저장 — 실명/닉네임/학과 검증 + 닉네임 중복 확인 후 저장(is_onboarded).
 export async function updateOnboardingProfile({
   department,

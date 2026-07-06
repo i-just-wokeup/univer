@@ -121,9 +121,15 @@ export async function middleware(request: NextRequest) {
 
     const { data: currentUser, error: currentUserError } = await supabase
       .from("users")
-      .select("role")
+      .select("role, deleted_at")
       .eq("id", user.id)
       .maybeSingle();
+
+    // 탈퇴(soft delete)된 계정은 재로그인 차단 → 로그아웃 후 로그인 페이지로.
+    if (currentUser?.deleted_at) {
+      await supabase.auth.signOut();
+      return redirectWithCookies(request, response, "/auth/login");
+    }
 
     if (pathname.startsWith("/admin")) {
       if (currentUserError || currentUser?.role !== "admin") {

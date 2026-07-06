@@ -9,7 +9,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { getUserOnboardingRequired } from "../features/auth/api";
+import {
+  getUserOnboardingRequired,
+  isCurrentAccountDeleted,
+  signOutMobile,
+} from "../features/auth/api";
 import { getSupabaseMobileClient, isSupabaseConfigured } from "./supabase";
 
 type SessionState = {
@@ -93,7 +97,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     setIsOnboardingLoading(true);
 
-    refreshOnboardingStatus()
+    (async () => {
+      // 탈퇴(soft delete)된 계정은 재로그인 차단 → 즉시 로그아웃.
+      const deleted = await isCurrentAccountDeleted();
+      if (!isMounted || deleted) {
+        if (deleted) {
+          await signOutMobile();
+        }
+        return;
+      }
+      await refreshOnboardingStatus();
+    })()
       .catch(() => {
         if (isMounted) {
           setRequiresOnboarding(false);
