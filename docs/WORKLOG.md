@@ -7,6 +7,7 @@
 ## 2026-07-07
 
 ### 완료
+- **가입 학교 도메인 서버 강제 + 관리자 allowlist** — 회원가입이 앱 폼/`hd` 힌트로만 학교 이메일을 제한하고 서버(`handle_new_user` 트리거)는 도메인 검사 없이 아무 이메일이나 첫 활성 학교로 등록하던 구멍을 막음. `handle_new_user`를 가입 이메일 도메인 ↔ `universities.domain` 대조로 교체(매칭 없으면 `signup_allowlist`만 예외 허용, 아니면 `RAISE EXCEPTION`). `signup_allowlist` 테이블 신설(RLS ON·정책 없음 = 클라 접근 불가) + 관리자 `simsim020304@gmail.com` 시드. 실사용자는 `@kookmin.ac.kr`만 가입, 외부 이메일은 폼/API 우회해도 서버 차단, 관리자 gmail만 통과. 기존 계정/로그인 영향 없음(트리거는 신규 가입만). 5개 케이스 로직 검증 완료. `docs/DATABASE.md` 반영.
 - **앱 영상 플레이어 release 경합 완화** — 피드/릴스에서 `expo-video` `VideoView`가 이미 release된 player를 다시 받으며 `Cannot use shared object that was already released` 콘솔 에러가 뜨던 문제 완화. 피드 영상은 활성 카드일 때만 `VideoView`를 렌더하고, 릴스는 활성 근처+ready 영상일 때만 `VideoView`를 렌더하도록 제한해 화면 밖 영상의 player/view 연결 경합을 줄임. 앱 tsc 통과.
 - **앱 홈 화면 구조 분리 리팩토링** — 동작 변경 없이 `HomeScreen`의 피드 리스트 렌더(`HomeFeedList`), 댓글/공유 시트 묶음(`HomeSheets`), 인라인 에러/피드백(`HomeFeedbackBanner`), 초기 로딩/에러 상태(`HomeScreenStates`), 홈 네비게이션 콜백(`useHomeNavigation`)을 분리. `useHomeFeed`의 토스트 타이머(`useHomeFeedFeedback`)와 Cloudflare 영상 상태 폴링(`useHomeVideoStatusPolling`)도 별도 훅으로 분리. `HomeScreen.tsx` 371줄 → 197줄. 앱 tsc 통과.
 - **앱 댓글 시트 구조 분리 리팩토링** — 동작 변경 없이 `CommentsSheet`의 댓글 목록(`CommentsList`), 원댓글+답글 묶음(`CommentThread`), 입력/답글 배너(`CommentInputBar`), 삭제/신고 메뉴(`CommentActionMenus`), 헤더(`CommentsSheetHeader`), 드래그 제스처(`useCommentsSheetDrag`)를 분리. 신고/삭제는 기존 `useComments` 핸들러와 공용 `ActionSheet`/`ConfirmDialog`를 그대로 재사용. `CommentsSheet.tsx` 499줄 → 190줄. 앱 tsc 통과.

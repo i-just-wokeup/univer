@@ -18,7 +18,7 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 
 ---
 
-## 개발 단계별 테이블 (총 24개)
+## 개발 단계별 테이블 (총 24개 + 보안 지원 테이블 `signup_allowlist`)
 
 ### 1단계 MVP — 18개
 
@@ -33,7 +33,19 @@ universities (
 )
 ```
 
+**signup_allowlist** (2026-07-07, 가입 도메인 강제 예외 목록 — RLS ON, 정책 없음 = 클라이언트 접근 불가, 서버/`SECURITY DEFINER` 트리거만 참조)
+- 실사용자는 `universities.domain` 매칭(`@kookmin.ac.kr`)만 가입 허용. 도메인 매칭이 없는 이메일은 이 목록에 있을 때만 예외 허용(관리자 gmail 등), 그 외는 `handle_new_user`에서 `RAISE EXCEPTION`으로 가입 거부.
+- 예외 추가/삭제는 오너(대시보드/service role)만 가능.
+```sql
+signup_allowlist (
+  email       text PK,
+  note        text,
+  created_at  timestamptz not null default now()
+)
+```
+
 **users** (RLS 활성화, 민감 컬럼 BEFORE UPDATE 트리거 보호)
+- **가입 도메인 강제 (2026-07-07)**: `handle_new_user`가 가입 이메일 도메인을 `universities.domain`과 대조 → 매칭 시 해당 학교로 배정. 매칭 없으면 `signup_allowlist`에 있는 이메일만 통과(기본 활성 학교로 배정), 아니면 가입 거부. 폼/API 우회와 무관하게 서버에서 강제.
 - `real_name` 공개 범위: 본인 또는 친구(accepted)만 조회 가능 — API(`getProfile`) 레벨 마스킹
 - Google OAuth 가입 시 `handle_new_user` 트리거가 `full_name`(`심재성(학부생-자동차공학과)` 형식) 파싱 → `real_name`, `department` 자동 저장 (avatar_url 제외)
 - 신규 가입 기본 `nickname`은 `user_랜덤값` 임시값으로 생성 — 온보딩에서 사용자가 직접 입력해야 시작 가능
