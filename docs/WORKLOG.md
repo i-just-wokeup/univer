@@ -7,6 +7,7 @@
 ## 2026-07-07
 
 ### 완료
+- **앱 스토리 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/stories/api.ts`를 public re-export 진입점으로 축소하고, 업로드(`storyUpload`), 생성/삭제(`storyMutations`), 목록 조회(`storyQueries`), 조회자 조회(`storyViewerQueries`), 조회/좋아요 상호작용(`storyInteractions`), DB row → `Story` 변환(`storyHydration`), 내부 타입/유틸(`storyTypes`/`storyPostgrest`)로 분리. 모든 새 API 조각은 200줄 이하로 유지하고 기존 호출부 import 경로는 유지. 앱 tsc 통과.
 - **앱 채팅 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/chat/api.ts`를 public re-export 진입점으로 축소하고, 대화 접근권한(`chatAccess`), 대화 목록(`chatConversationList`), 대화 생성/요청수락(`chatConversationMutations`), 메시지 조회/전송/읽음(`chatMessages`), 게시물 공유 메시지(`chatSharedPosts`), 안읽음 수(`chatUnread`), 타입(`types`)으로 분리. 모든 새 API 조각은 200줄 이하로 유지하고 기존 호출부 import 경로는 유지. 앱 tsc 통과.
 - **앱 홈 피드 훅 책임 분리 리팩토링** — 동작 변경 없이 `useHomeFeed` 내부의 페이지 로딩/새로고침/무한스크롤(`useHomeFeedPagination`), 좋아요·저장·차단·신고·삭제·댓글수 액션(`useHomeFeedActions`), 화면 복귀 시 좋아요·저장·카운트·차단/삭제 상태 동기화(`useHomeFeedSync`)를 분리. 기존 공개 인터페이스는 유지해 `HomeScreen` 호출부 변경 없이 적용. `useHomeFeed.ts` 331줄 → 76줄. 앱 tsc 통과.
 - **가입 학교 도메인 서버 강제 + 관리자 allowlist** — 회원가입이 앱 폼/`hd` 힌트로만 학교 이메일을 제한하고 서버(`handle_new_user` 트리거)는 도메인 검사 없이 아무 이메일이나 첫 활성 학교로 등록하던 구멍을 막음. `handle_new_user`를 가입 이메일 도메인 ↔ `universities.domain` 대조로 교체(매칭 없으면 `signup_allowlist`만 예외 허용, 아니면 `RAISE EXCEPTION`). `signup_allowlist` 테이블 신설(RLS ON·정책 없음 = 클라 접근 불가) + 관리자 `simsim020304@gmail.com` 시드. 실사용자는 `@kookmin.ac.kr`만 가입, 외부 이메일은 폼/API 우회해도 서버 차단, 관리자 gmail만 통과. 기존 계정/로그인 영향 없음(트리거는 신규 가입만). 5개 케이스 로직 검증 완료. `docs/DATABASE.md` 반영.
