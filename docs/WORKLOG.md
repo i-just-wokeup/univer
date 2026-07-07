@@ -7,6 +7,7 @@
 ## 2026-07-07
 
 ### 완료
+- **앱 댓글 시트 구조 분리 리팩토링** — 동작 변경 없이 `CommentsSheet`의 댓글 목록(`CommentsList`), 원댓글+답글 묶음(`CommentThread`), 입력/답글 배너(`CommentInputBar`), 삭제/신고 메뉴(`CommentActionMenus`), 헤더(`CommentsSheetHeader`), 드래그 제스처(`useCommentsSheetDrag`)를 분리. 신고/삭제는 기존 `useComments` 핸들러와 공용 `ActionSheet`/`ConfirmDialog`를 그대로 재사용. `CommentsSheet.tsx` 499줄 → 190줄. 앱 tsc 통과.
 - **앱 피드 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/feed/api.ts`를 public re-export 진입점으로 축소하고, 조회(`feedQueries`), 작성/삭제(`postMutations`), 좋아요·저장·카운트(`postInteractions`), 업로드(`postUpload`), Cloudflare 상태 조회(`videoStatus`), DB row → `FeedPost` 조립(`feedHydration`), 내부 타입(`internalTypes`)으로 분리. 기존 호출부 import 경로는 유지. 주요 파일에 역할 설명 주석 추가. 앱 tsc 통과.
 
 ## 2026-07-06
