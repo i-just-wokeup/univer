@@ -123,11 +123,8 @@ export async function resetPasswordForEmail(email: string): Promise<void> {
   const supabase = requireSupabaseClient();
   const domain = extractEmailDomain(email);
 
-  // 이메일 형식만 확인한다. 발송은 실제 가입된 계정에만 유효하고(없는 이메일은 Supabase가 무시),
-  // 학교 도메인 강제는 가입 트리거가, 재설정 링크 접근은 콜백이 담당한다.
-  // (관리자 등 allowlist 계정도 재설정할 수 있도록 여기서 도메인을 강제하지 않는다.)
-  if (!domain) {
-    throw new Error("올바른 이메일 형식이 아닙니다.");
+  if (domain !== "kookmin.ac.kr") {
+    throw new Error("국민대학교 이메일(kookmin.ac.kr)만 사용할 수 있습니다.");
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(

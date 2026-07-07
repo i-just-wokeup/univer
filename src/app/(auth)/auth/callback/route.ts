@@ -52,14 +52,10 @@ export async function GET(request: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 비밀번호 재설정(recovery) 흐름은 이미 가입된 계정에만 링크가 발송되므로 도메인을 다시 강제하지 않는다.
-  // (관리자 등 allowlist 계정의 재설정을 허용하기 위함) 일반 로그인/가입은 학교 도메인만 통과시킨다.
-  const isRecoveryFlow = nextPath === "/auth/reset-password";
-
-  if (
-    !isRecoveryFlow &&
-    extractEmailDomain(user.email ?? "") !== "kookmin.ac.kr"
-  ) {
+  // 학교 도메인 계정만 세션을 유지시킨다(비-국민대는 로그아웃 후 로그인으로).
+  // recovery 흐름도 예외 두지 않는다 — 클라이언트가 넘긴 next 값으로 도메인 게이트를
+  // 우회할 수 없도록. (관리자 비번 변경은 로그인 상태에서 /auth/reset-password로 처리)
+  if (extractEmailDomain(user.email ?? "") !== "kookmin.ac.kr") {
     await supabase.auth.signOut();
     loginUrl.searchParams.set(
       "error",
