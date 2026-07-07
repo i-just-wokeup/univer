@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-07-07
+
+### 완료
+- **앱 피드 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/feed/api.ts`를 public re-export 진입점으로 축소하고, 조회(`feedQueries`), 작성/삭제(`postMutations`), 좋아요·저장·카운트(`postInteractions`), 업로드(`postUpload`), Cloudflare 상태 조회(`videoStatus`), DB row → `FeedPost` 조립(`feedHydration`), 내부 타입(`internalTypes`)으로 분리. 기존 호출부 import 경로는 유지. 주요 파일에 역할 설명 주석 추가. 앱 tsc 통과.
+
 ## 2026-07-06
 
 ### 완료
