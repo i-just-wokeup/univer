@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { Plus } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -39,7 +40,10 @@ function StoryCard({
           style={styles.cardImage}
         />
       ) : null}
-      <View style={styles.cardShade} />
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.55)"]}
+        style={styles.cardShade}
+      />
       <Text numberOfLines={1} style={styles.cardName}>
         {nickname}
       </Text>
@@ -170,8 +174,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    height: 52,
-    backgroundColor: "rgba(13,13,18,0.42)",
+    height: 56,
   },
   cardName: {
     margin: 8,
