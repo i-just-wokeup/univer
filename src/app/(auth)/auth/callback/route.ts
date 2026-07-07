@@ -52,7 +52,14 @@ export async function GET(request: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (extractEmailDomain(user.email ?? "") !== "kookmin.ac.kr") {
+  // 비밀번호 재설정(recovery) 흐름은 이미 가입된 계정에만 링크가 발송되므로 도메인을 다시 강제하지 않는다.
+  // (관리자 등 allowlist 계정의 재설정을 허용하기 위함) 일반 로그인/가입은 학교 도메인만 통과시킨다.
+  const isRecoveryFlow = nextPath === "/auth/reset-password";
+
+  if (
+    !isRecoveryFlow &&
+    extractEmailDomain(user.email ?? "") !== "kookmin.ac.kr"
+  ) {
     await supabase.auth.signOut();
     loginUrl.searchParams.set(
       "error",
