@@ -1,16 +1,10 @@
 import { useRouter } from "expo-router";
-import { X } from "lucide-react-native";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { RecentSearchList } from "../../components/search/RecentSearchList";
 import { SearchInput } from "../../components/search/SearchInput";
-import { SearchUserRow } from "../../components/search/SearchUserRow";
+import { SearchResultsList } from "../../components/search/SearchResultsList";
 import { useUserSearch } from "../../features/search/useUserSearch";
 import { colors } from "../../lib/theme";
 
@@ -26,6 +20,7 @@ export function SearchScreen() {
     results,
     setQuery,
   } = useUserSearch();
+  const trimmedQuery = query.trim();
 
   async function moveToProfile(nickname: string) {
     await recordSearch(nickname);
@@ -47,77 +42,28 @@ export function SearchScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        {query.trim() ? (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>검색 결과</Text>
-              <Text numberOfLines={1} style={styles.cardEyebrow}>
-                {query.trim()}
-              </Text>
-            </View>
-
-            {isLoading ? (
-              <Text style={styles.stateText}>검색 중입니다…</Text>
-            ) : results.length === 0 ? (
-              <Text style={styles.stateText}>검색 결과가 없습니다.</Text>
-            ) : (
-              results.map((user) => (
-                <SearchUserRow
-                  key={user.id}
-                  onPress={(selected) => {
-                    void moveToProfile(selected.nickname);
-                  }}
-                  user={user}
-                />
-              ))
-            )}
-          </View>
-        ) : recentSearches.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.stateText}>최근 검색 항목이 없습니다.</Text>
-          </View>
+        {trimmedQuery ? (
+          <SearchResultsList
+            isLoading={isLoading}
+            onPressUser={(user) => {
+              void moveToProfile(user.nickname);
+            }}
+            query={trimmedQuery}
+            results={results}
+          />
         ) : (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>최근 검색</Text>
-              <Pressable
-                accessibilityRole="button"
-                hitSlop={6}
-                onPress={() => {
-                  void clearRecent();
-                }}
-              >
-                <Text style={styles.clearAllText}>모두 지우기</Text>
-              </Pressable>
-            </View>
-
-            {recentSearches.map((item) => (
-              <View key={item} style={styles.recentRow}>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    void moveToProfile(item);
-                  }}
-                  style={styles.recentLabel}
-                >
-                  <Text numberOfLines={1} style={styles.recentText}>
-                    {item}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  accessibilityLabel={`${item} 최근 검색 삭제`}
-                  accessibilityRole="button"
-                  hitSlop={6}
-                  onPress={() => {
-                    void removeRecent(item);
-                  }}
-                  style={styles.recentRemove}
-                >
-                  <X color={colors.muted} size={16} strokeWidth={2.6} />
-                </Pressable>
-              </View>
-            ))}
-          </View>
+          <RecentSearchList
+            onClearAll={() => {
+              void clearRecent();
+            }}
+            onPressRecent={(item) => {
+              void moveToProfile(item);
+            }}
+            onRemoveRecent={(item) => {
+              void removeRecent(item);
+            }}
+            recentSearches={recentSearches}
+          />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -151,76 +97,5 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     paddingBottom: 40,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
-    borderRadius: 22,
-    backgroundColor: colors.card,
-    padding: 8,
-  },
-  emptyCard: {
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
-    borderRadius: 22,
-    backgroundColor: colors.card,
-    paddingHorizontal: 20,
-    paddingVertical: 28,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 6,
-  },
-  cardTitle: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  cardEyebrow: {
-    maxWidth: "55%",
-    color: colors.accent,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  clearAllText: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  stateText: {
-    paddingVertical: 28,
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  recentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  recentLabel: {
-    flex: 1,
-    minWidth: 0,
-  },
-  recentText: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  recentRemove: {
-    marginLeft: 12,
-    height: 30,
-    width: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 15,
-    backgroundColor: colors.white,
   },
 });
