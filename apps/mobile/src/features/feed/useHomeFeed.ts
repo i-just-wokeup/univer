@@ -9,25 +9,18 @@ import {
   getFeed,
   getLikedPostIds,
   getPostCounts,
-  getVideoStatuses,
   toggleBookmark,
   togglePostLike,
 } from "./api";
 import type { FeedPost } from "./types";
-
-type FeedbackType = "error" | "success";
-
-type FeedbackState = {
-  message: string;
-  type: FeedbackType;
-} | null;
+import { useHomeFeedFeedback } from "./useHomeFeedFeedback";
+import { useHomeVideoStatusPolling } from "./useHomeVideoStatusPolling";
 
 export function useHomeFeed() {
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(
     () => new Set(),
   );
   const [errorMessage, setErrorMessage] = useState("");
-  const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -36,32 +29,12 @@ export function useHomeFeed() {
   );
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
-  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { feedback, showFeedback } = useHomeFeedFeedback();
   const pendingBookmarkPostIdsRef = useRef<Set<string>>(new Set());
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
   // 포커스 갱신에서 현재 로드된 게시물 id를 참조하기 위한 최신 posts 미러(콜백 재생성 방지).
   const postsRef = useRef<FeedPost[]>([]);
   postsRef.current = posts;
-
-  const showFeedback = useCallback((message: string, type: FeedbackType) => {
-    if (feedbackTimerRef.current) {
-      clearTimeout(feedbackTimerRef.current);
-    }
-
-    setFeedback({ message, type });
-    feedbackTimerRef.current = setTimeout(() => {
-      setFeedback(null);
-      feedbackTimerRef.current = null;
-    }, 1800);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (feedbackTimerRef.current) {
-        clearTimeout(feedbackTimerRef.current);
-      }
-    };
-  }, []);
 
   const loadFirstPage = useCallback(async () => {
     try {
@@ -133,86 +106,7 @@ export function useHomeFeed() {
     }
   }, []);
 
-  // 인코딩 중(processing)인 Cloudflare 영상의 asset id 집합. 이 값이 바뀔 때만 폴링을 다시 건다.
-  const processingAssetKey = posts
-    .flatMap((post) => post.media)
-    .filter(
-      (media) =>
-        media.type === "video" &&
-        media.provider === "cloudflare_stream" &&
-        media.provider_asset_id !== null &&
-        media.processing_status === "processing",
-    )
-    .map((media) => media.provider_asset_id)
-    .sort()
-    .join(",");
-
-  // 업로드 후 인코딩 중인 영상이 있으면 DB를 폴링해 ready가 되는 순간 자동으로 재생 상태로 갱신한다.
-  useEffect(() => {
-    if (!processingAssetKey) {
-      return;
-    }
-
-    const assetIds = processingAssetKey.split(",");
-    let attempts = 0;
-    let isFetching = false;
-    const MAX_ATTEMPTS = 45; // 4초 × 45 ≈ 3분
-
-    const intervalId = setInterval(async () => {
-      if (isFetching) {
-        return;
-      }
-
-      attempts += 1;
-      isFetching = true;
-
-      try {
-        const statuses = await getVideoStatuses(assetIds);
-        const resolved = statuses.filter(
-          (status) => status.processingStatus !== "processing",
-        );
-
-        if (resolved.length > 0) {
-          setPosts((currentPosts) =>
-            currentPosts.map((post) => ({
-              ...post,
-              media: post.media.map((media) => {
-                const update = resolved.find(
-                  (status) =>
-                    status.providerAssetId === media.provider_asset_id,
-                );
-
-                if (!update) {
-                  return media;
-                }
-
-                return {
-                  ...media,
-                  processing_status: update.processingStatus,
-                  thumbnail_url: update.thumbnailUrl ?? media.thumbnail_url,
-                  url: update.url,
-                };
-              }),
-            })),
-          );
-
-          if (resolved.some((status) => status.processingStatus === "ready")) {
-            showFeedback("게시물 업로드가 완료됐어요", "success");
-          }
-        }
-      } catch {
-        // 폴링 실패는 조용히 무시(다음 tick에서 재시도).
-      } finally {
-        isFetching = false;
-      }
-
-      if (attempts >= MAX_ATTEMPTS) {
-        clearInterval(intervalId);
-      }
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [processingAssetKey, showFeedback]);
+  useHomeVideoStatusPolling({ posts, setPosts, showFeedback });
 
   async function handleRefresh() {
     setIsRefreshing(true);
