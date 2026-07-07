@@ -7,6 +7,7 @@
 ## 2026-07-07
 
 ### 완료
+- **앱 영상 플레이어 release 경합 완화** — 피드/릴스에서 `expo-video` `VideoView`가 이미 release된 player를 다시 받으며 `Cannot use shared object that was already released` 콘솔 에러가 뜨던 문제 완화. 피드 영상은 활성 카드일 때만 `VideoView`를 렌더하고, 릴스는 활성 근처+ready 영상일 때만 `VideoView`를 렌더하도록 제한해 화면 밖 영상의 player/view 연결 경합을 줄임. 앱 tsc 통과.
 - **앱 홈 화면 구조 분리 리팩토링** — 동작 변경 없이 `HomeScreen`의 피드 리스트 렌더(`HomeFeedList`), 댓글/공유 시트 묶음(`HomeSheets`), 인라인 에러/피드백(`HomeFeedbackBanner`), 초기 로딩/에러 상태(`HomeScreenStates`), 홈 네비게이션 콜백(`useHomeNavigation`)을 분리. `useHomeFeed`의 토스트 타이머(`useHomeFeedFeedback`)와 Cloudflare 영상 상태 폴링(`useHomeVideoStatusPolling`)도 별도 훅으로 분리. `HomeScreen.tsx` 371줄 → 197줄. 앱 tsc 통과.
 - **앱 댓글 시트 구조 분리 리팩토링** — 동작 변경 없이 `CommentsSheet`의 댓글 목록(`CommentsList`), 원댓글+답글 묶음(`CommentThread`), 입력/답글 배너(`CommentInputBar`), 삭제/신고 메뉴(`CommentActionMenus`), 헤더(`CommentsSheetHeader`), 드래그 제스처(`useCommentsSheetDrag`)를 분리. 신고/삭제는 기존 `useComments` 핸들러와 공용 `ActionSheet`/`ConfirmDialog`를 그대로 재사용. `CommentsSheet.tsx` 499줄 → 190줄. 앱 tsc 통과.
 - **앱 피드 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/feed/api.ts`를 public re-export 진입점으로 축소하고, 조회(`feedQueries`), 작성/삭제(`postMutations`), 좋아요·저장·카운트(`postInteractions`), 업로드(`postUpload`), Cloudflare 상태 조회(`videoStatus`), DB row → `FeedPost` 조립(`feedHydration`), 내부 타입(`internalTypes`)으로 분리. 기존 호출부 import 경로는 유지. 주요 파일에 역할 설명 주석 추가. 앱 tsc 통과.

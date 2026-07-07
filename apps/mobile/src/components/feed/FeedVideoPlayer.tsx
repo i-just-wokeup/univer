@@ -42,6 +42,7 @@ export function FeedVideoPlayer({
   const { width } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(true);
   const isReady = processingStatus === "ready";
+  const shouldRenderVideo = isActive && isReady;
 
   const player = useVideoPlayer(isReady ? uri : null, (instance) => {
     instance.loop = true;
@@ -76,9 +77,10 @@ export function FeedVideoPlayer({
 
   return (
     <View style={[styles.frame, frameStyle]}>
-      {isReady ? (
+      {shouldRenderVideo ? (
         <VideoView
           contentFit="cover"
+          key={uri}
           nativeControls={false}
           player={player}
           style={StyleSheet.absoluteFill}
@@ -86,7 +88,7 @@ export function FeedVideoPlayer({
       ) : null}
 
       {/* 비활성(정지) 카드는 썸네일을 덮어 검은 화면/깜빡임 방지 */}
-      {(!isActive || !isReady) && thumbnailUrl ? (
+      {!shouldRenderVideo && thumbnailUrl ? (
         <Image
           cachePolicy="memory-disk"
           contentFit="cover"

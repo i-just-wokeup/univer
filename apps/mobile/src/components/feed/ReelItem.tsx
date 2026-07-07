@@ -81,15 +81,19 @@ export function ReelItem({
   }
 
   const isOwnPost = currentUserId === post.user.id;
+  const shouldRenderVideo = isNearActive && isReady;
 
   return (
     <View style={[styles.page, { height, width }]}>
-      <VideoView
-        contentFit="contain"
-        nativeControls={false}
-        player={player}
-        style={StyleSheet.absoluteFill}
-      />
+      {shouldRenderVideo ? (
+        <VideoView
+          contentFit="contain"
+          key={videoUrl}
+          nativeControls={false}
+          player={player}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
       {!isActive && video.thumbnail_url ? (
         <Image
           cachePolicy="memory-disk"
