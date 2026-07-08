@@ -7,6 +7,7 @@
 ## 2026-07-08
 
 ### 완료
+- **앱 프로필 편집 화면 구조 분리 리팩토링** — 동작 변경 없이 `ProfileEditScreen`에 인라인으로 있던 아바타 변경, 닉네임 입력/검증 메시지, 학과 읽기전용 필드, 한 줄 소개, 대표 링크 에디터, 저장 버튼을 `components/profile/ProfileEdit*` 순수 UI 컴포넌트로 분리. `useProfileEdit` 폼 로직/저장/업로드/중복확인 흐름은 그대로 유지. `ProfileEditScreen.tsx`는 상태 연결과 화면 레이아웃만 담당하도록 축소(171줄). 앱 tsc 통과.
 - **앱 프로필 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/profile/api.ts`를 public re-export 진입점으로 축소하고, 프로필/게시물/통계 조회(`profileQueries`), 크루 상태·신청·수락·거절·삭제 RPC(`profileConnections`), 크루 목록(`profileConnectionLists`), 즐겨찾기(`profileFavorites`), 내부 row 타입/RPC 응답 검증/링크 조회(`profileInternal`)로 분리. 기존 호출부 import 경로는 유지하고 새 API 조각은 모두 200줄 이하로 유지. 앱 tsc 통과.
 - **법적 문서 URL `LEGAL_URLS` 상수 통합(작은 정리)** — 온보딩/설정에 중복돼 있던 `/terms`·`/privacy`·`/guidelines` 경로를 `lib/site.ts`의 `LEGAL_URLS` 상수로 모아 재사용. 동작 변경 없음, 앱 tsc 통과. (커밋 `49ae2e3`)
 - **앱 가입 동의 체크박스 + 설정 약관 링크** — 온보딩 화면에 "이용약관·개인정보처리방침 동의(필수)" 체크박스 추가(링크 탭 시 웹 문서 열림, 미체크면 "시작하기" 버튼 비활성) → 법적 문서 효력을 위한 **가입 시 동의 확보**. 설정에 "약관 및 정책" 섹션(이용약관/개인정보처리방침/커뮤니티 가이드라인 — `SITE_URL` 기준 웹 페이지 열기) 추가. 앱 tsc 통과. **후속: 웹 회원가입 동의 체크박스**(웹 email+password 가입 경로).
