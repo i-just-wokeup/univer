@@ -28,9 +28,13 @@ export default function SignupForm({ initialError }: SignupFormProps) {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [realName, setRealName] = useState("");
   const [error, setError] = useState<string | null>(initialError);
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [agreedPrivacy, setAgreedPrivacy] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  // 이용약관·개인정보 수집·이용 둘 다 동의해야 가입 진행(이메일/구글 공통).
+  const isAgreed = agreedTerms && agreedPrivacy;
   const passwordRules = [
     {
       isValid: password.length >= 8,
@@ -62,6 +66,11 @@ export default function SignupForm({ initialError }: SignupFormProps) {
       return;
     }
 
+    if (!isAgreed) {
+      setError("이용약관과 개인정보 수집·이용에 동의해주세요.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -85,6 +94,12 @@ export default function SignupForm({ initialError }: SignupFormProps) {
 
   async function handleGoogleSignup() {
     setError(null);
+
+    if (!isAgreed) {
+      setError("이용약관과 개인정보 수집·이용에 동의해주세요.");
+      return;
+    }
+
     setIsGoogleSubmitting(true);
 
     try {
@@ -190,11 +205,52 @@ export default function SignupForm({ initialError }: SignupFormProps) {
               />
             </label>
 
+            <div className="space-y-2.5 pt-1">
+              <label className="flex items-start gap-2.5 text-sm font-semibold leading-5 text-krew-muted">
+                <input
+                  type="checkbox"
+                  checked={agreedTerms}
+                  onChange={(event) => setAgreedTerms(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-krew-accent"
+                />
+                <span>
+                  <span className="text-krew-accent">[필수]</span>{" "}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    className="font-extrabold text-krew-accent underline underline-offset-2"
+                  >
+                    이용약관
+                  </Link>
+                  에 동의합니다
+                </span>
+              </label>
+              <label className="flex items-start gap-2.5 text-sm font-semibold leading-5 text-krew-muted">
+                <input
+                  type="checkbox"
+                  checked={agreedPrivacy}
+                  onChange={(event) => setAgreedPrivacy(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-krew-accent"
+                />
+                <span>
+                  <span className="text-krew-accent">[필수]</span>{" "}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="font-extrabold text-krew-accent underline underline-offset-2"
+                  >
+                    개인정보 수집·이용
+                  </Link>
+                  에 동의합니다
+                </span>
+              </label>
+            </div>
+
             {error ? <AuthErrorMessage message={error} /> : null}
 
             <button
               type="submit"
-              disabled={isSubmitting || isGoogleSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting || !isAgreed}
               className={AUTH_PRIMARY_BUTTON_CLASS}
             >
               {isSubmitting ? "가입 중..." : "회원가입"}
@@ -209,7 +265,7 @@ export default function SignupForm({ initialError }: SignupFormProps) {
             <GoogleAuthButton
               label="국민대 계정으로 가입"
               onClick={handleGoogleSignup}
-              disabled={isSubmitting || isGoogleSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting || !isAgreed}
             />
           </form>
         </AuthCard>
