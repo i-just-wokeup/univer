@@ -7,6 +7,7 @@
 ## 2026-07-08
 
 ### 완료
+- **앱 스토리 진입/영상 뷰 실기기 안정화 보강** — 실기기에서 스토리 진입 직후 이전 홈 게시물이 잠깐 겹쳐 보이는 현상을 줄이기 위해 `/story/[userId]` Stack 전환 애니메이션을 끄고 라우트 배경을 검정으로 고정. `StoryVideoView`는 빈 player에서 시작해 활성 시에만 `replaceAsync(uri)`로 소스를 연결하도록 보강해 `SurfaceVideoView`에 release된 player가 들어가는 경합을 추가 완화. 앱 tsc 통과.
 - **앱 스토리 공용 영상 뷰 release 경합 방어** — `StoryVideoView`에 `isActive` 안전장치를 추가해 화면에 실제로 보여질 때만 `VideoView`를 네이티브 뷰에 연결하도록 변경. 빠른 화면 전환/제출 중 `expo-video` player가 먼저 release되는 경우를 대비해 progress/read·play/pause·listener cleanup에 예외 방어 추가. 스토리 작성/게시물 작성 영상 미리보기는 제출 중 공용 영상 뷰를 비활성화해 코덱 점유를 줄임. 앱 tsc 통과.
 - **앱 내 활동 스토리 미리보기 시트 구조 분리 리팩토링** — 동작 변경 없이 `ActivityStoryPreviewSheet`에 인라인으로 있던 스토리 미디어 프리뷰, 메타 정보 row, 조회자 목록/조회자 row, 날짜 포맷 유틸을 `components/activity` 하위 순수 UI 조각으로 분리. 기존 조회자 패널 애니메이션/열림 상태는 시트에 유지. 앱 tsc 통과.
 - **앱 게시물 작성 화면 구조 분리 리팩토링** — 동작 변경 없이 `WriteScreen`에 인라인으로 있던 작성 헤더, 사진/영상 미디어 선택, 영상 미리보기, 본문 입력, 비율/공개범위 설정 UI를 `components/write/Write*` 순수 UI 컴포넌트로 분리. `useWriteForm` 업로드/사진·영상 선택/제출 로직은 그대로 유지. 앱 tsc 통과.
