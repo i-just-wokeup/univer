@@ -144,3 +144,45 @@ supabase/
   migrations/
 docs/
 ```
+
+## 앱(모바일) 구조 — `apps/mobile`
+
+Expo Router + React Native. 웹(`src/`)과 로직을 **복사-포팅**하며, 웹과 동일하게 `screens`(화면 조립) / `components`(순수 UI) / `features`(로직·훅·API) 3분할을 지킨다.
+
+```
+apps/mobile/
+  app/                      ← Expo Router 라우트 (얇게, 화면 컴포넌트 연결만)
+    _layout.tsx             ← 루트(Provider들 + Sentry.wrap)
+  src/
+    screens/                ← 화면 = 훅 연결 + 레이아웃 조합만 (로직/UI 인라인 금지)
+      home/ feed(릴스)/ explore/ post/ profile/ messages/
+      stories/ search/ notifications/ activity/ settings/ auth/ tabs/
+    components/             ← 순수 UI (props로만 동작)
+      home/ feed/ comments/ profile/ stories/ chat/ search/
+      activity/ notifications/ common/ auth/ write/
+    features/              ← 로직/훅/API (앱 전환 재사용 핵심)
+    lib/                    ← supabase, theme, session, sentry, site,
+                              constants/(storage·pagination), utils/
+```
+
+### features API 모듈 패턴 (2026-07 리팩토링 결과)
+각 `features/<도메인>/api.ts`는 **public re-export 진입점**으로만 두고, 실제 구현은 역할별 모듈로 분리한다(각 200줄 이하). 호출부 import 경로(`features/<도메인>/api`)는 그대로 유지돼 무중단.
+
+```
+features/feed/
+  api.ts               ← re-export 진입점
+  feedQueries.ts       ← 조회
+  postMutations.ts     ← 작성/삭제
+  postInteractions.ts  ← 좋아요/저장/카운트
+  postUpload.ts        ← 업로드
+  videoStatus.ts       ← Cloudflare 상태 조회
+  feedHydration.ts     ← DB row → FeedPost 조립
+  internalTypes.ts     ← 내부 타입
+  use*.ts              ← 화면용 훅 (useHomeFeed, useReels, useWriteForm 등)
+```
+
+같은 패턴 적용: `notifications`(조회/변경/메타/hydration), `chat`(access/목록/메시지/공유/unread), `activity`(스토리/게시물/hydration/즐겨찾기), `profile`(조회/크루/즐겨찾기/internal), `stories`(업로드/변경/조회/조회자/상호작용/hydration).
+
+- **Supabase 쿼리는 `features/*/` 안에서만** (화면/컴포넌트에서 직접 호출 금지)
+- 화면 훅(`use*.ts`)도 큰 것은 책임 분리: 예) `useHomeFeed` → pagination/actions/sync/feedback 훅으로 쪼갬
+- 세부 진행/미완 항목은 `docs/REFACTOR_PLAN.md` 참고
