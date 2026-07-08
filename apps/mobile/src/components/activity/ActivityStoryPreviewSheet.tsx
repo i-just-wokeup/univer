@@ -1,13 +1,10 @@
-import { Image } from "expo-image";
-import { ChevronDown, Eye, Heart, X } from "lucide-react-native";
+import { X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,9 +14,9 @@ import type {
   ActivityStoryViewer,
 } from "../../features/activity/api";
 import { colors } from "../../lib/theme";
-import { Avatar } from "../common/Avatar";
-import { StoryVideoView } from "../stories/StoryVideoView";
-import { activityStoryDisplay } from "./ActivityStoryGrid";
+import { ActivityStoryPreviewMedia } from "./ActivityStoryPreviewMedia";
+import { ActivityStoryPreviewMeta } from "./ActivityStoryPreviewMeta";
+import { ActivityStoryViewerList } from "./ActivityStoryViewerList";
 
 type ActivityStoryPreviewSheetProps = {
   isLoadingViewers: boolean;
@@ -29,24 +26,6 @@ type ActivityStoryPreviewSheetProps = {
 };
 
 const VIEWER_PANEL_HEIGHT = 360;
-
-function formatKoreanDateTime(createdAt: string) {
-  const date = new Date(createdAt);
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatViewerTime(createdAt: string) {
-  const date = new Date(createdAt);
-  return new Intl.DateTimeFormat("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
 
 export function ActivityStoryPreviewSheet({
   isLoadingViewers,
@@ -76,9 +55,6 @@ export function ActivityStoryPreviewSheet({
   }
 
   const likedViewers = viewers.filter((viewer) => viewer.isLiked);
-  // 영상 스토리는 image_url에 영상 URL이 들어있어 사진처럼 못 띄운다. 준비되면 재생, 아니면 썸네일.
-  const isVideo = story.type === "video";
-  const isVideoReady = isVideo && story.processing_status === "ready";
   const panelTranslateY = slideAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [VIEWER_PANEL_HEIGHT, 0],
@@ -96,63 +72,12 @@ export function ActivityStoryPreviewSheet({
           <X color={colors.white} size={22} strokeWidth={2.6} />
         </Pressable>
         <View style={styles.sheet}>
-          <View style={styles.preview}>
-            {isVideoReady ? (
-              <StoryVideoView loop style={styles.previewMedia} uri={story.image_url} />
-            ) : isVideo ? (
-              <>
-                <Image
-                  cachePolicy="memory-disk"
-                  contentFit="contain"
-                  source={{ uri: story.thumbnail_url ?? story.image_url }}
-                  style={styles.previewImage}
-                />
-                <View style={styles.processingOverlay}>
-                  <Text style={styles.processingText}>
-                    {story.processing_status === "failed"
-                      ? "영상 처리 실패"
-                      : "영상 처리 중"}
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <Image
-                cachePolicy="memory-disk"
-                contentFit="contain"
-                source={{ uri: story.image_url }}
-                style={styles.previewImage}
-              />
-            )}
-            <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>
-                {formatKoreanDateTime(story.created_at)}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.meta}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setIsViewerListOpen(true)}
-              style={({ pressed }) => [
-                styles.metaButton,
-                pressed ? styles.metaButtonPressed : null,
-              ]}
-            >
-              <Eye color={colors.white} size={15} strokeWidth={2.4} />
-              <Text style={styles.metaText}>조회 {story.views_count}</Text>
-            </Pressable>
-            <View style={styles.metaItem}>
-              <Heart color={colors.white} size={15} strokeWidth={2.4} />
-              <Text style={styles.metaText}>좋아요 {likedViewers.length}</Text>
-            </View>
-            <Text style={styles.metaText}>
-              {activityStoryDisplay.getVisibilityLabel(story.visibility)}
-            </Text>
-            <Text style={styles.metaText}>
-              {activityStoryDisplay.getStoryStatus(story)}
-            </Text>
-          </View>
+          <ActivityStoryPreviewMedia story={story} />
+          <ActivityStoryPreviewMeta
+            likedCount={likedViewers.length}
+            onOpenViewers={() => setIsViewerListOpen(true)}
+            story={story}
+          />
 
           {isViewerListOpen ? (
             <Pressable
@@ -169,58 +94,12 @@ export function ActivityStoryPreviewSheet({
               { transform: [{ translateY: panelTranslateY }] },
             ]}
           >
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setIsViewerListOpen(false)}
-              style={styles.viewerHeader}
-            >
-              <View>
-                <Text style={styles.viewerTitle}>조회한 사람</Text>
-                <Text style={styles.viewerTime}>
-                  {formatKoreanDateTime(story.created_at)}
-                </Text>
-              </View>
-              <ChevronDown color={colors.white} size={22} strokeWidth={2.6} />
-            </Pressable>
-            <ScrollView style={styles.viewerList}>
-              {isLoadingViewers ? (
-                <Text style={styles.viewerEmpty}>
-                  조회자 정보를 불러오는 중입니다.
-                </Text>
-              ) : viewers.length > 0 ? (
-                viewers.map((viewer) => (
-                  <View key={viewer.id} style={styles.viewerRow}>
-                    <Avatar
-                      imageUrl={viewer.avatar_url}
-                      label={viewer.nickname}
-                      size={38}
-                    />
-                    <View style={styles.viewerBody}>
-                      <Text numberOfLines={1} style={styles.viewerName}>
-                        {viewer.nickname}
-                      </Text>
-                      <Text style={styles.viewerSub}>
-                        {formatViewerTime(viewer.viewed_at)}
-                      </Text>
-                    </View>
-                    {viewer.isLiked ? (
-                      <View style={styles.likeBadge}>
-                        <Heart
-                          color={colors.danger}
-                          fill={colors.danger}
-                          size={13}
-                        />
-                        <Text style={styles.likeText}>좋아요</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.viewerEmpty}>
-                  아직 조회한 사람이 없습니다.
-                </Text>
-              )}
-            </ScrollView>
+            <ActivityStoryViewerList
+              isLoadingViewers={isLoadingViewers}
+              onClose={() => setIsViewerListOpen(false)}
+              story={story}
+              viewers={viewers}
+            />
           </Animated.View>
         </View>
       </View>
@@ -257,82 +136,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: "#09090B",
   },
-  preview: {
-    width: "100%",
-    aspectRatio: 9 / 16,
-    backgroundColor: colors.black,
-  },
-  previewImage: {
-    height: "100%",
-    width: "100%",
-  },
-  previewMedia: {
-    height: "100%",
-    width: "100%",
-    borderRadius: 0,
-  },
-  processingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.34)",
-  },
-  processingText: {
-    overflow: "hidden",
-    borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.66)",
-    color: colors.white,
-    fontSize: 13,
-    fontWeight: "900",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  dateBadge: {
-    position: "absolute",
-    top: 14,
-    left: 14,
-    borderRadius: 12,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-  },
-  dateText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: "900",
-  },
-  meta: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  metaButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  metaButtonPressed: {
-    opacity: 0.7,
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  metaText: {
-    color: "rgba(255,255,255,0.78)",
-    fontSize: 12,
-    fontWeight: "800",
-  },
   viewerBackdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -348,70 +151,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#121214",
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.1)",
-  },
-  viewerHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 10,
-  },
-  viewerTitle: {
-    color: colors.white,
-    fontSize: 15,
-    fontWeight: "900",
-  },
-  viewerTime: {
-    marginTop: 2,
-    color: "rgba(255,255,255,0.38)",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  viewerList: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  viewerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 8,
-  },
-  viewerBody: {
-    minWidth: 0,
-    flex: 1,
-  },
-  viewerName: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  viewerSub: {
-    marginTop: 2,
-    color: "rgba(255,255,255,0.42)",
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  likeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,59,78,0.14)",
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-  },
-  likeText: {
-    color: "#FECACA",
-    fontSize: 11,
-    fontWeight: "900",
-  },
-  viewerEmpty: {
-    paddingVertical: 24,
-    color: "rgba(255,255,255,0.42)",
-    fontSize: 12,
-    fontWeight: "800",
-    textAlign: "center",
   },
 });
