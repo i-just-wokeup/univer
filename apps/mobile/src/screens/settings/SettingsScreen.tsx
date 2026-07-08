@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { signOutMobile } from "../../features/auth/api";
-import { SITE_URL } from "../../lib/site";
+import { LEGAL_URLS } from "../../lib/site";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
@@ -111,15 +111,15 @@ export function SettingsScreen() {
         <Section label="약관 및 정책">
           <Row
             label="이용약관"
-            onPress={() => void Linking.openURL(`${SITE_URL}/terms`)}
+            onPress={() => void Linking.openURL(LEGAL_URLS.terms)}
           />
           <Row
             label="개인정보처리방침"
-            onPress={() => void Linking.openURL(`${SITE_URL}/privacy`)}
+            onPress={() => void Linking.openURL(LEGAL_URLS.privacy)}
           />
           <Row
             label="커뮤니티 가이드라인"
-            onPress={() => void Linking.openURL(`${SITE_URL}/guidelines`)}
+            onPress={() => void Linking.openURL(LEGAL_URLS.guidelines)}
           />
         </Section>
 
