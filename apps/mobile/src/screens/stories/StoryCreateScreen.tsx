@@ -67,6 +67,7 @@ export function StoryCreateScreen() {
       {captured.kind === "video" ? (
         <StoryVideoView
           backgroundColor={backgroundColor}
+          isActive={!isSubmitting}
           key={captured.uri}
           loop
           style={{ marginTop: insets.top + 6 }}

@@ -11,6 +11,9 @@ type StoryVideoViewProps = {
   onProgress?: (percent: number) => void;
   // 영상이 끝까지 재생됐을 때(뷰어가 다음 스토리로 넘어가게).
   onEnd?: () => void;
+  // 화면에 실제로 보여질 때만 VideoView를 네이티브 뷰에 연결한다.
+  // expo-video player release 경합을 줄이기 위한 안전장치다.
+  isActive?: boolean;
   isPaused?: boolean;
   // 미리보기는 반복 재생(true). 뷰어는 false여야 끝에서 onEnd로 다음 스토리로 넘어간다.
   loop?: boolean;
@@ -23,6 +26,7 @@ type StoryVideoViewProps = {
 export function StoryVideoView({
   backgroundColor = DEFAULT_STORY_BACKGROUND_COLOR,
   contentFit = "contain",
+  isActive = true,
   isPaused = false,
   loop = false,
   onEnd,
@@ -46,14 +50,19 @@ export function StoryVideoView({
       preferredForwardBufferDuration: 5,
       minBufferForPlayback: 1,
     };
-    instance.play();
   });
 
   useEffect(() => {
     const timeSubscription = player.addListener(
       "timeUpdate",
       ({ currentTime }) => {
-        const total = player.duration;
+        let total = 0;
+
+        try {
+          total = player.duration;
+        } catch {
+          return;
+        }
 
         if (total > 0) {
           onProgressRef.current?.(Math.min(100, (currentTime / total) * 100));
@@ -65,18 +74,26 @@ export function StoryVideoView({
     });
 
     return () => {
-      timeSubscription.remove();
-      endSubscription.remove();
+      try {
+        timeSubscription.remove();
+        endSubscription.remove();
+      } catch {
+        // 화면 전환 중 네이티브 player가 먼저 release된 경우가 있어 정리 실패는 무시한다.
+      }
     };
   }, [player]);
 
   useEffect(() => {
-    if (isPaused) {
-      player.pause();
-    } else {
-      player.play();
+    try {
+      if (!isActive || isPaused) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    } catch {
+      // 빠른 화면 전환/제출 중 release된 player에 play/pause가 들어가면 무시한다.
     }
-  }, [isPaused, player]);
+  }, [isActive, isPaused, player]);
 
   return (
     <View
@@ -86,12 +103,14 @@ export function StoryVideoView({
         style,
       ]}
     >
-      <VideoView
-        contentFit={contentFit}
-        nativeControls={false}
-        player={player}
-        style={styles.fill}
-      />
+      {isActive ? (
+        <VideoView
+          contentFit={contentFit}
+          nativeControls={false}
+          player={player}
+          style={styles.fill}
+        />
+      ) : null}
     </View>
   );
 }

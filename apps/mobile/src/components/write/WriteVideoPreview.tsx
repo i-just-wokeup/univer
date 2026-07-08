@@ -22,7 +22,13 @@ export function WriteVideoPreview({
         <Text style={styles.mediaCount}>1/1</Text>
       </View>
       <View style={styles.videoPreviewWrap}>
-        <StoryVideoView key={uri} loop style={styles.videoPreview} uri={uri} />
+        <StoryVideoView
+          isActive={!disabled}
+          key={uri}
+          loop
+          style={styles.videoPreview}
+          uri={uri}
+        />
         <Pressable
           accessibilityLabel="영상 삭제"
           accessibilityRole="button"
