@@ -27,7 +27,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "스토리를 촬영하려면 카메라 접근 권한이 필요합니다."
+          "cameraPermission": "스토리를 촬영하려면 카메라 접근 권한이 필요합니다.",
+          "microphonePermission": "영상 촬영 시 마이크 접근 권한이 필요합니다."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "사진을 게시물·스토리에 올리려면 사진 접근 권한이 필요합니다."
         }
       ],
       "expo-secure-store",
@@ -42,6 +49,7 @@
       "@sentry/react-native"
     ],
     "ios": {
+      "bundleIdentifier": "com.univer.app",
       "supportsTablet": true
     },
     "androidNavigationBar": {
