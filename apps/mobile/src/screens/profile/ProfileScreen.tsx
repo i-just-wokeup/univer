@@ -1,26 +1,16 @@
 import { useRouter } from "expo-router";
-import { MoreHorizontal, Settings } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  ActionSheet,
-  type ActionSheetItem,
-} from "../../components/common/ActionSheet";
-import { KrewSurface } from "../../components/common/KrewSurface";
-import { PostThumbnailGrid } from "../../components/common/PostThumbnailGrid";
-import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
-import { ProfileConnectionActions } from "../../components/profile/ProfileConnectionActions";
-import { ProfileInfoPanel } from "../../components/profile/ProfileInfoPanel";
+import { ProfileContent } from "../../components/profile/ProfileContent";
+import { ProfileHeaderBar } from "../../components/profile/ProfileHeaderBar";
+import { ProfileMoreMenu } from "../../components/profile/ProfileMoreMenu";
 import { useProfile } from "../../features/profile/useProfile";
 import { colors } from "../../lib/theme";
 
@@ -77,28 +67,6 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     router.push("/profile/edit");
   }, [router]);
 
-  const actionSheetItems: ActionSheetItem[] = [
-    {
-      label: isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가",
-      onPress: () => {
-        void handleToggleFavorite();
-      },
-    },
-    ...(connectionStatus?.status === "accepted"
-      ? [
-          {
-            danger: true,
-            label: "친구 삭제",
-            onPress: handleRemoveFriend,
-          } satisfies ActionSheetItem,
-        ]
-      : []),
-    {
-      label: "취소",
-      onPress: () => {},
-    },
-  ];
-
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -127,51 +95,16 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   return (
     <SafeAreaView style={styles.screen}>
-      {nickname ? (
-        <ScreenHeader
-          onBack={() => router.back()}
-          right={
-            !isMine ? (
-              <Pressable
-                accessibilityLabel="프로필 옵션"
-                accessibilityRole="button"
-                onPress={() => {
-                  setIsActionSheetOpen(true);
-                }}
-                style={styles.headerButton}
-              >
-                <MoreHorizontal
-                  color={colors.text}
-                  size={22}
-                  strokeWidth={2.4}
-                />
-              </Pressable>
-            ) : (
-              <Pressable
-                accessibilityLabel="설정"
-                accessibilityRole="button"
-                onPress={handlePressSettings}
-                style={styles.headerButton}
-              >
-                <Settings color={colors.text} size={22} strokeWidth={2.4} />
-              </Pressable>
-            )
-          }
-          title={profile?.nickname ?? ""}
-        />
-      ) : (
-        <View style={styles.tabHeader}>
-          <Text style={styles.logo}>KREW</Text>
-          <Pressable
-            accessibilityLabel="설정"
-            accessibilityRole="button"
-            onPress={handlePressSettings}
-            style={styles.headerButton}
-          >
-            <Settings color={colors.text} size={22} strokeWidth={2.4} />
-          </Pressable>
-        </View>
-      )}
+      <ProfileHeaderBar
+        isMine={isMine}
+        isPushed={Boolean(nickname)}
+        nickname={profile?.nickname ?? ""}
+        onBack={() => router.back()}
+        onOpenMore={() => {
+          setIsActionSheetOpen(true);
+        }}
+        onPressSettings={handlePressSettings}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -184,62 +117,39 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
         }
       >
         {profile ? (
-          <KrewSurface style={styles.panel}>
-            <ProfileInfoPanel
-              counts={counts}
-              onPressCrew={
-                isMine
-                  ? () => {
-                      router.push("/profile/connections");
-                    }
-                  : undefined
-              }
-              profile={profile}
-            />
-            {isMine ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={handlePressEdit}
-                style={({ pressed }) => [
-                  styles.editButton,
-                  pressed ? styles.editButtonPressed : null,
-                ]}
-              >
-                <Text style={styles.editButtonText}>프로필 편집</Text>
-              </Pressable>
-            ) : null}
-            {!isMine && connectionStatus ? (
-              <ProfileConnectionActions
-                connectionStatus={connectionStatus}
-                disabled={isActionPending}
-                onAccept={handleAcceptFriendRequest}
-                onMessage={() => {
-                  void handleStartMessage();
-                }}
-                onReject={handleRejectFriendRequest}
-                onRemove={handleRemoveFriend}
-                onSend={handleSendFriendRequest}
-              />
-            ) : null}
-            {errorMessage ? (
-              <Text style={styles.inlineError}>{errorMessage}</Text>
-            ) : null}
-            <View style={styles.divider} />
-            {posts.length === 0 ? (
-              <View style={styles.emptyGrid}>
-                <Text style={styles.emptyText}>아직 게시물이 없습니다</Text>
-              </View>
-            ) : (
-              <PostThumbnailGrid items={posts} onPressItem={handlePressPost} />
-            )}
-          </KrewSurface>
+          <ProfileContent
+            connectionStatus={connectionStatus}
+            counts={counts}
+            errorMessage={errorMessage}
+            isActionPending={isActionPending}
+            isMine={isMine}
+            onAcceptFriendRequest={handleAcceptFriendRequest}
+            onEditProfile={handlePressEdit}
+            onMessage={() => {
+              void handleStartMessage();
+            }}
+            onPressCrew={() => {
+              router.push("/profile/connections");
+            }}
+            onPressPost={handlePressPost}
+            onRejectFriendRequest={handleRejectFriendRequest}
+            onRemoveFriend={handleRemoveFriend}
+            onSendFriendRequest={handleSendFriendRequest}
+            posts={posts}
+            profile={profile}
+          />
         ) : null}
       </ScrollView>
-      <ActionSheet
+      <ProfileMoreMenu
+        connectionStatus={connectionStatus}
+        isFavorite={isFavorite}
         isOpen={isActionSheetOpen}
-        items={actionSheetItems}
         onClose={() => {
           setIsActionSheetOpen(false);
+        }}
+        onRemoveFriend={handleRemoveFriend}
+        onToggleFavorite={() => {
+          void handleToggleFavorite();
         }}
       />
     </SafeAreaView>
@@ -251,73 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.accentSoft,
   },
-  tabHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 6,
-  },
-  logo: {
-    color: colors.accent,
-    fontSize: 32,
-    fontWeight: "900",
-  },
-  headerButton: {
-    height: 40,
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-    backgroundColor: colors.white,
-  },
   scrollContent: {
     paddingBottom: 110,
-  },
-  panel: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    overflow: "hidden",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "rgba(124,58,237,0.08)",
-  },
-  emptyGrid: {
-    paddingHorizontal: 24,
-    paddingVertical: 48,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: colors.muted,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  inlineError: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    color: colors.danger,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  editButton: {
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-  },
-  editButtonPressed: {
-    opacity: 0.75,
-  },
-  editButtonText: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "900",
   },
 });
