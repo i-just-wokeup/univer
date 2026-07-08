@@ -18,6 +18,7 @@ function isExcludedPath(pathname: string) {
     "/onboarding",
     "/terms",
     "/privacy",
+    "/guidelines",
   ].includes(pathname);
 }
 

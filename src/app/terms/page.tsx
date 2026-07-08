@@ -84,8 +84,9 @@ export default function TermsPage() {
       <Article title="제5조 (게시물의 관리)">
         <p>
           이용자는 게시물을 신고하거나 특정 이용자를 차단할 수 있습니다. 서비스는
-          제4조를 위반하거나 관련 법령·본 약관에 위배되는 게시물에 대해 사전 통지
-          없이 삭제·숨김 등 조치를 할 수 있습니다.
+          제4조 및 서비스가 별도로 정한 <b>커뮤니티 가이드라인</b>을 위반하거나 관련
+          법령·본 약관에 위배되는 게시물에 대해 사전 통지 없이 삭제·숨김 등 조치를 할
+          수 있습니다.
         </p>
       </Article>
 
@@ -122,9 +123,12 @@ export default function TermsPage() {
         </p>
       </Article>
 
-      <div className="mt-12 border-t border-zinc-200 pt-6 text-sm">
+      <div className="mt-12 flex flex-col gap-2 border-t border-zinc-200 pt-6 text-sm">
         <Link href="/privacy" className="font-semibold text-[#7c3aed]">
           개인정보 처리방침 보기 →
+        </Link>
+        <Link href="/guidelines" className="font-semibold text-[#7c3aed]">
+          커뮤니티 가이드라인 보기 →
         </Link>
       </div>
     </main>

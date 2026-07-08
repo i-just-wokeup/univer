@@ -54,8 +54,8 @@ export default function PrivacyPolicyPage() {
             프로필 사진, 소속 대학교
           </li>
           <li>
-            <b>서비스 이용 중 생성</b>: 게시물·댓글·스토리·메시지(DM) 내용,
-            좋아요·저장·팔로우/크루 내역, 신고·차단 내역
+            <b>서비스 이용 중 생성</b>: 게시물·댓글·스토리·메시지(DM)의
+            텍스트·사진·영상 콘텐츠, 좋아요·저장·팔로우/크루 내역, 신고·차단 내역
           </li>
           <li>
             <b>자동 수집</b>: 기기 푸시 알림 토큰, 접속 로그·기기/브라우저 정보
@@ -99,6 +99,12 @@ export default function PrivacyPolicyPage() {
           <li>Firebase Cloud Messaging(Google) — 푸시 알림 발송</li>
         </ul>
         <p>
+          <b>개인정보의 국외 이전</b>: 위 수탁사 중 Cloudflare·Vercel·Google은
+          국외에 서버를 두고 있어, 서비스 제공에 필요한 범위에서 개인정보가 국외로
+          이전되어 처리될 수 있습니다. 이전되는 항목·목적·보유기간은 본 방침에
+          기재된 바와 같습니다.
+        </p>
+        <p>
           법령에 근거하거나 이용자의 동의가 있는 경우를 제외하고는 개인정보를
           제3자에게 제공하지 않습니다.
         </p>
@@ -126,9 +132,12 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
-      <div className="mt-12 border-t border-zinc-200 pt-6 text-sm">
+      <div className="mt-12 flex flex-col gap-2 border-t border-zinc-200 pt-6 text-sm">
         <Link href="/terms" className="font-semibold text-[#7c3aed]">
           이용약관 보기 →
+        </Link>
+        <Link href="/guidelines" className="font-semibold text-[#7c3aed]">
+          커뮤니티 가이드라인 보기 →
         </Link>
       </div>
     </main>
