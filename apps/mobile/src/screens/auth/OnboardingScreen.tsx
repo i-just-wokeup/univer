@@ -209,7 +209,7 @@ export function OnboardingScreen() {
                   style={styles.agreeLink}
                   onPress={() => void Linking.openURL(LEGAL_URLS.privacy)}
                 >
-                  개인정보처리방침
+                  개인정보 수집·이용
                 </Text>
                 에 동의합니다 (필수)
               </Text>
