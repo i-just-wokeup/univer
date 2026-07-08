@@ -7,6 +7,7 @@
 ## 2026-07-08
 
 ### 완료
+- **앱 내 활동 API 역할별 분리 리팩토링** — 동작 변경 없이 `features/activity/api.ts`를 public re-export 진입점으로 축소하고, 스토리 보관함/조회자(`activityStories`), 저장·좋아요·댓글 단 게시물(`activityPosts`), 게시물 공통 조립/차단 필터(`activityPostHydration`), 즐겨찾기 계정(`activityFavorites`), 타입(`activityTypes`)으로 분리. 기존 호출부 import 경로는 유지하고 모든 새 API 조각은 200줄 이하로 유지. 앱 tsc 통과.
 - **법적 문서 보강 + 커뮤니티 가이드라인 신설** — 개인정보처리방침(`/privacy`)에 국외이전(Cloudflare·Vercel·Google) 명시 + 수집항목에 영상 명시. 커뮤니티 가이드라인 페이지(`/guidelines`) 신설(금지행위/신고·차단/신고 처리·제재 기준/문의) — 신고 대응 운영의 기준 문서(약관의 일부). 이용약관(`/terms`) 제5조에 가이드라인 위반 조치 근거 추가 + 3개 문서 상호 링크. 미들웨어 비로그인 예외에 `/guidelines` 추가. 운영자명/문의이메일/보호책임자/시행일 등 개인정보 4곳은 placeholder 유지(확정 후 기입). 남은 것: **가입 동의 체크박스**(문서 효력 완성), 앱 설정에서 3문서 링크. 웹 tsc 통과.
 - **보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제** — `purge-deleted-accounts` Edge Function에서 `retentionDays`가 정수 30일 미만이면 400으로 거부하도록 입력 검증 추가. DB 함수 `public.purge_deleted_accounts(int, boolean)`에도 동일하게 30일 미만 예외를 추가하는 마이그레이션을 원격 적용하고 migration history를 `applied`로 정리. 원격 DB 검증: 29일 dry-run은 예외로 차단, 30일 dry-run은 정상 응답. Edge Function도 재배포 완료. Deno CLI가 로컬에 없어 Edge Function 타입체크는 미실행.
 
