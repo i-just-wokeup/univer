@@ -1,5 +1,5 @@
 import { useVideoPlayer, VideoView, type VideoContentFit } from "expo-video";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 
 import { DEFAULT_STORY_BACKGROUND_COLOR } from "../../features/stories/backgroundColors";
@@ -37,10 +37,11 @@ export function StoryVideoView({
   // 콜백을 ref로 들고 있어 리스너를 매 렌더 재구독하지 않게 한다.
   const onProgressRef = useRef(onProgress);
   const onEndRef = useRef(onEnd);
+  const [hasSource, setHasSource] = useState(false);
   onProgressRef.current = onProgress;
   onEndRef.current = onEnd;
 
-  const player = useVideoPlayer(uri, (instance) => {
+  const player = useVideoPlayer(null, (instance) => {
     instance.loop = loop;
     instance.muted = false;
     instance.timeUpdateEventInterval = 0.1;
@@ -51,6 +52,35 @@ export function StoryVideoView({
       minBufferForPlayback: 1,
     };
   });
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function replaceSource() {
+      setHasSource(false);
+
+      try {
+        await player.pause();
+        await player.replaceAsync(isActive ? uri : null);
+
+        if (isCancelled) {
+          return;
+        }
+
+        setHasSource(isActive);
+      } catch {
+        if (!isCancelled) {
+          setHasSource(false);
+        }
+      }
+    }
+
+    void replaceSource();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isActive, player, uri]);
 
   useEffect(() => {
     const timeSubscription = player.addListener(
@@ -85,7 +115,7 @@ export function StoryVideoView({
 
   useEffect(() => {
     try {
-      if (!isActive || isPaused) {
+      if (!isActive || !hasSource || isPaused) {
         player.pause();
       } else {
         player.play();
@@ -93,7 +123,7 @@ export function StoryVideoView({
     } catch {
       // 빠른 화면 전환/제출 중 release된 player에 play/pause가 들어가면 무시한다.
     }
-  }, [isActive, isPaused, player]);
+  }, [hasSource, isActive, isPaused, player]);
 
   return (
     <View
@@ -103,7 +133,7 @@ export function StoryVideoView({
         style,
       ]}
     >
-      {isActive ? (
+      {isActive && hasSource ? (
         <VideoView
           contentFit={contentFit}
           nativeControls={false}
