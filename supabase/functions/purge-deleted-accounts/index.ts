@@ -7,6 +7,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const DEFAULT_RETENTION_DAYS = 30;
+const MIN_RETENTION_DAYS = 30;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -30,10 +31,16 @@ Deno.serve(async (req) => {
     retentionDays?: number;
   };
   const dryRun = body.dryRun === true;
-  const retentionDays =
-    typeof body.retentionDays === "number" && body.retentionDays >= 0
-      ? body.retentionDays
-      : DEFAULT_RETENTION_DAYS;
+  const retentionDays = body.retentionDays ?? DEFAULT_RETENTION_DAYS;
+  if (
+    !Number.isInteger(retentionDays) ||
+    retentionDays < MIN_RETENTION_DAYS
+  ) {
+    return json(
+      { error: `retentionDays must be an integer >= ${MIN_RETENTION_DAYS}` },
+      400,
+    );
+  }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },

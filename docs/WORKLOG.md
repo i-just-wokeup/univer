@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-07-08
+
+### 완료
+- **보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제** — `purge-deleted-accounts` Edge Function에서 `retentionDays`가 정수 30일 미만이면 400으로 거부하도록 입력 검증 추가. DB 함수 `public.purge_deleted_accounts(int, boolean)`에도 동일하게 30일 미만 예외를 추가하는 마이그레이션 작성해, HTTP 함수 우회/관리자 실수 호출에서도 즉시 영구삭제되는 사고를 방지. 원격 적용/배포는 별도 필요. Deno CLI가 로컬에 없어 Edge Function 타입체크는 미실행.
+
 ## 2026-07-07
 
 ### 완료
