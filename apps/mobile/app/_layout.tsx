@@ -15,10 +15,11 @@ import {
 
 import { usePushNotifications } from "../src/features/notifications/usePushNotifications";
 import { SessionProvider, useSession } from "../src/lib/session";
+import { Sentry } from "../src/lib/sentry";
 import { SystemBarsController } from "../src/lib/systemBars";
 import { colors } from "../src/lib/theme";
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
@@ -33,6 +34,9 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+// Sentry가 렌더 에러까지 잡도록 루트를 감싼다.
+export default Sentry.wrap(RootLayout);
 
 function PushNotificationsController() {
   usePushNotifications();

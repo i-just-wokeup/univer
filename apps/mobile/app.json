@@ -3,6 +3,12 @@
     "name": "mobile",
     "slug": "mobile",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e7a0008e-b18f-4a2c-92ad-6f062fbbd450"
+    },
     "scheme": "univer",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -32,7 +38,8 @@
           "color": "#7C3AED"
         }
       ],
-      "expo-video"
+      "expo-video",
+      "@sentry/react-native"
     ],
     "ios": {
       "supportsTablet": true
