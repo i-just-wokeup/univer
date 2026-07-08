@@ -2,12 +2,13 @@ import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { signOutMobile } from "../../features/auth/api";
+import { SITE_URL } from "../../lib/site";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { colors } from "../../lib/theme";
 
@@ -105,6 +106,21 @@ export function SettingsScreen() {
         <Section label="지원">
           <Row disabled label="공지사항" />
           <Row disabled label="문의하기" />
+        </Section>
+
+        <Section label="약관 및 정책">
+          <Row
+            label="이용약관"
+            onPress={() => void Linking.openURL(`${SITE_URL}/terms`)}
+          />
+          <Row
+            label="개인정보처리방침"
+            onPress={() => void Linking.openURL(`${SITE_URL}/privacy`)}
+          />
+          <Row
+            label="커뮤니티 가이드라인"
+            onPress={() => void Linking.openURL(`${SITE_URL}/guidelines`)}
+          />
         </Section>
 
         <View style={styles.section}>

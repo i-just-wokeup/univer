@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
-import { Lock } from "lucide-react-native";
-import { useEffect } from "react";
+import { Check, Lock } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -15,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateView } from "../../components/common/StateView";
 import { useOnboarding } from "../../features/auth/useOnboarding";
+import { SITE_URL } from "../../lib/site";
 import { colors } from "../../lib/theme";
 
 export function OnboardingScreen() {
@@ -38,6 +40,7 @@ export function OnboardingScreen() {
     setDepartment,
     setRealName,
   } = useOnboarding();
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     if (redirectTo) {
@@ -182,9 +185,39 @@ export function OnboardingScreen() {
               <Text style={styles.errorText}>{errorMessage}</Text>
             ) : null}
 
+            <View style={styles.agreeRow}>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: agreed }}
+                hitSlop={8}
+                onPress={() => setAgreed((value) => !value)}
+                style={[styles.checkbox, agreed ? styles.checkboxOn : null]}
+              >
+                {agreed ? (
+                  <Check color={colors.white} size={13} strokeWidth={3.2} />
+                ) : null}
+              </Pressable>
+              <Text style={styles.agreeText}>
+                <Text
+                  style={styles.agreeLink}
+                  onPress={() => void Linking.openURL(`${SITE_URL}/terms`)}
+                >
+                  이용약관
+                </Text>
+                {" 및 "}
+                <Text
+                  style={styles.agreeLink}
+                  onPress={() => void Linking.openURL(`${SITE_URL}/privacy`)}
+                >
+                  개인정보처리방침
+                </Text>
+                에 동의합니다 (필수)
+              </Text>
+            </View>
+
             <Pressable
               accessibilityRole="button"
-              disabled={!canSubmit}
+              disabled={!canSubmit || !agreed}
               onPress={() => {
                 void handleSubmit().then((didSubmit) => {
                   if (didSubmit) {
@@ -194,8 +227,8 @@ export function OnboardingScreen() {
               }}
               style={({ pressed }) => [
                 styles.primaryButton,
-                pressed && canSubmit ? styles.pressed : null,
-                !canSubmit ? styles.disabled : null,
+                pressed && canSubmit && agreed ? styles.pressed : null,
+                !canSubmit || !agreed ? styles.disabled : null,
               ]}
             >
               <Text style={styles.primaryButtonText}>
@@ -383,6 +416,38 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
     lineHeight: 19,
+  },
+  agreeRow: {
+    marginTop: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  checkbox: {
+    height: 22,
+    width: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 7,
+    borderWidth: 1.6,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+  },
+  checkboxOn: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accent,
+  },
+  agreeText: {
+    flex: 1,
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  agreeLink: {
+    color: colors.accent,
+    fontWeight: "900",
+    textDecorationLine: "underline",
   },
   primaryButton: {
     height: 54,
