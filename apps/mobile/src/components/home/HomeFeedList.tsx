@@ -31,7 +31,7 @@ type HomeFeedListProps = {
   onPressCreateStory: () => void;
   onPressMessages: () => void;
   onPressNotifications: () => void;
-  onPressStoryGroup: (group: StoryGroup) => void;
+  onPressStoryGroup: (group: StoryGroup, groups: StoryGroup[]) => void;
   onRefresh: () => MaybePromise;
   onReport: (postId: string) => MaybePromise;
   onShare: (post: FeedPost) => void;
@@ -81,6 +81,11 @@ export function HomeFeedList({
     },
   ).current;
 
+  function leaveFeedAfterVideoDetach(next: () => void) {
+    setActivePostId(null);
+    requestAnimationFrame(next);
+  }
+
   return (
     <FlatList
       ListEmptyComponent={
@@ -111,8 +116,14 @@ export function HomeFeedList({
           />
           <StoryBar
             groups={storyGroups}
-            onPressCreate={onPressCreateStory}
-            onPressGroup={onPressStoryGroup}
+            onPressCreate={() => {
+              leaveFeedAfterVideoDetach(onPressCreateStory);
+            }}
+            onPressGroup={(group) => {
+              leaveFeedAfterVideoDetach(() => {
+                onPressStoryGroup(group, storyGroups);
+              });
+            }}
           />
         </>
       }

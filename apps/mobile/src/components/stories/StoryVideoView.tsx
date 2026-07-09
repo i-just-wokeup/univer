@@ -1,3 +1,4 @@
+import { Image } from "expo-image";
 import { useVideoPlayer, VideoView, type VideoContentFit } from "expo-video";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
@@ -17,6 +18,7 @@ type StoryVideoViewProps = {
   isPaused?: boolean;
   // 미리보기는 반복 재생(true). 뷰어는 false여야 끝에서 onEnd로 다음 스토리로 넘어간다.
   loop?: boolean;
+  posterUrl?: string | null;
   style?: ViewStyle;
   uri: string;
 };
@@ -31,6 +33,7 @@ export function StoryVideoView({
   loop = false,
   onEnd,
   onProgress,
+  posterUrl = null,
   style,
   uri,
 }: StoryVideoViewProps) {
@@ -38,6 +41,7 @@ export function StoryVideoView({
   const onProgressRef = useRef(onProgress);
   const onEndRef = useRef(onEnd);
   const [hasSource, setHasSource] = useState(false);
+  const [hasRenderedFirstFrame, setHasRenderedFirstFrame] = useState(false);
   onProgressRef.current = onProgress;
   onEndRef.current = onEnd;
 
@@ -58,6 +62,7 @@ export function StoryVideoView({
 
     async function replaceSource() {
       setHasSource(false);
+      setHasRenderedFirstFrame(false);
 
       try {
         await player.pause();
@@ -149,7 +154,18 @@ export function StoryVideoView({
         <VideoView
           contentFit={contentFit}
           nativeControls={false}
+          onFirstFrameRender={() => setHasRenderedFirstFrame(true)}
           player={player}
+          surfaceType="textureView"
+          style={styles.fill}
+          useExoShutter
+        />
+      ) : null}
+      {posterUrl && !hasRenderedFirstFrame ? (
+        <Image
+          cachePolicy="memory-disk"
+          contentFit={contentFit}
+          source={{ uri: posterUrl }}
           style={styles.fill}
         />
       ) : null}

@@ -98,6 +98,7 @@
 - [x] 앱 내 활동 스토리 미리보기 시트 구조 분리 리팩토링 (미디어/메타/조회자 목록/조회자 row 분리)
 - [x] 앱 스토리 공용 영상 뷰 release 경합 방어 (비활성 시 VideoView 분리, play/pause 예외 방어)
 - [x] 앱 스토리 닫기 잔상 완화 (닫기 전 미디어 detach 후 기본 pop 전환 유지)
+- [x] 앱 스토리 전환/카메라 잔상 완화 (홈 storyGroups 전달, 카메라 준비 전 커버, 영상 textureView/poster 적용)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)
 - [x] 채팅방 fullscreen route group 분리 (하단 탭바/사이드바 제거, `h-dvh` 전용 레이아웃)

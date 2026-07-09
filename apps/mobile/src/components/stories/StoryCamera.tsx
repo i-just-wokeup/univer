@@ -19,6 +19,7 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<"back" | "front">("back");
   const [flash, setFlash] = useState<"off" | "on">("off");
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -119,9 +120,16 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
         animateShutter={false}
         facing={facing}
         flash={flash}
+        onCameraReady={() => setIsCameraReady(true)}
+        onMountError={() => {
+          setErrorMessage("카메라를 시작하지 못했습니다.");
+        }}
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
       />
+      {!isCameraReady ? (
+        <View pointerEvents="none" style={styles.cameraLoadingCover} />
+      ) : null}
 
       <SafeAreaView edges={["top"]} style={styles.topControls}>
         <Pressable
@@ -175,9 +183,10 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
         <Pressable
           accessibilityLabel="전후면 전환"
           accessibilityRole="button"
-          onPress={() =>
-            setFacing((current) => (current === "back" ? "front" : "back"))
-          }
+          onPress={() => {
+            setIsCameraReady(false);
+            setFacing((current) => (current === "back" ? "front" : "back"));
+          }}
           style={styles.sideButton}
         >
           <SwitchCamera color={colors.white} size={28} strokeWidth={2.2} />
@@ -196,6 +205,10 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
 const styles = StyleSheet.create({
   cameraScreen: {
     flex: 1,
+    backgroundColor: colors.black,
+  },
+  cameraLoadingCover: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.black,
   },
   topControls: {

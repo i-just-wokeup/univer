@@ -1,6 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, Heart } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -31,32 +30,6 @@ export function StoryPlayer({
   onClose,
 }: StoryPlayerProps) {
   const insets = useStableInsets();
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isClosing, setIsClosing] = useState(false);
-
-  const closeAfterMediaDetach = useCallback(() => {
-    if (closeTimeoutRef.current !== null) {
-      return;
-    }
-
-    // 영상 native surface는 React 언마운트보다 늦게 사라질 수 있다.
-    // 먼저 player source를 비활성화한 뒤 짧게 기다렸다가 기존 pop 전환을 실행한다.
-    setIsClosing(true);
-    closeTimeoutRef.current = setTimeout(() => {
-      closeTimeoutRef.current = null;
-      onClose();
-    }, 120);
-  }, [onClose]);
-
-  useEffect(
-    () => () => {
-      if (closeTimeoutRef.current !== null) {
-        clearTimeout(closeTimeoutRef.current);
-      }
-    },
-    [],
-  );
-
   const {
     cancelDelete,
     cancelReport,
@@ -87,7 +60,7 @@ export function StoryPlayer({
   } = useStoryPlayer({
     initialGroupIndex,
     initialGroups,
-    onClose: closeAfterMediaDetach,
+    onClose,
   });
 
   if (!currentGroup || !currentStory) {
@@ -102,16 +75,14 @@ export function StoryPlayer({
 
   return (
     <View style={styles.screen}>
-      {isClosing ? (
-        <View style={styles.detachedMedia} />
-      ) : isVideoReady ? (
+      {isVideoReady ? (
         <StoryVideoView
           backgroundColor={currentStory.backgroundColor}
-          isActive={!isClosing}
-          isPaused={isPaused || isClosing}
+          isPaused={isPaused}
           key={currentStory.id}
           onEnd={goNext}
           onProgress={setVideoProgress}
+          posterUrl={currentStory.thumbnail_url}
           style={{ marginTop: insets.top + 6 }}
           uri={currentStory.image_url}
         />
@@ -141,20 +112,16 @@ export function StoryPlayer({
         />
       )}
 
-      {!isClosing ? (
-        <>
-          <LinearGradient
-            colors={["rgba(0,0,0,0.5)", "transparent"]}
-            pointerEvents="none"
-            style={styles.scrimTop}
-          />
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.5)"]}
-            pointerEvents="none"
-            style={styles.scrimBottom}
-          />
-        </>
-      ) : null}
+      <LinearGradient
+        colors={["rgba(0,0,0,0.5)", "transparent"]}
+        pointerEvents="none"
+        style={styles.scrimTop}
+      />
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.5)"]}
+        pointerEvents="none"
+        style={styles.scrimBottom}
+      />
 
       <Pressable
         accessibilityLabel={isPaused ? "재생" : "일시정지"}
@@ -183,7 +150,7 @@ export function StoryPlayer({
           avatarUrl={currentGroup.user.avatar_url}
           isPaused={isPaused}
           nickname={currentGroup.user.nickname}
-          onClose={closeAfterMediaDetach}
+          onClose={onClose}
           onMenu={openMenu}
           timeLabel={getRelativeTimeLabel(currentStory.created_at)}
         />
@@ -275,10 +242,6 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     maxHeight: "100%",
     borderRadius: 6,
-    backgroundColor: colors.black,
-  },
-  detachedMedia: {
-    flex: 1,
     backgroundColor: colors.black,
   },
   processingOverlay: {

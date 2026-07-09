@@ -83,7 +83,9 @@ export function FeedVideoPlayer({
           key={uri}
           nativeControls={false}
           player={player}
+          surfaceType="textureView"
           style={StyleSheet.absoluteFill}
+          useExoShutter
         />
       ) : null}
 

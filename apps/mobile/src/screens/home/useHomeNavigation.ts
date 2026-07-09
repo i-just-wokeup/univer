@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
 
+import { primeStoryViewerSession } from "../../features/stories/storyViewerSession";
 import type { StoryGroup } from "../../features/stories/types";
 
 type UseHomeNavigationParams = {
@@ -41,7 +42,8 @@ export function useHomeNavigation({ closeComments }: UseHomeNavigationParams) {
   }, [router]);
 
   const handlePressStoryGroup = useCallback(
-    (group: StoryGroup) => {
+    (group: StoryGroup, groups: StoryGroup[]) => {
+      primeStoryViewerSession(groups, group.user.id);
       router.push({
         pathname: "/story/[userId]",
         params: { userId: group.user.id },

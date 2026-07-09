@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { StoryPlayer } from "../../components/stories/StoryPlayer";
 import { getStories } from "../../features/stories/api";
+import { getPrimedStoryViewerSession } from "../../features/stories/storyViewerSession";
 import type { StoryGroup } from "../../features/stories/types";
 import { colors } from "../../lib/theme";
 
@@ -21,6 +22,13 @@ export function StoryViewerScreen() {
 
     void (async () => {
       try {
+        const primed = getPrimedStoryViewerSession(userId);
+
+        if (primed) {
+          setData(primed);
+          return;
+        }
+
         const loadedGroups = await getStories();
 
         if (!isMounted) {
