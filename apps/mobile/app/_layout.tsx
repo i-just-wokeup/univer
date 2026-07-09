@@ -69,17 +69,7 @@ function RootNavigator() {
     );
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="story/[userId]"
-        options={{
-          animation: "none",
-          contentStyle: { backgroundColor: colors.black },
-        }}
-      />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 const styles = StyleSheet.create({
