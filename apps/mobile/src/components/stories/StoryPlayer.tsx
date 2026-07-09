@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, Heart } from "lucide-react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,6 +31,32 @@ export function StoryPlayer({
   onClose,
 }: StoryPlayerProps) {
   const insets = useStableInsets();
+  const closeFrameRef = useRef<number | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const closeAfterMediaDetach = useCallback(() => {
+    if (closeFrameRef.current !== null) {
+      return;
+    }
+
+    // 영상/이미지 native surface가 pop 전환 위에 한 프레임 남지 않게
+    // 먼저 StoryPlayer 내부 미디어를 검정 화면으로 비우고 다음 프레임에 라우트를 닫는다.
+    setIsClosing(true);
+    closeFrameRef.current = requestAnimationFrame(() => {
+      closeFrameRef.current = null;
+      onClose();
+    });
+  }, [onClose]);
+
+  useEffect(
+    () => () => {
+      if (closeFrameRef.current !== null) {
+        cancelAnimationFrame(closeFrameRef.current);
+      }
+    },
+    [],
+  );
+
   const {
     cancelDelete,
     cancelReport,
@@ -57,10 +84,18 @@ export function StoryPlayer({
     toggleLike,
     togglePause,
     viewers,
-  } = useStoryPlayer({ initialGroupIndex, initialGroups, onClose });
+  } = useStoryPlayer({
+    initialGroupIndex,
+    initialGroups,
+    onClose: closeAfterMediaDetach,
+  });
 
   if (!currentGroup || !currentStory) {
     return null;
+  }
+
+  if (isClosing) {
+    return <View style={styles.screen} />;
   }
 
   const actionItems: ActionSheetItem[] = currentStory.isMine
@@ -145,7 +180,7 @@ export function StoryPlayer({
           avatarUrl={currentGroup.user.avatar_url}
           isPaused={isPaused}
           nickname={currentGroup.user.nickname}
-          onClose={onClose}
+          onClose={closeAfterMediaDetach}
           onMenu={openMenu}
           timeLabel={getRelativeTimeLabel(currentStory.created_at)}
         />
