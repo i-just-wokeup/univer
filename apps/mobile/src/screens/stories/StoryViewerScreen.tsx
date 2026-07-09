@@ -14,6 +14,7 @@ export function StoryViewerScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const [data, setData] = useState<{
     groups: StoryGroup[];
+    playerKey: string;
     startIndex: number;
   } | null>(null);
 
@@ -22,10 +23,16 @@ export function StoryViewerScreen() {
 
     void (async () => {
       try {
+        setData(null);
         const primed = getPrimedStoryViewerSession(userId);
 
         if (primed) {
-          setData(primed);
+          if (isMounted) {
+            setData({
+              ...primed,
+              playerKey: `${userId}:${primed.groups.map((group) => group.user.id).join("|")}`,
+            });
+          }
           return;
         }
 
@@ -46,6 +53,7 @@ export function StoryViewerScreen() {
 
         setData({
           groups: loadedGroups,
+          playerKey: `${userId}:${loadedGroups.map((group) => group.user.id).join("|")}`,
           startIndex: startIndex >= 0 ? startIndex : 0,
         });
       } catch {
@@ -72,6 +80,7 @@ export function StoryViewerScreen() {
     <StoryPlayer
       initialGroupIndex={data.startIndex}
       initialGroups={data.groups}
+      key={data.playerKey}
       onClose={() => router.back()}
     />
   );

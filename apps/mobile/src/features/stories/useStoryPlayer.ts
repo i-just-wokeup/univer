@@ -45,6 +45,24 @@ export function useStoryPlayer({
   const currentGroup = groups[groupIndex] ?? null;
   const currentStory = currentGroup?.stories[storyIndex] ?? null;
 
+  // 라우트가 재사용되거나 홈 스토리바 세션이 새로 들어오면 이전 재생 위치를 버리고 새 시작점으로 맞춘다.
+  useEffect(() => {
+    setGroups(initialGroups);
+    setGroupIndex(initialGroupIndex);
+    setStoryIndex(0);
+    setProgress(0);
+    setIsLiked(false);
+    setIsPaused(false);
+    setIsActionOpen(false);
+    setIsDeleteOpen(false);
+    setIsReportOpen(false);
+    setIsViewerSheetOpen(false);
+    setViewers([]);
+    progressRef.current = 0;
+    viewedIdsRef.current.clear();
+    keepPausedRef.current = false;
+  }, [initialGroupIndex, initialGroups]);
+
   const goNext = useCallback(() => {
     const group = groups[groupIndex];
 

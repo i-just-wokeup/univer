@@ -7,6 +7,7 @@
 ## 2026-07-09
 
 ### 완료
+- **앱 스토리 뷰어 시작 유저/이전탭 상태 꼬임 수정** — 홈 스토리바 세션 전달 후 `StoryViewerScreen`/`StoryPlayer`가 이전 재생 상태를 재사용해 내 스토리 진입 시 다른 유저가 보이거나, 여러 스토리에서 왼쪽 탭이 이전 스토리 이동 대신 진행바만 초기화되는 문제를 방지. 뷰어 데이터 변경 시 `StoryPlayer`를 새 key로 remount하고, `useStoryPlayer`도 새 `initialGroups/startIndex`에 맞춰 내부 index/progress/시트 상태를 초기화하도록 보강. 앱 tsc 통과.
 - **앱 스토리 전환/카메라 잔상 원인 대응** — 홈 스토리바의 `storyGroups`를 뷰어 진입 전에 단기 세션으로 넘겨 `StoryViewerScreen`의 진입 즉시 재조회/로딩을 줄이고, 바에서 보던 유저 순서 그대로 이어보도록 조정. 스토리 작성 카메라는 `onCameraReady` 전까지 검은 불투명 커버를 덮어 피드 영상 native surface 잔상이 비치지 않게 했고, 피드/스토리 영상 `VideoView`는 Android 전환 겹침에 강한 `textureView`로 변경. 스토리 영상은 첫 프레임 렌더 전 썸네일을 poster로 보여 진입 튐을 완화. 이전 검은 닫기 대기 화면은 제거. 앱 tsc 통과.
 
 ## 2026-07-08
