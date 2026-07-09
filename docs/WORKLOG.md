@@ -7,6 +7,8 @@
 ## 2026-07-09
 
 ### 완료
+- **안드로이드 테스터용 preview APK 첫 빌드 성공** — `eas.json` preview에 APK 명시(`buildType:apk`) + `eas env:push preview`로 EAS에 환경변수(Supabase URL/anon key·구글 client id·SITE_URL) 업로드. **첫 빌드 실패 원인 = Sentry 소스맵 업로드**: release 빌드에서 `@sentry/react-native`의 `sentry.gradle`이 `sentry-cli`로 소스맵을 올리는데 org/토큰 미설정이라 "organization ID required"로 gradle이 죽음(dev=debug 빌드는 이 단계 없어 안 터졌던 것). `SENTRY_DISABLE_AUTO_UPLOAD=true`(sentry.gradle이 실제 검사하는 플래그 확인)로 업로드만 끄고 재빌드 → 26분 성공, 테스터용 APK 13일 다운 가능. 런타임 크래시 수집은 유지. **후속: 정식 출시 전 Sentry 토큰 넣어 소스맵 살리기, preview 실기기 실행 검증, dev/preview 동시설치는 앱 variant(`.dev`) 분리.**
+- **스토리 3버그 실기기 진단(Codex 수정과 병렬)** — ① 카메라 진입 시 피드 영상 잔상(영상만): expo-video native surface 늦은 release + 카메라 준비 전 검은 커버 부재. ② 내 스토리→다음 눌러도 피드 복귀: 뷰어가 홈 스토리바 목록 대신 진입마다 `getStories()` 재조회 → 다음 그룹 없으면 `goNext`가 끝으로 판단. ③ 진입 첫 순간만 버벅: 진입 시퀀스+native player 준비 지연(재생 중 정상 = 버퍼 문제 아님). → 진단을 Codex에 넘겨 아래 수정으로 이어짐.
 - **앱 스토리 뷰어 시작 유저/이전탭 상태 꼬임 수정** — 홈 스토리바 세션 전달 후 `StoryViewerScreen`/`StoryPlayer`가 이전 재생 상태를 재사용해 내 스토리 진입 시 다른 유저가 보이거나, 여러 스토리에서 왼쪽 탭이 이전 스토리 이동 대신 진행바만 초기화되는 문제를 방지. 뷰어 데이터 변경 시 `StoryPlayer`를 새 key로 remount하고, `useStoryPlayer`도 새 `initialGroups/startIndex`에 맞춰 내부 index/progress/시트 상태를 초기화하도록 보강. 앱 tsc 통과.
 - **앱 스토리 전환/카메라 잔상 원인 대응** — 홈 스토리바의 `storyGroups`를 뷰어 진입 전에 단기 세션으로 넘겨 `StoryViewerScreen`의 진입 즉시 재조회/로딩을 줄이고, 바에서 보던 유저 순서 그대로 이어보도록 조정. 스토리 작성 카메라는 `onCameraReady` 전까지 검은 불투명 커버를 덮어 피드 영상 native surface 잔상이 비치지 않게 했고, 피드/스토리 영상 `VideoView`는 Android 전환 겹침에 강한 `textureView`로 변경. 스토리 영상은 첫 프레임 렌더 전 썸네일을 poster로 보여 진입 튐을 완화. 이전 검은 닫기 대기 화면은 제거. 앱 tsc 통과.
 
