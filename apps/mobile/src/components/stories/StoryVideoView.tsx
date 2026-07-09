@@ -82,6 +82,18 @@ export function StoryVideoView({
     };
   }, [isActive, player, uri]);
 
+  useEffect(
+    () => () => {
+      try {
+        player.pause();
+        void player.replaceAsync(null).catch(() => undefined);
+      } catch {
+        // native player가 먼저 release된 상태면 정리 실패는 무시한다.
+      }
+    },
+    [player],
+  );
+
   useEffect(() => {
     const timeSubscription = player.addListener(
       "timeUpdate",

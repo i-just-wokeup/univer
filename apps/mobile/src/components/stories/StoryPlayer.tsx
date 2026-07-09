@@ -31,27 +31,27 @@ export function StoryPlayer({
   onClose,
 }: StoryPlayerProps) {
   const insets = useStableInsets();
-  const closeFrameRef = useRef<number | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isClosing, setIsClosing] = useState(false);
 
   const closeAfterMediaDetach = useCallback(() => {
-    if (closeFrameRef.current !== null) {
+    if (closeTimeoutRef.current !== null) {
       return;
     }
 
-    // 영상/이미지 native surface가 pop 전환 위에 한 프레임 남지 않게
-    // 먼저 StoryPlayer 내부 미디어를 검정 화면으로 비우고 다음 프레임에 라우트를 닫는다.
+    // 영상 native surface는 React 언마운트보다 늦게 사라질 수 있다.
+    // 먼저 player source를 비활성화한 뒤 짧게 기다렸다가 기존 pop 전환을 실행한다.
     setIsClosing(true);
-    closeFrameRef.current = requestAnimationFrame(() => {
-      closeFrameRef.current = null;
+    closeTimeoutRef.current = setTimeout(() => {
+      closeTimeoutRef.current = null;
       onClose();
-    });
+    }, 120);
   }, [onClose]);
 
   useEffect(
     () => () => {
-      if (closeFrameRef.current !== null) {
-        cancelAnimationFrame(closeFrameRef.current);
+      if (closeTimeoutRef.current !== null) {
+        clearTimeout(closeTimeoutRef.current);
       }
     },
     [],
@@ -94,10 +94,6 @@ export function StoryPlayer({
     return null;
   }
 
-  if (isClosing) {
-    return <View style={styles.screen} />;
-  }
-
   const actionItems: ActionSheetItem[] = currentStory.isMine
     ? [{ danger: true, label: "삭제", onPress: requestDelete }]
     : [{ danger: true, label: "신고", onPress: requestReport }];
@@ -106,10 +102,13 @@ export function StoryPlayer({
 
   return (
     <View style={styles.screen}>
-      {isVideoReady ? (
+      {isClosing ? (
+        <View style={styles.detachedMedia} />
+      ) : isVideoReady ? (
         <StoryVideoView
           backgroundColor={currentStory.backgroundColor}
-          isPaused={isPaused}
+          isActive={!isClosing}
+          isPaused={isPaused || isClosing}
           key={currentStory.id}
           onEnd={goNext}
           onProgress={setVideoProgress}
@@ -142,16 +141,20 @@ export function StoryPlayer({
         />
       )}
 
-      <LinearGradient
-        colors={["rgba(0,0,0,0.5)", "transparent"]}
-        pointerEvents="none"
-        style={styles.scrimTop}
-      />
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.5)"]}
-        pointerEvents="none"
-        style={styles.scrimBottom}
-      />
+      {!isClosing ? (
+        <>
+          <LinearGradient
+            colors={["rgba(0,0,0,0.5)", "transparent"]}
+            pointerEvents="none"
+            style={styles.scrimTop}
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.5)"]}
+            pointerEvents="none"
+            style={styles.scrimBottom}
+          />
+        </>
+      ) : null}
 
       <Pressable
         accessibilityLabel={isPaused ? "재생" : "일시정지"}
@@ -272,6 +275,10 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     maxHeight: "100%",
     borderRadius: 6,
+    backgroundColor: colors.black,
+  },
+  detachedMedia: {
+    flex: 1,
     backgroundColor: colors.black,
   },
   processingOverlay: {
