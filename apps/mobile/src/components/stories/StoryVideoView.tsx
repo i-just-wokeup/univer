@@ -117,7 +117,16 @@ export function StoryVideoView({
       },
     );
     const endSubscription = player.addListener("playToEnd", () => {
-      onEndRef.current?.();
+      // expo-video는 소스를 새로 물릴 때(null→uri) 가짜 playToEnd를 한 번 쏜다.
+      // 재생 위치가 실제로 영상 끝 근처일 때만 다음으로 넘기고, 초반에 튀는 가짜는 무시한다.
+      try {
+        const total = player.duration;
+        if (total > 0 && player.currentTime >= total - 0.75) {
+          onEndRef.current?.();
+        }
+      } catch {
+        // 전환 중 native player가 먼저 release된 경우 무시한다.
+      }
     });
 
     return () => {
