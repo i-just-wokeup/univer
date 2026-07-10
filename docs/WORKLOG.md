@@ -7,6 +7,15 @@
 ## 2026-07-09
 
 ### 완료
+- **스토리/릴스 영상 재생 대공사 (스킵·멈칫·이어재생·캐시)** — 아침 Codex의 스토리 세션/탭존 수정이 안 잡혀 revert된 뒤, Claude Code가 실기기 로그로 원인 확정하며 순차 수정.
+  - **즉시 스킵 버그** — 영상 진입 시 expo-video가 소스 교체(null→uri) 때 쏘는 **가짜 playToEnd**를 종료로 오인 → `goNext`가 불려 영상 스킵. 재생위치가 실제 끝 근처일 때만 넘기도록 가드. (로그로 확정) (커밋 `91582b7`)
+  - **영상 preload(±1 창)** — 현재 ±1의 준비된 영상을 미리 버퍼링(`key`로 인스턴스 유지) → 앞으로 넘길 때 멈칫 완화. 동시 플레이어 최대 3개(메모리 안전). (커밋 `09f6b2c`)
+  - **재진입 시 처음부터 재생(`isCurrent`)** — preload 재사용 플레이어가 재생위치를 기억해 "이어재생"되던 회귀를, 현재가 될 때 0초 리셋으로 수정(수동 일시정지와 구분). (커밋 `09f6b2c`)
+  - **버퍼링 중 썸네일** — 뒤로 재시청 재버퍼 동안 멈춘 프레임 대신 poster(`statusChange` `loading` 감지). (커밋 `557e73d`)
+  - **HLS 버퍼 캡 제거** — 원격 HLS는 8MB 캡(원래 로컬 mp4 OOM용) 제거, 로컬 원본만 유지.
+  - **영상 디스크 캐시(`useCaching`)** — 스토리·릴스·피드 적용. 한 번 받은 영상 디스크 저장 → 재시청 재다운 방지(안드 HLS 지원, iOS HLS 미지원). 디스크라 OOM 무관. 스토리 재시청 즉시화 확인. 기본 1GB LRU. (커밋 `affc6f4`)
+  - 테스트 계정 `test1@kookmin.ac.kr`(Test1234!) Supabase 직접 시드(가짜 국민대·온보딩 완료, auth.users NULL 토큰 채움). 테스트 후 삭제 예정.
+  - **남은 것**: 릴스도 되감기 시 이어재생(활성 재개 0초 리셋 없음, 캐시 무관 — 기존 로직) → 스토리와 같은 방식으로 수정 예정. 첫 영상 멈칫(열기 전 preload 불가)은 남음.
 - **앱 스토리 뷰어 전역 세션 캐시 제거** — 스토리 진입 정확도를 해칠 수 있던 `storyViewerSession` 단기 전역 캐시를 제거하고, 뷰어가 라우트의 `userId`와 `getStories()` 결과만으로 시작 그룹을 결정하도록 단순화. 시작 유저를 못 찾으면 다른 유저 0번 그룹으로 fallback하지 않고 닫히게 유지해 “내 스토리/특정 유저 스토리 진입 시 다른 사용자 스토리 표시” 가능 경로를 차단. 앱 tsc 통과.
 - **안드로이드 테스터용 preview APK 첫 빌드 성공** — `eas.json` preview에 APK 명시(`buildType:apk`) + `eas env:push preview`로 EAS에 환경변수(Supabase URL/anon key·구글 client id·SITE_URL) 업로드. **첫 빌드 실패 원인 = Sentry 소스맵 업로드**: release 빌드에서 `@sentry/react-native`의 `sentry.gradle`이 `sentry-cli`로 소스맵을 올리는데 org/토큰 미설정이라 "organization ID required"로 gradle이 죽음(dev=debug 빌드는 이 단계 없어 안 터졌던 것). `SENTRY_DISABLE_AUTO_UPLOAD=true`(sentry.gradle이 실제 검사하는 플래그 확인)로 업로드만 끄고 재빌드 → 26분 성공, 테스터용 APK 13일 다운 가능. 런타임 크래시 수집은 유지. **후속: 정식 출시 전 Sentry 토큰 넣어 소스맵 살리기, preview 실기기 실행 검증, dev/preview 동시설치는 앱 variant(`.dev`) 분리.**
 - **스토리 3버그 실기기 진단(Codex 수정과 병렬)** — ① 카메라 진입 시 피드 영상 잔상(영상만): expo-video native surface 늦은 release + 카메라 준비 전 검은 커버 부재. ② 내 스토리→다음 눌러도 피드 복귀: 뷰어가 홈 스토리바 목록 대신 진입마다 `getStories()` 재조회 → 다음 그룹 없으면 `goNext`가 끝으로 판단. ③ 진입 첫 순간만 버벅: 진입 시퀀스+native player 준비 지연(재생 중 정상 = 버퍼 문제 아님). → 진단을 Codex에 넘겨 아래 수정으로 이어짐.
