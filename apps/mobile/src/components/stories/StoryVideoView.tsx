@@ -144,6 +144,7 @@ export function StoryVideoView({
 
   return (
     <View
+      pointerEvents="none"
       style={[
         styles.frame,
         { backgroundColor: backgroundColor ?? DEFAULT_STORY_BACKGROUND_COLOR },

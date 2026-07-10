@@ -11,14 +11,17 @@ import { colors } from "../../lib/theme";
 // 라이브 스토리 진입점. 같은 학교 스토리를 불러와 시작 유저로 StoryPlayer를 띄운다.
 export function StoryViewerScreen() {
   const router = useRouter();
-  const { userId: userIdParam } = useLocalSearchParams<{
+  const { storyId: storyIdParam, userId: userIdParam } = useLocalSearchParams<{
+    storyId?: string | string[];
     userId: string | string[];
   }>();
   const userId = Array.isArray(userIdParam) ? userIdParam[0] : userIdParam;
+  const storyId = Array.isArray(storyIdParam) ? storyIdParam[0] : storyIdParam;
   const [data, setData] = useState<{
     groups: StoryGroup[];
     playerKey: string;
     startIndex: number;
+    startStoryIndex: number;
   } | null>(null);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export function StoryViewerScreen() {
           if (isMounted) {
             setData({
               ...primed,
-              playerKey: `${userId}:${primed.groups.map((group) => group.user.id).join("|")}`,
+              playerKey: `${userId}:${storyId ?? "latest"}:${primed.groups.map((group) => group.user.id).join("|")}`,
             });
           }
           return;
@@ -65,10 +68,20 @@ export function StoryViewerScreen() {
           return;
         }
 
+        const startGroup = loadedGroups[startIndex];
+        const explicitStoryIndex = storyId
+          ? startGroup.stories.findIndex((story) => story.id === storyId)
+          : -1;
+        const startStoryIndex =
+          explicitStoryIndex >= 0
+            ? explicitStoryIndex
+            : Math.max(0, startGroup.stories.length - 1);
+
         setData({
           groups: loadedGroups,
-          playerKey: `${userId}:${loadedGroups.map((group) => group.user.id).join("|")}`,
+          playerKey: `${userId}:${storyId ?? "latest"}:${loadedGroups.map((group) => group.user.id).join("|")}`,
           startIndex,
+          startStoryIndex,
         });
       } catch {
         if (isMounted) {
@@ -80,7 +93,7 @@ export function StoryViewerScreen() {
     return () => {
       isMounted = false;
     };
-  }, [router, userId]);
+  }, [router, storyId, userId]);
 
   if (!data) {
     return (
@@ -94,6 +107,7 @@ export function StoryViewerScreen() {
     <StoryPlayer
       initialGroupIndex={data.startIndex}
       initialGroups={data.groups}
+      initialStoryIndex={data.startStoryIndex}
       key={data.playerKey}
       onClose={() => router.back()}
     />

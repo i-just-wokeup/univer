@@ -19,6 +19,7 @@ import { getRelativeTimeLabel } from "../../lib/utils/time";
 type StoryPlayerProps = {
   initialGroupIndex: number;
   initialGroups: StoryGroup[];
+  initialStoryIndex?: number;
   onClose: () => void;
 };
 
@@ -27,6 +28,7 @@ type StoryPlayerProps = {
 export function StoryPlayer({
   initialGroupIndex,
   initialGroups,
+  initialStoryIndex = 0,
   onClose,
 }: StoryPlayerProps) {
   const insets = useStableInsets();
@@ -60,6 +62,7 @@ export function StoryPlayer({
   } = useStoryPlayer({
     initialGroupIndex,
     initialGroups,
+    initialStoryIndex,
     onClose,
   });
 
@@ -87,7 +90,7 @@ export function StoryPlayer({
           uri={currentStory.image_url}
         />
       ) : currentStory.mediaType === "video" ? (
-        <View style={{ marginTop: insets.top + 6 }}>
+        <View pointerEvents="none" style={{ marginTop: insets.top + 6 }}>
           {currentStory.thumbnail_url ? (
             <StoryMediaFrame
               backgroundColor={currentStory.backgroundColor}
@@ -96,7 +99,7 @@ export function StoryPlayer({
           ) : (
             <View style={styles.processingFrame} />
           )}
-          <View style={styles.processingOverlay}>
+          <View pointerEvents="none" style={styles.processingOverlay}>
             <Text style={styles.processingText}>
               {currentStory.processing_status === "failed"
                 ? "영상 업로드 실패"
@@ -280,6 +283,7 @@ const styles = StyleSheet.create({
     bottom: 92,
     width: "30%",
     zIndex: 2,
+    elevation: 10,
   },
   pauseZone: {
     position: "absolute",
@@ -288,6 +292,7 @@ const styles = StyleSheet.create({
     left: "30%",
     right: "30%",
     zIndex: 1,
+    elevation: 9,
   },
   tapLeft: {
     left: 0,
@@ -302,6 +307,7 @@ const styles = StyleSheet.create({
     left: 0,
     paddingHorizontal: 12,
     zIndex: 3,
+    elevation: 11,
   },
   bottomLayer: {
     position: "absolute",
@@ -309,6 +315,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     zIndex: 3,
+    elevation: 11,
   },
   footer: {
     paddingHorizontal: 20,

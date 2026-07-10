@@ -2,6 +2,7 @@ import type { StoryGroup } from "./types";
 
 type StoryViewerSession = {
   groups: StoryGroup[];
+  startStoryId: string | null;
   startUserId: string;
   expiresAt: number;
 };
@@ -14,10 +15,12 @@ let session: StoryViewerSession | null = null;
 export function primeStoryViewerSession(
   groups: StoryGroup[],
   startUserId: string,
+  startStoryId: string | null,
 ) {
   session = {
     expiresAt: Date.now() + SESSION_TTL_MS,
     groups,
+    startStoryId,
     startUserId,
   };
 }
@@ -28,11 +31,13 @@ export function getPrimedStoryViewerSession(userId: string) {
     return null;
   }
 
-  if (session.startUserId !== userId) {
+  const currentSession = session;
+
+  if (currentSession.startUserId !== userId) {
     return null;
   }
 
-  const startIndex = session.groups.findIndex(
+  const startIndex = currentSession.groups.findIndex(
     (group) => group.user.id === userId,
   );
 
@@ -40,8 +45,20 @@ export function getPrimedStoryViewerSession(userId: string) {
     return null;
   }
 
+  const startGroup = currentSession.groups[startIndex];
+  const startStoryIndex = currentSession.startStoryId
+    ? startGroup.stories.findIndex(
+        (story) => story.id === currentSession.startStoryId,
+      )
+    : 0;
+
+  if (currentSession.startStoryId && startStoryIndex < 0) {
+    return null;
+  }
+
   return {
-    groups: session.groups,
+    groups: currentSession.groups,
     startIndex,
+    startStoryIndex: Math.max(0, startStoryIndex),
   };
 }

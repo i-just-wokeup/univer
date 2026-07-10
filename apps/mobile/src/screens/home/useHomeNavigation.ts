@@ -42,11 +42,13 @@ export function useHomeNavigation({ closeComments }: UseHomeNavigationParams) {
   }, [router]);
 
   const handlePressStoryGroup = useCallback(
-    (group: StoryGroup, groups: StoryGroup[]) => {
-      primeStoryViewerSession(groups, group.user.id);
+    (group: StoryGroup, groups: StoryGroup[], storyId: string | null) => {
+      primeStoryViewerSession(groups, group.user.id, storyId);
       router.push({
         pathname: "/story/[userId]",
-        params: { userId: group.user.id },
+        params: storyId
+          ? { storyId, userId: group.user.id }
+          : { userId: group.user.id },
       });
     },
     [router],
