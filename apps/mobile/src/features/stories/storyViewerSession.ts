@@ -28,6 +28,10 @@ export function getPrimedStoryViewerSession(userId: string) {
     return null;
   }
 
+  if (session.startUserId !== userId) {
+    return null;
+  }
+
   const startIndex = session.groups.findIndex(
     (group) => group.user.id === userId,
   );
