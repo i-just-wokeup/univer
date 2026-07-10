@@ -15,6 +15,9 @@ type StoryVideoViewProps = {
   // 화면에 실제로 보여질 때만 VideoView를 네이티브 뷰에 연결한다.
   // expo-video player release 경합을 줄이기 위한 안전장치다.
   isActive?: boolean;
+  // 지금 보여지는 스토리인지. preload로 재사용되는 플레이어라도 현재가 될 때마다
+  // 처음(0초)부터 재생한다(스토리는 항상 처음부터). 재생은 현재일 때만.
+  isCurrent?: boolean;
   isPaused?: boolean;
   // 미리보기는 반복 재생(true). 뷰어는 false여야 끝에서 onEnd로 다음 스토리로 넘어간다.
   loop?: boolean;
@@ -29,6 +32,7 @@ export function StoryVideoView({
   backgroundColor = DEFAULT_STORY_BACKGROUND_COLOR,
   contentFit = "contain",
   isActive = true,
+  isCurrent = true,
   isPaused = false,
   loop = false,
   onEnd,
@@ -49,12 +53,22 @@ export function StoryVideoView({
     instance.loop = loop;
     instance.muted = false;
     instance.timeUpdateEventInterval = 0.1;
-    // OOM 방지: 무압축 원본 영상(미리보기)을 통째로 버퍼링하지 않게 제한(안드로이드).
-    instance.bufferOptions = {
-      maxBufferBytes: 8 * 1024 * 1024,
-      preferredForwardBufferDuration: 5,
-      minBufferForPlayback: 1,
-    };
+    // 뷰어(Cloudflare HLS 스트리밍)와 작성 미리보기(무압축 로컬 원본)의 버퍼 전략을 나눈다.
+    if (/^https?:/i.test(uri)) {
+      // HLS: 8MB 캡이 초기 로딩/재생을 느리게 해 제거하고, 시작 대기를 줄인다.
+      // (Cloudflare가 서빙하므로 Supabase egress와 무관, 스토리는 1개씩만 재생돼 OOM 위험 없음)
+      instance.bufferOptions = {
+        preferredForwardBufferDuration: 8,
+        minBufferForPlayback: 0.5,
+      };
+    } else {
+      // 로컬 원본(파일): 통째로 버퍼링하면 OOM → 8MB로 제한(안드로이드).
+      instance.bufferOptions = {
+        maxBufferBytes: 8 * 1024 * 1024,
+        preferredForwardBufferDuration: 5,
+        minBufferForPlayback: 1,
+      };
+    }
   });
 
   useEffect(() => {
@@ -139,9 +153,22 @@ export function StoryVideoView({
     };
   }, [player]);
 
+  // 현재 스토리가 될 때마다 재생 위치를 처음으로 되돌린다(preload 재사용 플레이어라도 항상 0초부터).
+  useEffect(() => {
+    if (!isCurrent) {
+      return;
+    }
+
+    try {
+      player.currentTime = 0;
+    } catch {
+      // 전환 중 native player가 먼저 release된 경우 무시한다.
+    }
+  }, [isCurrent, player]);
+
   useEffect(() => {
     try {
-      if (!isActive || !hasSource || isPaused) {
+      if (!isActive || !hasSource || !isCurrent || isPaused) {
         player.pause();
       } else {
         player.play();
@@ -149,7 +176,7 @@ export function StoryVideoView({
     } catch {
       // 빠른 화면 전환/제출 중 release된 player에 play/pause가 들어가면 무시한다.
     }
-  }, [hasSource, isActive, isPaused, player]);
+  }, [hasSource, isActive, isCurrent, isPaused, player]);
 
   return (
     <View

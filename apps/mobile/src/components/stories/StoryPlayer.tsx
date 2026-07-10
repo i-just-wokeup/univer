@@ -73,44 +73,68 @@ export function StoryPlayer({
   const isVideoReady =
     currentStory.mediaType === "video" && currentStory.processing_status === "ready";
 
+  // preload 창: 현재 ±1 안의 "재생 준비된 영상"만 미리 버퍼링한다(멈칫 완화).
+  // key(story.id)로 렌더해 인덱스가 바뀌어도 같은 인스턴스를 유지 → 버퍼가 보존돼 즉시 재생.
+  // 릴스와 같은 ±1 창이라 동시 영상 플레이어는 최대 3개로 제한(메모리 안전).
+  const windowVideos: { index: number; story: (typeof currentGroup.stories)[number] }[] = [];
+  for (let i = storyIndex - 1; i <= storyIndex + 1; i += 1) {
+    const story = currentGroup.stories[i];
+    if (story && story.mediaType === "video" && story.processing_status === "ready") {
+      windowVideos.push({ index: i, story });
+    }
+  }
+
   return (
     <View style={styles.screen}>
-      {isVideoReady ? (
-        <StoryVideoView
-          backgroundColor={currentStory.backgroundColor}
-          isPaused={isPaused}
-          key={currentStory.id}
-          onEnd={goNext}
-          onProgress={setVideoProgress}
-          posterUrl={currentStory.thumbnail_url}
-          style={{ marginTop: insets.top + 6 }}
-          uri={currentStory.image_url}
-        />
-      ) : currentStory.mediaType === "video" ? (
-        <View style={{ marginTop: insets.top + 6 }}>
-          {currentStory.thumbnail_url ? (
-            <StoryMediaFrame
-              backgroundColor={currentStory.backgroundColor}
-              imageUrl={currentStory.thumbnail_url}
-            />
-          ) : (
-            <View style={styles.processingFrame} />
-          )}
-          <View style={styles.processingOverlay}>
-            <Text style={styles.processingText}>
-              {currentStory.processing_status === "failed"
-                ? "영상 업로드 실패"
-                : "영상 업로드 중"}
-            </Text>
+      <View
+        pointerEvents="none"
+        style={[styles.mediaContainer, { top: insets.top + 6 }]}
+      >
+        {windowVideos.map(({ index, story }) => {
+          const isCurrent = index === storyIndex;
+          return (
+            <View
+              key={story.id}
+              style={[StyleSheet.absoluteFill, { opacity: isCurrent ? 1 : 0 }]}
+            >
+              <StoryVideoView
+                backgroundColor={story.backgroundColor}
+                isCurrent={isCurrent}
+                isPaused={isPaused}
+                onEnd={isCurrent ? goNext : undefined}
+                onProgress={isCurrent ? setVideoProgress : undefined}
+                posterUrl={story.thumbnail_url}
+                uri={story.image_url}
+              />
+            </View>
+          );
+        })}
+
+        {currentStory.mediaType !== "video" ? (
+          <StoryMediaFrame
+            backgroundColor={currentStory.backgroundColor}
+            imageUrl={currentStory.image_url}
+          />
+        ) : !isVideoReady ? (
+          <View style={StyleSheet.absoluteFill}>
+            {currentStory.thumbnail_url ? (
+              <StoryMediaFrame
+                backgroundColor={currentStory.backgroundColor}
+                imageUrl={currentStory.thumbnail_url}
+              />
+            ) : (
+              <View style={styles.processingFrame} />
+            )}
+            <View style={styles.processingOverlay}>
+              <Text style={styles.processingText}>
+                {currentStory.processing_status === "failed"
+                  ? "영상 업로드 실패"
+                  : "영상 업로드 중"}
+              </Text>
+            </View>
           </View>
-        </View>
-      ) : (
-        <StoryMediaFrame
-          backgroundColor={currentStory.backgroundColor}
-          imageUrl={currentStory.image_url}
-          style={{ marginTop: insets.top + 6 }}
-        />
-      )}
+        ) : null}
+      </View>
 
       <LinearGradient
         colors={["rgba(0,0,0,0.5)", "transparent"]}
@@ -236,6 +260,12 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.black,
+  },
+  mediaContainer: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    left: 0,
   },
   processingFrame: {
     width: "100%",
