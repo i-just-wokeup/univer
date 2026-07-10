@@ -4,14 +4,16 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { StoryPlayer } from "../../components/stories/StoryPlayer";
 import { getStories } from "../../features/stories/api";
-import { getPrimedStoryViewerSession } from "../../features/stories/storyViewerSession";
 import type { StoryGroup } from "../../features/stories/types";
 import { colors } from "../../lib/theme";
 
 // 라이브 스토리 진입점. 같은 학교 스토리를 불러와 시작 유저로 StoryPlayer를 띄운다.
 export function StoryViewerScreen() {
   const router = useRouter();
-  const { userId } = useLocalSearchParams<{ userId: string }>();
+  const { userId: userIdParam } = useLocalSearchParams<{
+    userId: string | string[];
+  }>();
+  const userId = Array.isArray(userIdParam) ? userIdParam[0] : userIdParam;
   const [data, setData] = useState<{
     groups: StoryGroup[];
     playerKey: string;
@@ -24,15 +26,9 @@ export function StoryViewerScreen() {
     void (async () => {
       try {
         setData(null);
-        const primed = getPrimedStoryViewerSession(userId);
 
-        if (primed) {
-          if (isMounted) {
-            setData({
-              ...primed,
-              playerKey: `${userId}:${primed.groups.map((group) => group.user.id).join("|")}`,
-            });
-          }
+        if (!userId) {
+          router.back();
           return;
         }
 
@@ -51,10 +47,15 @@ export function StoryViewerScreen() {
           (group) => group.user.id === userId,
         );
 
+        if (startIndex < 0) {
+          router.back();
+          return;
+        }
+
         setData({
           groups: loadedGroups,
           playerKey: `${userId}:${loadedGroups.map((group) => group.user.id).join("|")}`,
-          startIndex: startIndex >= 0 ? startIndex : 0,
+          startIndex,
         });
       } catch {
         if (isMounted) {
