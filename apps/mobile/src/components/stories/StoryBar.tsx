@@ -9,7 +9,7 @@ import { colors } from "../../lib/theme";
 type StoryBarProps = {
   groups: StoryGroup[];
   onPressCreate: () => void;
-  onPressGroup: (group: StoryGroup, storyId: string | null) => void;
+  onPressGroup: (group: StoryGroup) => void;
 };
 
 const CARD_WIDTH = 100;
@@ -70,7 +70,7 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
           <Pressable
             accessibilityLabel="내 스토리 보기"
             accessibilityRole="button"
-            onPress={() => onPressGroup(myGroup, latestMyStory?.id ?? null)}
+            onPress={() => onPressGroup(myGroup)}
             style={({ pressed }) => (pressed ? styles.pressed : null)}
           >
             <StoryCard
@@ -106,27 +106,25 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
         </Pressable>
       )}
 
-      {otherGroups.map((group) => {
-        const latestStory = group.stories[group.stories.length - 1] ?? null;
-
-        return (
-          <Pressable
-            accessibilityLabel={`${group.user.nickname} 스토리`}
-            accessibilityRole="button"
-            key={group.user.id}
-            onPress={() => onPressGroup(group, latestStory?.id ?? null)}
-            style={({ pressed }) => (pressed ? styles.pressed : null)}
-          >
-            <StoryCard
-              hasUnviewed={group.hasUnviewed}
-              nickname={group.user.nickname}
-              thumbnailUrl={
-                latestStory?.thumbnail_url ?? latestStory?.image_url ?? null
-              }
-            />
-          </Pressable>
-        );
-      })}
+      {otherGroups.map((group) => (
+        <Pressable
+          accessibilityLabel={`${group.user.nickname} 스토리`}
+          accessibilityRole="button"
+          key={group.user.id}
+          onPress={() => onPressGroup(group)}
+          style={({ pressed }) => (pressed ? styles.pressed : null)}
+        >
+          <StoryCard
+            hasUnviewed={group.hasUnviewed}
+            nickname={group.user.nickname}
+            thumbnailUrl={
+              group.stories[group.stories.length - 1]?.thumbnail_url ??
+              group.stories[group.stories.length - 1]?.image_url ??
+              null
+            }
+          />
+        </Pressable>
+      ))}
     </ScrollView>
   );
 }

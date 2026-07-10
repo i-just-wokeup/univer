@@ -13,19 +13,9 @@ import type { StoryGroup, StoryViewer } from "./types";
 const STORY_DURATION_MS = 5000;
 const PROGRESS_TICK_MS = 50;
 
-function clampStoryIndex(
-  groups: StoryGroup[],
-  groupIndex: number,
-  storyIndex: number,
-) {
-  const maxIndex = Math.max(0, (groups[groupIndex]?.stories.length ?? 1) - 1);
-  return Math.min(Math.max(0, storyIndex), maxIndex);
-}
-
 type UseStoryPlayerParams = {
   initialGroupIndex: number;
   initialGroups: StoryGroup[];
-  initialStoryIndex?: number;
   onClose: () => void;
 };
 
@@ -33,14 +23,11 @@ type UseStoryPlayerParams = {
 export function useStoryPlayer({
   initialGroupIndex,
   initialGroups,
-  initialStoryIndex = 0,
   onClose,
 }: UseStoryPlayerParams) {
   const [groups, setGroups] = useState<StoryGroup[]>(initialGroups);
   const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
-  const [storyIndex, setStoryIndex] = useState(() =>
-    clampStoryIndex(initialGroups, initialGroupIndex, initialStoryIndex),
-  );
+  const [storyIndex, setStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -62,9 +49,7 @@ export function useStoryPlayer({
   useEffect(() => {
     setGroups(initialGroups);
     setGroupIndex(initialGroupIndex);
-    setStoryIndex(
-      clampStoryIndex(initialGroups, initialGroupIndex, initialStoryIndex),
-    );
+    setStoryIndex(0);
     setProgress(0);
     setIsLiked(false);
     setIsPaused(false);
@@ -76,7 +61,7 @@ export function useStoryPlayer({
     progressRef.current = 0;
     viewedIdsRef.current.clear();
     keepPausedRef.current = false;
-  }, [initialGroupIndex, initialGroups, initialStoryIndex]);
+  }, [initialGroupIndex, initialGroups]);
 
   const goNext = useCallback(() => {
     const group = groups[groupIndex];

@@ -31,11 +31,7 @@ type HomeFeedListProps = {
   onPressCreateStory: () => void;
   onPressMessages: () => void;
   onPressNotifications: () => void;
-  onPressStoryGroup: (
-    group: StoryGroup,
-    groups: StoryGroup[],
-    storyId: string | null,
-  ) => void;
+  onPressStoryGroup: (group: StoryGroup, groups: StoryGroup[]) => void;
   onRefresh: () => MaybePromise;
   onReport: (postId: string) => MaybePromise;
   onShare: (post: FeedPost) => void;
@@ -123,9 +119,9 @@ export function HomeFeedList({
             onPressCreate={() => {
               leaveFeedAfterVideoDetach(onPressCreateStory);
             }}
-            onPressGroup={(group, storyId) => {
+            onPressGroup={(group) => {
               leaveFeedAfterVideoDetach(() => {
-                onPressStoryGroup(group, storyGroups, storyId);
+                onPressStoryGroup(group, storyGroups);
               });
             }}
           />
