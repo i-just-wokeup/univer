@@ -46,6 +46,9 @@ export function StoryVideoView({
   const onEndRef = useRef(onEnd);
   const [hasSource, setHasSource] = useState(false);
   const [hasRenderedFirstFrame, setHasRenderedFirstFrame] = useState(false);
+  // 버퍼링 중(loading)이면 멈춘 프레임 대신 썸네일(poster)로 가린다.
+  // 뒤로 돌아가 재시청할 때 ExoPlayer가 지난 부분을 다시 받는 동안 어색함을 줄인다.
+  const [isLoading, setIsLoading] = useState(true);
   onProgressRef.current = onProgress;
   onEndRef.current = onEnd;
 
@@ -142,11 +145,15 @@ export function StoryVideoView({
         // 전환 중 native player가 먼저 release된 경우 무시한다.
       }
     });
+    const statusSubscription = player.addListener("statusChange", ({ status }) => {
+      setIsLoading(status === "loading");
+    });
 
     return () => {
       try {
         timeSubscription.remove();
         endSubscription.remove();
+        statusSubscription.remove();
       } catch {
         // 화면 전환 중 네이티브 player가 먼저 release된 경우가 있어 정리 실패는 무시한다.
       }
@@ -197,7 +204,7 @@ export function StoryVideoView({
           useExoShutter
         />
       ) : null}
-      {posterUrl && !hasRenderedFirstFrame ? (
+      {posterUrl && (!hasRenderedFirstFrame || isLoading) ? (
         <Image
           cachePolicy="memory-disk"
           contentFit={contentFit}
