@@ -126,7 +126,7 @@ export function StoryPlayer({
       <Pressable
         accessibilityLabel={isPaused ? "재생" : "일시정지"}
         onPress={togglePause}
-        style={styles.pauseZone}
+        style={StyleSheet.absoluteFill}
       />
       <Pressable
         accessibilityLabel="이전 스토리"
@@ -276,18 +276,9 @@ const styles = StyleSheet.create({
   },
   tapZone: {
     position: "absolute",
-    top: 82,
-    bottom: 92,
+    top: 96,
+    bottom: 110,
     width: "30%",
-    zIndex: 2,
-  },
-  pauseZone: {
-    position: "absolute",
-    top: 82,
-    bottom: 92,
-    left: "30%",
-    right: "30%",
-    zIndex: 1,
   },
   tapLeft: {
     left: 0,
@@ -301,14 +292,12 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     paddingHorizontal: 12,
-    zIndex: 3,
   },
   bottomLayer: {
     position: "absolute",
     right: 0,
     bottom: 0,
     left: 0,
-    zIndex: 3,
   },
   footer: {
     paddingHorizontal: 20,

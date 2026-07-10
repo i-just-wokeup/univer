@@ -11,10 +11,7 @@ import { colors } from "../../lib/theme";
 // 라이브 스토리 진입점. 같은 학교 스토리를 불러와 시작 유저로 StoryPlayer를 띄운다.
 export function StoryViewerScreen() {
   const router = useRouter();
-  const { userId: userIdParam } = useLocalSearchParams<{
-    userId: string | string[];
-  }>();
-  const userId = Array.isArray(userIdParam) ? userIdParam[0] : userIdParam;
+  const { userId } = useLocalSearchParams<{ userId: string }>();
   const [data, setData] = useState<{
     groups: StoryGroup[];
     playerKey: string;
@@ -27,12 +24,6 @@ export function StoryViewerScreen() {
     void (async () => {
       try {
         setData(null);
-
-        if (!userId) {
-          router.back();
-          return;
-        }
-
         const primed = getPrimedStoryViewerSession(userId);
 
         if (primed) {
@@ -60,15 +51,10 @@ export function StoryViewerScreen() {
           (group) => group.user.id === userId,
         );
 
-        if (startIndex < 0) {
-          router.back();
-          return;
-        }
-
         setData({
           groups: loadedGroups,
           playerKey: `${userId}:${loadedGroups.map((group) => group.user.id).join("|")}`,
-          startIndex,
+          startIndex: startIndex >= 0 ? startIndex : 0,
         });
       } catch {
         if (isMounted) {
