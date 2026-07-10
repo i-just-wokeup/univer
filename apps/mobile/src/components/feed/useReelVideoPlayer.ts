@@ -34,9 +34,12 @@ export function useReelVideoPlayer({
   // 의존성은 문자열 videoUrl(안정)로 — video 객체를 쓰면 매 렌더 재실행돼 폭주한다.
   // replaceAsync로 메인 스레드 블락(UI 프리즈)을 피한다.
   useEffect(() => {
-    void player
-      .replaceAsync(isNearActive && isReady && videoUrl ? videoUrl : null)
-      .catch(() => undefined);
+    // 디스크 캐시(useCaching)로 스크롤 되감기/재시청 시 재다운을 막는다.
+    const source =
+      isNearActive && isReady && videoUrl
+        ? { uri: videoUrl, useCaching: true }
+        : null;
+    void player.replaceAsync(source).catch(() => undefined);
   }, [isNearActive, isReady, player, videoUrl]);
 
   // 전역 음소거 상태를 플레이어에 반영.

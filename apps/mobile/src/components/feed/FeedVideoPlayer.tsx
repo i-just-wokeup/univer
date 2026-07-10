@@ -44,7 +44,7 @@ export function FeedVideoPlayer({
   const isReady = processingStatus === "ready";
   const shouldRenderVideo = isActive && isReady;
 
-  const player = useVideoPlayer(isReady ? uri : null, (instance) => {
+  const player = useVideoPlayer(isReady ? { uri, useCaching: true } : null, (instance) => {
     instance.loop = true;
     instance.muted = true;
     // OOM 방지: 무압축 원본 영상을 통째로 버퍼링하지 않게 제한(안드로이드).

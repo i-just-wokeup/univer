@@ -83,7 +83,13 @@ export function StoryVideoView({
 
       try {
         await player.pause();
-        await player.replaceAsync(isActive ? uri : null);
+        // 원격 HLS는 디스크 캐시(useCaching)로 재시청 시 재다운을 막는다. 로컬 원본은 그대로.
+        const nextSource = !isActive
+          ? null
+          : /^https?:/i.test(uri)
+            ? { uri, useCaching: true }
+            : uri;
+        await player.replaceAsync(nextSource);
 
         if (isCancelled) {
           return;
