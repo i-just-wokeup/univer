@@ -26,7 +26,7 @@ export function useReelVideoPlayer({
     instance.bufferOptions = {
       maxBufferBytes: 8 * 1024 * 1024, // 8MB까지만 버퍼
       preferredForwardBufferDuration: 5, // 앞 5초만 미리 받기
-      minBufferForPlayback: 1,
+      minBufferForPlayback: 0.5, // 재생 시작 문턱을 낮춰 되감기 후 멈칫을 줄임
     };
   });
 
