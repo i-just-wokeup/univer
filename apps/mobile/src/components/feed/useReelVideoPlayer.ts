@@ -54,6 +54,21 @@ export function useReelVideoPlayer({
     }
   }, [isActive]);
 
+  // 릴스가 활성이 될 때마다 처음(0초)부터 재생한다(스크롤로 돌아와도 이어재생 X).
+  // loop=true라 자동 반복은 유지되고, 재활성될 때만 리셋한다. (수동 일시정지는 isActive가
+  // 그대로라 리셋되지 않아 이어서 재생됨)
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    try {
+      player.currentTime = 0;
+    } catch {
+      // 소스 미준비/release 상태면 무시(준비되면 어차피 0부터 시작).
+    }
+  }, [isActive, player]);
+
   useEffect(() => {
     try {
       if (isActive && isReady && !isPaused) {
