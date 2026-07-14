@@ -2,6 +2,7 @@ import { Plus, Trash2 } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { MAX_PROFILE_LINKS } from "../../features/profile/useProfileEdit";
+import { noAutofillTextInputProps } from "../../lib/textInput";
 import { colors } from "../../lib/theme";
 
 type ProfileEditLinksEditorProps = {
@@ -43,6 +44,7 @@ export function ProfileEditLinksEditor({
       {links.map((link, index) => (
         <View key={index} style={styles.linkRow}>
           <TextInput
+            {...noAutofillTextInputProps}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"

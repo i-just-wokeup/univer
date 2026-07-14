@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { NicknameStatus } from "../../features/profile/useProfileEdit";
+import { noAutofillTextInputProps } from "../../lib/textInput";
 import { colors } from "../../lib/theme";
 
 type ProfileEditNicknameFieldProps = {
@@ -22,6 +23,7 @@ export function ProfileEditNicknameField({
     <View style={styles.field}>
       <Text style={styles.label}>닉네임</Text>
       <TextInput
+        {...noAutofillTextInputProps}
         autoCapitalize="none"
         autoCorrect={false}
         maxLength={30}

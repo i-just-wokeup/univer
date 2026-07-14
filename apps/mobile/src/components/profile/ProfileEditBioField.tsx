@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { BIO_MAX_LENGTH } from "../../features/profile/useProfileEdit";
+import { noAutofillTextInputProps } from "../../lib/textInput";
 import { colors } from "../../lib/theme";
 
 type ProfileEditBioFieldProps = {
@@ -21,6 +22,7 @@ export function ProfileEditBioField({
         </Text>
       </View>
       <TextInput
+        {...noAutofillTextInputProps}
         maxLength={BIO_MAX_LENGTH}
         multiline
         onChangeText={onChangeBio}
