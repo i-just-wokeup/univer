@@ -18,7 +18,7 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 
 ---
 
-## 개발 단계별 테이블 (총 24개 + 보안 지원 테이블 `signup_allowlist`)
+## 개발 단계별 테이블 (총 25개 + 보안 지원 테이블 `signup_allowlist`)
 
 ### 1단계 MVP — 18개
 
@@ -457,6 +457,35 @@ community_comments (
 
 ---
 
+### 지표(인사이트) — 1개
+
+**metric_events** (사용자에게 보여줄 지표. 평범한 학생을 크리에이터로 전환시키는 "거울" 전략)
+```sql
+metric_events (
+  id          uuid PK default gen_random_uuid(),
+  actor_id    uuid FK → auth.users on delete cascade,   -- 행동한 사람(본인 제외하고 기록)
+  owner_id    uuid FK → auth.users on delete cascade,   -- 콘텐츠/프로필 주인(지표 조회 주체)
+  metric_type text not null,   -- reel_view | post_view | profile_visit | link_click (CHECK)
+  target_id   text not null,   -- 릴스/게시물 id, 프로필 owner id, 링크는 URL
+  event_date  date not null default (now() at time zone 'Asia/Seoul')::date,  -- KST
+  created_at  timestamptz default now()
+)
+-- 부분 유니크 인덱스 metric_events_daily_unique
+--   ON (actor_id, metric_type, target_id, event_date) WHERE metric_type = 'link_click'
+--   → link_click만 1인 1일 1회. 나머지(조회형)는 원시 이벤트로 저장.
+-- 인덱스 metric_events_owner_query ON (owner_id, metric_type, target_id, event_date)
+```
+- **개념(인스타 공식 정의 정합)**: 조회수(Views)=재생/열람 총 횟수(반복 포함)=`count(*)`, 도달(Reach)=고유 계정=`count(distinct actor_id)`. dedupe 안 하므로 한 지표에서 total(조회)·unique(도달) 둘 다 나옴.
+- **기록 트리거(클라)**: 릴스=활성 1초 이상 머물면(스크롤백=새 조회), 게시물=상세 열림, 프로필=남 프로필 로드, 링크=프로필 링크 탭.
+- **RPC** (전부 SECURITY DEFINER, `authenticated`만 GRANT, `public` REVOKE):
+  - `record_metric(p_metric_type, p_target_id, p_owner_id)` — actor=`auth.uid()`, 비로그인/본인(actor=owner) 제외, `insert ... on conflict do nothing`(link_click 하루 중복만 무시).
+  - `get_metric_counts(p_metric_type, p_target_id?, p_start?, p_end?)` → `(total, unique_actors)`, `owner_id = auth.uid()` 본인만.
+  - `get_metric_daily(...)` → `(day, total, unique_actors)` 일별.
+- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소).
+- 표시: 설정 > 계정 > 인사이트(본인만). 상세 설계는 노션 `📊 인사이트(지표) 시스템 설계`.
+
+---
+
 ## RLS 정책 요약
 
 | 테이블 | 읽기 | 쓰기 |
@@ -482,6 +511,7 @@ community_comments (
 | messages | 참여자만 | 참여자만 |
 | community_posts | 같은 학교 유저 | 본인만 |
 | community_comments | 같은 학교 유저 | 본인만 |
+| metric_events | RLS 활성·정책 없음(직접 조회 불가) | SECURITY DEFINER RPC(record_metric)만 |
 
 ---
 
