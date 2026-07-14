@@ -46,7 +46,8 @@
         }
       ],
       "expo-video",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      "./plugins/withDisableAutofill"
     ],
     "ios": {
       "bundleIdentifier": "com.univer.app",
