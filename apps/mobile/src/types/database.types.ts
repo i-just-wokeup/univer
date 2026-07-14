@@ -636,7 +636,7 @@ export type Database = {
           id: string
           actor_id: string
           owner_id: string
-          metric_type: 'reel_view' | 'post_reach' | 'profile_visit' | 'link_click'
+          metric_type: 'reel_view' | 'post_view' | 'profile_visit' | 'link_click'
           target_id: string
           event_date: string
           created_at: string
@@ -645,7 +645,7 @@ export type Database = {
           id?: string
           actor_id: string
           owner_id: string
-          metric_type: 'reel_view' | 'post_reach' | 'profile_visit' | 'link_click'
+          metric_type: 'reel_view' | 'post_view' | 'profile_visit' | 'link_click'
           target_id: string
           event_date?: string
           created_at?: string
@@ -654,7 +654,7 @@ export type Database = {
           id?: string
           actor_id?: string
           owner_id?: string
-          metric_type?: 'reel_view' | 'post_reach' | 'profile_visit' | 'link_click'
+          metric_type?: 'reel_view' | 'post_view' | 'profile_visit' | 'link_click'
           target_id?: string
           event_date?: string
           created_at?: string

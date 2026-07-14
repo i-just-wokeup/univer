@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { blockUser } from "../blocks/api";
+import { recordMetric } from "../metrics/api";
 import { createReport } from "../reports/api";
 import {
   deletePost,
@@ -73,6 +74,21 @@ export function useReels(startPostId?: string) {
   useEffect(() => {
     setActiveIndex((current) => Math.min(current, Math.max(0, posts.length - 1)));
   }, [posts.length]);
+
+  // 릴스 조회 기록: 활성 릴스가 1초 이상 머물면 1회(빠른 스크롤 스침 제외).
+  // 스크롤로 나갔다 다시 오면 새 조회로 카운트(dedupe 없음 → total=조회수, unique=도달).
+  const activePost = posts[activeIndex];
+  const activePostId = activePost?.id;
+  const activeOwnerId = activePost?.user.id;
+  useEffect(() => {
+    if (!activePostId || !activeOwnerId) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      void recordMetric("reel_view", activePostId, activeOwnerId);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [activePostId, activeOwnerId]);
 
   const loadFirstPage = useCallback(async () => {
     try {

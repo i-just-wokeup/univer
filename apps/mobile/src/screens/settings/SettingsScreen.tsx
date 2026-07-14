@@ -101,6 +101,7 @@ export function SettingsScreen() {
           />
           <Row label="내 활동" onPress={() => router.push("/activity")} />
           <Row label="차단한 계정" onPress={() => router.push("/blocked")} />
+          <Row label="인사이트" onPress={() => router.push("/insights")} />
         </Section>
 
         <Section label="지원">

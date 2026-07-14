@@ -1,5 +1,5 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Linking } from "react-native";
 
 import { recordMetric } from "../metrics/api";
@@ -37,6 +37,8 @@ export function useProfile(nickname?: string) {
   const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // 이 화면 마운트 동안 프로필 방문을 한 번만 기록(포커스 복귀마다 중복 방지).
+  const visitRecordedRef = useRef(false);
 
   const load = useCallback(async () => {
     try {
@@ -45,6 +47,12 @@ export function useProfile(nickname?: string) {
         await getProfile(nickname);
       setProfile(loaded);
       setIsMine(loadedIsMine);
+
+      // 남의 프로필 방문 기록(본인 것은 서버가 제외). target·owner 모두 프로필 주인.
+      if (!loadedIsMine && !visitRecordedRef.current) {
+        visitRecordedRef.current = true;
+        void recordMetric("profile_visit", loaded.id, loaded.id);
+      }
 
       const [loadedCounts, loadedPosts, loadedConnectionStatus, favoriteStatus] =
         await Promise.all([

@@ -3,7 +3,7 @@ import { getSupabaseMobileClient } from "../../lib/supabase";
 // 지표 종류. DB metric_events.metric_type CHECK와 일치.
 export type MetricType =
   | "reel_view"
-  | "post_reach"
+  | "post_view"
   | "profile_visit"
   | "link_click";
 
@@ -57,4 +57,35 @@ export async function getMetricCounts(
 
   const row = data[0];
   return { total: row.total ?? 0, unique: row.unique_actors ?? 0 };
+}
+
+export type MetricDailyPoint = {
+  day: string;
+  total: number;
+  unique: number;
+};
+
+// 본인 지표를 날짜(KST)별로 조회. 일별 막대그래프용. 이벤트 없는 날은 빠져서 오므로
+// 화면 쪽에서 날짜 축을 채운다.
+export async function getMetricDaily(
+  metricType: MetricType,
+  options: { start: string; end: string; targetId?: string },
+): Promise<MetricDailyPoint[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_metric_daily", {
+    p_metric_type: metricType,
+    p_target_id: options.targetId,
+    p_start: options.start,
+    p_end: options.end,
+  });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map((row) => ({
+    day: row.day,
+    total: row.total ?? 0,
+    unique: row.unique_actors ?? 0,
+  }));
 }

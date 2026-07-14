@@ -11,6 +11,7 @@ import {
 } from "./api";
 import type { FeedPost } from "./types";
 import { createReport } from "../reports/api";
+import { recordMetric } from "../metrics/api";
 
 // 게시물 상세 로드 + 좋아요/저장/차단/신고/삭제/댓글수/피드백 로직. UI/네비게이션은 화면이 담당.
 export function usePostDetail(postId: string) {
@@ -23,6 +24,8 @@ export function usePostDetail(postId: string) {
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingBookmarkRef = useRef(false);
   const pendingLikeRef = useRef(false);
+  // 상세 조회를 이 화면 마운트 동안 한 번만 기록.
+  const viewRecordedRef = useRef(false);
 
   const showFeedback = useCallback((message: string) => {
     if (feedbackTimerRef.current) {
@@ -47,6 +50,12 @@ export function usePostDetail(postId: string) {
       setPost(loadedPost);
       setIsLiked(likedIds.includes(postId));
       setIsBookmarked(bookmarkedIds.includes(postId));
+
+      // 게시물 조회 기록(본인 것은 서버가 제외).
+      if (!viewRecordedRef.current) {
+        viewRecordedRef.current = true;
+        void recordMetric("post_view", loadedPost.id, loadedPost.user.id);
+      }
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "게시물을 불러오지 못했습니다.",
