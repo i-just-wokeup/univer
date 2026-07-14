@@ -5,6 +5,7 @@ import type {
   ProfileCounts,
   ProfileDetail,
   ProfileGridPost,
+  ProfileLink,
 } from "../../features/profile/types";
 import { colors } from "../../lib/theme";
 import { KrewSurface } from "../common/KrewSurface";
@@ -20,6 +21,7 @@ type ProfileContentProps = {
   isMine: boolean;
   onAcceptFriendRequest: () => void;
   onEditProfile: () => void;
+  onLinkPress?: (link: ProfileLink) => void;
   onMessage: () => void;
   onPressCrew?: () => void;
   onPressPost: (postId: string) => void;
@@ -38,6 +40,7 @@ export function ProfileContent({
   isMine,
   onAcceptFriendRequest,
   onEditProfile,
+  onLinkPress,
   onMessage,
   onPressCrew,
   onPressPost,
@@ -51,6 +54,7 @@ export function ProfileContent({
     <KrewSurface style={styles.panel}>
       <ProfileInfoPanel
         counts={counts}
+        onLinkPress={onLinkPress}
         onPressCrew={isMine ? onPressCrew : undefined}
         profile={profile}
       />

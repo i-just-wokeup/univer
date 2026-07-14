@@ -4,12 +4,14 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import type {
   ProfileCounts,
   ProfileDetail,
+  ProfileLink,
 } from "../../features/profile/types";
 import { colors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type ProfileInfoPanelProps = {
   counts: ProfileCounts;
+  onLinkPress?: (link: ProfileLink) => void;
   onPressCrew?: () => void;
   profile: ProfileDetail;
 };
@@ -17,6 +19,7 @@ type ProfileInfoPanelProps = {
 // 프로필 상단 정보 영역(아바타+통계+이름/실명/학과+소개+링크). 순수 UI.
 export function ProfileInfoPanel({
   counts,
+  onLinkPress,
   onPressCrew,
   profile,
 }: ProfileInfoPanelProps) {
@@ -69,7 +72,11 @@ export function ProfileInfoPanel({
             <Pressable
               key={link.id}
               onPress={() => {
-                void Linking.openURL(link.url);
+                if (onLinkPress) {
+                  onLinkPress(link);
+                } else {
+                  void Linking.openURL(link.url);
+                }
               }}
               style={styles.linkChip}
             >

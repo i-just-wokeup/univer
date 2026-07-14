@@ -25,6 +25,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     counts,
     errorMessage,
     handleAcceptFriendRequest,
+    handleLinkPress,
     handleRejectFriendRequest,
     handleRemoveFriend,
     handleSendFriendRequest,
@@ -125,6 +126,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
             isMine={isMine}
             onAcceptFriendRequest={handleAcceptFriendRequest}
             onEditProfile={handlePressEdit}
+            onLinkPress={handleLinkPress}
             onMessage={() => {
               void handleStartMessage();
             }}

@@ -631,9 +631,72 @@ export type Database = {
         }
         Relationships: []
       }
+      metric_events: {
+        Row: {
+          id: string
+          actor_id: string
+          owner_id: string
+          metric_type: 'reel_view' | 'post_reach' | 'profile_visit' | 'link_click'
+          target_id: string
+          event_date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          actor_id: string
+          owner_id: string
+          metric_type: 'reel_view' | 'post_reach' | 'profile_visit' | 'link_click'
+          target_id: string
+          event_date?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          actor_id?: string
+          owner_id?: string
+          metric_type?: 'reel_view' | 'post_reach' | 'profile_visit' | 'link_click'
+          target_id?: string
+          event_date?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
+      record_metric: {
+        Args: {
+          p_metric_type: string
+          p_target_id: string
+          p_owner_id: string
+        }
+        Returns: undefined
+      }
+      get_metric_counts: {
+        Args: {
+          p_metric_type: string
+          p_target_id?: string
+          p_start?: string
+          p_end?: string
+        }
+        Returns: {
+          total: number
+          unique_actors: number
+        }[]
+      }
+      get_metric_daily: {
+        Args: {
+          p_metric_type: string
+          p_target_id?: string
+          p_start?: string
+          p_end?: string
+        }
+        Returns: {
+          day: string
+          total: number
+          unique_actors: number
+        }[]
+      }
       claim_push_token: {
         Args: {
           p_token: string

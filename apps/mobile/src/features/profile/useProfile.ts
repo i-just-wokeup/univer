@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { Linking } from "react-native";
 
+import { recordMetric } from "../metrics/api";
 import { getOrCreateConversation } from "../chat/api";
 import {
   acceptFriendRequest,
@@ -18,6 +21,7 @@ import type {
   ProfileCounts,
   ProfileDetail,
   ProfileGridPost,
+  ProfileLink,
 } from "./types";
 
 // 프로필 화면 데이터 + 크루(친구)/즐겨찾기 액션 로직. UI/네비게이션은 화면이 담당.
@@ -69,9 +73,12 @@ export function useProfile(nickname?: string) {
     }
   }, [nickname]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  // 화면에 진입/복귀할 때마다 최신 프로필을 다시 불러온다(편집 저장 후 돌아오면 자동 반영).
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   function refresh() {
     setIsRefreshing(true);
@@ -216,6 +223,14 @@ export function useProfile(nickname?: string) {
     }
   }
 
+  // 프로필 링크 탭: 클릭 지표 기록(본인 제외·중복제거는 서버가 처리) 후 링크를 연다.
+  function handleLinkPress(link: ProfileLink) {
+    if (profile) {
+      void recordMetric("link_click", link.url, profile.id);
+    }
+    void Linking.openURL(link.url);
+  }
+
   // 대화방 생성까지만 담당하고 conversationId를 반환한다(화면 이동은 호출부에서).
   async function startConversation(): Promise<string | null> {
     if (!profile || isMine || isActionPending) {
@@ -242,6 +257,7 @@ export function useProfile(nickname?: string) {
     errorMessage,
     handleAcceptFriendRequest,
     handleRejectFriendRequest,
+    handleLinkPress,
     handleRemoveFriend,
     handleSendFriendRequest,
     handleToggleFavorite,
