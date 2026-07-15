@@ -15,42 +15,50 @@ export type InsightMetric = {
   label: string;
   hint: string;
   value: number;
+  // 도달(고유 계정 수). reachLabel 있는 지표만 화면에 표시.
+  reach: number;
+  reachLabel: string | null;
   // 직전 동일 기간 대비 증감률(%). 비교 불가(직전 0)면 null.
   changePercent: number | null;
-  // 일별 막대용. 이벤트 없는 날도 0으로 채워진 연속 배열.
+  // 일별 추이용. 이벤트 없는 날도 0으로 채워진 연속 배열.
   bars: InsightBar[];
 };
 
-// 인사이트에 보여줄 지표 정의. use: 숫자/막대에 쓸 값(total=총 횟수, unique=고유 계정 수).
+// 인사이트에 보여줄 지표 정의. use=큰 숫자로 쓸 값. reachLabel=밑에 작게 보여줄 도달 라벨(없으면 미표시).
 const METRIC_DEFS: {
   type: MetricType;
   label: string;
   hint: string;
   use: "total" | "unique";
+  reachLabel: string | null;
 }[] = [
   {
     type: "reel_view",
     label: "릴스 조회수",
     hint: "릴스가 재생된 총 횟수",
     use: "total",
+    reachLabel: "도달",
   },
   {
     type: "post_view",
     label: "게시물 조회",
     hint: "게시물 상세를 연 횟수",
     use: "total",
+    reachLabel: "도달",
   },
   {
     type: "profile_visit",
     label: "프로필 방문",
     hint: "내 프로필을 열어본 횟수",
     use: "total",
+    reachLabel: "고유 방문자",
   },
   {
     type: "link_click",
     label: "링크 클릭",
     hint: "프로필 링크를 누른 횟수",
     use: "total",
+    reachLabel: null,
   },
 ];
 
@@ -142,6 +150,8 @@ export function useInsights() {
             label: def.label,
             hint: def.hint,
             value,
+            reach: current.unique,
+            reachLabel: def.reachLabel,
             changePercent: changePercent(value, prevValue),
             bars: days.map((day) => ({ day, value: dailyMap.get(day) ?? 0 })),
           } satisfies InsightMetric;

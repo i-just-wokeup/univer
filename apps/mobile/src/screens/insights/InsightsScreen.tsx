@@ -12,8 +12,8 @@ import { colors } from "../../lib/theme";
 export function InsightsScreen() {
   const router = useRouter();
   const { period, setPeriod, metrics, isLoading, errorMessage } = useInsights();
-  // 일간은 하루뿐이라 막대(일별)가 의미 없어 숨긴다.
-  const showBars = period !== "day";
+  // 일간은 하루뿐이라 추이 차트가 의미 없어 숨긴다.
+  const showChart = period !== "day";
 
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
@@ -40,7 +40,7 @@ export function InsightsScreen() {
               <InsightsMetricCard
                 key={metric.type}
                 metric={metric}
-                showBars={showBars}
+                showChart={showChart}
               />
             ))}
           </View>

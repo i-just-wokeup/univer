@@ -2,14 +2,14 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { InsightMetric } from "../../features/metrics/useInsights";
 import { colors } from "../../lib/theme";
-import { InsightsDailyBars } from "./InsightsDailyBars";
+import { InsightsTrendChart } from "./InsightsTrendChart";
 
-// 상승은 초록. 테마엔 없어서 카드 로컬 상수로 둔다.
-const POSITIVE = "#12B76A";
+// 상승만 연두로 강조, 하락은 회색(빨강 안 씀 — 갓 시작/활동 없는 날 알림처럼 안 보이게).
+const UP_GREEN = "#2FC36B";
 
 type InsightsMetricCardProps = {
   metric: InsightMetric;
-  showBars: boolean;
+  showChart: boolean;
 };
 
 function ChangeBadge({ percent }: { percent: number | null }) {
@@ -18,15 +18,16 @@ function ChangeBadge({ percent }: { percent: number | null }) {
   }
   const up = percent > 0;
   return (
-    <Text style={[styles.change, { color: up ? POSITIVE : colors.danger }]}>
-      {up ? "▲" : "▼"} {Math.abs(percent)}%
+    <Text style={[styles.change, { color: up ? UP_GREEN : colors.muted }]}>
+      {up ? "+" : "-"}
+      {Math.abs(percent)}%
     </Text>
   );
 }
 
 export function InsightsMetricCard({
   metric,
-  showBars,
+  showChart,
 }: InsightsMetricCardProps) {
   return (
     <View style={styles.card}>
@@ -40,9 +41,14 @@ export function InsightsMetricCard({
             {metric.value.toLocaleString("ko-KR")}
           </Text>
           <ChangeBadge percent={metric.changePercent} />
+          {metric.reachLabel ? (
+            <Text style={styles.reach}>
+              {metric.reachLabel} {metric.reach.toLocaleString("ko-KR")}
+            </Text>
+          ) : null}
         </View>
       </View>
-      {showBars ? <InsightsDailyBars bars={metric.bars} /> : null}
+      {showChart ? <InsightsTrendChart bars={metric.bars} /> : null}
     </View>
   );
 }
@@ -95,5 +101,11 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     fontSize: 12,
     fontWeight: "900",
+  },
+  reach: {
+    marginTop: 3,
+    color: colors.textFaint,
+    fontSize: 12,
+    fontWeight: "800",
   },
 });
