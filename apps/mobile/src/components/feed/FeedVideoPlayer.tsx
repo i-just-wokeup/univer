@@ -41,8 +41,11 @@ export function FeedVideoPlayer({
 }: FeedVideoPlayerProps) {
   const { width } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(true);
+  const [hasMountedVideo, setHasMountedVideo] = useState(false);
+  const [hasRenderedFirstFrame, setHasRenderedFirstFrame] = useState(false);
   const isReady = processingStatus === "ready";
   const shouldRenderVideo = isActive && isReady;
+  const shouldMountVideo = isReady && (isActive || hasMountedVideo);
 
   const player = useVideoPlayer(isReady ? { uri, useCaching: true } : null, (instance) => {
     instance.loop = true;
@@ -64,6 +67,37 @@ export function FeedVideoPlayer({
     }
   }, [isActive, isReady, player]);
 
+  useEffect(() => {
+    setHasMountedVideo(false);
+    setHasRenderedFirstFrame(false);
+  }, [uri, isReady]);
+
+  useEffect(() => {
+    if (!shouldRenderVideo) {
+      return undefined;
+    }
+
+    setHasMountedVideo(true);
+
+    // 일부 Android/expo-video 조합에서 onFirstFrameRender가 늦거나 누락되면
+    // 썸네일이 영원히 영상을 덮는다. 안전망으로 일정 시간 뒤 커버를 걷는다.
+    const fallbackTimer = setTimeout(() => {
+      setHasRenderedFirstFrame(true);
+    }, 1200);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+    };
+  }, [shouldRenderVideo, uri]);
+
+  useEffect(() => {
+    if (shouldRenderVideo) {
+      return;
+    }
+
+    player.pause();
+  }, [player, shouldRenderVideo]);
+
   function toggleMute() {
     const next = !isMuted;
     player.muted = next;
@@ -77,11 +111,12 @@ export function FeedVideoPlayer({
 
   return (
     <View style={[styles.frame, frameStyle]}>
-      {shouldRenderVideo ? (
+      {shouldMountVideo ? (
         <VideoView
           contentFit="cover"
           key={uri}
           nativeControls={false}
+          onFirstFrameRender={() => setHasRenderedFirstFrame(true)}
           player={player}
           surfaceType="textureView"
           style={StyleSheet.absoluteFill}
@@ -89,8 +124,8 @@ export function FeedVideoPlayer({
         />
       ) : null}
 
-      {/* 비활성(정지) 카드는 썸네일을 덮어 검은 화면/깜빡임 방지 */}
-      {!shouldRenderVideo && thumbnailUrl ? (
+      {/* 첫 프레임이 실제로 그려질 때까지만 썸네일을 덮어 native video surface의 검은 프레임을 가린다. */}
+      {thumbnailUrl && (!shouldMountVideo || !hasRenderedFirstFrame) ? (
         <Image
           cachePolicy="memory-disk"
           contentFit="cover"
