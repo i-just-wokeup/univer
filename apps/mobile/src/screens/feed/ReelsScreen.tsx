@@ -1,4 +1,5 @@
-import { useRouter } from "expo-router";
+import * as NavigationBar from "expo-navigation-bar";
+import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -69,6 +70,18 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     toggleBookmarkPost,
     toggleLike,
   } = useReels(startPostId);
+
+  // 릴스 화면에선 하단 네비게이션 바를 검정+밝은 버튼으로, 벗어나면 전역 흰색으로 복구.
+  useFocusEffect(
+    useCallback(() => {
+      void NavigationBar.setBackgroundColorAsync("#000000");
+      void NavigationBar.setButtonStyleAsync("light");
+      return () => {
+        void NavigationBar.setBackgroundColorAsync("#FFFFFF");
+        void NavigationBar.setButtonStyleAsync("dark");
+      };
+    }, []),
+  );
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 80 }).current;
   const handleViewableItemsChanged = useRef(
