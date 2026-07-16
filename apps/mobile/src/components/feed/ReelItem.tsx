@@ -83,12 +83,14 @@ export function ReelItem({
 
   const isOwnPost = currentUserId === post.user.id;
   const shouldRenderVideo = isNearActive && isReady;
+  // 세로 영상은 꽉 채우고(cover), 가로/정사각은 검은 띠(contain) — 인스타 방식.
+  const videoFit = post.aspect_ratio === "portrait" ? "cover" : "contain";
 
   return (
     <View style={[styles.page, { height, width }]}>
       {shouldRenderVideo ? (
         <VideoView
-          contentFit="contain"
+          contentFit={videoFit}
           key={videoUrl}
           nativeControls={false}
           player={player}
@@ -98,7 +100,7 @@ export function ReelItem({
       {!isActive && video.thumbnail_url ? (
         <Image
           cachePolicy="memory-disk"
-          contentFit="contain"
+          contentFit={videoFit}
           source={{ uri: video.thumbnail_url }}
           style={StyleSheet.absoluteFill}
         />
@@ -106,7 +108,7 @@ export function ReelItem({
       {!isReady && video.thumbnail_url ? (
         <Image
           cachePolicy="memory-disk"
-          contentFit="contain"
+          contentFit={videoFit}
           source={{ uri: video.thumbnail_url }}
           style={StyleSheet.absoluteFill}
         />
