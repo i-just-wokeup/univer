@@ -151,3 +151,21 @@ export async function getPost(postId: string): Promise<FeedPost> {
 
   return hydratedPost;
 }
+
+// 게시물의 작성 시각만 가볍게 조회. 릴스 앵커처럼 created_at 하나만 필요할 때 쓴다.
+// (getPost는 차단목록+미디어+해시태그까지 다 채워서 무겁다.)
+export async function getPostCreatedAt(postId: string): Promise<string | null> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("created_at")
+    .eq("id", postId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.created_at;
+}

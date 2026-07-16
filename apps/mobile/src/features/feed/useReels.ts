@@ -7,7 +7,7 @@ import {
   deletePost,
   getBookmarkedPostIds,
   getLikedPostIds,
-  getPost,
+  getPostCreatedAt,
   getVideoFeed,
   toggleBookmark,
   togglePostLike,
@@ -99,12 +99,7 @@ export function useReels(startPostId?: string) {
       // 삭제/차단된 영상이면 앵커 없이 최신 피드로 폴백.
       let anchorCreatedAt: string | undefined;
       if (startPostId) {
-        try {
-          const anchorPost = await getPost(startPostId);
-          anchorCreatedAt = anchorPost.created_at;
-        } catch {
-          anchorCreatedAt = undefined;
-        }
+        anchorCreatedAt = (await getPostCreatedAt(startPostId)) ?? undefined;
       }
 
       const result = await getVideoFeed({
