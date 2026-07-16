@@ -133,7 +133,7 @@ export function OnboardingScreen() {
                   autoCorrect={false}
                   maxLength={30}
                   onChangeText={handleChangeNickname}
-                  placeholder="nickname"
+                  placeholder="닉네임을 입력하세요"
                   placeholderTextColor={colors.textFaint}
                   style={[styles.input, styles.nicknameInput]}
                   value={nickname}
