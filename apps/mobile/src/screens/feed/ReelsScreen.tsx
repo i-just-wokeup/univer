@@ -7,7 +7,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
   type ViewToken,
 } from "react-native";
@@ -34,7 +33,10 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const insets = useSafeAreaInsets();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
-  const { height, width } = useWindowDimensions();
+  // 아이템 크기는 useWindowDimensions(상태바 뺀 값이라 실제 화면과 28px 어긋남) 대신
+  // FlatList 컨테이너의 실제 크기를 onLayout으로 재서 쓴다 → 어떤 폰/비율이든 칸=화면이 딱 맞아
+  // "다음 릴스 삐져나옴 / 마지막 릴스 밀림"이 사라진다.
+  const [size, setSize] = useState({ width: 0, height: 0 });
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [sharePost, setSharePost] = useState<FeedPost | null>(null);
   // 음소거는 릴스 전체 공유 — 한 번 켜면 다음 영상에서도 유지.
@@ -155,16 +157,27 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   }
 
   return (
-    <View style={styles.screen}>
+    <View
+      onLayout={(event) => {
+        const { width, height } = event.nativeEvent.layout;
+        setSize((prev) =>
+          prev.width === width && prev.height === height
+            ? prev
+            : { width, height },
+        );
+      }}
+      style={styles.screen}
+    >
       <StatusBar style="light" backgroundColor={colors.black} />
+      {size.height > 0 ? (
       <FlatList
         ref={flatListRef}
         data={posts}
         decelerationRate="fast"
         getItemLayout={(_, index) => ({
           index,
-          length: height,
-          offset: height * index,
+          length: size.height,
+          offset: size.height * index,
         })}
         initialNumToRender={2}
         initialScrollIndex={activeIndex}
@@ -180,7 +193,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         renderItem={({ index, item }) => (
           <ReelItem
             currentUserId={currentUserId}
-            height={height}
+            height={size.height}
             isActive={index === activeIndex}
             // 활성 ±1만 영상 플레이어를 살린다(나머지는 source=null로 메모리 해제, 썸네일만).
             isNearActive={Math.abs(index - activeIndex) <= 1}
@@ -207,15 +220,16 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
             onShare={() => setSharePost(item)}
             onToggleMute={() => setIsMuted((muted) => !muted)}
             post={item}
-            width={width}
+            width={size.width}
           />
         )}
         showsVerticalScrollIndicator={false}
         snapToAlignment="start"
-        snapToInterval={height}
+        snapToInterval={size.height}
         viewabilityConfig={viewabilityConfig}
         windowSize={3}
       />
+      ) : null}
 
       <Pressable
         accessibilityLabel="뒤로"
