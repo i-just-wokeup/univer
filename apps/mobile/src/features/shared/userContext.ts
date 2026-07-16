@@ -6,15 +6,15 @@ import { getSupabaseMobileClient } from "../../lib/supabase";
 export async function getCurrentUserId(): Promise<string> {
   const supabase = getSupabaseMobileClient();
   const {
-    data: { user },
+    data: { session },
     error,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
-  if (error || !user) {
+  if (error || !session?.user) {
     throw new Error("로그인이 필요합니다.");
   }
 
-  return user.id;
+  return session.user.id;
 }
 
 // 현재 유저 id + 소속 학교 id. 피드/탐색/스토리 등 "같은 학교" 범위 쿼리에서 공용.
@@ -24,18 +24,18 @@ export async function getCurrentUserContext(): Promise<{
 }> {
   const supabase = getSupabaseMobileClient();
   const {
-    data: { user },
+    data: { session },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
-  if (authError || !user) {
+  if (authError || !session?.user) {
     throw new Error("로그인이 필요합니다.");
   }
 
   const { data, error } = await supabase
     .from("users")
     .select("university_id")
-    .eq("id", user.id)
+    .eq("id", session.user.id)
     .maybeSingle();
 
   if (error || !data?.university_id) {
@@ -44,7 +44,7 @@ export async function getCurrentUserContext(): Promise<{
 
   return {
     universityId: data.university_id,
-    userId: user.id,
+    userId: session.user.id,
   };
 }
 
