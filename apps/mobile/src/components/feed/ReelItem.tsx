@@ -11,6 +11,7 @@ import type { FeedPost, PostMedia } from "../../features/feed/types";
 import { ReelActions } from "./ReelActions";
 import { ReelFooter } from "./ReelFooter";
 import { ReelMoreMenu } from "./ReelMoreMenu";
+import { ReelProgressBar } from "./ReelProgressBar";
 import { useReelVideoPlayer } from "./useReelVideoPlayer";
 
 type ReelItemProps = {
@@ -166,6 +167,11 @@ export function ReelItem({
         onPressUser={onPressUser}
         post={post}
       />
+
+      {/* 하단 진행바 — 활성 릴스에서만. 표시 전용(탭 안 막음). */}
+      {isActive && isReady ? (
+        <ReelProgressBar bottomInset={insets.bottom} player={player} />
+      ) : null}
     </View>
   );
 }

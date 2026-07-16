@@ -22,6 +22,8 @@ export function useReelVideoPlayer({
   const player = useVideoPlayer(null, (instance) => {
     instance.loop = true;
     instance.muted = true;
+    // 진행바(하단)용 — 0이면 timeUpdate 이벤트가 안 옴. 0.25초마다 재생위치 갱신.
+    instance.timeUpdateEventInterval = 0.25;
     // 8MB 캡은 과거 무압축 mp4 시절 OOM 방지용이었는데, 지금은 Cloudflare HLS(조각 스트리밍)라
     // 통째로 RAM에 안 올라감 → 캡 제거해 좋은 네트워크에서 더 높은 화질(1080p)을 고를 수 있게 한다.
     instance.bufferOptions = {
