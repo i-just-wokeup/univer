@@ -1,5 +1,6 @@
 // 차단 데이터 계층 — 차단/해제/목록. 모두 RPC 래퍼.
 // (양방향 차단 관계 id 조회는 features/shared/userContext.ts)
+import { invalidateBlockRelatedCache } from "../shared/userContext";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
 export type BlockedUser = {
@@ -21,6 +22,8 @@ export async function blockUser(userId: string): Promise<void> {
   if (error) {
     throw new Error("사용자 차단에 실패했습니다.");
   }
+
+  invalidateBlockRelatedCache();
 }
 
 // 내가 차단한 계정 목록(id/닉네임/아바타/학과/차단 시각).
@@ -53,4 +56,6 @@ export async function unblockUser(userId: string): Promise<void> {
   if (error) {
     throw new Error("차단 해제에 실패했습니다.");
   }
+
+  invalidateBlockRelatedCache();
 }

@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-07-18
+
+### 완료
+- **앱 세션 컨텍스트 조회 캐시 ② 적용** — 모바일 `getCurrentUserContext`의 `university_id` 조회를 현재 세션 user id 기준 모듈 캐시로 줄이고, `getBlockRelatedUserIds`에 30초 TTL + in-flight dedupe 캐시를 추가. 차단/차단해제 성공 및 로그아웃 시 캐시를 무효화해 계정 전환 시 이전 계정의 학교/차단 데이터가 남지 않도록 처리.
+
 ## 2026-07-16
 
 ### 완료

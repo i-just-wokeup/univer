@@ -2,6 +2,7 @@
 // (구글 로그인은 별도 모듈, 세션·가드는 lib/session.tsx)
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { clearUserContextCaches } from "../shared/userContext";
 import {
   isTemporaryNickname,
   isValidNickname,
@@ -56,7 +57,11 @@ export async function signOutMobile(): Promise<void> {
       .then(undefined, () => undefined);
   }
 
-  await supabase.auth.signOut();
+  try {
+    await supabase.auth.signOut();
+  } finally {
+    clearUserContextCaches();
+  }
 }
 
 // 온보딩 필요 여부 판정(가드용 순수함수). 미완료거나 닉네임이 임시값/이메일 앞부분과 같으면 true.
