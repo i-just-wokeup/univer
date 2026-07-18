@@ -7,13 +7,24 @@ import {
 import type { FeedPost, GetFeedResult } from "./types";
 import { hydrateFeedPosts } from "./feedHydration";
 import {
-  POST_SELECT_FIELDS,
+  POST_WITH_RELATIONS_SELECT_FIELDS,
+  POST_WITH_VIDEO_MEDIA_SELECT_FIELDS,
   type FeedPostRow,
 } from "./internalTypes";
 
 // PostgREST `in` 필터용 문자열로 변환: ["a","b"] → "(a,b)".
 function toPostgrestInFilter(values: string[]) {
   return `(${values.join(",")})`;
+}
+
+// 앱 DB 타입 파일에는 FK Relationships가 비어 있어 supabase-js가 임베딩 타입을 추론하지 못한다.
+// 실제 PostgREST 응답은 아래 select 문자열 기준으로 FeedPostRow shape이므로 여기서만 명시 캐스팅한다.
+function toEmbeddedFeedPostRows(rows: unknown): FeedPostRow[] {
+  return rows as FeedPostRow[];
+}
+
+function toEmbeddedFeedPostRow(row: unknown): FeedPostRow {
+  return row as FeedPostRow;
 }
 
 // 홈 피드 조회. 같은 학교 + 차단 관계 제외, created_at cursor 무한스크롤.
@@ -31,10 +42,11 @@ export async function getFeed({
 
   let postsQuery = supabase
     .from("posts")
-    .select(POST_SELECT_FIELDS)
+    .select(POST_WITH_RELATIONS_SELECT_FIELDS)
     .eq("university_id", universityId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
+    .order("order_index", { ascending: true, referencedTable: "post_media" })
     .limit(fetchLimit);
 
   if (blockRelatedUserIds.length > 0) {
@@ -55,7 +67,7 @@ export async function getFeed({
     throw new Error("피드를 불러오지 못했습니다.");
   }
 
-  const normalizedPosts = postsData as FeedPostRow[];
+  const normalizedPosts = toEmbeddedFeedPostRows(postsData);
   const hasMore = normalizedPosts.length > limit;
   const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
   const posts = await hydrateFeedPosts(slicedPosts);
@@ -83,11 +95,12 @@ export async function getVideoFeed({
 
   let postsQuery = supabase
     .from("posts")
-    .select(`${POST_SELECT_FIELDS}, post_media!inner(type)`)
+    .select(POST_WITH_VIDEO_MEDIA_SELECT_FIELDS)
     .eq("university_id", universityId)
     .eq("post_media.type", "video")
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
+    .order("order_index", { ascending: true, referencedTable: "post_media" })
     .limit(fetchLimit);
 
   if (blockRelatedUserIds.length > 0) {
@@ -110,7 +123,7 @@ export async function getVideoFeed({
     throw new Error("영상을 불러오지 못했습니다.");
   }
 
-  const normalizedPosts = postsData as unknown as FeedPostRow[];
+  const normalizedPosts = toEmbeddedFeedPostRows(postsData);
   const hasMore = normalizedPosts.length > limit;
   const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
   const posts = await hydrateFeedPosts(slicedPosts);
@@ -128,16 +141,17 @@ export async function getPost(postId: string): Promise<FeedPost> {
 
   const { data: postData, error: postError } = await supabase
     .from("posts")
-    .select(POST_SELECT_FIELDS)
+    .select(POST_WITH_RELATIONS_SELECT_FIELDS)
     .eq("id", postId)
     .is("deleted_at", null)
+    .order("order_index", { ascending: true, referencedTable: "post_media" })
     .maybeSingle();
 
   if (postError || !postData) {
     throw new Error("게시물을 찾을 수 없습니다.");
   }
 
-  const post = postData as FeedPostRow;
+  const post = toEmbeddedFeedPostRow(postData);
 
   if (blockRelatedUserIds.includes(post.user_id)) {
     throw new Error("게시물을 찾을 수 없습니다.");

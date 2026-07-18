@@ -8,6 +8,7 @@
 
 ### 완료
 - **앱 세션 컨텍스트 조회 캐시 ② 적용** — 모바일 `getCurrentUserContext`의 `university_id` 조회를 현재 세션 user id 기준 모듈 캐시로 줄이고, `getBlockRelatedUserIds`에 30초 TTL + in-flight dedupe 캐시를 추가. 차단/차단해제 성공 및 로그아웃 시 캐시를 무효화해 계정 전환 시 이전 계정의 학교/차단 데이터가 남지 않도록 처리.
+- **앱 게시물 조회 왕복 최적화 ③ 적용** — 모바일 피드/릴스/게시물 상세의 posts 조회에 작성자(`users`)와 미디어(`post_media`) PostgREST 임베딩을 추가해 기존 posts → users → post_media 순차 조회를 단일 posts 쿼리로 축소. `hydrateFeedPosts`는 추가 Supabase 호출 없이 임베딩 결과를 `FeedPost` UI 타입으로 매핑만 하도록 정리했고, 미디어 `order_index` 정렬과 릴스 영상 필터(`post_media!inner` + `type='video'`)는 유지. 앱 tsc 통과.
 
 ## 2026-07-16
 
