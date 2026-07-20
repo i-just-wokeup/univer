@@ -1,7 +1,8 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
 
+import { useSession } from "../../lib/session";
 import { recordMetric } from "../metrics/api";
 import { getOrCreateConversation } from "../chat/api";
 import {
@@ -16,6 +17,11 @@ import {
   sendFriendRequest,
   toggleUserFavorite,
 } from "./api";
+import {
+  getProfilePageCache,
+  setProfilePageCache,
+  type ProfilePageCacheSnapshot,
+} from "./page-cache";
 import type {
   ConnectionStatus,
   ProfileCounts,
@@ -26,21 +32,89 @@ import type {
 
 // 프로필 화면 데이터 + 크루(친구)/즐겨찾기 액션 로직. UI/네비게이션은 화면이 담당.
 export function useProfile(nickname?: string) {
-  const [profile, setProfile] = useState<ProfileDetail | null>(null);
-  const [counts, setCounts] = useState<ProfileCounts>({ crew: 0, posts: 0 });
+  const { session } = useSession();
+  const currentUserId = session?.user.id ?? null;
+  const cacheKey = `${currentUserId ?? "anonymous"}:${nickname ?? "__me__"}`;
+  const initialCacheRef = useRef<ProfilePageCacheSnapshot | null | undefined>(undefined);
+  if (initialCacheRef.current === undefined) {
+    initialCacheRef.current = currentUserId
+      ? getProfilePageCache({ currentUserId, nickname })
+      : null;
+  }
+
+  const initialCache = initialCacheRef.current ?? null;
+  const hasLoadedProfileRef = useRef(Boolean(initialCache));
+  const [profileCacheKey, setProfileCacheKey] = useState(cacheKey);
+  const [profile, setProfile] = useState<ProfileDetail | null>(
+    initialCache?.profile ?? null,
+  );
+  const [counts, setCounts] = useState<ProfileCounts>(
+    initialCache?.counts ?? { crew: 0, posts: 0 },
+  );
   const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus | null>(null);
-  const [posts, setPosts] = useState<ProfileGridPost[]>([]);
-  const [isMine, setIsMine] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+    useState<ConnectionStatus | null>(initialCache?.connectionStatus ?? null);
+  const [posts, setPosts] = useState<ProfileGridPost[]>(initialCache?.posts ?? []);
+  const [isMine, setIsMine] = useState(initialCache?.isMine ?? false);
+  const [isFavorite, setIsFavorite] = useState(initialCache?.isFavorite ?? false);
+  const [isLoading, setIsLoading] = useState(!initialCache);
   const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   // 이 화면 마운트 동안 프로필 방문을 한 번만 기록(포커스 복귀마다 중복 방지).
   const visitRecordedRef = useRef(false);
 
-  const load = useCallback(async () => {
+  const recordProfileVisit = useCallback(
+    (loadedProfile: ProfileDetail, loadedIsMine: boolean) => {
+      // 캐시 히트로 네트워크 로드를 건너뛰어도 방문 지표는 기존 규칙대로 기록한다.
+      if (!loadedIsMine && !visitRecordedRef.current) {
+        visitRecordedRef.current = true;
+        void recordMetric("profile_visit", loadedProfile.id, loadedProfile.id);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (profileCacheKey === cacheKey) {
+      return;
+    }
+
+    const cached = currentUserId
+      ? getProfilePageCache({ currentUserId, nickname })
+      : null;
+    setProfile(cached?.profile ?? null);
+    setCounts(cached?.counts ?? { crew: 0, posts: 0 });
+    setConnectionStatus(cached?.connectionStatus ?? null);
+    setPosts(cached?.posts ?? []);
+    setIsMine(cached?.isMine ?? false);
+    setIsFavorite(cached?.isFavorite ?? false);
+    hasLoadedProfileRef.current = Boolean(cached);
+    visitRecordedRef.current = false;
+    setErrorMessage("");
+    setIsLoading(!cached);
+    setIsRefreshing(false);
+    setProfileCacheKey(cacheKey);
+  }, [cacheKey, currentUserId, nickname, profileCacheKey]);
+
+  const load = useCallback(async (options?: { ignoreCache?: boolean }) => {
+    if (!options?.ignoreCache && currentUserId) {
+      const cached = getProfilePageCache({ currentUserId, nickname });
+      if (cached) {
+        setProfile(cached.profile);
+        setCounts(cached.counts);
+        setConnectionStatus(cached.connectionStatus);
+        setPosts(cached.posts);
+        setIsMine(cached.isMine);
+        setIsFavorite(cached.isFavorite);
+        hasLoadedProfileRef.current = true;
+        recordProfileVisit(cached.profile, cached.isMine);
+        setErrorMessage("");
+        setIsLoading(false);
+        setIsRefreshing(false);
+        return;
+      }
+    }
+
     try {
       setErrorMessage("");
       const { isMine: loadedIsMine, profile: loaded } =
@@ -49,10 +123,7 @@ export function useProfile(nickname?: string) {
       setIsMine(loadedIsMine);
 
       // 남의 프로필 방문 기록(본인 것은 서버가 제외). target·owner 모두 프로필 주인.
-      if (!loadedIsMine && !visitRecordedRef.current) {
-        visitRecordedRef.current = true;
-        void recordMetric("profile_visit", loaded.id, loaded.id);
-      }
+      recordProfileVisit(loaded, loadedIsMine);
 
       const [loadedCounts, loadedPosts, loadedConnectionStatus, favoriteStatus] =
         await Promise.all([
@@ -71,6 +142,7 @@ export function useProfile(nickname?: string) {
       setConnectionStatus(loadedConnectionStatus);
       setIsFavorite(favoriteStatus);
       setPosts(loadedPosts);
+      hasLoadedProfileRef.current = true;
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "프로필을 불러오지 못했습니다.",
@@ -79,7 +151,7 @@ export function useProfile(nickname?: string) {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [nickname]);
+  }, [currentUserId, nickname, recordProfileVisit]);
 
   // 화면에 진입/복귀할 때마다 최신 프로필을 다시 불러온다(편집 저장 후 돌아오면 자동 반영).
   useFocusEffect(
@@ -88,14 +160,47 @@ export function useProfile(nickname?: string) {
     }, [load]),
   );
 
+  useEffect(() => {
+    if (
+      !currentUserId ||
+      profileCacheKey !== cacheKey ||
+      !hasLoadedProfileRef.current ||
+      !profile
+    ) {
+      return;
+    }
+
+    setProfilePageCache({
+      connectionStatus,
+      counts,
+      currentUserId,
+      isFavorite,
+      isMine,
+      nickname,
+      posts,
+      profile,
+    });
+  }, [
+    cacheKey,
+    connectionStatus,
+    counts,
+    currentUserId,
+    isFavorite,
+    isMine,
+    nickname,
+    posts,
+    profile,
+    profileCacheKey,
+  ]);
+
   function refresh() {
     setIsRefreshing(true);
-    void load();
+    void load({ ignoreCache: true });
   }
 
   function retry() {
     setIsLoading(true);
-    void load();
+    void load({ ignoreCache: true });
   }
 
   async function refreshConnectionStatus(profileId: string) {

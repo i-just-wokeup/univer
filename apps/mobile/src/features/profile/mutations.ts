@@ -6,6 +6,7 @@ import { uploadImagesToBucket } from "../shared/imageUpload";
 import { getCurrentUserId } from "../shared/userContext";
 import { isValidNickname, normalizeNickname } from "../../lib/utils/nickname";
 import { normalizeProfileLinks } from "../../lib/utils/profileLinks";
+import { invalidateProfilePageCacheForUser } from "./page-cache";
 
 type UserUpdate = Database["public"]["Tables"]["users"]["Update"];
 type ProfileLinkInsert =
@@ -25,6 +26,7 @@ export async function updateProfile(
 ): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
+  let didMutate = false;
   const updateValues: Pick<UserUpdate, "avatar_url" | "bio" | "nickname"> = {};
   const normalizedProfileLinks =
     params.profileLinks === undefined
@@ -76,9 +78,13 @@ export async function updateProfile(
     if (error) {
       throw new Error("프로필을 저장하지 못했습니다.");
     }
+    didMutate = true;
   }
 
   if (params.profileLinks === undefined) {
+    if (didMutate) {
+      invalidateProfilePageCacheForUser(userId);
+    }
     return;
   }
 
@@ -89,6 +95,9 @@ export async function updateProfile(
 
   if (deleteError) {
     if (deleteError.code === "42P01" && normalizedProfileLinks?.length === 0) {
+      if (didMutate) {
+        invalidateProfilePageCacheForUser(userId);
+      }
       return;
     }
 
@@ -96,6 +105,7 @@ export async function updateProfile(
   }
 
   if (!normalizedProfileLinks || normalizedProfileLinks.length === 0) {
+    invalidateProfilePageCacheForUser(userId);
     return;
   }
 
@@ -115,6 +125,8 @@ export async function updateProfile(
   if (insertError) {
     throw new Error("프로필 링크를 저장하지 못했습니다.");
   }
+
+  invalidateProfilePageCacheForUser(userId);
 }
 
 // 닉네임이 본인 외 다른 유저와 겹치는지 여부(true=중복).

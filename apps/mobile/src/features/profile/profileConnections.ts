@@ -1,5 +1,6 @@
 import type { Json } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { clearProfilePageCache } from "./page-cache";
 import type { ConnectionStatus } from "./types";
 import { isConnectionStatus } from "./profileInternal";
 
@@ -34,6 +35,8 @@ export async function sendFriendRequest(userId: string): Promise<void> {
   if (error) {
     throw new Error("친구 신청에 실패했습니다.");
   }
+
+  clearProfilePageCache();
 }
 
 export async function acceptFriendRequest(userId: string): Promise<void> {
@@ -45,6 +48,8 @@ export async function acceptFriendRequest(userId: string): Promise<void> {
   if (error) {
     throw new Error("친구 요청 수락에 실패했습니다.");
   }
+
+  clearProfilePageCache();
 }
 
 export async function rejectFriendRequest(userId: string): Promise<void> {
@@ -56,6 +61,8 @@ export async function rejectFriendRequest(userId: string): Promise<void> {
   if (error) {
     throw new Error("친구 요청 거절에 실패했습니다.");
   }
+
+  clearProfilePageCache();
 }
 
 export async function removeFriend(userId: string): Promise<void> {
@@ -67,4 +74,6 @@ export async function removeFriend(userId: string): Promise<void> {
   if (error) {
     throw new Error("친구 연결 해제에 실패했습니다.");
   }
+
+  clearProfilePageCache();
 }

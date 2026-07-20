@@ -1,5 +1,6 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { getCurrentUserId } from "../shared/userContext";
+import { clearProfilePageCache } from "./page-cache";
 
 export async function getFavoriteUserStatus(userId: string): Promise<boolean> {
   const supabase = getSupabaseMobileClient();
@@ -66,6 +67,7 @@ export async function toggleUserFavorite(
       throw new Error("즐겨찾기 해제에 실패했습니다.");
     }
 
+    clearProfilePageCache();
     return { favorited: false };
   }
 
@@ -90,5 +92,6 @@ export async function toggleUserFavorite(
     throw new Error("즐겨찾기 추가에 실패했습니다.");
   }
 
+  clearProfilePageCache();
   return { favorited: true };
 }

@@ -1,4 +1,5 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { invalidateProfilePageCacheForUser } from "../profile/page-cache";
 import { getCurrentUserContext } from "../shared/userContext";
 import type { CreatePostParams } from "./internalTypes";
 
@@ -63,6 +64,7 @@ export async function createPost({
     }
   }
 
+  invalidateProfilePageCacheForUser(userId);
   return post.id;
 }
 
@@ -83,4 +85,6 @@ export async function deletePost(postId: string): Promise<void> {
   if (error || !data) {
     throw new Error("게시물 삭제에 실패했습니다.");
   }
+
+  invalidateProfilePageCacheForUser(userId);
 }
