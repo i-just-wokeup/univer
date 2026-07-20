@@ -9,6 +9,7 @@ import { HomeErrorState, HomeLoadingState } from "../../components/home/HomeScre
 import { HomeSheets } from "../../components/home/HomeSheets";
 import { signOutMobile } from "../../features/auth/api";
 import { usePostShare, type PostShareTarget } from "../../features/chat/usePostShare";
+import { hasFreshFeedPageCache } from "../../features/feed/page-cache";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
 import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { FeedPost } from "../../features/feed/types";
@@ -85,8 +86,11 @@ export function HomeScreen() {
         hasFocusedRef.current = true;
         return;
       }
+      if (currentUserId && hasFreshFeedPageCache(currentUserId)) {
+        return;
+      }
       void refreshInteractions();
-    }, [refreshInteractions]),
+    }, [currentUserId, refreshInteractions]),
   );
 
   async function handleSignOut() {

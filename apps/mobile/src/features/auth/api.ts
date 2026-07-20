@@ -2,6 +2,7 @@
 // (구글 로그인은 별도 모듈, 세션·가드는 lib/session.tsx)
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { clearAllPageCaches } from "../session/page-caches";
 import { clearUserContextCaches } from "../shared/userContext";
 import {
   isTemporaryNickname,
@@ -60,6 +61,7 @@ export async function signOutMobile(): Promise<void> {
   try {
     await supabase.auth.signOut();
   } finally {
+    clearAllPageCaches();
     clearUserContextCaches();
   }
 }

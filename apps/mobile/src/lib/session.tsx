@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -14,6 +15,8 @@ import {
   isCurrentAccountDeleted,
   signOutMobile,
 } from "../features/auth/api";
+import { clearAllPageCaches } from "../features/session/page-caches";
+import { clearUserContextCaches } from "../features/shared/userContext";
 import { getSupabaseMobileClient, isSupabaseConfigured } from "./supabase";
 
 type SessionState = {
@@ -47,6 +50,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(Boolean(supabase));
   const [isOnboardingLoading, setIsOnboardingLoading] = useState(false);
   const [requiresOnboarding, setRequiresOnboarding] = useState(false);
+  const lastAuthUserIdRef = useRef<string | null | undefined>(undefined);
 
   const refreshOnboardingStatus = useCallback(async () => {
     if (!supabase) {
@@ -70,13 +74,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      lastAuthUserIdRef.current = data.session?.user.id ?? null;
       setSession(data.session);
       setIsLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      const nextUserId = nextSession?.user.id ?? null;
+      const previousUserId = lastAuthUserIdRef.current;
+      const hasUserChanged =
+        previousUserId !== undefined && previousUserId !== nextUserId;
+
+      lastAuthUserIdRef.current = nextUserId;
+
+      if (event === "SIGNED_OUT" || hasUserChanged) {
+        clearAllPageCaches();
+        clearUserContextCaches();
+      }
+
       setSession(nextSession);
       setIsLoading(false);
     });
