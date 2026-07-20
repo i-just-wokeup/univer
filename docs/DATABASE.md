@@ -18,7 +18,9 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 
 ---
 
-## 개발 단계별 테이블 (총 25개 + 보안 지원 테이블 `signup_allowlist`)
+## 개발 단계별 테이블
+
+> **DB 실존(2026-07-19 검증)**: 1·2단계 + 지표 + `follows` + `close_friends` = 23개 도메인 테이블 + 보안용 `signup_allowlist` = **총 24개 (전부 RLS)**. 3단계 커뮤니티(`community_posts`/`community_comments`) 2개는 **설계만 — 아직 DB 미생성**.
 
 ### 1단계 MVP — 18개
 
@@ -221,6 +223,18 @@ close_friends (
 ```
 > ⚠️ 현재 코드에서 INSERT하지 않는 빈 테이블. 크루 관계는 `user_connections(status='accepted')`로 관리하며, posts/stories의 `close_friends`(크루공개) RLS도 `user_connections` 기준으로 판별한다(2026-06-09 변경).
 
+**follows** (다학교 확장 대비 — 현재 미사용)
+```sql
+follows (
+  id           uuid PK default gen_random_uuid(),
+  follower_id  uuid FK → users,
+  following_id uuid FK → users,
+  created_at   timestamptz default now(),
+  UNIQUE(follower_id, following_id)
+)
+```
+> ⚠️ DB에 생성돼 있고 RLS 적용됨. 단 **현재 코드에서 참조/INSERT하지 않음**(같은 학교 MVP는 `user_connections` 크루 기반). 다학교 확장 시 팔로우 기반 탐색/피드에 사용 예정.
+
 **hashtags**
 ```sql
 hashtags (
@@ -422,7 +436,7 @@ get_or_create_conversation(other_user_id uuid)
 
 ---
 
-### 3단계 — 커뮤니티 2개
+### 3단계 — 커뮤니티 2개 (⚠️ 설계만 — 아직 DB에 생성 안 됨. 2·3단계에서 생성 예정)
 
 **community_posts**
 ```sql
