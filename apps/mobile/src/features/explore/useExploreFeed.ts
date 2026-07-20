@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getExplorePosts } from "./api";
 import type { ExplorePost } from "./types";
 import { PAGE_SIZE } from "../../lib/constants/pagination";
+import { prefetchImageUrls } from "../shared/imagePrefetch";
 
 // 탐색 그리드 데이터 로드 + 무한스크롤/새로고침. masonry 배치/렌더는 화면이 담당.
 export function useExploreFeed() {
@@ -18,6 +19,10 @@ export function useExploreFeed() {
     try {
       setErrorMessage("");
       const result = await getExplorePosts({ limit: PAGE_SIZE.explore, offset: 0 });
+      prefetchImageUrls(
+        result.posts.map((post) => post.thumbnail_url),
+        8,
+      );
       setPosts(result.posts);
       setHasMore(result.hasMore);
       offsetRef.current = PAGE_SIZE.explore;
@@ -53,6 +58,10 @@ export function useExploreFeed() {
         limit: PAGE_SIZE.explore,
         offset: offsetRef.current,
       });
+      prefetchImageUrls(
+        result.posts.map((post) => post.thumbnail_url),
+        8,
+      );
       setPosts((current) => [...current, ...result.posts]);
       setHasMore(result.hasMore);
       offsetRef.current += PAGE_SIZE.explore;

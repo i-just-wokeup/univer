@@ -49,6 +49,7 @@ export function PostImageUploader({
           <Image
             cachePolicy="memory-disk"
             contentFit="cover"
+            recyclingKey={previewUri}
             source={{ uri: previewUri }}
             style={styles.previewImage}
           />
@@ -97,6 +98,7 @@ export function PostImageUploader({
                 <Image
                   cachePolicy="memory-disk"
                   contentFit="cover"
+                  recyclingKey={`${uri}-${index}`}
                   source={{ uri }}
                   style={styles.thumbnailImage}
                 />

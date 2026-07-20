@@ -36,6 +36,7 @@ function StoryCard({
         <Image
           cachePolicy="memory-disk"
           contentFit="cover"
+          recyclingKey={thumbnailUrl}
           source={{ uri: thumbnailUrl }}
           style={styles.cardImage}
         />

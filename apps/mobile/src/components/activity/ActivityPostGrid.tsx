@@ -52,6 +52,7 @@ export function ActivityPostGrid({
                   <Image
                     cachePolicy="memory-disk"
                     contentFit="cover"
+                    recyclingKey={post.id}
                     source={{ uri: imageUrl }}
                     style={styles.image}
                   />

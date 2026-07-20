@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
+import { HomeFeedSkeleton } from "./HomeFeedSkeleton";
 import { HomeHeader } from "./HomeHeader";
 
 type HomeLoadingStateProps = {
@@ -20,12 +21,8 @@ type HomeErrorStateProps = {
   unreadCount: number;
 };
 
-export function HomeLoadingState({ message, title }: HomeLoadingStateProps) {
-  return (
-    <SafeAreaView style={styles.screen}>
-      <StateView message={message} title={title} type="loading" />
-    </SafeAreaView>
-  );
+export function HomeLoadingState(_props: HomeLoadingStateProps) {
+  return <HomeFeedSkeleton />;
 }
 
 export function HomeErrorState({

@@ -109,6 +109,7 @@ function PostMessageCard({
           <Image
             cachePolicy="memory-disk"
             contentFit="cover"
+            recyclingKey={`${message.id}-${post.id}`}
             source={{ uri: post.thumbnailUrl }}
             style={styles.postThumb}
           />

@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
+  View,
   type ViewToken,
 } from "react-native";
 
@@ -96,11 +98,9 @@ export function HomeFeedList({
       }
       ListFooterComponent={
         isLoadingMore ? (
-          <StateView
-            message="잠시만 기다려주세요."
-            title="더 불러오는 중"
-            type="loading"
-          />
+          <View style={styles.loadingMore}>
+            <ActivityIndicator color={colors.accent} size="small" />
+          </View>
         ) : null
       }
       ListHeaderComponent={
@@ -184,5 +184,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 96,
+  },
+  loadingMore: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
   },
 });

@@ -3,6 +3,7 @@ import { Image } from "expo-image";
 import { Heart, Play } from "lucide-react-native";
 import { useCallback, useMemo } from "react";
 import {
+  ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -15,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ExploreGridSkeleton } from "../../components/explore/ExploreGridSkeleton";
 import { StateView } from "../../components/common/StateView";
 import { useExploreFeed } from "../../features/explore/useExploreFeed";
 import type { ExplorePost } from "../../features/explore/types";
@@ -95,11 +97,7 @@ export function ExploreScreen() {
   if (isInitialLoading) {
     return (
       <SafeAreaView style={styles.screen}>
-        <StateView
-          message="같은 학교 게시물을 불러오는 중입니다."
-          title="탐색 준비 중"
-          type="loading"
-        />
+        <ExploreGridSkeleton />
       </SafeAreaView>
     );
   }
@@ -159,11 +157,9 @@ export function ExploreScreen() {
         )}
 
         {isLoadingMore ? (
-          <StateView
-            message="잠시만 기다려주세요."
-            title="더 불러오는 중"
-            type="loading"
-          />
+          <View style={styles.loadingMore}>
+            <ActivityIndicator color={colors.accent} size="small" />
+          </View>
         ) : null}
       </ScrollView>
     </SafeAreaView>
@@ -193,6 +189,7 @@ function MasonryColumn({
             <Image
               cachePolicy="memory-disk"
               contentFit="cover"
+              recyclingKey={post.id}
               source={{ uri: post.thumbnail_url }}
               style={styles.tileImage}
             />
@@ -246,6 +243,11 @@ const styles = StyleSheet.create({
   tileImage: {
     height: "100%",
     width: "100%",
+  },
+  loadingMore: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
   },
   videoBadge: {
     position: "absolute",

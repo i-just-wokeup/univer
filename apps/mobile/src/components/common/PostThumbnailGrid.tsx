@@ -45,6 +45,7 @@ export function PostThumbnailGrid({
                 <Image
                   cachePolicy="memory-disk"
                   contentFit="cover"
+                  recyclingKey={item.id}
                   source={{ uri: item.image_url }}
                   style={styles.tileImage}
                 />

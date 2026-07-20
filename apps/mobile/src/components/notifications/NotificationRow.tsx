@@ -75,6 +75,7 @@ export function NotificationRow({ notification, onPress }: NotificationRowProps)
         <Image
           cachePolicy="memory-disk"
           contentFit="cover"
+          recyclingKey={notification.id}
           source={{ uri: notification.thumbnail_url }}
           style={styles.thumbnail}
         />

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useSession } from "../../lib/session";
+import { prefetchImageUrls } from "../shared/imagePrefetch";
 import {
   getBookmarkedPostIds,
   getFeed,
@@ -16,6 +17,14 @@ import type { FeedPost } from "./types";
 type LoadFirstPageOptions = {
   ignoreCache?: boolean;
 };
+
+function getFeedPrefetchUrls(posts: FeedPost[]) {
+  return posts.flatMap((post) =>
+    post.media.map((media) =>
+      media.type === "video" ? media.thumbnail_url : media.url,
+    ),
+  );
+}
 
 export function useHomeFeedPagination() {
   const { session } = useSession();
@@ -96,6 +105,7 @@ export function useHomeFeedPagination() {
         getBookmarkedPostIds(postIds),
       ]);
 
+      prefetchImageUrls(getFeedPrefetchUrls(result.posts), 10);
       hasLoadedFeedRef.current = true;
       setFeedOwnerUserId(currentUserId);
       setPosts(result.posts);
@@ -167,6 +177,7 @@ export function useHomeFeedPagination() {
         getBookmarkedPostIds(postIds),
       ]);
 
+      prefetchImageUrls(getFeedPrefetchUrls(result.posts), 8);
       setPosts((currentPosts) => [...currentPosts, ...result.posts]);
       setNextCursor(result.nextCursor);
       setLikedPostIds((currentLikedPostIds) => {

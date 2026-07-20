@@ -11,6 +11,7 @@ import { StateView } from "../../components/common/StateView";
 import { ProfileContent } from "../../components/profile/ProfileContent";
 import { ProfileHeaderBar } from "../../components/profile/ProfileHeaderBar";
 import { ProfileMoreMenu } from "../../components/profile/ProfileMoreMenu";
+import { ProfileSkeleton } from "../../components/profile/ProfileSkeleton";
 import { useProfile } from "../../features/profile/useProfile";
 import { colors } from "../../lib/theme";
 
@@ -71,11 +72,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen}>
-        <StateView
-          message="프로필을 불러오는 중입니다."
-          title="프로필 준비 중"
-          type="loading"
-        />
+        <ProfileSkeleton />
       </SafeAreaView>
     );
   }

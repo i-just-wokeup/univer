@@ -67,6 +67,7 @@ export function ActivityStoryGrid({
               <Image
                 cachePolicy="memory-disk"
                 contentFit="cover"
+                recyclingKey={story.id}
                 source={{
                   // 영상 스토리는 image_url이 영상 URL이라 썸네일(thumbnail_url)을 써야 한다.
                   uri:
