@@ -5,6 +5,10 @@ import { getSupabaseMobileClient } from "../../lib/supabase";
 import { clearAllPageCaches } from "../session/page-caches";
 import { clearUserContextCaches } from "../shared/userContext";
 import {
+  clearStoredOnboardingComplete,
+  setStoredOnboardingComplete,
+} from "./onboardingStorage";
+import {
   isTemporaryNickname,
   isValidNickname,
   normalizeNickname,
@@ -89,14 +93,15 @@ export function shouldRequireOnboarding(profile: {
 export async function getCurrentUserProfile(): Promise<CurrentUserProfile | null> {
   const supabase = getSupabaseMobileClient();
   const {
-    data: { user },
+    data: { session },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
-  if (authError || !user) {
+  if (authError || !session?.user) {
     return null;
   }
 
+  const user = session.user;
   const { data, error } = await supabase
     .from("users")
     .select(
@@ -136,7 +141,14 @@ export async function getUserOnboardingRequired(): Promise<boolean> {
     return false;
   }
 
-  return shouldRequireOnboarding(profile);
+  const required = shouldRequireOnboarding(profile);
+  if (required) {
+    await clearStoredOnboardingComplete(profile.id).catch(() => undefined);
+  } else {
+    await setStoredOnboardingComplete(profile.id).catch(() => undefined);
+  }
+
+  return required;
 }
 
 // 현재 계정이 탈퇴(soft delete)됐는지 — 탈퇴 계정은 재로그인 차단(세션 프로바이더에서 로그아웃).
@@ -201,4 +213,6 @@ export async function updateOnboardingProfile({
   if (error) {
     throw new Error("온보딩 저장에 실패했습니다.");
   }
+
+  await setStoredOnboardingComplete(user.id).catch(() => undefined);
 }

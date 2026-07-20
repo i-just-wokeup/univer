@@ -102,6 +102,7 @@
 - [x] 앱 홈 피드 재진입 즉시표시 캐시 ⑥-1 적용 (90초 TTL 메모리 캐시, userId guard, focus 재조회 스킵)
 - [x] 앱 탐색/프로필 재진입 즉시표시 캐시 ⑥-2 적용 (탐색 90초 TTL, 프로필 닉네임별 60초 TTL + 뷰어 userId guard)
 - [x] 앱 체감 로딩 개선 1차 (홈/탐색/프로필 스켈레톤, 하단 로딩 간소화, 이미지 prefetch/recyclingKey 확대)
+- [x] 앱 콜드스타트 온보딩 게이트 단축 (프로필 조회 1회 통합, auth.getSession 전환, userId별 온보딩 완료 로컬 플래그)
 - [x] 앱 스토리 공용 영상 뷰 release 경합 방어 (비활성 시 VideoView 분리, play/pause 예외 방어)
 - [x] 앱 스토리 닫기 잔상 완화 (닫기 전 미디어 detach 후 기본 pop 전환 유지)
 - [x] 앱 스토리 전환/카메라 잔상 완화 (홈 storyGroups 전달, 카메라 준비 전 커버, 영상 textureView/poster 적용)

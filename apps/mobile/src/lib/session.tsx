@@ -11,10 +11,15 @@ import {
 } from "react";
 
 import {
-  getUserOnboardingRequired,
-  isCurrentAccountDeleted,
+  getCurrentUserProfile,
+  shouldRequireOnboarding,
   signOutMobile,
 } from "../features/auth/api";
+import {
+  clearStoredOnboardingComplete,
+  getStoredOnboardingComplete,
+  setStoredOnboardingComplete,
+} from "../features/auth/onboardingStorage";
 import { clearAllPageCaches } from "../features/session/page-caches";
 import { clearUserContextCaches } from "../features/shared/userContext";
 import { getSupabaseMobileClient, isSupabaseConfigured } from "./supabase";
@@ -58,7 +63,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const required = await getUserOnboardingRequired();
+    const profile = await getCurrentUserProfile();
+    if (!profile) {
+      setRequiresOnboarding(false);
+      return;
+    }
+
+    if (profile.deleted_at) {
+      await clearStoredOnboardingComplete(profile.id).catch(() => undefined);
+      await signOutMobile();
+      return;
+    }
+
+    const required = shouldRequireOnboarding(profile);
+    if (required) {
+      await clearStoredOnboardingComplete(profile.id).catch(() => undefined);
+    } else {
+      await setStoredOnboardingComplete(profile.id).catch(() => undefined);
+    }
     setRequiresOnboarding(required);
   }, [supabase]);
 
@@ -69,13 +91,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!isMounted) {
         return;
       }
 
-      lastAuthUserIdRef.current = data.session?.user.id ?? null;
-      setSession(data.session);
+      const restoredSession = data.session;
+      const restoredUserId = restoredSession?.user.id ?? null;
+
+      if (restoredUserId) {
+        const hasCompletedOnboarding = await getStoredOnboardingComplete(
+          restoredUserId,
+        ).catch(() => false);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setRequiresOnboarding(false);
+        setIsOnboardingLoading(!hasCompletedOnboarding);
+      } else {
+        setRequiresOnboarding(false);
+        setIsOnboardingLoading(false);
+      }
+
+      lastAuthUserIdRef.current = restoredUserId;
+      setSession(restoredSession);
       setIsLoading(false);
     });
 
@@ -92,6 +133,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (event === "SIGNED_OUT" || hasUserChanged) {
         clearAllPageCaches();
         clearUserContextCaches();
+      }
+
+      if (nextUserId) {
+        setRequiresOnboarding(false);
+        setIsOnboardingLoading(true);
+        getStoredOnboardingComplete(nextUserId)
+          .then((hasCompletedOnboarding) => {
+            if (lastAuthUserIdRef.current === nextUserId) {
+              setIsOnboardingLoading(!hasCompletedOnboarding);
+            }
+          })
+          .catch(() => undefined);
+      } else {
+        setRequiresOnboarding(false);
+        setIsOnboardingLoading(false);
       }
 
       setSession(nextSession);
@@ -112,18 +168,52 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
 
     let isMounted = true;
-    setIsOnboardingLoading(true);
+    const sessionUserId = session.user.id;
 
     (async () => {
-      // 탈퇴(soft delete)된 계정은 재로그인 차단 → 즉시 로그아웃.
-      const deleted = await isCurrentAccountDeleted();
-      if (!isMounted || deleted) {
-        if (deleted) {
-          await signOutMobile();
-        }
+      const hasCompletedOnboarding = await getStoredOnboardingComplete(
+        sessionUserId,
+      ).catch(() => false);
+
+      if (!isMounted) {
         return;
       }
-      await refreshOnboardingStatus();
+
+      if (hasCompletedOnboarding) {
+        setRequiresOnboarding(false);
+        setIsOnboardingLoading(false);
+      } else {
+        setIsOnboardingLoading(true);
+      }
+
+      const profile = await getCurrentUserProfile();
+      if (!isMounted || profile?.id !== sessionUserId) {
+        return;
+      }
+
+      // 탈퇴(soft delete)된 계정은 재로그인 차단 → 즉시 로그아웃.
+      if (profile.deleted_at) {
+        await clearStoredOnboardingComplete(sessionUserId).catch(
+          () => undefined,
+        );
+        await signOutMobile();
+        return;
+      }
+
+      const required = shouldRequireOnboarding(profile);
+      if (required) {
+        await clearStoredOnboardingComplete(sessionUserId).catch(
+          () => undefined,
+        );
+      } else {
+        await setStoredOnboardingComplete(sessionUserId).catch(
+          () => undefined,
+        );
+      }
+
+      if (isMounted) {
+        setRequiresOnboarding(required);
+      }
     })()
       .catch(() => {
         if (isMounted) {
