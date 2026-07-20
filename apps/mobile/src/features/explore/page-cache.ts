@@ -1,6 +1,6 @@
 import type { ExplorePost } from "./types";
 
-const EXPLORE_PAGE_CACHE_TTL_MS = 90_000;
+const EXPLORE_PAGE_CACHE_TTL_MS = 300_000;
 
 export type ExplorePageCacheSnapshot = {
   cachedAt: number;

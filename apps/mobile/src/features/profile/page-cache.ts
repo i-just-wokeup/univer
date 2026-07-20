@@ -5,7 +5,7 @@ import type {
   ProfileGridPost,
 } from "./types";
 
-const PROFILE_PAGE_CACHE_TTL_MS = 60_000;
+const PROFILE_PAGE_CACHE_TTL_MS = 300_000;
 const MY_PROFILE_CACHE_KEY = "__me__";
 
 export type ProfilePageCacheSnapshot = {
