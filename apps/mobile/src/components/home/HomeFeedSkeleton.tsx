@@ -5,6 +5,7 @@ import { colors } from "../../lib/theme";
 import { SkeletonBlock } from "../common/Skeleton";
 
 const CARD_COUNT = 3;
+const STORY_CARD_COUNT = 3;
 
 export function HomeFeedSkeleton() {
   return (
@@ -16,18 +17,21 @@ export function HomeFeedSkeleton() {
         <View style={styles.topRow}>
           <SkeletonBlock radius={8} style={styles.logo} />
           <View style={styles.actions}>
-            <SkeletonBlock radius={26} style={styles.headerButton} />
-            <SkeletonBlock radius={26} style={styles.headerButton} />
+            <SkeletonBlock radius={22} style={styles.headerButton} />
+            <SkeletonBlock radius={22} style={styles.headerButton} />
           </View>
         </View>
-        <SkeletonBlock radius={26} style={styles.storyTile} />
+        <View style={styles.storyRow}>
+          {Array.from({ length: STORY_CARD_COUNT }).map((_, index) => (
+            <SkeletonBlock key={index} radius={22} style={styles.storyTile} />
+          ))}
+        </View>
         {Array.from({ length: CARD_COUNT }).map((_, index) => (
           <View key={index} style={styles.card}>
             <View style={styles.cardHeader}>
-              <SkeletonBlock radius={24} style={styles.avatar} />
+              <SkeletonBlock radius={17} style={styles.avatar} />
               <View style={styles.headerLines}>
                 <SkeletonBlock radius={8} style={styles.nameLine} />
-                <SkeletonBlock radius={7} style={styles.metaLine} />
               </View>
               <SkeletonBlock radius={5} style={styles.moreDots} />
             </View>
@@ -59,83 +63,83 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 24,
-    paddingTop: 22,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   logo: {
-    width: 124,
-    height: 42,
+    width: 104,
+    height: 38,
   },
   actions: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
   },
   headerButton: {
-    width: 52,
-    height: 52,
+    width: 44,
+    height: 44,
+  },
+  storyRow: {
+    flexDirection: "row",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
   },
   storyTile: {
-    width: 116,
-    height: 152,
-    marginLeft: 24,
-    marginBottom: 14,
+    width: 100,
+    height: 140,
   },
   card: {
     overflow: "hidden",
-    marginBottom: 18,
-    borderRadius: 24,
-    backgroundColor: colors.card,
+    marginBottom: 10,
+    borderRadius: 18,
+    backgroundColor: colors.white,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
   },
   avatar: {
-    width: 48,
-    height: 48,
+    width: 34,
+    height: 34,
   },
   headerLines: {
     flex: 1,
-    gap: 8,
-    marginLeft: 14,
   },
   nameLine: {
-    width: "42%",
-    height: 16,
-  },
-  metaLine: {
-    width: "30%",
-    height: 13,
+    width: "58%",
+    height: 15,
   },
   moreDots: {
-    width: 36,
+    width: 40,
     height: 10,
   },
   media: {
     width: "100%",
-    aspectRatio: 1,
+    aspectRatio: 4 / 5,
   },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 18,
-    paddingHorizontal: 24,
-    paddingTop: 18,
+    paddingHorizontal: 16,
+    paddingTop: 9,
+    paddingBottom: 6,
   },
   actionIcon: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
   },
   actionSpacer: {
     flex: 1,
   },
   captionLine: {
     width: "40%",
-    height: 16,
-    marginHorizontal: 24,
-    marginTop: 16,
-    marginBottom: 24,
+    height: 14,
+    marginHorizontal: 16,
+    marginTop: 0,
+    marginBottom: 16,
   },
 });

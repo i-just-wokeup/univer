@@ -5,7 +5,8 @@ import { SkeletonBlock } from "../common/Skeleton";
 
 const H_PADDING = 10;
 const GAP = 8;
-const TILE_RATIOS = [1, 4 / 5, 1, 4 / 5, 1, 1, 4 / 5, 1] as const;
+const LEFT_TILE_RATIOS = [1, 4 / 5, 1, 4 / 5] as const;
+const RIGHT_TILE_RATIOS = [4 / 5, 1, 4 / 5, 1] as const;
 
 export function ExploreGridSkeleton() {
   const { width } = useWindowDimensions();
@@ -18,26 +19,22 @@ export function ExploreGridSkeleton() {
       </View>
       <View style={styles.columns}>
         <View style={[styles.column, { width: tileWidth }]}>
-          {TILE_RATIOS.filter((_, index) => index % 2 === 0).map(
-            (ratio, index) => (
-              <SkeletonBlock
-                key={`left-${index}`}
-                radius={20}
-                style={{ width: tileWidth, height: tileWidth / ratio }}
-              />
-            ),
-          )}
+          {LEFT_TILE_RATIOS.map((ratio, index) => (
+            <SkeletonBlock
+              key={`left-${index}`}
+              radius={20}
+              style={{ width: tileWidth, height: tileWidth / ratio }}
+            />
+          ))}
         </View>
         <View style={[styles.column, { width: tileWidth }]}>
-          {TILE_RATIOS.filter((_, index) => index % 2 === 1).map(
-            (ratio, index) => (
-              <SkeletonBlock
-                key={`right-${index}`}
-                radius={20}
-                style={{ width: tileWidth, height: tileWidth / ratio }}
-              />
-            ),
-          )}
+          {RIGHT_TILE_RATIOS.map((ratio, index) => (
+            <SkeletonBlock
+              key={`right-${index}`}
+              radius={20}
+              style={{ width: tileWidth, height: tileWidth / ratio }}
+            />
+          ))}
         </View>
       </View>
     </View>

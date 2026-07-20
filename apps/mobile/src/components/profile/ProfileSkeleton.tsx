@@ -4,13 +4,14 @@ import { colors } from "../../lib/theme";
 import { SkeletonBlock } from "../common/Skeleton";
 
 const GRID_ITEMS = 9;
+const GRID_COLUMNS = 3;
 
 export function ProfileSkeleton() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <SkeletonBlock radius={8} style={styles.logo} />
-        <SkeletonBlock radius={26} style={styles.headerButton} />
+        <SkeletonBlock radius={16} style={styles.headerButton} />
       </View>
       <View style={styles.panel}>
         <View style={styles.topRow}>
@@ -28,11 +29,21 @@ export function ProfileSkeleton() {
         <SkeletonBlock radius={8} style={styles.metaLine} />
         <SkeletonBlock radius={8} style={styles.bioLine} />
         <SkeletonBlock radius={999} style={styles.linkChip} />
-        <SkeletonBlock radius={16} style={styles.button} />
+        <SkeletonBlock radius={14} style={styles.button} />
         <View style={styles.grid}>
-          {Array.from({ length: GRID_ITEMS }).map((_, index) => (
-            <SkeletonBlock key={index} radius={10} style={styles.tile} />
-          ))}
+          {Array.from({ length: Math.ceil(GRID_ITEMS / GRID_COLUMNS) }).map(
+            (_, rowIndex) => (
+              <View key={rowIndex} style={styles.gridRow}>
+                {Array.from({ length: GRID_COLUMNS }).map((__, columnIndex) => (
+                  <SkeletonBlock
+                    key={columnIndex}
+                    radius={10}
+                    style={styles.tile}
+                  />
+                ))}
+              </View>
+            ),
+          )}
         </View>
       </View>
     </View>
@@ -49,83 +60,92 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 24,
-    paddingTop: 18,
-    paddingBottom: 18,
+    paddingTop: 12,
+    paddingBottom: 6,
   },
   logo: {
-    width: 112,
-    height: 40,
+    width: 104,
+    height: 38,
   },
   headerButton: {
-    width: 52,
-    height: 52,
+    width: 40,
+    height: 40,
   },
   panel: {
-    marginHorizontal: 18,
-    borderRadius: 24,
-    backgroundColor: colors.card,
-    paddingTop: 28,
+    overflow: "hidden",
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
+    backgroundColor: "rgba(255,255,255,0.82)",
   },
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 44,
-    paddingHorizontal: 28,
+    gap: 20,
+    padding: 16,
+    paddingBottom: 0,
   },
   avatar: {
-    width: 104,
-    height: 104,
+    width: 80,
+    height: 80,
   },
   statGroup: {
+    flex: 1,
     alignItems: "center",
-    gap: 10,
+    gap: 2,
   },
   statNumber: {
-    width: 38,
-    height: 24,
+    width: 32,
+    height: 22,
   },
   statLabel: {
-    width: 52,
-    height: 16,
+    width: 44,
+    height: 14,
   },
   nameLine: {
-    width: 112,
-    height: 30,
-    marginTop: 34,
-    marginHorizontal: 28,
+    width: 96,
+    height: 24,
+    marginTop: 16,
+    marginHorizontal: 16,
   },
   metaLine: {
-    width: 160,
-    height: 18,
-    marginTop: 14,
-    marginHorizontal: 28,
+    width: 136,
+    height: 16,
+    marginTop: 8,
+    marginHorizontal: 16,
   },
   bioLine: {
-    width: 96,
-    height: 18,
-    marginTop: 24,
-    marginHorizontal: 28,
+    width: 84,
+    height: 16,
+    marginTop: 16,
+    marginHorizontal: 16,
   },
   linkChip: {
-    width: 150,
-    height: 42,
-    marginTop: 24,
-    marginHorizontal: 28,
+    width: 136,
+    height: 34,
+    marginTop: 14,
+    marginHorizontal: 16,
   },
   button: {
-    height: 56,
-    marginTop: 28,
-    marginHorizontal: 28,
+    height: 42,
+    marginTop: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     gap: 4,
-    marginTop: 28,
     padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(124,58,237,0.08)",
+  },
+  gridRow: {
+    flexDirection: "row",
+    gap: 4,
   },
   tile: {
-    width: "32.5%",
+    flex: 1,
     aspectRatio: 1,
   },
 });
