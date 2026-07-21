@@ -34,6 +34,7 @@ export function useHomeFeed() {
     handleToggleLike,
   } = useHomeFeedActions({
     bookmarkedPostIds,
+    likedPostIds,
     posts,
     setBookmarkedPostIds,
     setErrorMessage,

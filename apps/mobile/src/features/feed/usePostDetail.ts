@@ -22,10 +22,13 @@ export function usePostDetail(postId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isLikedRef = useRef(isLiked);
   const pendingBookmarkRef = useRef(false);
   const pendingLikeRef = useRef(false);
   // 상세 조회를 이 화면 마운트 동안 한 번만 기록.
   const viewRecordedRef = useRef(false);
+
+  isLikedRef.current = isLiked;
 
   const showFeedback = useCallback((message: string) => {
     if (feedbackTimerRef.current) {
@@ -88,6 +91,15 @@ export function usePostDetail(postId: string) {
     }
 
     pendingLikeRef.current = true;
+    const wasLiked = isLikedRef.current;
+    const optimisticDelta = wasLiked ? -1 : 1;
+
+    setIsLiked(!wasLiked);
+    setPost((current) =>
+      current
+        ? { ...current, likes_count: Math.max(0, current.likes_count + optimisticDelta) }
+        : current,
+    );
 
     try {
       const result = await togglePostLike(postId);
@@ -96,6 +108,12 @@ export function usePostDetail(postId: string) {
       );
       setIsLiked(result.liked);
     } catch (error) {
+      setIsLiked(wasLiked);
+      setPost((current) =>
+        current
+          ? { ...current, likes_count: Math.max(0, current.likes_count - optimisticDelta) }
+          : current,
+      );
       setErrorMessage(
         error instanceof Error ? error.message : "좋아요를 처리하지 못했습니다.",
       );

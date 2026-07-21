@@ -30,9 +30,12 @@ export function useReels(startPostId?: string) {
   const [feedback, setFeedback] = useState("");
   const cursorRef = useRef<string | null>(null);
   const hasMoreRef = useRef(true);
+  const likedPostIdsRef = useRef(likedPostIds);
   const pendingLikeRef = useRef<Set<string>>(new Set());
   const pendingBookmarkRef = useRef<Set<string>>(new Set());
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  likedPostIdsRef.current = likedPostIds;
 
   const loadStatuses = useCallback(async (loadedPosts: FeedPost[]) => {
     const ids = loadedPosts.map((post) => post.id);
@@ -156,6 +159,26 @@ export function useReels(startPostId?: string) {
       return;
     }
     pendingLikeRef.current.add(postId);
+    const wasLiked = likedPostIdsRef.current.has(postId);
+    const optimisticDelta = wasLiked ? -1 : 1;
+
+    setLikedPostIds((current) => {
+      const next = new Set(current);
+      if (wasLiked) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
+    setPosts((current) =>
+      current.map((post) =>
+        post.id === postId
+          ? { ...post, likes_count: Math.max(0, post.likes_count + optimisticDelta) }
+          : post,
+      ),
+    );
+
     try {
       const result = await togglePostLike(postId);
       setLikedPostIds((current) => {
@@ -175,7 +198,22 @@ export function useReels(startPostId?: string) {
         ),
       );
     } catch {
-      // 좋아요 실패 무시.
+      setLikedPostIds((current) => {
+        const next = new Set(current);
+        if (wasLiked) {
+          next.add(postId);
+        } else {
+          next.delete(postId);
+        }
+        return next;
+      });
+      setPosts((current) =>
+        current.map((post) =>
+          post.id === postId
+            ? { ...post, likes_count: Math.max(0, post.likes_count - optimisticDelta) }
+            : post,
+        ),
+      );
     } finally {
       pendingLikeRef.current.delete(postId);
     }

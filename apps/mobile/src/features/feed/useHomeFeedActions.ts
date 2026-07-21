@@ -12,6 +12,7 @@ import type { HomeFeedbackType } from "./useHomeFeedFeedback";
 
 type UseHomeFeedActionsParams = {
   bookmarkedPostIds: Set<string>;
+  likedPostIds: Set<string>;
   posts: FeedPost[];
   setBookmarkedPostIds: Dispatch<SetStateAction<Set<string>>>;
   setErrorMessage: Dispatch<SetStateAction<string>>;
@@ -22,6 +23,7 @@ type UseHomeFeedActionsParams = {
 
 export function useHomeFeedActions({
   bookmarkedPostIds,
+  likedPostIds,
   posts,
   setBookmarkedPostIds,
   setErrorMessage,
@@ -30,11 +32,13 @@ export function useHomeFeedActions({
   showFeedback,
 }: UseHomeFeedActionsParams) {
   const bookmarkedPostIdsRef = useRef(bookmarkedPostIds);
+  const likedPostIdsRef = useRef(likedPostIds);
   const pendingBookmarkPostIdsRef = useRef<Set<string>>(new Set());
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
   const postsRef = useRef(posts);
 
   bookmarkedPostIdsRef.current = bookmarkedPostIds;
+  likedPostIdsRef.current = likedPostIds;
   postsRef.current = posts;
 
   const handleToggleLike = useCallback(async (postId: string) => {
@@ -43,6 +47,27 @@ export function useHomeFeedActions({
     }
 
     pendingLikePostIdsRef.current.add(postId);
+    const wasLiked = likedPostIdsRef.current.has(postId);
+    const optimisticDelta = wasLiked ? -1 : 1;
+
+    setLikedPostIds((currentLikedPostIds) => {
+      const nextLikedPostIds = new Set(currentLikedPostIds);
+
+      if (wasLiked) {
+        nextLikedPostIds.delete(postId);
+      } else {
+        nextLikedPostIds.add(postId);
+      }
+
+      return nextLikedPostIds;
+    });
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === postId
+          ? { ...post, likes_count: Math.max(0, post.likes_count + optimisticDelta) }
+          : post,
+      ),
+    );
 
     try {
       const result = await togglePostLike(postId);
@@ -63,6 +88,24 @@ export function useHomeFeedActions({
         return nextLikedPostIds;
       });
     } catch (error) {
+      setPosts((currentPosts) =>
+        currentPosts.map((post) =>
+          post.id === postId
+            ? { ...post, likes_count: Math.max(0, post.likes_count - optimisticDelta) }
+            : post,
+        ),
+      );
+      setLikedPostIds((currentLikedPostIds) => {
+        const nextLikedPostIds = new Set(currentLikedPostIds);
+
+        if (wasLiked) {
+          nextLikedPostIds.add(postId);
+        } else {
+          nextLikedPostIds.delete(postId);
+        }
+
+        return nextLikedPostIds;
+      });
       setErrorMessage(
         error instanceof Error ? error.message : "좋아요를 처리하지 못했습니다.",
       );
