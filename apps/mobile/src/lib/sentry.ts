@@ -6,7 +6,9 @@ import * as Sentry from "@sentry/react-native";
 Sentry.init({
   dsn: "https://d53ad6d8939e816ec5ff9589072dee53@o4511698017255424.ingest.us.sentry.io/4511698339168256",
   enabled: !__DEV__,
-  tracesSampleRate: 1.0,
+  // 성능(트랜잭션) 10%만 샘플링 — Sentry 무료 플랜의 Span 한도(월 500만)를 아끼기 위함.
+  // 사용자 늘어 데이터가 더 필요하면 그때 올린다.
+  tracesSampleRate: 0.1,
   sendDefaultPii: false,
 });
 
