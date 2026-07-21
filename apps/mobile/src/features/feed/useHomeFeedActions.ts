@@ -29,10 +29,15 @@ export function useHomeFeedActions({
   setPosts,
   showFeedback,
 }: UseHomeFeedActionsParams) {
+  const bookmarkedPostIdsRef = useRef(bookmarkedPostIds);
   const pendingBookmarkPostIdsRef = useRef<Set<string>>(new Set());
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
+  const postsRef = useRef(posts);
 
-  async function handleToggleLike(postId: string) {
+  bookmarkedPostIdsRef.current = bookmarkedPostIds;
+  postsRef.current = posts;
+
+  const handleToggleLike = useCallback(async (postId: string) => {
     if (pendingLikePostIdsRef.current.has(postId)) {
       return;
     }
@@ -64,15 +69,15 @@ export function useHomeFeedActions({
     } finally {
       pendingLikePostIdsRef.current.delete(postId);
     }
-  }
+  }, [setErrorMessage, setLikedPostIds, setPosts]);
 
-  async function handleToggleBookmark(postId: string) {
+  const handleToggleBookmark = useCallback(async (postId: string) => {
     if (pendingBookmarkPostIdsRef.current.has(postId)) {
       return;
     }
 
     pendingBookmarkPostIdsRef.current.add(postId);
-    const wasBookmarked = bookmarkedPostIds.has(postId);
+    const wasBookmarked = bookmarkedPostIdsRef.current.has(postId);
 
     setBookmarkedPostIds((currentBookmarkedPostIds) => {
       const nextBookmarkedPostIds = new Set(currentBookmarkedPostIds);
@@ -120,9 +125,9 @@ export function useHomeFeedActions({
     } finally {
       pendingBookmarkPostIdsRef.current.delete(postId);
     }
-  }
+  }, [setBookmarkedPostIds, showFeedback]);
 
-  async function handleBlockUser(userId: string) {
+  const handleBlockUser = useCallback(async (userId: string) => {
     try {
       await blockUser(userId);
       setPosts((currentPosts) =>
@@ -135,9 +140,9 @@ export function useHomeFeedActions({
         "error",
       );
     }
-  }
+  }, [setPosts, showFeedback]);
 
-  async function handleReportPost(postId: string) {
+  const handleReportPost = useCallback(async (postId: string) => {
     try {
       await createReport({ targetId: postId, targetType: "post" });
       showFeedback("신고가 접수됐어요", "success");
@@ -147,10 +152,10 @@ export function useHomeFeedActions({
         "error",
       );
     }
-  }
+  }, [showFeedback]);
 
-  async function handleDeletePost(postId: string) {
-    const previousPosts = posts;
+  const handleDeletePost = useCallback(async (postId: string) => {
+    const previousPosts = postsRef.current;
 
     setPosts((currentPosts) =>
       currentPosts.filter((post) => post.id !== postId),
@@ -166,7 +171,7 @@ export function useHomeFeedActions({
         "error",
       );
     }
-  }
+  }, [setPosts, showFeedback]);
 
   const handleCommentCountChange = useCallback(
     (postId: string, nextCount: number) => {

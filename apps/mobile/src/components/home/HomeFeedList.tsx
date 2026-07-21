@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
   View,
+  type ListRenderItem,
   type ViewToken,
 } from "react-native";
 
@@ -83,97 +84,153 @@ export function HomeFeedList({
     },
   ).current;
 
-  function leaveFeedAfterVideoDetach(next: () => void) {
+  const leaveFeedAfterVideoDetach = useCallback((next: () => void) => {
     setActivePostId(null);
     requestAnimationFrame(next);
-  }
+  }, []);
+
+  const keyExtractor = useCallback((post: FeedPost) => post.id, []);
+
+  const handleEndReached = useCallback(() => {
+    void onLoadMore();
+  }, [onLoadMore]);
+
+  const handleRefresh = useCallback(() => {
+    void onRefresh();
+  }, [onRefresh]);
+
+  const handleSignOut = useCallback(() => {
+    void onSignOut();
+  }, [onSignOut]);
+
+  const handlePressCreateStory = useCallback(() => {
+    leaveFeedAfterVideoDetach(onPressCreateStory);
+  }, [leaveFeedAfterVideoDetach, onPressCreateStory]);
+
+  const handlePressStoryGroup = useCallback(
+    (group: StoryGroup) => {
+      leaveFeedAfterVideoDetach(() => {
+        onPressStoryGroup(group);
+      });
+    },
+    [leaveFeedAfterVideoDetach, onPressStoryGroup],
+  );
+
+  const renderPost = useCallback<ListRenderItem<FeedPost>>(
+    ({ item }) => (
+      <FeedPostCard
+        currentUserId={currentUserId}
+        isActive={item.id === activePostId}
+        isBookmarked={bookmarkedPostIds.has(item.id)}
+        isLiked={likedPostIds.has(item.id)}
+        onBlockUser={onBlockUser}
+        onBookmark={onBookmark}
+        onComment={onComment}
+        onDelete={onDelete}
+        onLike={onLike}
+        onReport={onReport}
+        onShare={onShare}
+        onUserPress={onUserPress}
+        onVideoPress={onVideoPress}
+        post={item}
+      />
+    ),
+    [
+      activePostId,
+      bookmarkedPostIds,
+      currentUserId,
+      likedPostIds,
+      onBlockUser,
+      onBookmark,
+      onComment,
+      onDelete,
+      onLike,
+      onReport,
+      onShare,
+      onUserPress,
+      onVideoPress,
+    ],
+  );
+
+  const listEmptyComponent = useMemo(
+    () => (
+      <StateView
+        message="같은 학교 공개 게시물이 아직 없습니다."
+        title="아직 게시물이 없습니다"
+      />
+    ),
+    [],
+  );
+
+  const listFooterComponent = useMemo(
+    () =>
+      isLoadingMore ? (
+        <View style={styles.loadingMore}>
+          <ActivityIndicator color={colors.accent} size="small" />
+        </View>
+      ) : null,
+    [isLoadingMore],
+  );
+
+  const listHeaderComponent = useMemo(
+    () => (
+      <>
+        <HomeHeader
+          onPressMessages={onPressMessages}
+          onPressNotifications={onPressNotifications}
+          onSignOut={handleSignOut}
+          unreadChatCount={unreadChatCount}
+          unreadCount={unreadCount}
+        />
+        <StoryBar
+          groups={storyGroups}
+          onPressCreate={handlePressCreateStory}
+          onPressGroup={handlePressStoryGroup}
+        />
+      </>
+    ),
+    [
+      handlePressCreateStory,
+      handlePressStoryGroup,
+      handleSignOut,
+      onPressMessages,
+      onPressNotifications,
+      storyGroups,
+      unreadChatCount,
+      unreadCount,
+    ],
+  );
+
+  const refreshControl = useMemo(
+    () => (
+      <RefreshControl
+        onRefresh={handleRefresh}
+        refreshing={isRefreshing}
+        tintColor={colors.accent}
+      />
+    ),
+    [handleRefresh, isRefreshing],
+  );
 
   return (
     <FlatList
-      ListEmptyComponent={
-        <StateView
-          message="같은 학교 공개 게시물이 아직 없습니다."
-          title="아직 게시물이 없습니다"
-        />
-      }
-      ListFooterComponent={
-        isLoadingMore ? (
-          <View style={styles.loadingMore}>
-            <ActivityIndicator color={colors.accent} size="small" />
-          </View>
-        ) : null
-      }
-      ListHeaderComponent={
-        <>
-          <HomeHeader
-            onPressMessages={onPressMessages}
-            onPressNotifications={onPressNotifications}
-            onSignOut={() => {
-              void onSignOut();
-            }}
-            unreadChatCount={unreadChatCount}
-            unreadCount={unreadCount}
-          />
-          <StoryBar
-            groups={storyGroups}
-            onPressCreate={() => {
-              leaveFeedAfterVideoDetach(onPressCreateStory);
-            }}
-            onPressGroup={(group) => {
-              leaveFeedAfterVideoDetach(() => {
-                onPressStoryGroup(group);
-              });
-            }}
-          />
-        </>
-      }
+      ListEmptyComponent={listEmptyComponent}
+      ListFooterComponent={listFooterComponent}
+      ListHeaderComponent={listHeaderComponent}
       contentContainerStyle={styles.listContent}
       data={posts}
-      keyExtractor={(post) => post.id}
-      onEndReached={() => {
-        void onLoadMore();
-      }}
+      initialNumToRender={5}
+      keyExtractor={keyExtractor}
+      maxToRenderPerBatch={5}
+      onEndReached={handleEndReached}
       onEndReachedThreshold={0.7}
       onViewableItemsChanged={handleViewableItemsChanged}
-      refreshControl={
-        <RefreshControl
-          onRefresh={() => {
-            void onRefresh();
-          }}
-          refreshing={isRefreshing}
-          tintColor={colors.accent}
-        />
-      }
-      renderItem={({ item }) => (
-        <FeedPostCard
-          currentUserId={currentUserId}
-          isActive={item.id === activePostId}
-          isBookmarked={bookmarkedPostIds.has(item.id)}
-          isLiked={likedPostIds.has(item.id)}
-          onBlockUser={(userId) => {
-            void onBlockUser(userId);
-          }}
-          onBookmark={(postId) => {
-            void onBookmark(postId);
-          }}
-          onComment={onComment}
-          onDelete={(postId) => {
-            void onDelete(postId);
-          }}
-          onLike={(postId) => {
-            void onLike(postId);
-          }}
-          onReport={(postId) => {
-            void onReport(postId);
-          }}
-          onShare={onShare}
-          onUserPress={onUserPress}
-          onVideoPress={onVideoPress}
-          post={item}
-        />
-      )}
+      refreshControl={refreshControl}
+      removeClippedSubviews
+      renderItem={renderPost}
       style={styles.list}
       viewabilityConfig={viewabilityConfig}
+      windowSize={7}
     />
   );
 }

@@ -93,9 +93,9 @@ export function HomeScreen() {
     }, [currentUserId, refreshInteractions]),
   );
 
-  async function handleSignOut() {
+  const handleSignOut = useCallback(async () => {
     await signOutMobile();
-  }
+  }, []);
 
   const handleSelectShareTarget = useCallback(
     async (target: PostShareTarget) => {

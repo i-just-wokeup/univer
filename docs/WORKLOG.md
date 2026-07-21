@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-07-21
+
+### 완료
+- **앱 홈 피드 리렌더 최적화 1차** — 홈 피드 `FlatList`의 `renderItem`/`keyExtractor`/새로고침·더보기 핸들러와 피드 액션 콜백을 `useCallback` 기반으로 안정화하고, `FeedPostCard`를 카드 단위 `React.memo`로 감싸 좋아요·저장 같은 단일 카드 액션 시 보이는 카드 전체가 불필요하게 다시 그려지는 경로를 줄임. `initialNumToRender`/`maxToRenderPerBatch`/`windowSize`/`removeClippedSubviews`를 보수적으로 추가하고, 가변 높이 카드라 `getItemLayout`은 적용하지 않음. 앱 tsc 통과.
+
 ## 2026-07-20
 
 ### 완료

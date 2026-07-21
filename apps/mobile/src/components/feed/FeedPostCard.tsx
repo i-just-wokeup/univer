@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { FeedMediaCarousel } from "./FeedMediaCarousel";
@@ -28,7 +28,7 @@ type FeedPostCardProps = {
   post: FeedPost;
 };
 
-export function FeedPostCard({
+function FeedPostCardComponent({
   currentUserId = "",
   isActive = false,
   isBookmarked = false,
@@ -95,6 +95,8 @@ export function FeedPostCard({
     </View>
   );
 }
+
+export const FeedPostCard = memo(FeedPostCardComponent);
 
 const styles = StyleSheet.create({
   card: {

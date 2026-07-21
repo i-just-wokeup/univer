@@ -153,17 +153,17 @@ export function useHomeFeedPagination() {
     posts,
   ]);
 
-  async function handleRefresh() {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await loadFirstPage({ ignoreCache: true });
-  }
+  }, [loadFirstPage]);
 
-  function handleRetryFirstPage() {
+  const handleRetryFirstPage = useCallback(() => {
     setIsInitialLoading(true);
     void loadFirstPage({ ignoreCache: true });
-  }
+  }, [loadFirstPage]);
 
-  async function handleLoadMore() {
+  const handleLoadMore = useCallback(async () => {
     if (!nextCursor || isLoadingMore) {
       return;
     }
@@ -203,7 +203,7 @@ export function useHomeFeedPagination() {
     } finally {
       setIsLoadingMore(false);
     }
-  }
+  }, [isLoadingMore, nextCursor]);
 
   return {
     bookmarkedPostIds,
