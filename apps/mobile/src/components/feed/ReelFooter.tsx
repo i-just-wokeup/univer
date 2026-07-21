@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     minHeight: 42,
   },
   userRow: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
