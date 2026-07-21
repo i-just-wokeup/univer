@@ -28,16 +28,23 @@ const defaultPreset: SystemBarPreset = {
   statusBarStyle: "dark-content",
 };
 
-const storyPreset: SystemBarPreset = {
+const immersivePreset: SystemBarPreset = {
   navigationBackgroundColor: colors.black,
   navigationButtonStyle: "light",
   statusBackgroundColor: colors.black,
   statusBarStyle: "light-content",
 };
 
+function isImmersiveRoute(pathname: string) {
+  return (
+    pathname === "/reels" ||
+    (pathname.startsWith("/story/") && pathname !== "/story/create")
+  );
+}
+
 function getPreset(pathname: string): SystemBarPreset {
-  if (pathname.startsWith("/story/") && pathname !== "/story/create") {
-    return storyPreset;
+  if (isImmersiveRoute(pathname)) {
+    return immersivePreset;
   }
 
   return defaultPreset;

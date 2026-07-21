@@ -12,6 +12,7 @@
 - **앱 화면 전환 애니메이션 명시** — 루트 Stack 기본 전환을 `slide_from_right`로 지정하고, 릴스/스토리/글작성/스토리작성은 `slide_from_bottom`, 로그인/온보딩은 `none`으로 지정해 화면별 전환을 일관화. 화면 로직/레이아웃 변경 없음. 앱 tsc 통과.
 - **앱 화면 전환 체감 속도 조정** — Android에서 전환이 느리게 느껴져 루트 Stack 기본 전환을 더 가벼운 `simple_push`로 변경하고, 릴스는 즉시 진입하도록 `none`으로 조정. 화면 로직/레이아웃 변경 없음. 앱 tsc 통과.
 - **앱 스토리/릴스 전환 옵션 재조정** — 스토리 뷰어는 느린 하단 슬라이드 대신 `fade`로 바꾸고, 릴스는 즉시 전환 대신 기본 흐름과 맞는 `simple_push`로 조정. 화면 로직/레이아웃 변경 없음. 앱 tsc 통과.
+- **앱 Android 엣지투엣지 opt-out 보강** — SDK 54/Android 15+ 엣지투엣지 강제 대응으로 Android theme에 `windowOptOutEdgeToEdgeEnforcement=true`를 주입하는 config plugin을 추가하고, 스토리 뷰어·릴스만 검정 시스템바 프리셋을 쓰도록 전역 `SystemBarsController`에서 몰입형 route 예외를 관리하게 정리. `expo config --type introspect --json`으로 `AppTheme`/`Theme.App.SplashScreen` 반영 확인, 앱 tsc 통과. 실제 반영은 EAS dev build 후 실기기 확인 필요.
 
 ## 2026-07-20
 
