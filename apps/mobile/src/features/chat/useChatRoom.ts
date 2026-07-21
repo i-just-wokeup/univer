@@ -99,7 +99,7 @@ export function useChatRoom(conversationId: string) {
     }
   }, [broadcastRead, conversationId, currentUserId, isFocused, messages]);
 
-  async function handleAcceptRequest() {
+  const handleAcceptRequest = useCallback(async () => {
     setIsAccepting(true);
 
     try {
@@ -108,10 +108,10 @@ export function useChatRoom(conversationId: string) {
     } finally {
       setIsAccepting(false);
     }
-  }
+  }, [conversationId, reload]);
 
   // 차단 성공 시 true 반환(화면 이동은 호출부). 실패 시 false.
-  async function blockConversationUser(): Promise<boolean> {
+  const blockConversationUser = useCallback(async (): Promise<boolean> => {
     if (!conversation || isBlocking) {
       return false;
     }
@@ -124,18 +124,27 @@ export function useChatRoom(conversationId: string) {
       setIsBlocking(false);
       return false;
     }
-  }
+  }, [conversation, isBlocking]);
 
-  async function handleSendMessage(content: string) {
-    const tempId = addOptimisticMessage(content, currentUserId);
+  const handleSendMessage = useCallback(
+    async (content: string) => {
+      const tempId = addOptimisticMessage(content, currentUserId);
 
-    try {
-      const realMessage = await sendMessage(conversationId, content);
-      replaceOptimisticMessage(tempId, realMessage);
-    } catch {
-      removeOptimisticMessage(tempId);
-    }
-  }
+      try {
+        const realMessage = await sendMessage(conversationId, content);
+        replaceOptimisticMessage(tempId, realMessage);
+      } catch {
+        removeOptimisticMessage(tempId);
+      }
+    },
+    [
+      addOptimisticMessage,
+      conversationId,
+      currentUserId,
+      removeOptimisticMessage,
+      replaceOptimisticMessage,
+    ],
+  );
 
   const isPending = conversation?.status === "pending";
   const isIncomingRequest =

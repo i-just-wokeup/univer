@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CommentRow } from "./CommentRow";
@@ -17,7 +18,7 @@ type CommentThreadProps = {
 };
 
 // 원댓글 하나와 그 대댓글 묶음. 답글 펼침/숨김 UI는 여기에서만 관리한다.
-export function CommentThread({
+function CommentThreadComponent({
   comment,
   deletingCommentId,
   expandedReplyIds,
@@ -70,6 +71,56 @@ export function CommentThread({
     </View>
   );
 }
+
+function getThreadDeletingId({
+  comment,
+  deletingCommentId,
+}: Pick<CommentThreadProps, "comment" | "deletingCommentId">) {
+  if (!deletingCommentId) {
+    return null;
+  }
+
+  if (comment.id === deletingCommentId) {
+    return deletingCommentId;
+  }
+
+  return comment.replies.some((reply) => reply.id === deletingCommentId)
+    ? deletingCommentId
+    : null;
+}
+
+function hasSameLikedState(
+  previous: CommentThreadProps,
+  next: CommentThreadProps,
+) {
+  if (
+    previous.likedCommentIds.has(previous.comment.id) !==
+    next.likedCommentIds.has(next.comment.id)
+  ) {
+    return false;
+  }
+
+  return previous.comment.replies.every(
+    (reply) =>
+      previous.likedCommentIds.has(reply.id) ===
+      next.likedCommentIds.has(reply.id),
+  );
+}
+
+export const CommentThread = memo(
+  CommentThreadComponent,
+  (previous, next) =>
+    previous.comment === next.comment &&
+    getThreadDeletingId(previous) === getThreadDeletingId(next) &&
+    previous.expandedReplyIds.has(previous.comment.id) ===
+      next.expandedReplyIds.has(next.comment.id) &&
+    hasSameLikedState(previous, next) &&
+    previous.onLongPress === next.onLongPress &&
+    previous.onReply === next.onReply &&
+    previous.onToggleLike === next.onToggleLike &&
+    previous.onToggleReplies === next.onToggleReplies &&
+    previous.onUserPress === next.onUserPress,
+);
 
 function ReplyToggle({
   label,

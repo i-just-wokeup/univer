@@ -1,4 +1,11 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { memo, useCallback } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  type ListRenderItemInfo,
+} from "react-native";
 
 import { type ChatMessage } from "../../features/chat/useChatRoom";
 import { colors } from "../../lib/theme";
@@ -30,6 +37,43 @@ function shouldShowSeparator(
   );
 }
 
+type ChatMessageItemProps = {
+  currentUserId: string;
+  isOptimistic: boolean;
+  message: ChatMessage;
+  olderMessage: ChatMessage | undefined;
+  onPostPress: (postId: string, mediaType: "image" | "video" | null) => void;
+};
+
+function ChatMessageItemComponent({
+  currentUserId,
+  isOptimistic,
+  message,
+  olderMessage,
+  onPostPress,
+}: ChatMessageItemProps) {
+  return (
+    <View>
+      {shouldShowSeparator(olderMessage, message) ? (
+        <View style={styles.separator}>
+          <Text style={styles.separatorText}>
+            {formatChatTime(message.created_at)}
+          </Text>
+        </View>
+      ) : null}
+      <View style={isOptimistic ? styles.optimistic : null}>
+        <MessageBubble
+          isMine={message.sender_id === currentUserId}
+          message={message}
+          onPostPress={onPostPress}
+        />
+      </View>
+    </View>
+  );
+}
+
+const ChatMessageItem = memo(ChatMessageItemComponent);
+
 export function ChatMessageList({
   currentUserId,
   hasMore,
@@ -38,12 +82,32 @@ export function ChatMessageList({
   messages,
   onPostPress,
 }: ChatMessageListProps) {
+  const keyExtractor = useCallback((message: ChatMessage) => message.id, []);
+  const handleEndReached = useCallback(() => {
+    if (hasMore && !isLoadingMore) {
+      loadMore();
+    }
+  }, [hasMore, isLoadingMore, loadMore]);
+  const renderItem = useCallback(
+    ({ index, item }: ListRenderItemInfo<ChatMessage>) => (
+      <ChatMessageItem
+        currentUserId={currentUserId}
+        isOptimistic={item.isOptimistic === true}
+        message={item}
+        olderMessage={messages[index + 1]}
+        onPostPress={onPostPress}
+      />
+    ),
+    [currentUserId, messages, onPostPress],
+  );
+
   return (
     <FlatList
       contentContainerStyle={styles.messageList}
       data={messages}
+      initialNumToRender={16}
       inverted
-      keyExtractor={(message) => message.id}
+      keyExtractor={keyExtractor}
       ListFooterComponent={
         isLoadingMore ? (
           <Text style={styles.loadMoreText}>이전 메시지 불러오는 중...</Text>
@@ -51,31 +115,13 @@ export function ChatMessageList({
           <Text style={styles.loadMoreText}>첫 번째 메시지입니다.</Text>
         ) : null
       }
-      onEndReached={() => {
-        if (hasMore && !isLoadingMore) {
-          loadMore();
-        }
-      }}
+      maxToRenderPerBatch={10}
+      onEndReached={handleEndReached}
       onEndReachedThreshold={0.3}
-      renderItem={({ index, item }) => (
-        <View>
-          {shouldShowSeparator(messages[index + 1], item) ? (
-            <View style={styles.separator}>
-              <Text style={styles.separatorText}>
-                {formatChatTime(item.created_at)}
-              </Text>
-            </View>
-          ) : null}
-          <View style={item.isOptimistic ? styles.optimistic : null}>
-            <MessageBubble
-              isMine={item.sender_id === currentUserId}
-              message={item}
-              onPostPress={onPostPress}
-            />
-          </View>
-        </View>
-      )}
+      removeClippedSubviews
+      renderItem={renderItem}
       style={styles.messages}
+      windowSize={9}
     />
   );
 }

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { MoreHorizontal } from "lucide-react-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   KeyboardAvoidingView,
   Pressable,
@@ -48,14 +48,74 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     reversedMessages,
   } = useChatRoom(conversationId);
 
-  async function handleBlockUser() {
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const handlePressProfile = useCallback(
+    (nickname: string) => {
+      router.push({
+        pathname: "/profile/[nickname]",
+        params: { nickname },
+      });
+    },
+    [router],
+  );
+
+  const handleOpenMenu = useCallback(() => {
+    setIsMenuOpen(true);
+  }, []);
+
+  const handleCloseMenu = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
+
+  const handleOpenBlockConfirm = useCallback(() => {
+    setIsBlockConfirmOpen(true);
+  }, []);
+
+  const handleCloseBlockConfirm = useCallback(() => {
+    setIsBlockConfirmOpen(false);
+  }, []);
+
+  const handleAcceptPress = useCallback(() => {
+    void handleAcceptRequest();
+  }, [handleAcceptRequest]);
+
+  const handleLoadMore = useCallback(() => {
+    void loadMore();
+  }, [loadMore]);
+
+  const handlePostPress = useCallback(
+    (postId: string, mediaType: "image" | "video" | null) => {
+      if (mediaType === "video") {
+        router.push({
+          pathname: "/reels",
+          params: { postId },
+        });
+        return;
+      }
+
+      router.push({
+        pathname: "/post/[id]",
+        params: { id: postId },
+      });
+    },
+    [router],
+  );
+
+  const handleBlockUser = useCallback(async () => {
     const blocked = await blockConversationUser();
     if (blocked) {
       router.replace("/messages");
     } else {
       setIsBlockConfirmOpen(false);
     }
-  }
+  }, [blockConversationUser, router]);
+
+  const handleConfirmBlock = useCallback(() => {
+    void handleBlockUser();
+  }, [handleBlockUser]);
 
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
@@ -63,22 +123,14 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
         <ChatRoomHeader
           avatarUrl={conversation?.other_user.avatar_url ?? null}
           nickname={conversation?.other_user.nickname ?? "메시지"}
-          onBack={() => router.back()}
-          onPressProfile={
-            conversation
-              ? (nickname) =>
-                  router.push({
-                    pathname: "/profile/[nickname]",
-                    params: { nickname },
-                  })
-              : undefined
-          }
+          onBack={handleBack}
+          onPressProfile={conversation ? handlePressProfile : undefined}
           right={
             conversation ? (
               <Pressable
                 accessibilityLabel="더보기"
                 accessibilityRole="button"
-                onPress={() => setIsMenuOpen(true)}
+                onPress={handleOpenMenu}
                 style={({ pressed }) => [
                   styles.headerMenuButton,
                   pressed ? styles.pressed : null,
@@ -98,9 +150,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
           <ChatRequestBanner
             isAccepting={isAccepting}
             isIncomingRequest={isIncomingRequest}
-            onAccept={() => {
-              void handleAcceptRequest();
-            }}
+            onAccept={handleAcceptPress}
           />
         ) : null}
 
@@ -129,21 +179,9 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
             currentUserId={currentUserId}
             hasMore={hasMore}
             isLoadingMore={isLoadingMore}
-            loadMore={() => {
-              void loadMore();
-            }}
+            loadMore={handleLoadMore}
             messages={reversedMessages}
-            onPostPress={(postId, mediaType) =>
-              mediaType === "video"
-                ? router.push({
-                    pathname: "/reels",
-                    params: { postId },
-                  })
-                : router.push({
-                    pathname: "/post/[id]",
-                    params: { id: postId },
-                  })
-            }
+            onPostPress={handlePostPress}
           />
         )}
 
@@ -165,12 +203,10 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
         isBlockConfirmOpen={isBlockConfirmOpen}
         isMenuOpen={isMenuOpen}
         nickname={conversation?.other_user.nickname ?? ""}
-        onBlock={() => {
-          void handleBlockUser();
-        }}
-        onCloseBlockConfirm={() => setIsBlockConfirmOpen(false)}
-        onCloseMenu={() => setIsMenuOpen(false)}
-        onOpenBlockConfirm={() => setIsBlockConfirmOpen(true)}
+        onBlock={handleConfirmBlock}
+        onCloseBlockConfirm={handleCloseBlockConfirm}
+        onCloseMenu={handleCloseMenu}
+        onOpenBlockConfirm={handleOpenBlockConfirm}
       />
     </SafeAreaView>
   );

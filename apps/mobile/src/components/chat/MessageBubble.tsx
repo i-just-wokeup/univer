@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { Play } from "lucide-react-native";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Message, SharedPostPreview } from "../../features/chat/api";
@@ -14,7 +14,7 @@ type MessageBubbleProps = {
 };
 
 // 버블을 탭하면 시간(내 메시지는 읽음/전송됨까지)을 보여준다. (웹의 hover와 동일 역할)
-export function MessageBubble({
+function MessageBubbleComponent({
   isMine,
   message,
   onPostPress,
@@ -58,6 +58,8 @@ export function MessageBubble({
     </View>
   );
 }
+
+export const MessageBubble = memo(MessageBubbleComponent);
 
 type PostMessageCardProps = {
   isMine: boolean;

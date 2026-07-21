@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Heart } from "lucide-react-native";
 import {
   Platform,
@@ -27,7 +28,7 @@ type CommentRowProps = {
 };
 
 // 순수 UI. 댓글 한 행(원댓글/대댓글). 대댓글이면 부모 닉네임 @멘션을 링크로 표시.
-export function CommentRow({
+function CommentRowComponent({
   comment,
   isDeleting,
   isLiked,
@@ -115,6 +116,8 @@ export function CommentRow({
     </Pressable>
   );
 }
+
+export const CommentRow = memo(CommentRowComponent);
 
 const styles = StyleSheet.create({
   row: {

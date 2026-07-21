@@ -49,18 +49,33 @@ export function updateCommentLikes(
   commentId: string,
   likesCount: number,
 ) {
-  return comments.map((comment) => {
+  let changed = false;
+  const nextComments = comments.map((comment) => {
     if (comment.id === commentId) {
+      changed = true;
+      if (comment.likes_count === likesCount) {
+        return comment;
+      }
       return { ...comment, likes_count: likesCount };
     }
 
-    return {
-      ...comment,
-      replies: comment.replies.map((reply) =>
-        reply.id === commentId ? { ...reply, likes_count: likesCount } : reply,
-      ),
-    };
+    let replyChanged = false;
+    const nextReplies = comment.replies.map((reply) => {
+      if (reply.id !== commentId) {
+        return reply;
+      }
+
+      changed = true;
+      replyChanged = true;
+      return reply.likes_count === likesCount
+        ? reply
+        : { ...reply, likes_count: likesCount };
+    });
+
+    return replyChanged ? { ...comment, replies: nextReplies } : comment;
   });
+
+  return changed ? nextComments : comments;
 }
 
 export function useComments({
@@ -87,10 +102,21 @@ export function useComments({
   );
   const inputRef = useRef<TextInput | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const commentsRef = useRef(comments);
+  const likedCommentIdsRef = useRef(likedCommentIds);
+  const pendingLikeCommentIdsRef = useRef<Set<string>>(new Set());
   // onCommentCountChange를 ref로 담아 로드 effect 의존성에서 제거한다.
   // (부모가 함수를 useCallback으로 안 감싸도 effect가 재실행돼 깜빡이지 않게)
   const onCommentCountChangeRef = useRef(onCommentCountChange);
   onCommentCountChangeRef.current = onCommentCountChange;
+
+  useEffect(() => {
+    commentsRef.current = comments;
+  }, [comments]);
+
+  useEffect(() => {
+    likedCommentIdsRef.current = likedCommentIds;
+  }, [likedCommentIds]);
 
   useEffect(() => {
     return () => {
@@ -231,59 +257,71 @@ export function useComments({
     });
   }, []);
 
-  const handleToggleLike = useCallback(
-    async (commentId: string) => {
-      const previousComments = comments;
-      const previousLiked = new Set(likedCommentIds);
-      const wasLiked = likedCommentIds.has(commentId);
+  const handleToggleLike = useCallback(async (commentId: string) => {
+    if (pendingLikeCommentIdsRef.current.has(commentId)) {
+      return;
+    }
 
-      setErrorMessage("");
+    pendingLikeCommentIdsRef.current.add(commentId);
+    const previousComments = commentsRef.current;
+    const previousLiked = new Set(likedCommentIdsRef.current);
+    const wasLiked = previousLiked.has(commentId);
+
+    setErrorMessage("");
+    setLikedCommentIds((current) => {
+      const next = new Set(current);
+      if (wasLiked) {
+        next.delete(commentId);
+      } else {
+        next.add(commentId);
+      }
+      likedCommentIdsRef.current = next;
+      return next;
+    });
+    setComments((current) => {
+      const target = flattenComments(current).find(
+        (comment) => comment.id === commentId,
+      );
+      const nextCount = Math.max(
+        0,
+        (target?.likes_count ?? 0) + (wasLiked ? -1 : 1),
+      );
+      const next = updateCommentLikes(current, commentId, nextCount);
+      commentsRef.current = next;
+      return next;
+    });
+
+    try {
+      const result = await toggleCommentLike(commentId);
       setLikedCommentIds((current) => {
         const next = new Set(current);
-        if (wasLiked) {
-          next.delete(commentId);
-        } else {
+        if (result.liked) {
           next.add(commentId);
+        } else {
+          next.delete(commentId);
         }
+        likedCommentIdsRef.current = next;
         return next;
       });
       setComments((current) => {
-        const target = flattenComments(current).find(
-          (comment) => comment.id === commentId,
-        );
-        const nextCount = Math.max(
-          0,
-          (target?.likes_count ?? 0) + (wasLiked ? -1 : 1),
-        );
-        return updateCommentLikes(current, commentId, nextCount);
+        const next = updateCommentLikes(current, commentId, result.likesCount);
+        commentsRef.current = next;
+        return next;
       });
-
-      try {
-        const result = await toggleCommentLike(commentId);
-        setLikedCommentIds((current) => {
-          const next = new Set(current);
-          if (result.liked) {
-            next.add(commentId);
-          } else {
-            next.delete(commentId);
-          }
-          return next;
-        });
-        setComments((current) =>
-          updateCommentLikes(current, commentId, result.likesCount),
-        );
-      } catch (error) {
-        setComments(previousComments);
-        setLikedCommentIds(previousLiked);
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "댓글 좋아요 처리에 실패했습니다.",
-        );
-      }
-    },
-    [comments, likedCommentIds],
-  );
+    } catch (error) {
+      commentsRef.current = previousComments;
+      likedCommentIdsRef.current = previousLiked;
+      setComments(previousComments);
+      setLikedCommentIds(previousLiked);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "댓글 좋아요 처리에 실패했습니다.",
+      );
+    } finally {
+      pendingLikeCommentIdsRef.current.delete(commentId);
+    }
+  }, []);
 
   const handleDelete = useCallback(
     async (commentId: string) => {
@@ -296,26 +334,29 @@ export function useComments({
         setErrorMessage("");
         await deleteComment(commentId);
 
-        const deletedComment = flattenComments(comments).find(
+        const currentComments = commentsRef.current;
+        const deletedComment = flattenComments(currentComments).find(
           (comment) => comment.id === commentId,
         );
-        const parentComment = comments.find(
+        const parentComment = currentComments.find(
           (comment) => comment.id === commentId,
         );
         const removedIds = parentComment
           ? [commentId, ...parentComment.replies.map((reply) => reply.id)]
           : [commentId];
-        const nextComments = removeComment(comments, commentId);
+        const nextComments = removeComment(currentComments, commentId);
 
+        commentsRef.current = nextComments;
         setComments(nextComments);
         setLikedCommentIds((current) => {
           const next = new Set(current);
           removedIds.forEach((removedId) => next.delete(removedId));
+          likedCommentIdsRef.current = next;
           return next;
         });
 
         if (deletedComment && deletedComment.parent_id === null) {
-          onCommentCountChange(postId, nextComments.length);
+          onCommentCountChangeRef.current(postId, nextComments.length);
         }
       } catch (error) {
         setErrorMessage(
@@ -325,7 +366,7 @@ export function useComments({
         setDeletingCommentId(null);
       }
     },
-    [comments, onCommentCountChange, postId],
+    [postId],
   );
 
   // 댓글 신고. 스냅샷(작성자/내용)은 reports 테이블 트리거(fill_report_snapshot)가 채운다.

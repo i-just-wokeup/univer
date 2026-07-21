@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 
 import { CommentThread } from "./CommentThread";
@@ -30,6 +31,33 @@ export function CommentsList({
   onToggleReplies,
   onUserPress,
 }: CommentsListProps) {
+  const keyExtractor = useCallback((comment: Comment) => comment.id, []);
+  const renderItem = useCallback(
+    ({ item }: { item: Comment }) => (
+      <CommentThread
+        comment={item}
+        deletingCommentId={deletingCommentId}
+        expandedReplyIds={expandedReplyIds}
+        likedCommentIds={likedCommentIds}
+        onLongPress={onLongPress}
+        onReply={onReply}
+        onToggleLike={onToggleLike}
+        onToggleReplies={onToggleReplies}
+        onUserPress={onUserPress}
+      />
+    ),
+    [
+      deletingCommentId,
+      expandedReplyIds,
+      likedCommentIds,
+      onLongPress,
+      onReply,
+      onToggleLike,
+      onToggleReplies,
+      onUserPress,
+    ],
+  );
+
   if (isLoading) {
     return (
       <View style={styles.loadingBox}>
@@ -49,22 +77,14 @@ export function CommentsList({
       }
       contentContainerStyle={styles.commentList}
       data={comments}
-      keyExtractor={(comment) => comment.id}
+      initialNumToRender={12}
+      keyExtractor={keyExtractor}
       keyboardShouldPersistTaps="handled"
-      renderItem={({ item }) => (
-        <CommentThread
-          comment={item}
-          deletingCommentId={deletingCommentId}
-          expandedReplyIds={expandedReplyIds}
-          likedCommentIds={likedCommentIds}
-          onLongPress={onLongPress}
-          onReply={onReply}
-          onToggleLike={onToggleLike}
-          onToggleReplies={onToggleReplies}
-          onUserPress={onUserPress}
-        />
-      )}
+      maxToRenderPerBatch={8}
+      removeClippedSubviews
+      renderItem={renderItem}
       style={styles.commentListBox}
+      windowSize={7}
     />
   );
 }
