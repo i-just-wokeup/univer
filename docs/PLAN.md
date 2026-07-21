@@ -111,6 +111,7 @@
 - [x] 앱 홈 피드 리렌더 최적화 1차 (콜백 안정화, FeedPostCard memo, FlatList 보수 튜닝)
 - [x] 앱 좋아요 낙관적 업데이트 적용 (홈/릴스/상세 하트 즉시 반영 + 실패 시 롤백)
 - [x] 앱 화면 전환 애니메이션 명시 (기본 slide_from_right, 릴스/스토리/작성 slide_from_bottom, 로그인/온보딩 none)
+- [x] 앱 화면 전환 체감 속도 조정 (기본 simple_push, 릴스 none)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)
 - [x] 채팅방 fullscreen route group 분리 (하단 탭바/사이드바 제거, `h-dvh` 전용 레이아웃)

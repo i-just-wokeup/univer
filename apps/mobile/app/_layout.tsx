@@ -70,10 +70,10 @@ function RootNavigator() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+    <Stack screenOptions={{ headerShown: false, animation: "simple_push" }}>
       <Stack.Screen name="login" options={{ animation: "none" }} />
       <Stack.Screen name="onboarding" options={{ animation: "none" }} />
-      <Stack.Screen name="reels" options={{ animation: "slide_from_bottom" }} />
+      <Stack.Screen name="reels" options={{ animation: "none" }} />
       <Stack.Screen
         name="story/[userId]"
         options={{ animation: "slide_from_bottom" }}
