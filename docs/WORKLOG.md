@@ -9,6 +9,7 @@
 ### 완료
 - **앱 홈 피드 리렌더 최적화 1차** — 홈 피드 `FlatList`의 `renderItem`/`keyExtractor`/새로고침·더보기 핸들러와 피드 액션 콜백을 `useCallback` 기반으로 안정화하고, `FeedPostCard`를 카드 단위 `React.memo`로 감싸 좋아요·저장 같은 단일 카드 액션 시 보이는 카드 전체가 불필요하게 다시 그려지는 경로를 줄임. `initialNumToRender`/`maxToRenderPerBatch`/`windowSize`/`removeClippedSubviews`를 보수적으로 추가하고, 가변 높이 카드라 `getItemLayout`은 적용하지 않음. 앱 tsc 통과.
 - **앱 좋아요 낙관적 업데이트 적용** — 홈 피드, 릴스, 게시물 상세의 좋아요를 서버 응답 대기 후 반영하던 방식에서 북마크와 같은 낙관적 업데이트 패턴으로 전환. 하트/좋아요 수를 누르는 즉시 먼저 반영하고, 서버 성공 시 정확한 값으로 보정하며 실패 시 이전 상태로 롤백하도록 처리. 중복 클릭 방지 guard는 유지. 앱 tsc 통과.
+- **앱 화면 전환 애니메이션 명시** — 루트 Stack 기본 전환을 `slide_from_right`로 지정하고, 릴스/스토리/글작성/스토리작성은 `slide_from_bottom`, 로그인/온보딩은 `none`으로 지정해 화면별 전환을 일관화. 화면 로직/레이아웃 변경 없음. 앱 tsc 통과.
 
 ## 2026-07-20
 

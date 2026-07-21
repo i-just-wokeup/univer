@@ -69,7 +69,22 @@ function RootNavigator() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+      <Stack.Screen name="login" options={{ animation: "none" }} />
+      <Stack.Screen name="onboarding" options={{ animation: "none" }} />
+      <Stack.Screen name="reels" options={{ animation: "slide_from_bottom" }} />
+      <Stack.Screen
+        name="story/[userId]"
+        options={{ animation: "slide_from_bottom" }}
+      />
+      <Stack.Screen name="compose" options={{ animation: "slide_from_bottom" }} />
+      <Stack.Screen
+        name="story/create"
+        options={{ animation: "slide_from_bottom" }}
+      />
+    </Stack>
+  );
 }
 
 const styles = StyleSheet.create({
