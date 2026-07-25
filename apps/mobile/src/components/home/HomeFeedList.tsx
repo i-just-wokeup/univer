@@ -11,6 +11,7 @@ import {
 
 import type { FeedPost } from "../../features/feed/types";
 import type { StoryGroup } from "../../features/stories/types";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { colors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 import { FeedPostCard } from "../feed/FeedPostCard";
@@ -96,6 +97,7 @@ export function HomeFeedList({
   }, [onLoadMore]);
 
   const handleRefresh = useCallback(() => {
+    triggerLightHaptic();
     void onRefresh();
   }, [onRefresh]);
 

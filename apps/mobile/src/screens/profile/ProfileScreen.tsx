@@ -13,6 +13,7 @@ import { ProfileHeaderBar } from "../../components/profile/ProfileHeaderBar";
 import { ProfileMoreMenu } from "../../components/profile/ProfileMoreMenu";
 import { ProfileSkeleton } from "../../components/profile/ProfileSkeleton";
 import { useProfile } from "../../features/profile/useProfile";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { colors } from "../../lib/theme";
 
 type ProfileScreenProps = {
@@ -69,6 +70,11 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     router.push("/profile/edit");
   }, [router]);
 
+  const handlePullRefresh = useCallback(() => {
+    triggerLightHaptic();
+    refresh();
+  }, [refresh]);
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -108,7 +114,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            onRefresh={refresh}
+            onRefresh={handlePullRefresh}
             refreshing={isRefreshing}
             tintColor={colors.accent}
           />

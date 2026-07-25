@@ -21,6 +21,7 @@ import {
 import { ConnectionUserRow } from "../../components/profile/ConnectionUserRow";
 import { useConnections } from "../../features/profile/useConnections";
 import type { ConnectionUser } from "../../features/profile/types";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { colors } from "../../lib/theme";
 
 const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
@@ -57,6 +58,11 @@ export function ConnectionsScreen() {
     [router],
   );
 
+  const handlePullRefresh = useCallback(() => {
+    triggerLightHaptic();
+    refresh();
+  }, [refresh]);
+
   async function handleConfirmRemove() {
     if (!removeTarget) {
       return;
@@ -82,7 +88,7 @@ export function ConnectionsScreen() {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            onRefresh={refresh}
+            onRefresh={handlePullRefresh}
             refreshing={isRefreshing}
             tintColor={colors.accent}
           />

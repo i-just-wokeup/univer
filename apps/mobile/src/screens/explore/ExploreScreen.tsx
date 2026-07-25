@@ -21,6 +21,7 @@ import { StateView } from "../../components/common/StateView";
 import { useExploreFeed } from "../../features/explore/useExploreFeed";
 import type { ExplorePost } from "../../features/explore/types";
 import type { PostAspectRatio } from "../../features/feed/types";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { colors } from "../../lib/theme";
 
 const H_PADDING = 10;
@@ -61,6 +62,11 @@ export function ExploreScreen() {
     },
     [router],
   );
+
+  const handlePullRefresh = useCallback(() => {
+    triggerLightHaptic();
+    void handleRefresh();
+  }, [handleRefresh]);
 
   // 높이 낮은 열에 번갈아 쌓아 들쭉날쭉(masonry) 배치를 만든다.
   const columns = useMemo(() => {
@@ -123,9 +129,7 @@ export function ExploreScreen() {
         onScroll={handleScroll}
         refreshControl={
           <RefreshControl
-            onRefresh={() => {
-              void handleRefresh();
-            }}
+            onRefresh={handlePullRefresh}
             refreshing={isRefreshing}
             tintColor={colors.accent}
           />

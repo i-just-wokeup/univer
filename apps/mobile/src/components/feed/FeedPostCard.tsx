@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { FeedMediaCarousel } from "./FeedMediaCarousel";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { colors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 import { FeedPostActions } from "./FeedPostActions";
@@ -61,6 +62,7 @@ function FeedPostCardComponent({
         onDoubleLike={() => {
           // 인스타식: 더블탭은 좋아요만(이미 좋아요면 애니메이션만).
           if (!isLiked) {
+            triggerLightHaptic();
             onLike(post.id);
           }
         }}

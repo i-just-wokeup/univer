@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DoubleTapLike } from "../common/DoubleTapLike";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { colors } from "../../lib/theme";
 import type { FeedPost, PostMedia } from "../../features/feed/types";
 import { ReelActions } from "./ReelActions";
@@ -122,6 +123,7 @@ export function ReelItem({
       <DoubleTapLike
         onDoubleTap={() => {
           if (!isLiked) {
+            triggerLightHaptic();
             onLike();
           }
         }}
