@@ -7,31 +7,23 @@ import {
   StatusBar as NativeStatusBar,
 } from "react-native";
 
-import { colors } from "./theme";
-
 let navigationBarModule:
   | typeof import("expo-navigation-bar")
   | null
   | undefined;
 
 type SystemBarPreset = {
-  navigationBackgroundColor: string;
   navigationButtonStyle: "dark" | "light";
-  statusBackgroundColor: string;
   statusBarStyle: "dark-content" | "light-content";
 };
 
 const defaultPreset: SystemBarPreset = {
-  navigationBackgroundColor: colors.white,
   navigationButtonStyle: "dark",
-  statusBackgroundColor: colors.accentSoft,
   statusBarStyle: "dark-content",
 };
 
 const immersivePreset: SystemBarPreset = {
-  navigationBackgroundColor: colors.black,
   navigationButtonStyle: "light",
-  statusBackgroundColor: colors.black,
   statusBarStyle: "light-content",
 };
 
@@ -48,10 +40,6 @@ function getPreset(pathname: string): SystemBarPreset {
   }
 
   return defaultPreset;
-}
-
-function getNavigationStyle(buttonStyle: "dark" | "light") {
-  return buttonStyle === "dark" ? "light" : "dark";
 }
 
 function getNavigationBar() {
@@ -85,8 +73,7 @@ export async function applySystemBars(preset: SystemBarPreset): Promise<void> {
     return;
   }
 
-  NativeStatusBar.setTranslucent(false);
-  NativeStatusBar.setBackgroundColor(preset.statusBackgroundColor);
+  NativeStatusBar.setTranslucent(true);
 
   const NavigationBar = getNavigationBar();
 
@@ -96,14 +83,9 @@ export async function applySystemBars(preset: SystemBarPreset): Promise<void> {
 
   try {
     await NavigationBar.setVisibilityAsync("visible");
-    await NavigationBar.setPositionAsync("relative");
-    await NavigationBar.setBehaviorAsync("inset-touch");
-    await NavigationBar.setBackgroundColorAsync(preset.navigationBackgroundColor);
-    await NavigationBar.setBorderColorAsync(preset.navigationBackgroundColor);
     await NavigationBar.setButtonStyleAsync(preset.navigationButtonStyle);
-    NavigationBar.setStyle(getNavigationStyle(preset.navigationButtonStyle));
   } catch {
-    // 일부 Android edge-to-edge 상태에서는 배경색 API가 no-op/warn 처리된다.
+    // Edge-to-edge에서는 배경/position 계열 API가 OS 버전에 따라 no-op일 수 있다.
     // AppState 복귀 시 반복 적용하므로 여기서는 화면 렌더를 막지 않는다.
   }
 }

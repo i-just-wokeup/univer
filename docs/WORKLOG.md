@@ -8,6 +8,7 @@
 
 ### 완료
 - **앱 햅틱 피드백 1차 도입** — `expo-haptics` 설치 후 공용 햅틱 헬퍼를 추가하고, 피드/릴스 더블탭 좋아요가 실제로 켜질 때와 홈/탐색/프로필/크루관리 당겨서 새로고침 시작 시 약한 impact 피드백을 호출하도록 연결. 미지원/실패 환경에서는 조용히 무시하며, 실제 진동 반영은 다음 EAS dev build 후 확인 필요. 앱 tsc 통과.
+- **앱 Android 엣지투엣지 ON 2a 전환** — SDK 54 기본 edge-to-edge 흐름으로 돌아가기 위해 `app.json`의 opt-out 플래그, Android theme opt-out config plugin, navigation-bar 배경/relative 설정을 제거하고 `systemBars` 런타임 처리를 상태바/네비바 아이콘 tint 중심으로 축소. 릴스·스토리 뷰어는 immersive route로 light 아이콘 프리셋을 유지. 앱 tsc 통과, 실제 시스템바 반영과 깨지는 화면 목록화는 EAS dev build 후 확인 필요.
 
 ## 2026-07-21
 

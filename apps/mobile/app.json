@@ -16,16 +16,6 @@
     "plugins": [
       "expo-router",
       [
-        "expo-navigation-bar",
-        {
-          "backgroundColor": "#FFFFFF",
-          "barStyle": "dark",
-          "position": "relative",
-          "behavior": "inset-touch"
-        }
-      ],
-      "./plugins/withAndroidEdgeToEdgeOptOut",
-      [
         "expo-camera",
         {
           "cameraPermission": "스토리를 촬영하려면 카메라 접근 권한이 필요합니다.",
@@ -53,12 +43,7 @@
       "bundleIdentifier": "com.univer.app",
       "supportsTablet": true
     },
-    "androidNavigationBar": {
-      "backgroundColor": "#FFFFFF",
-      "barStyle": "dark-content"
-    },
     "android": {
-      "edgeToEdgeEnabled": false,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

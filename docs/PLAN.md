@@ -114,6 +114,7 @@
 - [x] 앱 화면 전환 체감 속도 조정 (기본 simple_push, 릴스 none)
 - [x] 앱 스토리/릴스 전환 옵션 재조정 (스토리 fade, 릴스 simple_push)
 - [x] 앱 Android 엣지투엣지 opt-out 보강 (theme opt-out config plugin, 릴스/스토리 시스템바 예외 중앙화)
+- [x] 앱 Android 엣지투엣지 ON 2a 전환 (opt-out 제거, 시스템바 tint 중심 축소, EAS 빌드 후 깨지는 화면 목록화 예정)
 - [x] 앱 햅틱 피드백 1차 도입 (더블탭 좋아요/당겨서 새로고침)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)
