@@ -58,6 +58,11 @@
       ],
       "package": "com.univer.app"
     },
+    "androidNavigationBar": {
+      "enforceContrast": false,
+      "backgroundColor": "#FFFFFF",
+      "barStyle": "dark-content"
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
