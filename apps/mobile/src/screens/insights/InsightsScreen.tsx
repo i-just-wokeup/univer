@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { InsightsMetricCard } from "../../components/insights/InsightsMetricCard";
 import { InsightsPeriodToggle } from "../../components/insights/InsightsPeriodToggle";
@@ -17,7 +18,7 @@ export function InsightsScreen() {
   const showChart = period !== "day";
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="인사이트" />
 
       <ScrollView
@@ -54,7 +55,7 @@ export function InsightsScreen() {
 
         <Text style={styles.note}>나만 볼 수 있어요.</Text>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

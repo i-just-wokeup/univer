@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { RecentSearchList } from "../../components/search/RecentSearchList";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchResultsList } from "../../components/search/SearchResultsList";
@@ -28,7 +28,7 @@ export function SearchScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View style={styles.header}>
         <Text style={styles.title}>검색</Text>
         <Text style={styles.description}>닉네임과 해시태그를 찾아보세요</Text>
@@ -66,7 +66,7 @@ export function SearchScreen() {
           />
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

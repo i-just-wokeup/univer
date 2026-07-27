@@ -7,13 +7,13 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ChatMessageList } from "../../components/chat/ChatMessageList";
 import { ChatRequestBanner } from "../../components/chat/ChatRequestBanner";
 import { ChatRoomMoreMenu } from "../../components/chat/ChatRoomMoreMenu";
 import { ChatRoomHeader } from "../../components/chat/ChatRoomHeader";
 import { MessageInput } from "../../components/chat/MessageInput";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { useChatRoom } from "../../features/chat/useChatRoom";
 import { useStableInsets } from "../../lib/useStableInsets";
@@ -118,7 +118,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   }, [handleBlockUser]);
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer reserveBottomInset={false} style={styles.screen}>
       <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
         <ChatRoomHeader
           avatarUrl={conversation?.other_user.avatar_url ?? null}
@@ -208,7 +208,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
         onCloseMenu={handleCloseMenu}
         onOpenBlockConfirm={handleOpenBlockConfirm}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

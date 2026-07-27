@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { Avatar } from "../../components/common/Avatar";
 import { useBlockedAccounts } from "../../features/blocks/useBlockedAccounts";
@@ -47,7 +48,7 @@ export function BlockedAccountsScreen() {
     blockedUsers.find((user) => user.id === unblockTargetId) ?? null;
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="차단한 계정" />
 
       {isLoading ? (
@@ -127,7 +128,7 @@ export function BlockedAccountsScreen() {
         onConfirm={handleConfirmUnblock}
         title={`${unblockTarget?.nickname ?? ""}의 차단을 해제할까요?`}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

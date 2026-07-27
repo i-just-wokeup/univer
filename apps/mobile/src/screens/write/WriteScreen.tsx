@@ -7,9 +7,9 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { WriteContentField } from "../../components/write/WriteContentField";
 import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
@@ -75,7 +75,7 @@ export function WriteScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardView}
@@ -138,7 +138,7 @@ export function WriteScreen() {
         onConfirm={handleConfirmDiscard}
         title="작성을 취소할까요?"
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

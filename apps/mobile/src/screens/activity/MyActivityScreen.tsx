@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActivityFavoriteUserRow } from "../../components/activity/ActivityFavoriteUserRow";
 import { ActivityPostGrid } from "../../components/activity/ActivityPostGrid";
 import { ActivityStoryGrid } from "../../components/activity/ActivityStoryGrid";
 import { ActivityStoryPreviewSheet } from "../../components/activity/ActivityStoryPreviewSheet";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import {
   type ActivityTab,
@@ -131,7 +132,7 @@ export function MyActivityScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="내 활동" />
       <View style={styles.tabsWrap}>
         <ScrollView
@@ -177,7 +178,7 @@ export function MyActivityScreen() {
         story={selectedStory}
         viewers={storyViewers}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

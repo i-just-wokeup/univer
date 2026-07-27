@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ConversationRow } from "../../components/chat/ConversationRow";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchUserRow } from "../../components/search/SearchUserRow";
 import { useMessagesList } from "../../features/chat/useMessagesList";
@@ -40,7 +40,7 @@ export function MessagesScreen() {
   const visibleConversations = activeTab === "active" ? active : pending;
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="메시지" />
 
       <ScrollView
@@ -149,7 +149,7 @@ export function MessagesScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

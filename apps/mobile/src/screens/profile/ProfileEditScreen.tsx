@@ -7,9 +7,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { ProfileEditAvatar } from "../../components/profile/ProfileEditAvatar";
 import { ProfileEditBioField } from "../../components/profile/ProfileEditBioField";
@@ -54,20 +54,20 @@ export function ProfileEditScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ScreenHeader onBack={() => router.back()} title="프로필 편집" />
         <StateView
           message="현재 프로필 정보를 불러오는 중입니다."
           title="프로필 준비 중"
           type="loading"
         />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (errorMessage && !nickname) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ScreenHeader onBack={() => router.back()} title="프로필 편집" />
         <StateView
           actionLabel="다시 시도"
@@ -76,12 +76,12 @@ export function ProfileEditScreen() {
           title="프로필을 불러오지 못했습니다"
           type="error"
         />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader
         onBack={() => router.back()}
         right={
@@ -137,7 +137,7 @@ export function ProfileEditScreen() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

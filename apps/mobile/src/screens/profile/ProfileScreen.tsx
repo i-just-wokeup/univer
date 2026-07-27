@@ -5,8 +5,8 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { ProfileContent } from "../../components/profile/ProfileContent";
 import { ProfileHeaderBar } from "../../components/profile/ProfileHeaderBar";
@@ -77,15 +77,15 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ProfileSkeleton />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (errorMessage && !profile) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
@@ -93,12 +93,12 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           title="프로필을 불러오지 못했습니다"
           type="error"
         />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ProfileHeaderBar
         isMine={isMine}
         isPushed={Boolean(nickname)}
@@ -157,7 +157,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           void handleToggleFavorite();
         }}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

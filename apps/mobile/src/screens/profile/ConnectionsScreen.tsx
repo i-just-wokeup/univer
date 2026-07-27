@@ -7,11 +7,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { KrewSurface } from "../../components/common/KrewSurface";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import {
   CONNECTION_TABS,
@@ -77,7 +77,7 @@ export function ConnectionsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="크루 관리" />
 
       <View style={styles.tabsWrap}>
@@ -160,7 +160,7 @@ export function ConnectionsScreen() {
         }}
         title={`${removeTarget?.nickname ?? ""}님을 크루에서 삭제할까요?`}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

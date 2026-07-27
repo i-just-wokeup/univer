@@ -2,8 +2,8 @@ import { useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { NotificationRow } from "../../components/notifications/NotificationRow";
 import { StateView } from "../../components/common/StateView";
 import { routeToNotificationTarget } from "../../features/notifications/navigation";
@@ -31,7 +31,7 @@ export function NotificationsScreen() {
   );
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View style={styles.header}>
         <Pressable
           accessibilityLabel="뒤로"
@@ -86,7 +86,7 @@ export function NotificationsScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

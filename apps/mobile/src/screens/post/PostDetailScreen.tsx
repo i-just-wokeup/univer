@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { usePostDetail } from "../../features/feed/usePostDetail";
@@ -74,7 +74,7 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
   );
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="게시물" />
 
       {isLoading ? (
@@ -133,7 +133,7 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
         onUserPress={handleCommentUserPress}
         postId={post ? post.id : null}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -119,6 +119,7 @@
 - [x] 앱 Android 엣지투엣지 2b 보정 (하단 네비바 배경 공용 레이어 zIndex/elevation 보강)
 - [x] 앱 Android 엣지투엣지 하단 네비바 흰색 방향 검증 1차 (인사이트 화면 내부 safe-area 배경 직접 렌더)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
+- [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)
 - [x] 앱 햅틱 피드백 1차 도입 (더블탭 좋아요/당겨서 새로고침)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)

@@ -3,10 +3,11 @@ import { ChevronRight } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
+import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { signOutMobile } from "../../features/auth/api";
 import { LEGAL_URLS } from "../../lib/site";
 import { getSupabaseMobileClient } from "../../lib/supabase";
@@ -91,7 +92,7 @@ export function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="설정" />
 
       <ScrollView
@@ -180,7 +181,7 @@ export function SettingsScreen() {
         onConfirm={handleDelete}
         title="정말 탈퇴하시겠습니까?"
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
