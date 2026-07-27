@@ -117,6 +117,7 @@
 - [x] 앱 Android 엣지투엣지 ON 2a 전환 (opt-out 제거, 시스템바 tint 중심 축소, EAS 빌드 후 깨지는 화면 목록화 예정)
 - [x] 앱 Android 엣지투엣지 2b 시스템바 배경/inset 정리 (일반 화면 네비바 흰 배경, 릴스/스토리 검정 유지, 주요 스크롤 화면 하단 safe-area 보정)
 - [x] 앱 Android 엣지투엣지 2b 보정 (하단 네비바 배경 공용 레이어 zIndex/elevation 보강)
+- [x] 앱 Android 엣지투엣지 하단 네비바 흰색 방향 검증 1차 (인사이트 화면 내부 safe-area 배경 직접 렌더)
 - [x] 앱 햅틱 피드백 1차 도입 (더블탭 좋아요/당겨서 새로고침)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)
