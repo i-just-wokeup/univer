@@ -118,6 +118,7 @@
 - [x] 앱 Android 엣지투엣지 2b 시스템바 배경/inset 정리 (일반 화면 네비바 흰 배경, 릴스/스토리 검정 유지, 주요 스크롤 화면 하단 safe-area 보정)
 - [x] 앱 Android 엣지투엣지 2b 보정 (하단 네비바 배경 공용 레이어 zIndex/elevation 보강)
 - [x] 앱 Android 엣지투엣지 하단 네비바 흰색 방향 검증 1차 (인사이트 화면 내부 safe-area 배경 직접 렌더)
+- [x] 앱 일반 화면 하단 네비바 배경 방향 재정리 (탭 화면 흰색 유지, 일반 화면은 콘텐츠 배경색 연장)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)
 - [x] 앱 햅틱 피드백 1차 도입 (더블탭 좋아요/당겨서 새로고침)

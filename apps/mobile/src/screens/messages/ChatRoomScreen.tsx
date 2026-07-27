@@ -118,7 +118,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   }, [handleBlockUser]);
 
   return (
-    <ScreenContainer reserveBottomInset={false} style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
         <ChatRoomHeader
           avatarUrl={conversation?.other_user.avatar_url ?? null}

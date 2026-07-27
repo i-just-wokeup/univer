@@ -7,6 +7,7 @@
 ## 2026-07-27
 
 ### 완료
+- **앱 일반 화면 하단 네비바 배경 방향 재정리** — 탭 화면은 `BottomTabBar`의 흰색 네비바를 유지하고, 탭 없는 일반 화면은 화면 배경색이 하단 네비바 영역까지 이어지도록 `ScreenContainer` 구조를 수정. 기존 흰색 루트 + bottom inset margin 구조를 제거해 일반 push 화면 하단에 흰 띠가 뜨지 않게 했고, 릴스·스토리 immersive 화면과 키보드 로직은 건드리지 않음. 앱 tsc 통과.
 - **앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용** — edge-to-edge ON + contrast scrim 비활성화 이후에도 화면별 `SafeAreaView` 배경이 제각각이라 하단 네비바 영역이 연보라/흰색으로 섞이던 문제를 정리. 공용 `ScreenContainer`를 추가해 바깥 루트는 `colors.navBackground` 흰색, 내부 콘텐츠는 기존 연보라 배경으로 분리하고, 일반 push 화면(작성/설정/알림/차단/내 활동/인사이트/프로필 편집/상세/채팅/검색/크루관리/프로필)에 적용. 릴스·스토리 immersive 화면과 키보드 로직은 건드리지 않음. 앱 tsc 통과, 실제 네비바 색은 EAS dev build 재설치 후 확인 필요.
 - **앱 Android 네비바 contrast scrim 비활성화** — Android 15 edge-to-edge에서 3버튼 네비바 위로 시스템이 반투명 회색 contrast scrim을 얹어 일반 화면 하단이 회색으로 보이던 원인을 native config로 정리. `androidNavigationBar.enforceContrast=false`와 흰 네비바 배경/어두운 버튼을 추가하고, 실패했던 JS 하단 오버레이(`SystemBarsController` zIndex 레이어, 인사이트 임시 하단 View)는 제거. 릴스·스토리의 아이콘 tint 프리셋은 유지. 앱 tsc 통과, 실제 반영은 EAS dev build 재설치 후 확인 필요.
 - **앱 Android 엣지투엣지 2b 시스템바 배경/inset 정리** — edge-to-edge ON 상태에서 일반 화면의 투명 네비바 뒤로 반투명 회색이 비치던 문제를 줄이기 위해 네비바 배경색 토큰(`colors.navBackground`)을 추가하고, 전역 `SystemBarsController`가 일반 route는 흰색·릴스/스토리 immersive route는 검정색 하단 시스템바 배경을 깔도록 정리. 설정/내 활동/인사이트/차단한 계정 스크롤 하단 여백에 safe-area bottom을 더해 마지막 항목이 네비바에 가려지는 경로를 보정. 채팅 키보드/KeyboardAvoidingView는 3단계 범위라 건드리지 않음. 앱 tsc 통과, 실제 시스템바 반영은 EAS dev build 후 확인 필요.
