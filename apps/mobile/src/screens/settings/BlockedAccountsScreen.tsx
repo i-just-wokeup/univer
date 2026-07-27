@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
@@ -22,6 +22,7 @@ function formatBlockedAt(createdAt: string) {
 
 export function BlockedAccountsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const {
     blockedUsers,
     errorMessage,
@@ -65,7 +66,10 @@ export function BlockedAccountsScreen() {
         />
       ) : (
         <FlatList
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[
+            styles.list,
+            { paddingBottom: styles.list.paddingBottom + insets.bottom },
+          ]}
           data={blockedUsers}
           keyExtractor={(user) => user.id}
           ListEmptyComponent={

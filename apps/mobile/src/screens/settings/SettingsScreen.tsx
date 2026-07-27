@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
@@ -54,6 +54,7 @@ function Row({
 
 export function SettingsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -93,7 +94,12 @@ export function SettingsScreen() {
     <SafeAreaView edges={["top"]} style={styles.screen}>
       <ScreenHeader onBack={() => router.back()} title="설정" />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: styles.content.paddingBottom + insets.bottom },
+        ]}
+      >
         <Section label="계정">
           <Row
             label="프로필 편집"

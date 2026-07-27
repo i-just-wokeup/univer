@@ -1,11 +1,16 @@
 import { NativeModulesProxy } from "expo-modules-core";
 import { usePathname } from "expo-router";
-import { useEffect } from "react";
+import { createElement, useEffect } from "react";
 import {
   AppState,
   Platform,
+  StyleSheet,
   StatusBar as NativeStatusBar,
+  View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { colors } from "./theme";
 
 let navigationBarModule:
   | typeof import("expo-navigation-bar")
@@ -13,16 +18,19 @@ let navigationBarModule:
   | undefined;
 
 type SystemBarPreset = {
+  navigationBackgroundColor: string;
   navigationButtonStyle: "dark" | "light";
   statusBarStyle: "dark-content" | "light-content";
 };
 
 const defaultPreset: SystemBarPreset = {
+  navigationBackgroundColor: colors.navBackground,
   navigationButtonStyle: "dark",
   statusBarStyle: "dark-content",
 };
 
 const immersivePreset: SystemBarPreset = {
+  navigationBackgroundColor: colors.black,
   navigationButtonStyle: "light",
   statusBarStyle: "light-content",
 };
@@ -92,6 +100,7 @@ export async function applySystemBars(preset: SystemBarPreset): Promise<void> {
 
 export function SystemBarsController() {
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
   const preset = getPreset(pathname);
 
   useEffect(() => {
@@ -124,5 +133,27 @@ export function SystemBarsController() {
     };
   }, [preset]);
 
-  return null;
+  if (Platform.OS !== "android" || insets.bottom <= 0) {
+    return null;
+  }
+
+  return createElement(View, {
+    pointerEvents: "none",
+    style: [
+      styles.navigationBarBackground,
+      {
+        height: insets.bottom,
+        backgroundColor: preset.navigationBackgroundColor,
+      },
+    ],
+  });
 }
+
+const styles = StyleSheet.create({
+  navigationBarBackground: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    left: 0,
+  },
+});

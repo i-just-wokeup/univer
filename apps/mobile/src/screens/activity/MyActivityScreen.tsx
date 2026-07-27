@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActivityFavoriteUserRow } from "../../components/activity/ActivityFavoriteUserRow";
 import { ActivityPostGrid } from "../../components/activity/ActivityPostGrid";
@@ -24,6 +24,7 @@ const tabs: Array<{ id: ActivityTab; label: string }> = [
 
 export function MyActivityScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const {
     activeTab,
     activeTabError,
@@ -162,7 +163,12 @@ export function MyActivityScreen() {
           })}
         </ScrollView>
       </View>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: styles.content.paddingBottom + insets.bottom },
+        ]}
+      >
         {renderActiveTab()}
       </ScrollView>
       <ActivityStoryPreviewSheet

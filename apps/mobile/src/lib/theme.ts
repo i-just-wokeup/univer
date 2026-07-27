@@ -9,6 +9,7 @@ export const colors = {
   danger: "#FF3B4E",
   imagePlaceholder: "#E8E3F3",
   muted: "#6B6E7B",
+  navBackground: "#FFFFFF",
   text: "#15161B",
   textFaint: "#9A9DA8",
   white: "#FFFFFF",
