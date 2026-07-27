@@ -7,6 +7,7 @@
 ## 2026-07-27
 
 ### 완료
+- **앱 채팅 키보드 3a 적용** — `react-native-keyboard-controller`를 설치하고 루트에 `KeyboardProvider`를 추가한 뒤, 채팅방만 RN 기본 `KeyboardAvoidingView`/수동 키보드 상태 계산에서 `KeyboardStickyView` 기반 입력창 고정 방식으로 교체. 키보드 열림/닫힘 시 입력창이 붕 뜨는 Android edge-to-edge 타이밍 충돌을 채팅방에서 먼저 검증할 수 있게 했고, 메시지 입력창 여백도 소폭 축소. 댓글/작성/프로필 편집 등 다른 키보드 화면은 3b 범위라 건드리지 않음. 앱 tsc 통과, 실제 반영은 EAS dev build 재설치 후 확인 필요.
 - **앱 일반 화면 하단 네비바 배경 방향 재정리** — 탭 화면은 `BottomTabBar`의 흰색 네비바를 유지하고, 탭 없는 일반 화면은 화면 배경색이 하단 네비바 영역까지 이어지도록 `ScreenContainer` 구조를 수정. 기존 흰색 루트 + bottom inset margin 구조를 제거해 일반 push 화면 하단에 흰 띠가 뜨지 않게 했고, 릴스·스토리 immersive 화면과 키보드 로직은 건드리지 않음. 앱 tsc 통과.
 - **앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용** — edge-to-edge ON + contrast scrim 비활성화 이후에도 화면별 `SafeAreaView` 배경이 제각각이라 하단 네비바 영역이 연보라/흰색으로 섞이던 문제를 정리. 공용 `ScreenContainer`를 추가해 바깥 루트는 `colors.navBackground` 흰색, 내부 콘텐츠는 기존 연보라 배경으로 분리하고, 일반 push 화면(작성/설정/알림/차단/내 활동/인사이트/프로필 편집/상세/채팅/검색/크루관리/프로필)에 적용. 릴스·스토리 immersive 화면과 키보드 로직은 건드리지 않음. 앱 tsc 통과, 실제 네비바 색은 EAS dev build 재설치 후 확인 필요.
 - **앱 Android 네비바 contrast scrim 비활성화** — Android 15 edge-to-edge에서 3버튼 네비바 위로 시스템이 반투명 회색 contrast scrim을 얹어 일반 화면 하단이 회색으로 보이던 원인을 native config로 정리. `androidNavigationBar.enforceContrast=false`와 흰 네비바 배경/어두운 버튼을 추가하고, 실패했던 JS 하단 오버레이(`SystemBarsController` zIndex 레이어, 인사이트 임시 하단 View)는 제거. 릴스·스토리의 아이콘 tint 프리셋은 유지. 앱 tsc 통과, 실제 반영은 EAS dev build 재설치 후 확인 필요.

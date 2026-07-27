@@ -1,6 +1,5 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Keyboard } from "react-native";
 
 import { blockUser } from "../blocks/api";
 import { setActiveConversationId } from "./activeConversation";
@@ -22,7 +21,6 @@ export function useChatRoom(conversationId: string) {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isAccepting, setIsAccepting] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   // 방을 열고 있는 동안 들어온 메시지를 읽음 처리하기 위한 포커스 상태.
   const [isFocused, setIsFocused] = useState(false);
   const { active, pending, reload } = useConversations();
@@ -53,20 +51,6 @@ export function useChatRoom(conversationId: string) {
     void getCurrentUserId()
       .then(setCurrentUserId)
       .catch(() => setCurrentUserId(""));
-  }, []);
-
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setIsKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setIsKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
   }, []);
 
   useFocusEffect(
@@ -162,7 +146,6 @@ export function useChatRoom(conversationId: string) {
     isAccepting,
     isBlocking,
     isIncomingRequest,
-    isKeyboardVisible,
     isLoading,
     isLoadingMore,
     isPending,

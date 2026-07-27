@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -22,15 +23,17 @@ import { colors } from "../src/lib/theme";
 function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <BottomSheetModalProvider>
-          <SessionProvider>
-            <RootNavigator />
-            <PushNotificationsController />
-            <SystemBarsController />
-          </SessionProvider>
-        </BottomSheetModalProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <BottomSheetModalProvider>
+            <SessionProvider>
+              <RootNavigator />
+              <PushNotificationsController />
+              <SystemBarsController />
+            </SessionProvider>
+          </BottomSheetModalProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

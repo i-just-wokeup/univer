@@ -122,6 +122,7 @@
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)
 - [x] 앱 햅틱 피드백 1차 도입 (더블탭 좋아요/당겨서 새로고침)
+- [x] 앱 채팅 키보드 3a 적용 (react-native-keyboard-controller 설치, 채팅방 입력창 KeyboardStickyView 전환)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)
 - [x] 채팅방 fullscreen route group 분리 (하단 탭바/사이드바 제거, `h-dvh` 전용 레이아웃)

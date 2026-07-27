@@ -1,12 +1,8 @@
 import { useRouter } from "expo-router";
 import { MoreHorizontal } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 
 import { ChatMessageList } from "../../components/chat/ChatMessageList";
 import { ChatRequestBanner } from "../../components/chat/ChatRequestBanner";
@@ -38,7 +34,6 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     isAccepting,
     isBlocking,
     isIncomingRequest,
-    isKeyboardVisible,
     isLoading,
     isLoadingMore,
     isPending,
@@ -119,7 +114,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
 
   return (
     <ScreenContainer style={styles.screen}>
-      <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
+      <View style={styles.content}>
         <ChatRoomHeader
           avatarUrl={conversation?.other_user.avatar_url ?? null}
           nickname={conversation?.other_user.nickname ?? "메시지"}
@@ -185,18 +180,18 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
           />
         )}
 
-        <View
-          style={[
-            styles.inputWrap,
-            { paddingBottom: isKeyboardVisible ? 0 : insets.bottom },
-          ]}
+        <KeyboardStickyView
+          offset={{ opened: insets.bottom }}
+          style={styles.inputSticky}
         >
-          <MessageInput
-            disabled={Boolean(messagesError)}
-            onSend={handleSendMessage}
-          />
-        </View>
-      </KeyboardAvoidingView>
+          <View style={[styles.inputWrap, { paddingBottom: insets.bottom }]}>
+            <MessageInput
+              disabled={Boolean(messagesError)}
+              onSend={handleSendMessage}
+            />
+          </View>
+        </KeyboardStickyView>
+      </View>
 
       <ChatRoomMoreMenu
         isBlocking={isBlocking}
@@ -217,8 +212,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.accentSoft,
   },
-  keyboard: {
+  content: {
     flex: 1,
+  },
+  inputSticky: {
+    backgroundColor: "rgba(255,255,255,0.95)",
   },
   inputWrap: {
     backgroundColor: "rgba(255,255,255,0.95)",
