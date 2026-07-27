@@ -8,6 +8,7 @@
 
 ### 완료
 - **앱 Android 엣지투엣지 2b 시스템바 배경/inset 정리** — edge-to-edge ON 상태에서 일반 화면의 투명 네비바 뒤로 반투명 회색이 비치던 문제를 줄이기 위해 네비바 배경색 토큰(`colors.navBackground`)을 추가하고, 전역 `SystemBarsController`가 일반 route는 흰색·릴스/스토리 immersive route는 검정색 하단 시스템바 배경을 깔도록 정리. 설정/내 활동/인사이트/차단한 계정 스크롤 하단 여백에 safe-area bottom을 더해 마지막 항목이 네비바에 가려지는 경로를 보정. 채팅 키보드/KeyboardAvoidingView는 3단계 범위라 건드리지 않음. 앱 tsc 통과, 실제 시스템바 반영은 EAS dev build 후 확인 필요.
+- **앱 Android 엣지투엣지 2b 하단 네비바 공용 배경 보정** — 전역 `SystemBarsController`의 하단 safe-area 배경 레이어가 native stack 화면 뒤에 묻히지 않도록 `zIndex`/`elevation`을 부여해 일반 화면은 흰색(`colors.navBackground`), 릴스/스토리는 검정색이 공용 레이어에서 적용되게 보강. 화면별 키보드 처리는 건드리지 않음.
 
 ## 2026-07-25
 
