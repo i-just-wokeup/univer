@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -168,7 +167,6 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
       }}
       style={styles.screen}
     >
-      <StatusBar style="light" />
       {size.height > 0 ? (
       <FlatList
         ref={flatListRef}

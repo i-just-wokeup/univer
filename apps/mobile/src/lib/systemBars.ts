@@ -74,6 +74,7 @@ export async function applySystemBars(preset: SystemBarPreset): Promise<void> {
   }
 
   NativeStatusBar.setTranslucent(true);
+  NativeStatusBar.setBackgroundColor("transparent");
 
   const NavigationBar = getNavigationBar();
 
