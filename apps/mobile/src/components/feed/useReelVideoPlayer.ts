@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { useVideoPlayer } from "expo-video";
 
 type UseReelVideoPlayerParams = {
@@ -37,9 +38,10 @@ export function useReelVideoPlayer({
   // replaceAsync로 메인 스레드 블락(UI 프리즈)을 피한다.
   useEffect(() => {
     // 디스크 캐시(useCaching)로 스크롤 되감기/재시청 시 재다운을 막는다.
+    // iOS는 HLS 소스에 캐시를 못 쓴다(플랫폼 제약) → 켜면 재생이 조용히 실패. 안드로이드만 캐싱.
     const source =
       isNearActive && isReady && videoUrl
-        ? { uri: videoUrl, useCaching: true }
+        ? { uri: videoUrl, useCaching: Platform.OS === "android" }
         : null;
     void player.replaceAsync(source).catch(() => undefined);
   }, [isNearActive, isReady, player, videoUrl]);

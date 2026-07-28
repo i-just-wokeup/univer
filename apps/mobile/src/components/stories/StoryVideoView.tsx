@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useVideoPlayer, VideoView, type VideoContentFit } from "expo-video";
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, View, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, View, type ViewStyle } from "react-native";
 
 import { DEFAULT_STORY_BACKGROUND_COLOR } from "../../features/stories/backgroundColors";
 
@@ -84,10 +84,11 @@ export function StoryVideoView({
       try {
         await player.pause();
         // 원격 HLS는 디스크 캐시(useCaching)로 재시청 시 재다운을 막는다. 로컬 원본은 그대로.
+        // 단 iOS는 HLS 소스에 캐시를 못 쓴다(플랫폼 제약) → 켜면 재생이 조용히 실패. 안드로이드만 캐싱.
         const nextSource = !isActive
           ? null
           : /^https?:/i.test(uri)
-            ? { uri, useCaching: true }
+            ? { uri, useCaching: Platform.OS === "android" }
             : uri;
         await player.replaceAsync(nextSource);
 

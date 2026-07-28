@@ -3,6 +3,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { Volume2, VolumeX } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -47,7 +48,8 @@ export function FeedVideoPlayer({
   const shouldRenderVideo = isActive && isReady;
   const shouldMountVideo = isReady && (isActive || hasMountedVideo);
 
-  const player = useVideoPlayer(isReady ? { uri, useCaching: true } : null, (instance) => {
+  // iOS는 HLS 소스에 캐시를 못 쓴다(플랫폼 제약) → 켜면 재생이 조용히 실패. 안드로이드만 캐싱.
+  const player = useVideoPlayer(isReady ? { uri, useCaching: Platform.OS === "android" } : null, (instance) => {
     instance.loop = true;
     instance.muted = true;
     // OOM 방지: 무압축 원본 영상을 통째로 버퍼링하지 않게 제한(안드로이드).
