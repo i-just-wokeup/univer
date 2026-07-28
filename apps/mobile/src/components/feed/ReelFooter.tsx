@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   caption: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "400",
     lineHeight: 20,
     textShadowColor: "rgba(0,0,0,0.55)",
     textShadowRadius: 4,

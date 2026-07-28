@@ -1,3 +1,5 @@
+import "../src/lib/globalFont";
+
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
 import {

@@ -16,6 +16,17 @@
     "plugins": [
       "expo-router",
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              { "name": "GoogleUtilities", "modular_headers": true },
+              { "name": "RecaptchaInterop", "modular_headers": true }
+            ]
+          }
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "스토리를 촬영하려면 카메라 접근 권한이 필요합니다.",
@@ -37,11 +48,44 @@
         }
       ],
       "expo-video",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Pretendard",
+                "fontDefinitions": [
+                  { "path": "./assets/fonts/Pretendard-Regular.otf", "weight": 400 },
+                  { "path": "./assets/fonts/Pretendard-Medium.otf", "weight": 500 },
+                  { "path": "./assets/fonts/Pretendard-SemiBold.otf", "weight": 600 },
+                  { "path": "./assets/fonts/Pretendard-Bold.otf", "weight": 700 },
+                  { "path": "./assets/fonts/Pretendard-ExtraBold.otf", "weight": 800 },
+                  { "path": "./assets/fonts/Pretendard-Black.otf", "weight": 900 }
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": [
+              "./assets/fonts/Pretendard-Regular.otf",
+              "./assets/fonts/Pretendard-Medium.otf",
+              "./assets/fonts/Pretendard-SemiBold.otf",
+              "./assets/fonts/Pretendard-Bold.otf",
+              "./assets/fonts/Pretendard-ExtraBold.otf",
+              "./assets/fonts/Pretendard-Black.otf"
+            ]
+          }
+        }
+      ]
     ],
     "ios": {
       "bundleIdentifier": "com.univer.app",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "googleServicesFile": "./google-services.json",

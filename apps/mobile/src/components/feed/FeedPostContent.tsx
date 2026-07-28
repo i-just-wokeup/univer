@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   content: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "400",
     lineHeight: 20,
   },
   contentMore: {
