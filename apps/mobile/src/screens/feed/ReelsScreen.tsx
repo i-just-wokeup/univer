@@ -168,7 +168,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
       }}
       style={styles.screen}
     >
-      <StatusBar style="light" backgroundColor={colors.black} />
+      <StatusBar style="light" />
       {size.height > 0 ? (
       <FlatList
         ref={flatListRef}
