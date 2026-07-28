@@ -1,5 +1,5 @@
 import { MoreHorizontal, Settings } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 import { colors } from "../../lib/theme";
 import { ScreenHeader } from "../common/ScreenHeader";
@@ -45,15 +45,19 @@ export function ProfileHeaderBar({
     );
   }
 
+  // 내 프로필 탭 — 남의 프로필(pushed)과 동일하게 상단 가운데에 내 아이디를 띄운다.
+  // 루트 탭이라 뒤로가기는 없고, 오른쪽엔 설정 아이콘만.
   return (
-    <View style={styles.tabHeader}>
-      <Text style={styles.logo}>KREW</Text>
-      <HeaderIconButton
-        accessibilityLabel="설정"
-        icon="settings"
-        onPress={onPressSettings}
-      />
-    </View>
+    <ScreenHeader
+      right={
+        <HeaderIconButton
+          accessibilityLabel="설정"
+          icon="settings"
+          onPress={onPressSettings}
+        />
+      }
+      title={nickname}
+    />
   );
 }
 
@@ -83,19 +87,6 @@ function HeaderIconButton({
 }
 
 const styles = StyleSheet.create({
-  tabHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 6,
-  },
-  logo: {
-    color: colors.accent,
-    fontSize: 32,
-    fontWeight: "900",
-  },
   headerButton: {
     height: 40,
     width: 40,

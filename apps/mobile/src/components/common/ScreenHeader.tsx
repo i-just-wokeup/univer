@@ -5,7 +5,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../lib/theme";
 
 type ScreenHeaderProps = {
-  onBack: () => void;
+  // 없으면 뒤로가기 버튼 대신 빈 공간을 둬서 title이 가운데 정렬을 유지한다(루트 탭 헤더용).
+  onBack?: () => void;
   right?: ReactNode;
   title: string;
 };
@@ -13,9 +14,13 @@ type ScreenHeaderProps = {
 export function ScreenHeader({ onBack, right, title }: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
-      <Pressable onPress={onBack} style={styles.headerButton}>
-        <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
-      </Pressable>
+      {onBack ? (
+        <Pressable onPress={onBack} style={styles.headerButton}>
+          <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
+        </Pressable>
+      ) : (
+        <View style={styles.headerSpacer} />
+      )}
       <Text numberOfLines={1} style={styles.headerTitle}>
         {title}
       </Text>
