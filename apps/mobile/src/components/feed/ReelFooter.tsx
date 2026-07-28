@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
 import { ExpandableText } from "../common/ExpandableText";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
 type ReelFooterProps = {
@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   nickname: {
+    ...nicknameTextStyle,
     color: colors.white,
     fontSize: 15,
-    fontWeight: "900",
     textShadowColor: "rgba(0,0,0,0.55)",
     textShadowRadius: 4,
   },

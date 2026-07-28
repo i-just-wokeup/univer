@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { ExpandableText } from "../common/ExpandableText";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
 type FeedPostContentProps = {
@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   contentNickname: {
-    fontWeight: "900",
+    fontWeight: nicknameTextStyle.fontWeight,
   },
 });

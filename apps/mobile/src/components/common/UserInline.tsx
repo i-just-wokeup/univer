@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { Avatar } from "./Avatar";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 
 type UserInlineProps = {
   avatarSize: number;
@@ -66,8 +66,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   nickname: {
-    color: colors.text,
-    fontWeight: "900",
+    ...nicknameTextStyle,
   },
   metaText: {
     color: colors.textFaint,

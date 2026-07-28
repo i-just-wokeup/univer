@@ -2,7 +2,7 @@ import { Star } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityFavoriteUser } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type ActivityFavoriteUserRowProps = {
@@ -72,9 +72,8 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   nickname: {
-    color: colors.text,
+    ...nicknameTextStyle,
     fontSize: 15,
-    fontWeight: "900",
   },
   department: {
     marginTop: 3,

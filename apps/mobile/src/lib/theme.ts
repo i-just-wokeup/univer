@@ -46,3 +46,10 @@ export const radius = {
   lg: 24,
   full: 999,
 } as const;
+
+// 닉네임 텍스트 공통 스타일 — 색·굵기 단일 소스. 크기는 각 사용처에서 지정하고,
+// 어두운 배경(릴스/스토리)은 color만 흰색으로 덮는다. 닉네임 굵기 변경은 여기 한 곳만.
+export const nicknameTextStyle = {
+  color: colors.text,
+  fontWeight: "700",
+} as const;

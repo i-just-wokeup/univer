@@ -6,7 +6,7 @@ import type {
   ProfileDetail,
   ProfileLink,
 } from "../../features/profile/types";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type ProfileInfoPanelProps = {
@@ -127,9 +127,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   nickname: {
-    color: colors.text,
+    ...nicknameTextStyle,
     fontSize: 20,
-    fontWeight: "900",
   },
   realName: {
     marginTop: 4,

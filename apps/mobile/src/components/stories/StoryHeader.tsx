@@ -2,7 +2,7 @@ import { MoreHorizontal, Pause, X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 
 type StoryHeaderProps = {
   avatarUrl: string | null;
@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   authorName: {
+    ...nicknameTextStyle,
     color: colors.white,
     fontSize: 14,
-    fontWeight: "900",
   },
   time: {
     color: "rgba(255,255,255,0.78)",

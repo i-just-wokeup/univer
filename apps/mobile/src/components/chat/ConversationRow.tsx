@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Avatar } from "../common/Avatar";
 import type { ConversationWithUser } from "../../features/chat/api";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 
 type ConversationRowProps = {
   conversation: ConversationWithUser;
@@ -89,10 +89,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   nickname: {
+    ...nicknameTextStyle,
     minWidth: 0,
-    color: colors.text,
     fontSize: 15,
-    fontWeight: "900",
   },
   pendingBadge: {
     borderRadius: 999,

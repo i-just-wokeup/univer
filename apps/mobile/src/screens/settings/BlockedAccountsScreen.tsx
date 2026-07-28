@@ -9,7 +9,7 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { Avatar } from "../../components/common/Avatar";
 import { useBlockedAccounts } from "../../features/blocks/useBlockedAccounts";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 
 function formatBlockedAt(createdAt: string) {
   const date = new Date(createdAt);
@@ -158,9 +158,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   nickname: {
-    color: colors.text,
+    ...nicknameTextStyle,
     fontSize: 15,
-    fontWeight: "900",
   },
   department: {
     marginTop: 3,

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { SearchUser } from "../../features/search/api";
-import { colors } from "../../lib/theme";
+import { colors, nicknameTextStyle } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type SearchUserRowProps = {
@@ -47,9 +47,8 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   nickname: {
-    color: colors.text,
+    ...nicknameTextStyle,
     fontSize: 14,
-    fontWeight: "900",
   },
   department: {
     marginTop: 3,
