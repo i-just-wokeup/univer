@@ -4,6 +4,12 @@
 
 ---
 
+## 2026-07-29
+
+### 완료
+- **앱 채팅 키보드/스크롤 구조 재정렬** — `react-native-keyboard-controller` 1.22 가이드 기준으로 채팅방을 `SafeAreaView(bottom)` → `KeyboardGestureArea` → inverted `FlatList(renderScrollComponent=KeyboardChatScrollView)` + `KeyboardStickyView` 구조에 맞춤. 전송 직후 수동 `scrollToOffset(0)` 제거, 입력창 bottom padding 토글 제거, `KeyboardStickyView`/`KeyboardChatScrollView` offset을 safe-area 기준으로 통일, 입력창 증가분만 `extraContentPadding`에 전달하도록 정리. 앱 tsc 통과, iOS 실기기에서 키보드 열림/닫힘과 전송 후 최신 메시지 위치 재확인 필요.
+- **앱 채팅방 이탈 시 키보드 잔류 수정** — 키보드가 열린 상태로 채팅방에서 뒤로가기/프로필·게시물 이동/차단 후 목록 이동/에러 복귀를 할 때 이전 `TextInput` focus가 남아 다음 화면 위에 키보드가 유지되던 경로를 정리. `KeyboardController.dismiss()`를 화면 이탈 액션과 focus cleanup에 연결해 iOS route transition 전에 키보드를 명시적으로 닫도록 보강. 앱 tsc 통과, iOS 실기기 리로드 후 뒤로가기·스와이프 백 재확인 필요.
+
 ## 2026-07-27
 
 ### 완료

@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { MoreHorizontal } from "lucide-react-native";
 import {
   forwardRef,
@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import {
   KeyboardChatScrollView,
+  KeyboardController,
   KeyboardGestureArea,
   KeyboardStickyView,
   type KeyboardChatScrollViewProps,
@@ -96,6 +97,16 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     [extraContentPadding],
   );
 
+  const dismissKeyboard = useCallback(() => {
+    void KeyboardController.dismiss();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return dismissKeyboard;
+    }, [dismissKeyboard]),
+  );
+
   const stickyViewOffset = useMemo(
     () => ({ opened: insets.bottom - CHAT_LIST_MARGIN }),
     [insets.bottom],
@@ -115,17 +126,19 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   );
 
   const handleBack = useCallback(() => {
+    dismissKeyboard();
     router.back();
-  }, [router]);
+  }, [dismissKeyboard, router]);
 
   const handlePressProfile = useCallback(
     (nickname: string) => {
+      dismissKeyboard();
       router.push({
         pathname: "/profile/[nickname]",
         params: { nickname },
       });
     },
-    [router],
+    [dismissKeyboard, router],
   );
 
   const handleOpenMenu = useCallback(() => {
@@ -154,6 +167,8 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
 
   const handlePostPress = useCallback(
     (postId: string, mediaType: "image" | "video" | null) => {
+      dismissKeyboard();
+
       if (mediaType === "video") {
         router.push({
           pathname: "/reels",
@@ -167,17 +182,18 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
         params: { id: postId },
       });
     },
-    [router],
+    [dismissKeyboard, router],
   );
 
   const handleBlockUser = useCallback(async () => {
     const blocked = await blockConversationUser();
     if (blocked) {
+      dismissKeyboard();
       router.replace("/messages");
     } else {
       setIsBlockConfirmOpen(false);
     }
-  }, [blockConversationUser, router]);
+  }, [blockConversationUser, dismissKeyboard, router]);
 
   const handleConfirmBlock = useCallback(() => {
     void handleBlockUser();
@@ -242,7 +258,10 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
                 <StateView
                   actionLabel="목록으로"
                   message={messagesError}
-                  onAction={() => router.replace("/messages")}
+                  onAction={() => {
+                    dismissKeyboard();
+                    router.replace("/messages");
+                  }}
                   title="메시지를 불러오지 못했습니다"
                   type="error"
                 />

@@ -134,6 +134,8 @@
 - [x] Supabase migration 로컬 파일 정리 (supabase/migrations/ 생성, 누락 4개 수동 추가)
 - [x] **users 테이블 RLS 활성화 + 민감 컬럼 보호 트리거** (자가 admin 승격 방지, 개인정보 노출 차단)
 - [x] **보안 패치** — anon 함수 실행 차단, Storage 파일 목록 노출 차단, 함수 search_path 고정
+- [x] **앱 채팅 키보드/스크롤 구조 재정렬** — `react-native-keyboard-controller` 1.22 공식 채팅 구조에 맞춰 bottom safe-area, `KeyboardChatScrollView`, `KeyboardStickyView`, 입력창 증가분 패딩을 단일 기준으로 정리하고 전송 시 수동 스크롤을 제거
+- [x] **앱 채팅방 이탈 시 키보드 잔류 수정** — 채팅방 뒤로가기/화면 이동/focus cleanup에서 `KeyboardController.dismiss()`를 호출해 iOS에서 다음 화면 위에 키보드가 남는 경로를 보강
 - [x] **Google OAuth 연동** — 국민대 Google Workspace, 이름+학과 자동 파싱 저장 (프로필 사진 제외)
 - [x] **실명 공개 범위** — 친구(accepted)이거나 본인일 때만 프로필에서 실명 노출
 - [x] **Supabase Auth 설정** — 최소 비밀번호 8자, Letters+digits 조합 강제
@@ -337,6 +339,7 @@
 - [ ] 앱 스토리 뷰어 상태바 복귀 침범 — dev build에서 재현 여부 및 화면별 시스템바 제어 방식 재검증
 - [ ] 앱 알림: 벨 뱃지/목록 문구/탭 시 읽음+이동(게시물/스토리/프로필), 모두 읽음, 본인 행동이 actor로 안 뜨는지 실기기 확인
 - [ ] 앱 검색: 닉네임 입력→결과→프로필 이동, 최근 검색 저장/삭제/모두지우기, 탭 전환 시 입력 초기화 실기기 확인 (확인 완료)
+- [ ] 앱 채팅방: iOS 실기기에서 키보드 닫힘 하단 여백, 열림 시 최신 메시지 가림, 전송 직후 위치 튐, 닫힘 bounce, 키보드 열린 상태의 뒤로가기/스와이프 백 재확인
 
 ### 앱 전환 전 정리 체크리스트
 - [ ] `features/chat/api.ts`의 `window.dispatchEvent` 제거 또는 hook 레이어로 이동
