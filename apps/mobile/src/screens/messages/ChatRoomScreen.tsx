@@ -3,6 +3,7 @@ import { MoreHorizontal } from "lucide-react-native";
 import {
   forwardRef,
   useCallback,
+  useMemo,
   useState,
   type ComponentRef,
 } from "react";
@@ -35,7 +36,6 @@ import { colors } from "../../lib/theme";
 
 const CHAT_INPUT_ID = "chat-input";
 const CHAT_COMPOSER_HEIGHT = 56;
-const CHAT_TEXT_INPUT_HEIGHT = 38;
 const CHAT_LIST_MARGIN = 8;
 
 type ChatRoomScreenProps = {
@@ -65,6 +65,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   const insets = useStableInsets();
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [composerHeight, setComposerHeight] = useState(CHAT_COMPOSER_HEIGHT);
   const extraContentPadding = useSharedValue(0);
   const {
     blockConversationUser,
@@ -95,10 +96,18 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     [extraContentPadding],
   );
 
-  const handleInputLayout = useCallback(
+  const stickyViewOffset = useMemo(
+    () => ({ opened: insets.bottom - CHAT_LIST_MARGIN }),
+    [insets.bottom],
+  );
+
+  const handleComposerLayout = useCallback(
     (event: LayoutChangeEvent) => {
+      const nextHeight = event.nativeEvent.layout.height;
+
+      setComposerHeight(nextHeight);
       extraContentPadding.value = withTiming(
-        Math.max(event.nativeEvent.layout.height - CHAT_TEXT_INPUT_HEIGHT, 0),
+        Math.max(nextHeight - CHAT_COMPOSER_HEIGHT, 0),
         { duration: 250 },
       );
     },
@@ -216,7 +225,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
         <SafeAreaView edges={["bottom"]} style={styles.keyboardArea}>
           <KeyboardGestureArea
             interpolator="ios"
-            offset={CHAT_COMPOSER_HEIGHT}
+            offset={composerHeight}
             style={styles.gestureArea}
             textInputNativeID={CHAT_INPUT_ID}
           >
@@ -260,14 +269,14 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
             )}
 
             <KeyboardStickyView
-              offset={{ opened: insets.bottom - CHAT_LIST_MARGIN }}
+              offset={stickyViewOffset}
               style={styles.inputSticky}
             >
               <View style={styles.inputWrap}>
                 <MessageInput
                   disabled={Boolean(messagesError)}
                   inputNativeID={CHAT_INPUT_ID}
-                  onInputLayout={handleInputLayout}
+                  onComposerLayout={handleComposerLayout}
                   onSend={handleSendMessage}
                 />
               </View>
@@ -308,12 +317,17 @@ const styles = StyleSheet.create({
   },
   gestureArea: {
     flex: 1,
+    backgroundColor: colors.accentSoft,
   },
   stateArea: {
     flex: 1,
     backgroundColor: colors.accentSoft,
   },
   inputSticky: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: colors.white,
   },
   inputWrap: {

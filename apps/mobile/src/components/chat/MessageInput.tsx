@@ -13,14 +13,14 @@ import { colors } from "../../lib/theme";
 type MessageInputProps = {
   disabled?: boolean;
   inputNativeID?: string;
-  onInputLayout?: (event: LayoutChangeEvent) => void;
+  onComposerLayout?: (event: LayoutChangeEvent) => void;
   onSend: (content: string) => Promise<void>;
 };
 
 export function MessageInput({
   disabled = false,
   inputNativeID,
-  onInputLayout,
+  onComposerLayout,
   onSend,
 }: MessageInputProps) {
   const [content, setContent] = useState("");
@@ -38,14 +38,13 @@ export function MessageInput({
   }
 
   return (
-    <View style={styles.container}>
+    <View onLayout={onComposerLayout} style={styles.container}>
       <TextInput
         editable={!disabled}
         maxLength={1000}
         multiline
         nativeID={inputNativeID}
         onChangeText={setContent}
-        onLayout={onInputLayout}
         placeholder="메시지 입력"
         placeholderTextColor={colors.textFaint}
         style={styles.input}
