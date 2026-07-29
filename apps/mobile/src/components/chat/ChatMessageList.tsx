@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type FlatListProps,
   type ListRenderItemInfo,
 } from "react-native";
 
@@ -13,12 +14,14 @@ import { formatChatTime } from "../../lib/utils/time";
 import { MessageBubble } from "./MessageBubble";
 
 type ChatMessageListProps = {
+  contentTopInset?: number;
   currentUserId: string;
   hasMore: boolean;
   isLoadingMore: boolean;
   loadMore: () => void;
   messages: ChatMessage[];
   onPostPress: (postId: string, mediaType: "image" | "video" | null) => void;
+  renderScrollComponent?: FlatListProps<ChatMessage>["renderScrollComponent"];
 };
 
 // inverted 리스트라 같은 아이템 안에서 더 오래된 메시지와의 간격(5분)을 비교해 구분선을 그린다.
@@ -75,12 +78,14 @@ function ChatMessageItemComponent({
 const ChatMessageItem = memo(ChatMessageItemComponent);
 
 export function ChatMessageList({
+  contentTopInset = 10,
   currentUserId,
   hasMore,
   isLoadingMore,
   loadMore,
   messages,
   onPostPress,
+  renderScrollComponent,
 }: ChatMessageListProps) {
   const keyExtractor = useCallback((message: ChatMessage) => message.id, []);
   const handleEndReached = useCallback(() => {
@@ -88,6 +93,7 @@ export function ChatMessageList({
       loadMore();
     }
   }, [hasMore, isLoadingMore, loadMore]);
+
   const renderItem = useCallback(
     ({ index, item }: ListRenderItemInfo<ChatMessage>) => (
       <ChatMessageItem
@@ -103,10 +109,14 @@ export function ChatMessageList({
 
   return (
     <FlatList
-      contentContainerStyle={styles.messageList}
+      contentContainerStyle={[
+        styles.messageList,
+        { paddingTop: contentTopInset },
+      ]}
       data={messages}
       initialNumToRender={16}
       inverted
+      keyboardShouldPersistTaps="handled"
       keyExtractor={keyExtractor}
       ListFooterComponent={
         isLoadingMore ? (
@@ -120,6 +130,7 @@ export function ChatMessageList({
       onEndReachedThreshold={0.3}
       removeClippedSubviews
       renderItem={renderItem}
+      renderScrollComponent={renderScrollComponent}
       style={styles.messages}
       windowSize={9}
     />

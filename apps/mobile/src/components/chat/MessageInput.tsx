@@ -1,15 +1,28 @@
 import { Send } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  type LayoutChangeEvent,
+} from "react-native";
 
 import { colors } from "../../lib/theme";
 
 type MessageInputProps = {
   disabled?: boolean;
+  inputNativeID?: string;
+  onInputLayout?: (event: LayoutChangeEvent) => void;
   onSend: (content: string) => Promise<void>;
 };
 
-export function MessageInput({ disabled = false, onSend }: MessageInputProps) {
+export function MessageInput({
+  disabled = false,
+  inputNativeID,
+  onInputLayout,
+  onSend,
+}: MessageInputProps) {
   const [content, setContent] = useState("");
   const trimmedContent = content.trim();
   const canSend = Boolean(trimmedContent) && !disabled;
@@ -30,7 +43,9 @@ export function MessageInput({ disabled = false, onSend }: MessageInputProps) {
         editable={!disabled}
         maxLength={1000}
         multiline
+        nativeID={inputNativeID}
         onChangeText={setContent}
+        onLayout={onInputLayout}
         placeholder="메시지 입력"
         placeholderTextColor={colors.textFaint}
         style={styles.input}

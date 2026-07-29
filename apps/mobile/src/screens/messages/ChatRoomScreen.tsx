@@ -1,8 +1,26 @@
 import { useRouter } from "expo-router";
 import { MoreHorizontal } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import { KeyboardStickyView } from "react-native-keyboard-controller";
+import {
+  forwardRef,
+  useCallback,
+  useState,
+  type ComponentRef,
+} from "react";
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type ScrollViewProps,
+} from "react-native";
+import {
+  KeyboardChatScrollView,
+  KeyboardGestureArea,
+  KeyboardStickyView,
+  type KeyboardChatScrollViewProps,
+} from "react-native-keyboard-controller";
+import { useSharedValue, withTiming } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ChatMessageList } from "../../components/chat/ChatMessageList";
 import { ChatRequestBanner } from "../../components/chat/ChatRequestBanner";
@@ -15,15 +33,39 @@ import { useChatRoom } from "../../features/chat/useChatRoom";
 import { useStableInsets } from "../../lib/useStableInsets";
 import { colors } from "../../lib/theme";
 
+const CHAT_INPUT_ID = "chat-input";
+const CHAT_COMPOSER_HEIGHT = 56;
+const CHAT_TEXT_INPUT_HEIGHT = 38;
+const CHAT_LIST_MARGIN = 8;
+
 type ChatRoomScreenProps = {
   conversationId: string;
 };
+
+const ChatScrollView = forwardRef<
+  ComponentRef<typeof KeyboardChatScrollView>,
+  ScrollViewProps & KeyboardChatScrollViewProps
+>(function ChatScrollView(props, ref) {
+  const insets = useStableInsets();
+
+  return (
+    <KeyboardChatScrollView
+      ref={ref}
+      automaticallyAdjustContentInsets={false}
+      contentInsetAdjustmentBehavior="never"
+      keyboardDismissMode="interactive"
+      offset={insets.bottom - CHAT_LIST_MARGIN}
+      {...props}
+    />
+  );
+});
 
 export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   const router = useRouter();
   const insets = useStableInsets();
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const extraContentPadding = useSharedValue(0);
   const {
     blockConversationUser,
     conversation,
@@ -42,6 +84,26 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
     messagesError,
     reversedMessages,
   } = useChatRoom(conversationId);
+
+  const renderScrollComponent = useCallback(
+    (props: ScrollViewProps) => (
+      <ChatScrollView
+        {...(props as ScrollViewProps & KeyboardChatScrollViewProps)}
+        extraContentPadding={extraContentPadding}
+      />
+    ),
+    [extraContentPadding],
+  );
+
+  const handleInputLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      extraContentPadding.value = withTiming(
+        Math.max(event.nativeEvent.layout.height - CHAT_TEXT_INPUT_HEIGHT, 0),
+        { duration: 250 },
+      );
+    },
+    [extraContentPadding],
+  );
 
   const handleBack = useCallback(() => {
     router.back();
@@ -115,82 +177,103 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   return (
     <ScreenContainer style={styles.screen}>
       <View style={styles.content}>
-        <ChatRoomHeader
-          avatarUrl={conversation?.other_user.avatar_url ?? null}
-          nickname={conversation?.other_user.nickname ?? "메시지"}
-          onBack={handleBack}
-          onPressProfile={conversation ? handlePressProfile : undefined}
-          right={
-            conversation ? (
-              <Pressable
-                accessibilityLabel="더보기"
-                accessibilityRole="button"
-                onPress={handleOpenMenu}
-                style={({ pressed }) => [
-                  styles.headerMenuButton,
-                  pressed ? styles.pressed : null,
-                ]}
-              >
-                <MoreHorizontal
-                  color={colors.muted}
-                  size={22}
-                  strokeWidth={2.5}
-                />
-              </Pressable>
-            ) : null
-          }
-        />
+        <View style={styles.headerArea}>
+          <ChatRoomHeader
+            avatarUrl={conversation?.other_user.avatar_url ?? null}
+            nickname={conversation?.other_user.nickname ?? "메시지"}
+            onBack={handleBack}
+            onPressProfile={conversation ? handlePressProfile : undefined}
+            right={
+              conversation ? (
+                <Pressable
+                  accessibilityLabel="더보기"
+                  accessibilityRole="button"
+                  onPress={handleOpenMenu}
+                  style={({ pressed }) => [
+                    styles.headerMenuButton,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  <MoreHorizontal
+                    color={colors.muted}
+                    size={22}
+                    strokeWidth={2.5}
+                  />
+                </Pressable>
+              ) : null
+            }
+          />
 
-        {isPending ? (
-          <ChatRequestBanner
-            isAccepting={isAccepting}
-            isIncomingRequest={isIncomingRequest}
-            onAccept={handleAcceptPress}
-          />
-        ) : null}
-
-        {isLoading ? (
-          <StateView
-            message="메시지를 불러오는 중입니다."
-            title="대화 준비 중"
-            type="loading"
-          />
-        ) : messagesError ? (
-          <StateView
-            actionLabel="목록으로"
-            message={messagesError}
-            onAction={() => router.replace("/messages")}
-            title="메시지를 불러오지 못했습니다"
-            type="error"
-          />
-        ) : messages.length === 0 ? (
-          <StateView
-            message="첫 메시지를 보내 대화를 시작하세요."
-            title="아직 메시지가 없습니다"
-            type="empty"
-          />
-        ) : (
-          <ChatMessageList
-            currentUserId={currentUserId}
-            hasMore={hasMore}
-            isLoadingMore={isLoadingMore}
-            loadMore={handleLoadMore}
-            messages={reversedMessages}
-            onPostPress={handlePostPress}
-          />
-        )}
-
-        <KeyboardStickyView
-          offset={{ opened: insets.bottom }}
-          style={styles.inputSticky}
-        >
-          <View style={[styles.inputWrap, { paddingBottom: insets.bottom }]}>
-            <MessageInput
-              disabled={Boolean(messagesError)}
-              onSend={handleSendMessage}
+          {isPending ? (
+            <ChatRequestBanner
+              isAccepting={isAccepting}
+              isIncomingRequest={isIncomingRequest}
+              onAccept={handleAcceptPress}
             />
-          </View>
-        </KeyboardStickyView>
+          ) : null}
+        </View>
+
+        <SafeAreaView edges={["bottom"]} style={styles.keyboardArea}>
+          <KeyboardGestureArea
+            interpolator="ios"
+            offset={CHAT_COMPOSER_HEIGHT}
+            style={styles.gestureArea}
+            textInputNativeID={CHAT_INPUT_ID}
+          >
+            {isLoading ? (
+              <View style={styles.stateArea}>
+                <StateView
+                  message="메시지를 불러오는 중입니다."
+                  title="대화 준비 중"
+                  type="loading"
+                />
+              </View>
+            ) : messagesError ? (
+              <View style={styles.stateArea}>
+                <StateView
+                  actionLabel="목록으로"
+                  message={messagesError}
+                  onAction={() => router.replace("/messages")}
+                  title="메시지를 불러오지 못했습니다"
+                  type="error"
+                />
+              </View>
+            ) : messages.length === 0 ? (
+              <View style={styles.stateArea}>
+                <StateView
+                  message="첫 메시지를 보내 대화를 시작하세요."
+                  title="아직 메시지가 없습니다"
+                  type="empty"
+                />
+              </View>
+            ) : (
+              <ChatMessageList
+                contentTopInset={CHAT_COMPOSER_HEIGHT + CHAT_LIST_MARGIN}
+                currentUserId={currentUserId}
+                hasMore={hasMore}
+                isLoadingMore={isLoadingMore}
+                loadMore={handleLoadMore}
+                messages={reversedMessages}
+                onPostPress={handlePostPress}
+                renderScrollComponent={renderScrollComponent}
+              />
+            )}
+
+            <KeyboardStickyView
+              offset={{ opened: insets.bottom - CHAT_LIST_MARGIN }}
+              style={styles.inputSticky}
+            >
+              <View style={styles.inputWrap}>
+                <MessageInput
+                  disabled={Boolean(messagesError)}
+                  inputNativeID={CHAT_INPUT_ID}
+                  onInputLayout={handleInputLayout}
+                  onSend={handleSendMessage}
+                />
+              </View>
+            </KeyboardStickyView>
+          </KeyboardGestureArea>
+        </SafeAreaView>
       </View>
 
       <ChatRoomMoreMenu
@@ -214,12 +297,27 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    backgroundColor: colors.white,
+  },
+  headerArea: {
+    backgroundColor: colors.accentSoft,
+  },
+  keyboardArea: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  gestureArea: {
+    flex: 1,
+  },
+  stateArea: {
+    flex: 1,
+    backgroundColor: colors.accentSoft,
   },
   inputSticky: {
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: colors.white,
   },
   inputWrap: {
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: colors.white,
   },
   headerMenuButton: {
     height: 40,
