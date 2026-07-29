@@ -1,7 +1,10 @@
-import { Image } from "expo-image";
+import { Image, type ImageContentFit } from "expo-image";
+import { useEffect, useState } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 
 import { DEFAULT_STORY_BACKGROUND_COLOR } from "../../features/stories/backgroundColors";
+
+const STORY_FRAME_ASPECT_RATIO = 9 / 16;
 
 type StoryMediaFrameProps = {
   backgroundColor?: string | null;
@@ -9,13 +12,23 @@ type StoryMediaFrameProps = {
   style?: ViewStyle;
 };
 
-// 스토리 이미지를 보여주는 9:16 프레임 — 단색 배경 + 원본 contain 레터박스.
+function getStoryImageContentFit(width: number, height: number): ImageContentFit {
+  return width / height < STORY_FRAME_ASPECT_RATIO ? "cover" : "contain";
+}
+
+// 스토리 이미지를 보여주는 9:16 프레임 — 좌우를 채우고, 짧은 사진만 단색 레터박스로 둔다.
 // 작성 미리보기와 뷰어가 같은 모양이 되도록 공용으로 쓴다(미리보기 = 실제 스토리).
 export function StoryMediaFrame({
   backgroundColor = DEFAULT_STORY_BACKGROUND_COLOR,
   imageUrl,
   style,
 }: StoryMediaFrameProps) {
+  const [contentFit, setContentFit] = useState<ImageContentFit>("cover");
+
+  useEffect(() => {
+    setContentFit("cover");
+  }, [imageUrl]);
+
   return (
     <View
       style={[
@@ -26,7 +39,14 @@ export function StoryMediaFrame({
     >
       <Image
         cachePolicy="memory-disk"
-        contentFit="contain"
+        contentFit={contentFit}
+        onLoad={(event) => {
+          const width = event.source?.width;
+          const height = event.source?.height;
+          if (width > 0 && height > 0) {
+            setContentFit(getStoryImageContentFit(width, height));
+          }
+        }}
         source={{ uri: imageUrl }}
         style={styles.fill}
       />
