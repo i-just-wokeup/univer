@@ -41,13 +41,15 @@ export type Database = {
           nickname: string
           bio: string | null
           avatar_url: string | null
-        university_id: string
-        department: string
-        credit_balance: number
-        level: number
-        level_score: number
-        role: 'user' | 'official' | 'admin'
-        is_onboarded: boolean
+          university_id: string
+          department: string
+          department_public: boolean
+          credit_balance: number
+          level: number
+          level_score: number
+          role: 'user' | 'official' | 'admin'
+          is_onboarded: boolean
+          real_name_public: boolean
           is_active: boolean
           fcm_token: string | null
           visibility: 'public' | 'close_friends'
@@ -63,11 +65,13 @@ export type Database = {
           avatar_url?: string | null
           university_id: string
           department: string
+          department_public?: boolean
           credit_balance?: number
           level?: number
           level_score?: number
           role?: 'user' | 'official' | 'admin'
           is_onboarded?: boolean
+          real_name_public?: boolean
           is_active?: boolean
           fcm_token?: string | null
           visibility?: 'public' | 'close_friends'
@@ -83,11 +87,13 @@ export type Database = {
           avatar_url?: string | null
           university_id?: string
           department?: string
+          department_public?: boolean
           credit_balance?: number
           level?: number
           level_score?: number
           role?: 'user' | 'official' | 'admin'
           is_onboarded?: boolean
+          real_name_public?: boolean
           is_active?: boolean
           fcm_token?: string | null
           visibility?: 'public' | 'close_friends'
@@ -743,7 +749,7 @@ export type Database = {
           id: string
           nickname: string
           avatar_url: string | null
-          department: string
+          department: string | null
           created_at: string
         }>
       }
@@ -759,7 +765,7 @@ export type Database = {
           id: string
           nickname: string
           avatar_url: string | null
-          department: string
+          department: string | null
         }>
       }
       get_pending_requests: {
@@ -768,7 +774,7 @@ export type Database = {
           id: string
           nickname: string
           avatar_url: string | null
-          department: string
+          department: string | null
           created_at: string
         }>
       }
@@ -778,7 +784,7 @@ export type Database = {
           id: string
           nickname: string
           avatar_url: string | null
-          department: string
+          department: string | null
           created_at: string
         }>
       }

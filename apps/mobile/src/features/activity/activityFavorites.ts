@@ -1,5 +1,6 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { getCurrentUserContext } from "../shared/userContext";
+import { getVisibleDepartmentForViewer } from "../shared/userPrivacy";
 import type {
   ActivityFavoriteUser,
   UserFavoriteRow,
@@ -39,7 +40,7 @@ export async function getFavoriteUsers(): Promise<ActivityFavoriteUser[]> {
 
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("id, nickname, department, avatar_url")
+    .select("id, nickname, department, department_public, avatar_url")
     .eq("university_id", universityId)
     .is("deleted_at", null)
     .in("id", favoriteUserIds);
@@ -50,22 +51,25 @@ export async function getFavoriteUsers(): Promise<ActivityFavoriteUser[]> {
 
   const usersById = new Map(users.map((user) => [user.id, user]));
 
-  return favoriteUserIds.reduce<ActivityFavoriteUser[]>((items, userId) => {
-    const user = usersById.get(userId);
-    const favoritedAt = favoritedAtByUserId.get(userId);
+  return favoriteUserIds.reduce<ActivityFavoriteUser[]>(
+    (items, favoriteUserId) => {
+      const user = usersById.get(favoriteUserId);
+      const favoritedAt = favoritedAtByUserId.get(favoriteUserId);
 
-    if (!user || !favoritedAt) {
+      if (!user || !favoritedAt) {
+        return items;
+      }
+
+      items.push({
+        avatar_url: user.avatar_url,
+        department: getVisibleDepartmentForViewer(user, userId),
+        favorited_at: favoritedAt,
+        id: user.id,
+        nickname: user.nickname,
+      });
+
       return items;
-    }
-
-    items.push({
-      avatar_url: user.avatar_url,
-      department: user.department,
-      favorited_at: favoritedAt,
-      id: user.id,
-      nickname: user.nickname,
-    });
-
-    return items;
-  }, []);
+    },
+    [],
+  );
 }

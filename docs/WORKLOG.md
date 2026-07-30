@@ -7,6 +7,7 @@
 ## 2026-07-30
 
 ### 완료
+- **앱 프로필 실명/학과 공개 여부 토글 Phase 1** — `users.real_name_public`/`department_public` 컬럼을 추가하고 원격 Supabase에 마이그레이션 적용. `get_user_real_name`은 본인/크루 또는 같은 학교 대상의 실명 공개 ON일 때만 실명을 반환하도록 수정했고, `search_users`·`get_blocked_users`·`get_friends`·`get_pending_requests`·`get_sent_requests`는 학과를 본인 또는 `department_public=true`일 때만 반환하도록 서버 마스킹. 앱 직접 조회 경로(피드/릴스/상세, 프로필, 내 활동/즐겨찾기)는 `department_public`을 함께 조회해 UI 타입 조립 시 비공개 학과를 `null` 처리. 프로필 편집 화면에 실명 공개/학과 공개 스위치를 추가하고 저장 로직에 boolean 업데이트를 연결. 앱 tsc 통과. Phase 2(raw REST `users.department` 직접 조회 차단)는 출시 전 별도 작업으로 남김.
 - **앱 iOS 구글 로그인 연결** — 그동안 Android에서만 되던 구글 로그인을 iOS에 붙임. iOS dev build에서 구글 로그인 누르면 `RNGoogleSignin: failed to determine clientID - GoogleService-Info.plist was not found and iosClientId was not provided` 크래시가 나던 것을 해결.
   - **구글 콘솔**: 웹/안드 OAuth 클라이언트가 있는 동일 프로젝트(프로젝트 번호 `899969293498`, 콘솔 표시명은 "Default Gemini Project"지만 클라이언트 ID로 확인)에 **iOS OAuth 클라이언트 신규 생성**(Bundle ID `com.univer.app`). Firebase 푸시용 `univer-783b0`(번호 3164150…)와는 다른 프로젝트라 그쪽 GoogleService-Info.plist는 사용 안 함.
   - **코드**: `app.json`의 `@react-native-google-signin/google-signin` 플러그인을 배열 형태로 바꿔 `iosUrlScheme`(reversed client ID, Info.plist URL scheme) 추가. `features/auth/googleSignIn.ts` `configure()`에 `iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` 추가. `.env.local`/`.env.example`에 `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` 추가(iOS client ID는 비밀 아님·앱에 박히는 공개 식별자라 하드코딩 표준). EAS dev/preview 환경변수에도 등록. 앱 tsc·app.json JSON 검증 통과. iOS dev build 재빌드.

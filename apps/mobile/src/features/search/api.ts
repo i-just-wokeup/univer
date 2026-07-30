@@ -4,7 +4,7 @@ import { getBlockRelatedUserIds } from "../shared/userContext";
 
 export type SearchUser = {
   avatar_url: string | null;
-  department: string;
+  department: string | null;
   id: string;
   nickname: string;
 };

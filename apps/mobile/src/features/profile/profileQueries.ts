@@ -3,6 +3,7 @@ import {
   getBlockRelatedUserIds,
   getCurrentUserId,
 } from "../shared/userContext";
+import { getVisibleDepartmentForViewer } from "../shared/userPrivacy";
 import type {
   ProfileCounts,
   ProfileDetail,
@@ -26,7 +27,9 @@ export async function getProfile(
 
   let query = supabase
     .from("users")
-    .select("id, nickname, bio, avatar_url, department");
+    .select(
+      "id, nickname, bio, avatar_url, department, department_public, real_name_public",
+    );
 
   query = nickname
     ? query.eq("nickname", nickname)
@@ -40,7 +43,13 @@ export async function getProfile(
 
   const profileRow = data as Pick<
     UserRow,
-    "avatar_url" | "bio" | "department" | "id" | "nickname"
+    | "avatar_url"
+    | "bio"
+    | "department"
+    | "department_public"
+    | "id"
+    | "nickname"
+    | "real_name_public"
   >;
   const isMine = profileRow.id === currentUserId;
 
@@ -62,11 +71,13 @@ export async function getProfile(
     profile: {
       avatar_url: profileRow.avatar_url,
       bio: profileRow.bio,
-      department: profileRow.department,
+      department: getVisibleDepartmentForViewer(profileRow, currentUserId),
+      department_public: profileRow.department_public,
       id: profileRow.id,
       links,
       nickname: profileRow.nickname,
       real_name: realName,
+      real_name_public: profileRow.real_name_public,
     },
   };
 }

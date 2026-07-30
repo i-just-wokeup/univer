@@ -41,9 +41,11 @@ export function ActivityFavoriteUserRow({
             strokeWidth={2.4}
           />
         </View>
-        <Text numberOfLines={1} style={styles.department}>
-          {user.department}
-        </Text>
+        {user.department ? (
+          <Text numberOfLines={1} style={styles.department}>
+            {user.department}
+          </Text>
+        ) : null}
       </View>
       <Text style={styles.time}>{formatFavoriteTime(user.favorited_at)}</Text>
     </Pressable>

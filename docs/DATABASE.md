@@ -48,7 +48,8 @@ signup_allowlist (
 
 **users** (RLS 활성화, 민감 컬럼 BEFORE UPDATE 트리거 보호)
 - **가입 도메인 강제 (2026-07-07)**: `handle_new_user`가 가입 이메일 도메인을 `universities.domain`과 대조 → 매칭 시 해당 학교로 배정. 매칭 없으면 `signup_allowlist`에 있는 이메일만 통과(기본 활성 학교로 배정), 아니면 가입 거부. 폼/API 우회와 무관하게 서버에서 강제.
-- `real_name` 공개 범위: 본인 또는 친구(accepted)만 조회 가능 — API(`getProfile`) 레벨 마스킹
+- `real_name` 공개 범위: 기본은 본인 또는 친구(accepted)만 조회 가능. `real_name_public=true`이면 같은 학교 유저에게도 RPC(`get_user_real_name`)가 반환
+- `department` 공개 범위: 기본 공개(`department_public=true`). `department_public=false`이면 본인 외 표시 경로/RPC에서 `NULL`로 마스킹(Phase 1: raw REST 컬럼 차단은 별도 Phase 2)
 - Google OAuth 가입 시 `handle_new_user` 트리거가 `full_name`(`심재성(학부생-자동차공학과)` 형식) 파싱 → `real_name`, `department` 자동 저장 (avatar_url 제외)
 - 신규 가입 기본 `nickname`은 `user_랜덤값` 임시값으로 생성 — 온보딩에서 사용자가 직접 입력해야 시작 가능
 - 활성 유저(`deleted_at IS NULL`) 기준 `lower(nickname)` 고유 인덱스로 중복 닉네임 방지
@@ -64,11 +65,13 @@ users (
   avatar_url    text,
   university_id uuid FK → universities not null,
   department    text not null,
+  department_public bool default true,
   credit_balance int default 0,
   level         int default 1,
   level_score   float8 default 0,
   role          text default 'user',          -- 'user' | 'official' | 'admin'
   is_onboarded  bool default false,
+  real_name_public bool default false,
   is_active     bool default true,
   fcm_token     text,
   visibility    text default 'public',        -- 'public' | 'close_friends'
@@ -77,6 +80,7 @@ users (
 )
 -- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name(값→값 변경),
 --   credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
+-- 공개 여부 컬럼(real_name_public, department_public)은 소유자 UPDATE 허용
 -- handle_new_user()는 auth metadata의 real_name/full_name/name, avatar_url, department를 반영
 -- nickname은 이메일 앞부분을 사용하지 않고 user_랜덤값으로 생성
 -- unique index: users_active_nickname_lower_unique on lower(nickname) where deleted_at is null
@@ -315,7 +319,7 @@ blocks (
 차단 RPC:
 - `block_user(target_user_id uuid)` — 현재 유저가 대상 유저를 차단하고, 두 유저 사이의 `user_connections`와 `user_favorites`를 정리
 - `get_block_related_user_ids()` — 현재 유저가 차단한 유저와 현재 유저를 차단한 유저 id를 모두 반환
-- `get_blocked_users()` — 현재 유저가 차단한 유저 목록 반환 (id, nickname, avatar_url, department, 차단 시각)
+- `get_blocked_users()` — 현재 유저가 차단한 유저 목록 반환 (id, nickname, avatar_url, department, 차단 시각). department는 본인 또는 `department_public=true`일 때만 값 반환
 - `unblock_user(target_user_id uuid)` — 현재 유저가 특정 유저를 차단 해제 (친구 관계 자동 복구 없음)
 - 앱 반영 범위: 피드, 게시물 상세, 유저 검색, 프로필 조회, 채팅 대화 목록, 메시지 전송에서 차단 관계 유저 숨김/차단
 
@@ -361,7 +365,8 @@ update_user_role(target_user_id uuid, new_role text)
 dismiss_report(report_id uuid)
 take_action_on_report(report_id uuid)
 ```
-- `get_user_real_name`은 본인 또는 크루 관계일 때만 실명을 반환하고, 그 외에는 `null`을 반환한다.
+- `get_user_real_name`은 본인, 크루 관계 또는 같은 학교 대상 유저의 `real_name_public=true`일 때만 실명을 반환하고, 그 외에는 `null`을 반환한다.
+- `search_users`, `get_blocked_users`, `get_friends`, `get_pending_requests`, `get_sent_requests`는 department를 본인 또는 `department_public=true`일 때만 반환하고, 그 외에는 `null`을 반환한다.
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
 

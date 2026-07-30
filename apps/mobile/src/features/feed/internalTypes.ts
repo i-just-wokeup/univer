@@ -9,7 +9,7 @@ export type BookmarkRow = Database["public"]["Tables"]["bookmarks"]["Row"];
 
 export type FeedPostUserRow = Pick<
   UserRow,
-  "avatar_url" | "department" | "id" | "nickname"
+  "avatar_url" | "department" | "department_public" | "id" | "nickname"
 >;
 
 export type FeedPostMediaRow = Pick<
@@ -76,7 +76,8 @@ export type PostCounts = {
 export const POST_SELECT_FIELDS =
   "id, aspect_ratio, content, created_at, likes_count, comments_count, user_id, visibility";
 
-export const USER_SELECT_FIELDS = "id, nickname, department, avatar_url";
+export const USER_SELECT_FIELDS =
+  "id, nickname, department, department_public, avatar_url";
 
 export const POST_MEDIA_SELECT_FIELDS =
   "id, post_id, type, url, thumbnail_url, duration, order_index, provider, provider_asset_id, processing_status";

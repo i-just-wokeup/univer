@@ -40,6 +40,7 @@ export function useProfileEdit() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [department, setDepartment] = useState<string | null>(null);
+  const [departmentPublic, setDepartmentPublic] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [initialNickname, setInitialNickname] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +48,7 @@ export function useProfileEdit() {
   const [nickname, setNickname] = useState("");
   const [nicknameStatus, setNicknameStatus] = useState<NicknameStatus>("idle");
   const [profileLinks, setProfileLinks] = useState<string[]>([""]);
+  const [realNamePublic, setRealNamePublic] = useState(false);
   const [selectedAvatarUri, setSelectedAvatarUri] = useState<string | null>(
     null,
   );
@@ -83,12 +85,14 @@ export function useProfileEdit() {
       setAvatarUrl(profile.avatar_url);
       setBio(profile.bio ?? "");
       setDepartment(profile.department);
+      setDepartmentPublic(profile.department_public);
       setInitialNickname(profile.nickname);
       setNickname(profile.nickname);
       setNicknameStatus("idle");
       setProfileLinks(
         profile.links.length > 0 ? profile.links.map((link) => link.url) : [""],
       );
+      setRealNamePublic(profile.real_name_public);
       setSelectedAvatarUri(null);
     } catch (error) {
       setErrorMessage(
@@ -218,8 +222,10 @@ export function useProfileEdit() {
       await updateProfile({
         avatar_url: nextAvatarUrl ?? "",
         bio,
+        department_public: departmentPublic,
         nickname: normalizedNickname,
         profileLinks: cleanedLinks,
+        real_name_public: realNamePublic,
       });
 
       return true;
@@ -238,6 +244,7 @@ export function useProfileEdit() {
     bio,
     canSave,
     department,
+    departmentPublic,
     errorMessage,
     handleAddLink,
     handleChangeLink,
@@ -251,8 +258,11 @@ export function useProfileEdit() {
     nicknameMessage,
     nicknameStatus,
     profileLinks,
+    realNamePublic,
     retry,
     save,
     setBio,
+    setDepartmentPublic,
+    setRealNamePublic,
   };
 }

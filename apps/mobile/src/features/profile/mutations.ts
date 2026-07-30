@@ -15,8 +15,10 @@ type ProfileLinkInsert =
 type UpdateProfileParams = {
   avatar_url?: string;
   bio?: string;
+  department_public?: boolean;
   nickname?: string;
   profileLinks?: string[];
+  real_name_public?: boolean;
 };
 
 // 프로필 수정. 닉네임/소개/아바타는 users 테이블 부분 업데이트, 대표 링크는 전체 삭제 후 재삽입.
@@ -27,7 +29,10 @@ export async function updateProfile(
   const supabase = getSupabaseMobileClient();
   const userId = await getCurrentUserId();
   let didMutate = false;
-  const updateValues: Pick<UserUpdate, "avatar_url" | "bio" | "nickname"> = {};
+  const updateValues: Pick<
+    UserUpdate,
+    "avatar_url" | "bio" | "department_public" | "nickname" | "real_name_public"
+  > = {};
   const normalizedProfileLinks =
     params.profileLinks === undefined
       ? null
@@ -55,6 +60,14 @@ export async function updateProfile(
   if (params.avatar_url !== undefined) {
     const trimmedAvatarUrl = params.avatar_url.trim();
     updateValues.avatar_url = trimmedAvatarUrl || null;
+  }
+
+  if (params.department_public !== undefined) {
+    updateValues.department_public = params.department_public;
+  }
+
+  if (params.real_name_public !== undefined) {
+    updateValues.real_name_public = params.real_name_public;
   }
 
   if (

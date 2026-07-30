@@ -22,9 +22,11 @@ export function SearchUserRow({ onPress, user }: SearchUserRowProps) {
         <Text numberOfLines={1} style={styles.nickname}>
           {user.nickname}
         </Text>
-        <Text numberOfLines={1} style={styles.department}>
-          {user.department}
-        </Text>
+        {user.department ? (
+          <Text numberOfLines={1} style={styles.department}>
+            {user.department}
+          </Text>
+        ) : null}
       </View>
     </Pressable>
   );

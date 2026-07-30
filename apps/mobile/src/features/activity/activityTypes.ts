@@ -35,7 +35,12 @@ export type ActivityPost = Pick<
 > & {
   media: ActivityPostMedia[];
   saved_at?: string;
-  user: Pick<UserRow, "avatar_url" | "department" | "id" | "nickname">;
+  user: {
+    avatar_url: string | null;
+    department: string | null;
+    id: string;
+    nickname: string;
+  };
 };
 
 export type ActivityStoryViewer = Pick<
@@ -46,9 +51,10 @@ export type ActivityStoryViewer = Pick<
   viewed_at: string;
 };
 
-export type ActivityFavoriteUser = Pick<
-  UserRow,
-  "avatar_url" | "department" | "id" | "nickname"
-> & {
+export type ActivityFavoriteUser = {
+  avatar_url: string | null;
+  department: string | null;
+  id: string;
+  nickname: string;
   favorited_at: string;
 };

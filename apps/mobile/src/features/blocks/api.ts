@@ -7,7 +7,7 @@ export type BlockedUser = {
   id: string;
   nickname: string;
   avatar_url: string | null;
-  department: string;
+  department: string | null;
   created_at: string;
 };
 

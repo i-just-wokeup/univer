@@ -91,9 +91,11 @@ export function BlockedAccountsScreen() {
                 <Text numberOfLines={1} style={styles.nickname}>
                   {item.nickname}
                 </Text>
-                <Text numberOfLines={1} style={styles.department}>
-                  {item.department}
-                </Text>
+                {item.department ? (
+                  <Text numberOfLines={1} style={styles.department}>
+                    {item.department}
+                  </Text>
+                ) : null}
                 <Text style={styles.blockedAt}>
                   {formatBlockedAt(item.created_at)}
                 </Text>

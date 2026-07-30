@@ -15,6 +15,7 @@ import { ProfileEditAvatar } from "../../components/profile/ProfileEditAvatar";
 import { ProfileEditBioField } from "../../components/profile/ProfileEditBioField";
 import { ProfileEditLinksEditor } from "../../components/profile/ProfileEditLinksEditor";
 import { ProfileEditNicknameField } from "../../components/profile/ProfileEditNicknameField";
+import { ProfileEditPrivacyToggles } from "../../components/profile/ProfileEditPrivacyToggles";
 import { ProfileEditReadonlyField } from "../../components/profile/ProfileEditReadonlyField";
 import { ProfileEditSaveButton } from "../../components/profile/ProfileEditSaveButton";
 import { useProfileEdit } from "../../features/profile/useProfileEdit";
@@ -27,6 +28,7 @@ export function ProfileEditScreen() {
     bio,
     canSave,
     department,
+    departmentPublic,
     errorMessage,
     handleAddLink,
     handleChangeLink,
@@ -40,9 +42,12 @@ export function ProfileEditScreen() {
     nicknameMessage,
     nicknameStatus,
     profileLinks,
+    realNamePublic,
     retry,
     save,
     setBio,
+    setDepartmentPublic,
+    setRealNamePublic,
   } = useProfileEdit();
 
   async function handleSave() {
@@ -121,6 +126,12 @@ export function ProfileEditScreen() {
             <ProfileEditReadonlyField
               label="학과"
               value={department ?? "학과 없음"}
+            />
+            <ProfileEditPrivacyToggles
+              departmentPublic={departmentPublic}
+              onChangeDepartmentPublic={setDepartmentPublic}
+              onChangeRealNamePublic={setRealNamePublic}
+              realNamePublic={realNamePublic}
             />
             <ProfileEditBioField bio={bio} onChangeBio={setBio} />
             <ProfileEditLinksEditor

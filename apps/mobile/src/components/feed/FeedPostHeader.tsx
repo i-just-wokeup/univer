@@ -17,12 +17,17 @@ export function FeedPostHeader({
   onUserPress,
   post,
 }: FeedPostHeaderProps) {
+  const relativeTime = getRelativeTimeLabel(post.created_at);
+  const meta = post.user.department
+    ? `${post.user.department} · ${relativeTime}`
+    : relativeTime;
+
   return (
     <View style={styles.header}>
       <UserInline
         avatarSize={34}
         imageUrl={post.user.avatar_url}
-        meta={`${post.user.department} · ${getRelativeTimeLabel(post.created_at)}`}
+        meta={meta}
         nickname={post.user.nickname}
         nicknameSize={14}
         onPress={onUserPress}

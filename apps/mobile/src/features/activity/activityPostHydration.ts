@@ -3,6 +3,7 @@ import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
 } from "../shared/userContext";
+import { getVisibleDepartmentForViewer } from "../shared/userPrivacy";
 import type { ActivityPost, ActivityPostMedia, PostMediaRow } from "./activityTypes";
 
 // 저장/좋아요/댓글 탭이 공통으로 쓰는 게시물 조립 로직.
@@ -16,7 +17,7 @@ export async function getActivityPostsByIds(
   }
 
   const supabase = getSupabaseMobileClient();
-  const { universityId } = await getCurrentUserContext();
+  const { universityId, userId } = await getCurrentUserContext();
   const blockRelatedUserIds = await getBlockRelatedUserIds();
   const blockedUserIds = new Set(blockRelatedUserIds);
 
@@ -52,7 +53,7 @@ export async function getActivityPostsByIds(
       .order("order_index", { ascending: true }),
     supabase
       .from("users")
-      .select("id, nickname, department, avatar_url")
+      .select("id, nickname, department, department_public, avatar_url")
       .in("id", userIds),
   ]);
 
@@ -89,7 +90,7 @@ export async function getActivityPostsByIds(
       user.id,
       {
         avatar_url: user.avatar_url,
-        department: user.department,
+        department: getVisibleDepartmentForViewer(user, userId),
         id: user.id,
         nickname: user.nickname,
       },

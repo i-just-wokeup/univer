@@ -8,10 +8,12 @@ export type ProfileDetail = {
   avatar_url: string | null;
   bio: string | null;
   department: string | null;
+  department_public: boolean;
   id: string;
   links: ProfileLink[];
   nickname: string;
   real_name: string | null;
+  real_name_public: boolean;
 };
 
 export type ProfileGridPost = {

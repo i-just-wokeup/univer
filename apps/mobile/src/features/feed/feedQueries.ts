@@ -36,7 +36,7 @@ export async function getFeed({
   limit?: number;
 } = {}): Promise<GetFeedResult> {
   const supabase = getSupabaseMobileClient();
-  const { universityId } = await getCurrentUserContext();
+  const { universityId, userId } = await getCurrentUserContext();
   const blockRelatedUserIds = await getBlockRelatedUserIds();
   const fetchLimit = limit + 1;
 
@@ -70,7 +70,7 @@ export async function getFeed({
   const normalizedPosts = toEmbeddedFeedPostRows(postsData);
   const hasMore = normalizedPosts.length > limit;
   const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
-  const posts = await hydrateFeedPosts(slicedPosts);
+  const posts = await hydrateFeedPosts(slicedPosts, userId);
 
   return {
     nextCursor: hasMore ? posts[posts.length - 1]?.created_at ?? null : null,
@@ -89,7 +89,7 @@ export async function getVideoFeed({
   limit?: number;
 } = {}): Promise<GetFeedResult> {
   const supabase = getSupabaseMobileClient();
-  const { universityId } = await getCurrentUserContext();
+  const { universityId, userId } = await getCurrentUserContext();
   const blockRelatedUserIds = await getBlockRelatedUserIds();
   const fetchLimit = limit + 1;
 
@@ -126,7 +126,7 @@ export async function getVideoFeed({
   const normalizedPosts = toEmbeddedFeedPostRows(postsData);
   const hasMore = normalizedPosts.length > limit;
   const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
-  const posts = await hydrateFeedPosts(slicedPosts);
+  const posts = await hydrateFeedPosts(slicedPosts, userId);
 
   return {
     nextCursor: hasMore ? posts[posts.length - 1]?.created_at ?? null : null,
@@ -137,6 +137,7 @@ export async function getVideoFeed({
 // 단일 게시물 상세 조회. FeedPost 형태로 반환해 FeedPostCard가 그대로 렌더할 수 있게 한다.
 export async function getPost(postId: string): Promise<FeedPost> {
   const supabase = getSupabaseMobileClient();
+  const { userId } = await getCurrentUserContext();
   const blockRelatedUserIds = await getBlockRelatedUserIds();
 
   const { data: postData, error: postError } = await supabase
@@ -157,7 +158,7 @@ export async function getPost(postId: string): Promise<FeedPost> {
     throw new Error("게시물을 찾을 수 없습니다.");
   }
 
-  const [hydratedPost] = await hydrateFeedPosts([post]);
+  const [hydratedPost] = await hydrateFeedPosts([post], userId);
 
   if (!hydratedPost) {
     throw new Error("게시물을 찾을 수 없습니다.");

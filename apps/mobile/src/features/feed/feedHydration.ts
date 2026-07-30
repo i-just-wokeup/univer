@@ -4,11 +4,12 @@ import {
   type FeedPostRow,
   type FeedPostUserRow,
 } from "./internalTypes";
+import { getVisibleDepartmentForViewer } from "../shared/userPrivacy";
 
-function mapFeedUser(user: FeedPostUserRow): FeedUser {
+function mapFeedUser(user: FeedPostUserRow, viewerUserId: string): FeedUser {
   return {
     avatar_url: user.avatar_url,
-    department: user.department,
+    department: getVisibleDepartmentForViewer(user, viewerUserId),
     id: user.id,
     nickname: user.nickname,
   };
@@ -32,6 +33,7 @@ function mapPostMedia(media: FeedPostMediaRow): PostMedia {
 // DB 왕복은 feedQueries의 단일 posts select에서 끝내고, 여기서는 순수 매핑만 한다.
 export async function hydrateFeedPosts(
   postRows: FeedPostRow[],
+  viewerUserId: string,
 ): Promise<FeedPost[]> {
   if (postRows.length === 0) {
     return [];
@@ -50,7 +52,7 @@ export async function hydrateFeedPosts(
       id: post.id,
       likes_count: post.likes_count,
       media: post.post_media?.map(mapPostMedia) ?? [],
-      user: mapFeedUser(post.user),
+      user: mapFeedUser(post.user, viewerUserId),
       visibility: post.visibility,
     };
   });
