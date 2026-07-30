@@ -96,6 +96,15 @@ official_accounts (          -- 기관 계정: 공식(학생회·단과대) / �
 )
 -- RLS: SELECT 전체 authenticated(뱃지/발견 탭), 쓰기 정책 없음 → 관리자(service_role 직접 SQL)만 생성/수정
 -- 승격(is_promoted)/기관 계정 지정은 초기엔 관리자 직접 SQL(auth.uid null → 보호 트리거 우회)
+
+post_impressions (          -- 피드 "본 글" 기록 (중복 노출 방지 / "모두 열람" 판정). 지표(metric_events)와 별개
+  user_id  uuid FK → users,   -- on delete cascade
+  post_id  uuid FK → posts,   -- on delete cascade
+  seen_at  timestamptz default now(),
+  PK (user_id, post_id)
+)
+-- RLS: 본인(user_id = auth.uid()) 것만 SELECT/INSERT. 판정 기준(예: 80%·2초 노출)은 앱 클라가 계산 후 insert.
+-- 피드 순서: 크루 안 본 최신 → 전교생 안 본 최신 → "모두 열람" → 랜덤 꼬리 (노션 📺 설계 9-2)
 -- nickname은 이메일 앞부분을 사용하지 않고 user_랜덤값으로 생성
 -- unique index: users_active_nickname_lower_unique on lower(nickname) where deleted_at is null
 ```
