@@ -10,6 +10,7 @@ const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 GoogleSignin.configure({
   hostedDomain: "kookmin.ac.kr",
   webClientId: googleWebClientId,
+  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
 });
 
 export async function signInWithGoogle(): Promise<{ cancelled: boolean }> {
