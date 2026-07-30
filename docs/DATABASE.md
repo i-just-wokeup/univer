@@ -72,6 +72,7 @@ users (
   role          text default 'user',          -- 'user' | 'official' | 'admin'
   is_onboarded  bool default false,
   real_name_public bool default false,
+  is_promoted   bool default false,        -- 승격(크리에이터) 뱃지, 관리자(직접 SQL)만 변경
   is_active     bool default true,
   fcm_token     text,
   visibility    text default 'public',        -- 'public' | 'close_friends'
@@ -79,9 +80,22 @@ users (
   created_at    timestamptz default now()
 )
 -- 트리거 보호 컬럼 (auth.uid() 있을 때): role, university_id, is_active, email, real_name(값→값 변경),
---   credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
+--   is_promoted, credit_balance, level, level_score, created_at, is_onboarded(true→false 불가)
 -- 공개 여부 컬럼(real_name_public, department_public)은 소유자 UPDATE 허용
 -- handle_new_user()는 auth metadata의 real_name/full_name/name, avatar_url, department를 반영
+
+official_accounts (          -- 기관 계정: 공식(학생회·단과대) / 동아리 = 조직 계정 (개인 아님)
+  id                uuid PK,
+  user_id           uuid FK → users unique,  -- 계정당 1개, on delete cascade
+  type              text not null,           -- 'official' | 'club'
+  scope             text default 'school',   -- 'school'(전교) | 'college'(단과대·미사용) | 'department'(학과)
+  target_department text,                     -- scope=department일 때 users.department와 매칭
+  target_college    text,                     -- scope=college용 (학과→단과대 매핑 데이터 없어 현재 미사용)
+  verified_at       timestamptz,
+  created_at        timestamptz default now()
+)
+-- RLS: SELECT 전체 authenticated(뱃지/발견 탭), 쓰기 정책 없음 → 관리자(service_role 직접 SQL)만 생성/수정
+-- 승격(is_promoted)/기관 계정 지정은 초기엔 관리자 직접 SQL(auth.uid null → 보호 트리거 우회)
 -- nickname은 이메일 앞부분을 사용하지 않고 user_랜덤값으로 생성
 -- unique index: users_active_nickname_lower_unique on lower(nickname) where deleted_at is null
 ```
