@@ -6,7 +6,10 @@ import type {
   ProfileLink,
 } from "../../features/profile/types";
 import { colors, nicknameTextStyle } from "../../lib/theme";
-import { getSocialPlatformFromUrl } from "../../lib/utils/profileLinks";
+import {
+  getProfileLinkDisplayLabel,
+  getProfileLinkPlatform,
+} from "../../lib/utils/profileLinks";
 import { Avatar } from "../common/Avatar";
 import { SocialIcon } from "../common/SocialIcon";
 
@@ -70,11 +73,12 @@ export function ProfileInfoPanel({
       {profile.links.length > 0 ? (
         <View style={styles.links}>
           {profile.links.map((link) => {
-            const platform = getSocialPlatformFromUrl(link.url);
+            const platform = getProfileLinkPlatform(link.url);
+            const displayLabel = getProfileLinkDisplayLabel(link.url);
 
             return (
               <Pressable
-                accessibilityLabel={`프로필 링크 열기: ${link.label}`}
+                accessibilityLabel={`프로필 링크 열기: ${displayLabel}`}
                 accessibilityRole="link"
                 key={link.id}
                 onPress={() => {
@@ -91,7 +95,7 @@ export function ProfileInfoPanel({
               >
                 <SocialIcon platform={platform} size={18} />
                 <Text style={styles.linkText} numberOfLines={1}>
-                  {link.label}
+                  {displayLabel}
                 </Text>
               </Pressable>
             );

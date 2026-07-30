@@ -11,6 +11,11 @@ const SOCIAL_PLATFORM_DOMAINS: Record<Exclude<SocialPlatform, "generic">, string
   youtube: ["youtube.com", "youtu.be"],
 };
 
+const SOCIAL_PLATFORM_LABELS: Record<Exclude<SocialPlatform, "generic">, string> = {
+  instagram: "Instagram",
+  youtube: "YouTube",
+};
+
 function withProtocol(value: string) {
   if (/^https?:\/\//i.test(value)) {
     return value;
@@ -53,7 +58,7 @@ function matchesDomain(hostname: string, domain: string) {
   return hostname === domain || hostname.endsWith(`.${domain}`);
 }
 
-export function getSocialPlatformFromUrl(url: string): SocialPlatform {
+export function getProfileLinkPlatform(url: string): SocialPlatform {
   try {
     const parsedUrl = new URL(withProtocol(url));
     const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, "");
@@ -69,6 +74,20 @@ export function getSocialPlatformFromUrl(url: string): SocialPlatform {
   } catch {
     return "generic";
   }
+}
+
+export function getSocialPlatformFromUrl(url: string): SocialPlatform {
+  return getProfileLinkPlatform(url);
+}
+
+export function getProfileLinkDisplayLabel(url: string): string {
+  const platform = getProfileLinkPlatform(url);
+
+  if (platform !== "generic") {
+    return SOCIAL_PLATFORM_LABELS[platform];
+  }
+
+  return getProfileLinkLabel(url);
 }
 
 export function normalizeProfileLinks(values: string[]): NormalizedProfileLink[] {
