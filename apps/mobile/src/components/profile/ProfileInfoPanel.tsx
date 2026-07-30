@@ -61,7 +61,7 @@ export function ProfileInfoPanel({
       <View style={styles.nameBlock}>
         <Text style={styles.nickname}>{profile.nickname}</Text>
         {profile.real_name ? (
-          <Text style={styles.realName}>실명 {profile.real_name}</Text>
+          <Text style={styles.realName}>{profile.real_name}</Text>
         ) : null}
         {profile.department ? (
           <Text style={styles.department}>{profile.department}</Text>

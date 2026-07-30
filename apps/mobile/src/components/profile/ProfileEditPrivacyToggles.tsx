@@ -18,14 +18,14 @@ export function ProfileEditPrivacyToggles({
   return (
     <View style={styles.group}>
       <PrivacyToggleRow
-        description="끄면 크루에게만 보여요"
-        label="실명 공개"
+        description="켜면 이름이 공개돼요"
+        label="이름 공개"
         onValueChange={onChangeRealNamePublic}
         value={realNamePublic}
       />
       <View style={styles.divider} />
       <PrivacyToggleRow
-        description="끄면 나만 볼 수 있어요"
+        description="켜면 학과가 공개돼요"
         label="학과 공개"
         onValueChange={onChangeDepartmentPublic}
         value={departmentPublic}
