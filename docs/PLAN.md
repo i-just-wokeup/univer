@@ -229,6 +229,7 @@
 - [x] **스토리 영상 지원 DB 준비** — `stories`에 `type`/`thumbnail_url`/`duration` 추가(`post_media`와 동일), CHECK 제약, 라이브 적용, 웹/앱 타입·DATABASE.md 동기화. 게시물(`post_media`)은 이미 영상 컬럼 보유. **클라이언트(녹화/재생/압축/썸네일)는 별도 작업**
 - [x] **앱 보안 검토 + 이미지 버킷 용량/형식 제한** — 검토 후 avatars(5MB)·post-images/story-images(10MB) 용량 + image/jpeg·png·webp 형식 제한 적용. 후속: #1 토큰 SecureStore(앱코드) 완료, #2 크루공개/DM private+signed URL(정책결정), #4 외부링크 https 검증
 - [x] **앱 Google 로그인 + 온보딩 라우팅 가드** — `@react-native-google-signin/google-signin` 네이티브 로그인 추가, 로그인 화면 Google 버튼, 온보딩 화면, 세션 기반 온보딩 가드 연결. dev build 재빌드 후 실기기 확인 필요
+- [x] **앱 iOS 구글 로그인 연결 (2026-07-30)** — 구글 콘솔 iOS OAuth 클라이언트 생성(웹/안드와 동일 프로젝트 `899969293498`, Bundle `com.univer.app`), `app.json` `iosUrlScheme` + `googleSignIn.ts` `iosClientId` + `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` 추가, iOS dev build 재빌드. nonce 에러는 Supabase Google provider "Skip nonce check" ON으로 해결(커스텀 nonce 유료). iOS 실기기 로그인 성공. 상세는 WORKLOG 2026-07-30
 - [x] **앱 푸시 알림 클라이언트 구현** — `expo-notifications`/FCM 설정 연결, 로그인+온보딩 완료 후 Expo push token 발급→`users.fcm_token` 저장, 포그라운드 표시와 탭 라우팅 연결. 서버 전송은 Phase 2
 - [x] **푸시 Phase 2 (서버 전송)** — pg_net 트리거로 댓글(post_comment)/대댓글(comment_reply)/DM(messages) Expo Push 전송. 대댓글 알림 신규(트리거+`notifications_type_check` 제약 추가 — 답글 INSERT 롤백 버그 수정), DM 탭 라우팅 클라 추가. 실기기 검증 완료. 남음: 인앱 comment_reply 문구/actor 처리, 좋아요·친구 푸시(의도적 보류)
 - [x] **앱 게시물 메뉴 액션 연결** — `FeedPostCard` 저장 아이콘/`...` 메뉴를 저장·차단·신고 기능에 연결, 피드/상세 저장 상태 로드, 차단 후 피드 낙관적 제거, 신고 피드백 처리

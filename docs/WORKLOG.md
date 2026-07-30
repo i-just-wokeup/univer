@@ -4,11 +4,26 @@
 
 ---
 
+## 2026-07-30
+
+### 완료
+- **앱 iOS 구글 로그인 연결** — 그동안 Android에서만 되던 구글 로그인을 iOS에 붙임. iOS dev build에서 구글 로그인 누르면 `RNGoogleSignin: failed to determine clientID - GoogleService-Info.plist was not found and iosClientId was not provided` 크래시가 나던 것을 해결.
+  - **구글 콘솔**: 웹/안드 OAuth 클라이언트가 있는 동일 프로젝트(프로젝트 번호 `899969293498`, 콘솔 표시명은 "Default Gemini Project"지만 클라이언트 ID로 확인)에 **iOS OAuth 클라이언트 신규 생성**(Bundle ID `com.univer.app`). Firebase 푸시용 `univer-783b0`(번호 3164150…)와는 다른 프로젝트라 그쪽 GoogleService-Info.plist는 사용 안 함.
+  - **코드**: `app.json`의 `@react-native-google-signin/google-signin` 플러그인을 배열 형태로 바꿔 `iosUrlScheme`(reversed client ID, Info.plist URL scheme) 추가. `features/auth/googleSignIn.ts` `configure()`에 `iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` 추가. `.env.local`/`.env.example`에 `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` 추가(iOS client ID는 비밀 아님·앱에 박히는 공개 식별자라 하드코딩 표준). EAS dev/preview 환경변수에도 등록. 앱 tsc·app.json JSON 검증 통과. iOS dev build 재빌드.
+  - **nonce 이슈 해결**: 재빌드 후 iOS 구글 로그인 시 Supabase `signInWithIdToken`이 `Passed nonce and nonce in id_token should either both exist or not` 에러. 원인 = iOS 구글 SDK 토큰의 nonce 상태가 Supabase 기본 nonce 검증과 안 맞음(Android는 맞아떨어져서 됐던 것). `@react-native-google-signin`의 커스텀 nonce는 유료라 무료 버전에선 못 맞춤 → **Supabase Auth > Providers > Google > "Skip nonce check" ON**으로 해결(Supabase가 이 조합에 공식 안내하는 방법, Android/웹 영향 없음). 네이티브 토큰을 곧바로 HTTPS로 교환하는 흐름이라 실질 위험 낮음. **iOS 실기기 구글 로그인 성공 확인.**
+- **앱 프로필 외부 링크 브랜드 아이콘 표시** — 프로필 대표 링크를 "hostname 텍스트 칩"에서 **"브랜드 아이콘 + 깔끔한 이름 칩"**으로 변경. URL 도메인으로 플랫폼 판별(instagram/youtube/generic), 인스타·유튜브는 공식 로고, 그 외(틱톡 포함)는 범용(lucide Globe). 텍스트는 저장된 label 대신 **표시 시점에 URL로 재계산**해 아는 플랫폼은 이름(Instagram/YouTube), 모르는 링크는 hostname(www 제거)으로 표시(기존 링크도 바로 정리됨).
+  - 신규 `components/common/SocialIcon.tsx`, `lib/utils/profileLinks.ts`에 `getProfileLinkPlatform`/`getProfileLinkDisplayLabel` 추가, `components/profile/ProfileInfoPanel.tsx` 칩 렌더 교체. 저장 데이터/편집 로직·DB 변경 없음, 새 패키지 없음(react-native-svg·lucide 재사용), JS-only(재빌드 불필요).
+  - 에셋: Meta 공식 그라데이션 글리프·YouTube 공식 아이콘을 **256px/투명 PNG**로 정리해 `apps/mobile/assets/social/`에 추가(`instagram_glyph.png`·`yt_icon_red.png`). ⚠️ 인스타 공식 "SVG"는 실제론 10MB짜리 raster-in-svg(gradient가 raster로 박힘)라 벡터 이식 불가 → 동봉 PNG를 축소해 사용.
+  - 표시 스타일은 A(아이콘만)/B(아이콘+텍스트) 미리보기 비교 후 **B 유지 + 텍스트를 플랫폼 이름으로 정리**로 결정. 구현은 Codex(커밋 `4c1c498`·`16b3874`·`81b82ea`), iOS 실기기 표시 확인. 틱톡 아이콘·이름/학과 공개 토글은 후속.
+
 ## 2026-07-29
 
 ### 완료
 - **앱 채팅 키보드/스크롤 구조 재정렬** — `react-native-keyboard-controller` 1.22 가이드 기준으로 채팅방을 `SafeAreaView(bottom)` → `KeyboardGestureArea` → inverted `FlatList(renderScrollComponent=KeyboardChatScrollView)` + `KeyboardStickyView` 구조에 맞춤. 전송 직후 수동 `scrollToOffset(0)` 제거, 입력창 bottom padding 토글 제거, `KeyboardStickyView`/`KeyboardChatScrollView` offset을 safe-area 기준으로 통일, 입력창 증가분만 `extraContentPadding`에 전달하도록 정리. 앱 tsc 통과, iOS 실기기에서 키보드 열림/닫힘과 전송 후 최신 메시지 위치 재확인 필요.
 - **앱 채팅방 이탈 시 키보드 잔류 수정** — 키보드가 열린 상태로 채팅방에서 뒤로가기/프로필·게시물 이동/차단 후 목록 이동/에러 복귀를 할 때 이전 `TextInput` focus가 남아 다음 화면 위에 키보드가 유지되던 경로를 정리. `KeyboardController.dismiss()`를 화면 이탈 액션과 focus cleanup에 연결해 iOS route transition 전에 키보드를 명시적으로 닫도록 보강. 앱 tsc 통과, iOS 실기기 리로드 후 뒤로가기·스와이프 백 재확인 필요.
+- **노션 API 명세 코드 대조 최신화** — Codex가 뽑은 웹/앱 `features/*/api.ts` 함수 인벤토리를 실제 코드로 검증 후 노션 "API 명세"에 반영. 기존 표에서 틀린 웹 함수명 5개(`uploadPostMedia`→`uploadPostImages`, `getProfileLink`→`getProfileLinks`, `getUnreadMessageCount`→`getChatUnreadCount`, `restoreAccount`·`upsertProfileLink` 제거)를 제자리 수정하고, 문서 끝에 "2026-07-29 최신화" 섹션(❌ 정정 5건 / ✏️ 시그니처 변경 4건 / 🆕 웹 12·앱 40여 개 신규 함수·훅, 신규 모듈 Metrics·Public Posts)을 추가. 웹 ❌ 5건·🆕 8건은 grep, 앱 `createPost`(필수)·`createStory`(backgroundColor)는 파일 직접 확인. 전체 재작성 아닌 변경분만 반영(기존 프로즈 섹션 보존).
+- **노션 API 명세 표 본문 최신화** — append 섹션만으로는 상단 표부터 보는 사람이 최신 상태를 못 파악한다는 지적에 따라, 웹·앱 각 표 본문에 신규 함수 행을 형식 유지하며 직접 추가(웹 Auth 6개·Comments·Stories·신규 Public Posts 표 / 앱 Feed 5개·Stories 영상 2개·Chat 공유 2개·Shared 캐시 3개·신규 Metrics 표·화면 로직 훅 10여 개). createPost·createStory 시그니처 셀도 제자리 수정. 상단 "마지막 업데이트" 2026-07-29로 갱신.
+- **노션 코드 구조 & 리팩토링 문서 최신화** — 실제 `apps/mobile/src` 디렉토리를 확인해 2026-07-08 이후 추가분을 "2026-07-29 구조 최신화" 섹션으로 append. 신규 `features/metrics/`(지표·인사이트)·`features/session/page-caches.ts`·`screens/insights/`+`components/insights/`·`screens/feed/ReelsScreen.tsx`(릴스 화면 분리)·피드 훅 추가 분할(useHomeFeedActions/Pagination/Feedback/Sync/Meta/VideoStatusPolling·usePostDetail·useReels) 기록.
 
 ## 2026-07-27
 
