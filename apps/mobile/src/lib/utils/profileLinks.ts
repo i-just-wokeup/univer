@@ -4,6 +4,8 @@ export type NormalizedProfileLink = {
   url: string;
 };
 
+export type SocialPlatform = "generic" | "instagram" | "tiktok" | "youtube";
+
 function withProtocol(value: string) {
   if (/^https?:\/\//i.test(value)) {
     return value;
@@ -39,6 +41,33 @@ export function getProfileLinkLabel(url: string): string {
     return parsedUrl.hostname.replace(/^www\./, "");
   } catch {
     return url;
+  }
+}
+
+function matchesDomain(hostname: string, domain: string) {
+  return hostname === domain || hostname.endsWith(`.${domain}`);
+}
+
+export function getSocialPlatformFromUrl(url: string): SocialPlatform {
+  try {
+    const parsedUrl = new URL(withProtocol(url));
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, "");
+
+    if (matchesDomain(hostname, "instagram.com")) {
+      return "instagram";
+    }
+
+    if (matchesDomain(hostname, "youtube.com") || matchesDomain(hostname, "youtu.be")) {
+      return "youtube";
+    }
+
+    if (matchesDomain(hostname, "tiktok.com")) {
+      return "tiktok";
+    }
+
+    return "generic";
+  } catch {
+    return "generic";
   }
 }
 

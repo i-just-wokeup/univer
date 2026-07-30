@@ -1,4 +1,3 @@
-import { ExternalLink } from "lucide-react-native";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type {
@@ -7,7 +6,9 @@ import type {
   ProfileLink,
 } from "../../features/profile/types";
 import { colors, nicknameTextStyle } from "../../lib/theme";
+import { getSocialPlatformFromUrl } from "../../lib/utils/profileLinks";
 import { Avatar } from "../common/Avatar";
+import { SocialIcon } from "../common/SocialIcon";
 
 type ProfileInfoPanelProps = {
   counts: ProfileCounts;
@@ -68,24 +69,30 @@ export function ProfileInfoPanel({
 
       {profile.links.length > 0 ? (
         <View style={styles.links}>
-          {profile.links.map((link) => (
-            <Pressable
-              key={link.id}
-              onPress={() => {
-                if (onLinkPress) {
-                  onLinkPress(link);
-                } else {
-                  void Linking.openURL(link.url);
-                }
-              }}
-              style={styles.linkChip}
-            >
-              <Text style={styles.linkText} numberOfLines={1}>
-                {link.label}
-              </Text>
-              <ExternalLink color={colors.text} size={13} strokeWidth={2.4} />
-            </Pressable>
-          ))}
+          {profile.links.map((link) => {
+            const platform = getSocialPlatformFromUrl(link.url);
+
+            return (
+              <Pressable
+                accessibilityLabel={`프로필 링크 열기: ${link.label}`}
+                accessibilityRole="link"
+                key={link.id}
+                onPress={() => {
+                  if (onLinkPress) {
+                    onLinkPress(link);
+                  } else {
+                    void Linking.openURL(link.url);
+                  }
+                }}
+                style={({ pressed }) => [
+                  styles.linkButton,
+                  pressed ? styles.pressedLinkButton : null,
+                ]}
+              >
+                <SocialIcon platform={platform} size={23} />
+              </Pressable>
+            );
+          })}
         </View>
       ) : null}
     </View>
@@ -155,21 +162,17 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
-  linkChip: {
-    maxWidth: "100%",
-    flexDirection: "row",
+  linkButton: {
     alignItems: "center",
-    gap: 5,
+    justifyContent: "center",
+    height: 44,
+    width: 44,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.white,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
   },
-  linkText: {
-    color: colors.text,
-    fontSize: 12,
-    fontWeight: "800",
+  pressedLinkButton: {
+    opacity: 0.68,
   },
 });
