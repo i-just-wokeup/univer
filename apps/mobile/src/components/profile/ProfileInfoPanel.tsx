@@ -85,11 +85,14 @@ export function ProfileInfoPanel({
                   }
                 }}
                 style={({ pressed }) => [
-                  styles.linkButton,
+                  styles.linkChip,
                   pressed ? styles.pressedLinkButton : null,
                 ]}
               >
-                <SocialIcon platform={platform} size={23} />
+                <SocialIcon platform={platform} size={18} />
+                <Text style={styles.linkText} numberOfLines={1}>
+                  {link.label}
+                </Text>
               </Pressable>
             );
           })}
@@ -162,17 +165,25 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
-  linkButton: {
+  linkChip: {
+    maxWidth: "100%",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    height: 44,
-    width: 44,
+    gap: 7,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.white,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   pressedLinkButton: {
     opacity: 0.68,
+  },
+  linkText: {
+    minWidth: 0,
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "800",
   },
 });

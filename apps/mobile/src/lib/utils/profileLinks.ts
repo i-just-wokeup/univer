@@ -4,7 +4,12 @@ export type NormalizedProfileLink = {
   url: string;
 };
 
-export type SocialPlatform = "generic" | "instagram" | "tiktok" | "youtube";
+export type SocialPlatform = "generic" | "instagram" | "youtube";
+
+const SOCIAL_PLATFORM_DOMAINS: Record<Exclude<SocialPlatform, "generic">, string[]> = {
+  instagram: ["instagram.com"],
+  youtube: ["youtube.com", "youtu.be"],
+};
 
 function withProtocol(value: string) {
   if (/^https?:\/\//i.test(value)) {
@@ -52,17 +57,12 @@ export function getSocialPlatformFromUrl(url: string): SocialPlatform {
   try {
     const parsedUrl = new URL(withProtocol(url));
     const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, "");
+    const match = Object.entries(SOCIAL_PLATFORM_DOMAINS).find(
+      ([, domains]) => domains.some((domain) => matchesDomain(hostname, domain)),
+    );
 
-    if (matchesDomain(hostname, "instagram.com")) {
-      return "instagram";
-    }
-
-    if (matchesDomain(hostname, "youtube.com") || matchesDomain(hostname, "youtu.be")) {
-      return "youtube";
-    }
-
-    if (matchesDomain(hostname, "tiktok.com")) {
-      return "tiktok";
+    if (match) {
+      return match[0] as Exclude<SocialPlatform, "generic">;
     }
 
     return "generic";
