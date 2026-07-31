@@ -82,8 +82,10 @@ export const USER_SELECT_FIELDS =
 export const POST_MEDIA_SELECT_FIELDS =
   "id, post_id, type, url, thumbnail_url, duration, order_index, provider, provider_asset_id, processing_status";
 
+// post_impressions(posts·users 양쪽 FK) 추가 후 posts↔users 관계가 2개가 되어 `users(...)` 임베딩이
+// 모호(PGRST201)해졌다. 작성자 FK(posts_user_id_fkey)를 명시해 모호함을 제거한다.
 export const POST_WITH_RELATIONS_SELECT_FIELDS =
-  `${POST_SELECT_FIELDS}, user:users(${USER_SELECT_FIELDS}), post_media(${POST_MEDIA_SELECT_FIELDS})` as const;
+  `${POST_SELECT_FIELDS}, user:users!posts_user_id_fkey(${USER_SELECT_FIELDS}), post_media(${POST_MEDIA_SELECT_FIELDS})` as const;
 
 export const POST_WITH_VIDEO_MEDIA_SELECT_FIELDS =
-  `${POST_SELECT_FIELDS}, user:users(${USER_SELECT_FIELDS}), post_media:post_media!inner(${POST_MEDIA_SELECT_FIELDS})` as const;
+  `${POST_SELECT_FIELDS}, user:users!posts_user_id_fkey(${USER_SELECT_FIELDS}), post_media:post_media!inner(${POST_MEDIA_SELECT_FIELDS})` as const;
