@@ -111,6 +111,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brand,
   },
 });
