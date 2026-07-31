@@ -1,6 +1,8 @@
+import { createThemeBindings } from "./theme/ThemeProvider";
+
 // 새로 만드는 컴포넌트·화면은 반드시 이 토큰을 사용한다.
 // 기존 파일은 그 파일을 수정할 일이 생겼을 때 함께 교체한다(일괄 교체는 하지 않는다).
-export const colors = {
+export const lightColors = {
   accent: "#15161B",
   accentBorderSoft: "rgba(20,22,30,0.1)",
   accentSoft: "#F2F2F7",
@@ -27,6 +29,7 @@ export const colors = {
   muted: "#6B6E7B",
   navBackground: "#FFFFFF",
   neutralFill: "#F4F4F5",
+  onAccent: "#FFFFFF",
   onMediaBorder: "rgba(255,255,255,0.8)",
   onMediaBorderFaint: "rgba(255,255,255,0.24)",
   onMediaFill: "rgba(255,255,255,0.28)",
@@ -49,11 +52,83 @@ export const colors = {
   surfaceBorder: "rgba(255,255,255,0.7)",
   surfaceGlass: "rgba(255,255,255,0.82)",
   surfaceGlassSoft: "rgba(255,255,255,0.6)",
+  switchThumb: "#FFFFFF",
   switchTrackOff: "rgba(154,157,168,0.36)",
   text: "#15161B",
   textFaint: "#9A9DA8",
   white: "#FFFFFF",
 } as const;
+
+export type ThemeColors = typeof lightColors;
+
+export const darkColors = {
+  accent: "#FFFFFF",
+  accentBorderSoft: "rgba(255,255,255,0.16)",
+  accentSoft: "#1C1C1E",
+  accentTintBg: "rgba(255,255,255,0.08)",
+  accentTrack: "#FFFFFF",
+  avatarGlyph: "#8E8E93",
+  black: "#000000",
+  brand: "#7C3AED",
+  border: "rgba(255,255,255,0.12)",
+  card: "rgba(44,44,46,0.92)",
+  danger: "#FF3B4E",
+  dangerSolid: "rgba(255,59,78,0.92)",
+  dangerText: "#FECACA",
+  dangerTint: "rgba(255,59,78,0.16)",
+  imagePlaceholder: "#3A3A3C",
+  lavenderBorder: "rgba(255,255,255,0.12)",
+  lavenderTint: "#3A3A3C",
+  lavenderTintSoft: "#2C2C2E",
+  mediaControlBg: "rgba(21,22,27,0.72)",
+  mediaSheet: "#121214",
+  mediaSheetElevated: "#09090B",
+  mediaSheetGlass: "rgba(10,10,12,0.86)",
+  mediaSheetGlassSoft: "rgba(22,22,26,0.96)",
+  muted: "rgba(235,235,245,0.6)",
+  navBackground: "#2C2C2E",
+  neutralFill: "#2C2C2E",
+  onAccent: "#15161B",
+  onMediaBorder: "rgba(255,255,255,0.8)",
+  onMediaBorderFaint: "rgba(255,255,255,0.24)",
+  onMediaFill: "rgba(255,255,255,0.28)",
+  onMediaFillFaint: "rgba(255,255,255,0.12)",
+  onMediaFillStrong: "rgba(255,255,255,0.95)",
+  onMediaGlyph: "rgba(255,255,255,0.92)",
+  onMediaText: "rgba(255,255,255,0.76)",
+  onMediaTextFaint: "rgba(255,255,255,0.4)",
+  onMediaTextStrong: "rgba(255,255,255,0.86)",
+  overlayInk: "rgba(255,255,255,0.12)",
+  overlayInkFaint: "rgba(255,255,255,0.06)",
+  overlayInkStrong: "rgba(255,255,255,0.2)",
+  scrimHeavy: "rgba(0,0,0,0.75)",
+  scrimMed: "rgba(0,0,0,0.45)",
+  scrimStrong: "rgba(0,0,0,0.6)",
+  scrimWeak: "rgba(0,0,0,0.3)",
+  skeleton: "#3A3A3C",
+  star: "#FACC15",
+  success: "#2FC36B",
+  surfaceBorder: "rgba(84,84,88,0.5)",
+  surfaceGlass: "rgba(58,58,60,0.82)",
+  surfaceGlassSoft: "rgba(58,58,60,0.6)",
+  switchThumb: "#FFFFFF",
+  switchTrackOff: "rgba(120,120,128,0.32)",
+  text: "#FFFFFF",
+  textFaint: "rgba(235,235,245,0.3)",
+  white: "#FFFFFF",
+} as const satisfies Record<keyof ThemeColors, string>;
+
+// 하위호환: 아직 전환하지 않은 파일은 라이트 팔레트를 계속 사용한다.
+export const colors = lightColors;
+
+const themeBindings = createThemeBindings<ThemeColors>({
+  darkColors: darkColors as unknown as ThemeColors,
+  lightColors,
+});
+
+export const ThemeProvider = themeBindings.ThemeProvider;
+export const useTheme = themeBindings.useTheme;
+export const useThemedStyles = themeBindings.useThemedStyles;
 
 export const spacing = {
   xs: 4,

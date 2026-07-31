@@ -2,6 +2,7 @@ import "../src/lib/globalFont";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -20,23 +21,26 @@ import { usePushNotifications } from "../src/features/notifications/usePushNotif
 import { SessionProvider, useSession } from "../src/lib/session";
 import { Sentry } from "../src/lib/sentry";
 import { SystemBarsController } from "../src/lib/systemBars";
-import { colors } from "../src/lib/theme";
+import { colors, ThemeProvider } from "../src/lib/theme";
 
 function RootLayout() {
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <KeyboardProvider>
-        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <BottomSheetModalProvider>
-            <SessionProvider>
-              <RootNavigator />
-              <PushNotificationsController />
-              <SystemBarsController />
-            </SessionProvider>
-          </BottomSheetModalProvider>
-        </SafeAreaProvider>
-      </KeyboardProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <GestureHandlerRootView style={styles.root}>
+        <KeyboardProvider>
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <BottomSheetModalProvider>
+              <SessionProvider>
+                <RootNavigator />
+                <PushNotificationsController />
+                <SystemBarsController />
+                <StatusBar style="auto" />
+              </SessionProvider>
+            </BottomSheetModalProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
 
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 420,
-    borderColor: "rgba(124,58,237,0.1)",
+    borderColor: colors.accentBorderSoft,
     borderRadius: 24,
     borderWidth: 1,
     backgroundColor: colors.card,
