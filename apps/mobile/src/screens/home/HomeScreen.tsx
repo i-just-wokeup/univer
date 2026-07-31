@@ -100,25 +100,15 @@ export function HomeScreen() {
     }, [currentUserId, refreshInteractions]),
   );
 
+  // 홈 탭 재탭 시 피드 맨 위로. (이미 맨 위여도 스크롤만; iOS에서 프로그램 강제
+  // RefreshControl은 헤더 위에 빈 공간이 쌓이는 글리치가 있어 재탭 자동 새로고침은 빼둠.
+  // 새로고침은 당겨서 하는 것으로 유지. "또 누르면 새로고침"은 후속에 안정적인 방식으로.)
   useEffect(
     () =>
       subscribeHomeTabReselect(() => {
-        const homeFeedList = homeFeedListRef.current;
-
-        if (!homeFeedList) {
-          return;
-        }
-
-        if (homeFeedList.isAtTop()) {
-          if (!isRefreshing) {
-            void handleRefresh();
-          }
-          return;
-        }
-
-        homeFeedList.scrollToTop();
+        homeFeedListRef.current?.scrollToTop();
       }),
-    [handleRefresh, isRefreshing],
+    [],
   );
 
   const handleSignOut = useCallback(async () => {
