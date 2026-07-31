@@ -8,6 +8,8 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { colors } from "../../lib/theme";
+
 // 이 시간 안에 두 번 탭하면 더블탭(좋아요)으로 본다. 단일 탭은 이 시간만큼 기다렸다 확정.
 const DOUBLE_TAP_MS = 220;
 
@@ -94,7 +96,7 @@ export function DoubleTapLike({
         pointerEvents="none"
         style={[styles.heart, { opacity, transform: [{ scale }] }]}
       >
-        <Heart color="#fff" fill="#fff" size={96} strokeWidth={0} />
+        <Heart color={colors.white} fill={colors.white} size={96} strokeWidth={0} />
       </Animated.View>
     </Pressable>
   );

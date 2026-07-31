@@ -124,6 +124,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(124,58,237,0.08)",
+    backgroundColor: colors.accentTintBg,
   },
 });

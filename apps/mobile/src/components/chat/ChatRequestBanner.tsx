@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   pendingBox: {
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "rgba(124,58,237,0.16)",
+    borderColor: colors.accentBorderSoft,
     backgroundColor: colors.accentSoft,
     paddingHorizontal: 16,
     paddingVertical: 12,

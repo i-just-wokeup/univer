@@ -5,7 +5,7 @@ import { colors } from "../../lib/theme";
 import { InsightsTrendChart } from "./InsightsTrendChart";
 
 // 상승만 연두로 강조, 하락은 회색(빨강 안 씀 — 갓 시작/활동 없는 날 알림처럼 안 보이게).
-const UP_GREEN = "#2FC36B";
+const UP_GREEN = colors.success;
 
 type InsightsMetricCardProps = {
   metric: InsightMetric;
@@ -56,7 +56,7 @@ export function InsightsMetricCard({
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
+    borderColor: colors.surfaceBorder,
     borderRadius: 22,
     backgroundColor: colors.card,
     paddingHorizontal: 18,

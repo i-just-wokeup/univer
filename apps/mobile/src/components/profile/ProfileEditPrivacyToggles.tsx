@@ -54,12 +54,12 @@ function PrivacyToggleRow({
         <Text style={styles.description}>{description}</Text>
       </View>
       <Switch
-        ios_backgroundColor="rgba(154,157,168,0.36)"
+        ios_backgroundColor={colors.switchTrackOff}
         onValueChange={onValueChange}
         thumbColor={colors.white}
         trackColor={{
-          false: "rgba(154,157,168,0.36)",
-          true: "rgba(124,58,237,0.36)",
+          false: colors.switchTrackOff,
+          true: colors.accentTrack,
         }}
         value={value}
       />
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   group: {
     marginTop: 20,
     borderRadius: 16,
-    backgroundColor: "rgba(124,58,237,0.06)",
+    backgroundColor: colors.accentTintBg,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginVertical: 12,
-    backgroundColor: "rgba(20,22,30,0.07)",
+    backgroundColor: colors.overlayInkFaint,
   },
 });

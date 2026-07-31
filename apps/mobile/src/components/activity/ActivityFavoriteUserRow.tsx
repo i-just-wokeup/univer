@@ -35,8 +35,8 @@ export function ActivityFavoriteUserRow({
             {user.nickname}
           </Text>
           <Star
-            color="#FACC15"
-            fill="#FACC15"
+            color={colors.star}
+            fill={colors.star}
             size={15}
             strokeWidth={2.4}
           />

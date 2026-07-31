@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   feedbackText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.78)",
+    backgroundColor: colors.scrimHeavy,
     color: colors.white,
     fontSize: 14,
     fontWeight: "800",

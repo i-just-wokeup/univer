@@ -137,12 +137,12 @@ export function StoryPlayer({
       </View>
 
       <LinearGradient
-        colors={["rgba(0,0,0,0.5)", "transparent"]}
+        colors={[colors.scrimMed, "transparent"]}
         pointerEvents="none"
         style={styles.scrimTop}
       />
       <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.5)"]}
+        colors={["transparent", colors.scrimMed]}
         pointerEvents="none"
         style={styles.scrimBottom}
       />
@@ -278,12 +278,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.34)",
+    backgroundColor: colors.scrimWeak,
   },
   processingText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.66)",
+    backgroundColor: colors.scrimStrong,
     color: colors.white,
     fontSize: 15,
     fontWeight: "900",
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     gap: 8,
     borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.42)",
+    backgroundColor: colors.scrimMed,
     paddingHorizontal: 16,
     paddingVertical: 9,
   },

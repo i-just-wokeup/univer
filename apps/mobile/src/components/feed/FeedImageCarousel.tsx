@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     right: 18,
     top: 18,
     borderRadius: 999,
-    backgroundColor: "rgba(21,22,27,0.72)",
+    backgroundColor: colors.mediaControlBg,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },

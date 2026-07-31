@@ -122,6 +122,7 @@
 - [x] 앱 홈피드 순서 함수 연동 (get_feed_post_ids 기반 band/rank 페이지네이션, post_impressions 노출 기록, 모두 열람 마커)
 - [x] 앱 릴스 순서 함수 연동 (get_reel_post_ids 기반 세션 셔플, 안 본 영상 우선, 무한 루프)
 - [x] 앱 홈 탭 재탭 UX 적용 (스크롤 내려간 상태면 맨 위로, 최상단이면 새로고침)
+- [x] 앱 색상 의미 토큰화 1단계 (`COLOR_TOKENS.md` 기준 신규 토큰 38개 추가, raw hex/rgba 치환, 제외 목록 유지)
 - [x] 앱 일반 화면 하단 네비바 배경 방향 재정리 (탭 화면 흰색 유지, 일반 화면은 콘텐츠 배경색 연장)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)

@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   sheetOverlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: colors.scrimStrong,
   },
   sheet: {
     maxHeight: "70%",
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     height: 4,
     width: 40,
     borderRadius: 999,
-    backgroundColor: "rgba(20,22,30,0.18)",
+    backgroundColor: colors.overlayInkStrong,
   },
   sheetTitle: {
     marginTop: 14,

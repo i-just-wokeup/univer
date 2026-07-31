@@ -15,7 +15,7 @@ type ReelFooterProps = {
 export function ReelFooter({ bottomInset, onPressUser, post }: ReelFooterProps) {
   return (
     <LinearGradient
-      colors={["transparent", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.5)"]}
+      colors={["transparent", colors.scrimMed, colors.scrimMed]}
       locations={[0, 0.45, 1]}
       pointerEvents="box-none"
       style={[styles.bottom, { paddingBottom: bottomInset + 14 }]}
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     ...nicknameTextStyle,
     color: colors.white,
     fontSize: 15,
-    textShadowColor: "rgba(0,0,0,0.55)",
+    textShadowColor: colors.scrimStrong,
     textShadowRadius: 4,
   },
   caption: {
@@ -78,12 +78,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "400",
     lineHeight: 20,
-    textShadowColor: "rgba(0,0,0,0.55)",
+    textShadowColor: colors.scrimStrong,
     textShadowRadius: 4,
   },
   captionMore: {
     marginTop: 4,
-    color: "rgba(255,255,255,0.75)",
+    color: colors.onMediaText,
     fontSize: 13,
     fontWeight: "800",
   },

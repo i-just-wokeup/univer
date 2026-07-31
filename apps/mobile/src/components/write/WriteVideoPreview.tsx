@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 17,
-    backgroundColor: "rgba(21,22,27,0.72)",
+    backgroundColor: colors.mediaControlBg,
   },
   pressed: {
     opacity: 0.72,

@@ -42,7 +42,7 @@ function StoryCard({
         />
       ) : null}
       <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.55)"]}
+        colors={["transparent", colors.scrimStrong]}
         style={styles.cardShade}
       />
       <Text numberOfLines={1} style={styles.cardName}>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 22,
     borderWidth: 2,
-    backgroundColor: "#D8CCF2",
+    backgroundColor: colors.lavenderTint,
   },
   cardUnviewed: {
     borderColor: colors.accent,
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     alignItems: "center",
     justifyContent: "center",
-    borderColor: "#D9CCFA",
+    borderColor: colors.lavenderBorder,
     borderRadius: 22,
     borderWidth: 2.5,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: colors.onMediaFill,
   },
   createPlus: {
     height: 42,

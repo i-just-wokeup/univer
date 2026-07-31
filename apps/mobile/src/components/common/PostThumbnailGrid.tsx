@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     overflow: "hidden",
     borderRadius: 10,
-    backgroundColor: "#F4F4F5",
+    backgroundColor: colors.neutralFill,
   },
   spacer: {
     flex: 1,

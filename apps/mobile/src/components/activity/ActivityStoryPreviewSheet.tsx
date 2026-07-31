@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(10,10,12,0.86)",
+    backgroundColor: colors.mediaSheetGlass,
     paddingHorizontal: 18,
     paddingBottom: 24,
   },
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.14)",
+    backgroundColor: colors.onMediaFillFaint,
   },
   sheet: {
     width: "100%",
@@ -134,11 +134,11 @@ const styles = StyleSheet.create({
     maxHeight: "94%",
     overflow: "hidden",
     borderRadius: 24,
-    backgroundColor: "#09090B",
+    backgroundColor: colors.mediaSheetElevated,
   },
   viewerBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: colors.scrimMed,
   },
   viewerPanel: {
     position: "absolute",
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
     height: VIEWER_PANEL_HEIGHT,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    backgroundColor: "#121214",
+    backgroundColor: colors.mediaSheet,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
+    borderTopColor: colors.onMediaFillFaint,
   },
 });

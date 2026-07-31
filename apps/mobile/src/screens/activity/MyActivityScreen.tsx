@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.78)",
+    backgroundColor: colors.surfaceGlass,
     paddingHorizontal: 16,
   },
   activeTab: {

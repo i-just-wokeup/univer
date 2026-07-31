@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   tile: {
     overflow: "hidden",
     borderRadius: 20,
-    backgroundColor: "#F4F4F5",
+    backgroundColor: colors.neutralFill,
   },
   tileImage: {
     height: "100%",
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 13,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: colors.scrimMed,
   },
   likeBadge: {
     position: "absolute",
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.86)",
+    backgroundColor: colors.surfaceGlass,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },

@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     height: 3,
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.34)",
+    backgroundColor: colors.onMediaFill,
   },
   progressFill: {
     height: "100%",

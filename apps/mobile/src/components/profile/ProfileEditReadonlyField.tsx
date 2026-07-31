@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   readOnlyText: {
     minHeight: 48,
     borderRadius: 16,
-    backgroundColor: "rgba(124,58,237,0.06)",
+    backgroundColor: colors.accentTintBg,
     paddingHorizontal: 14,
     paddingVertical: 14,
     color: colors.muted,

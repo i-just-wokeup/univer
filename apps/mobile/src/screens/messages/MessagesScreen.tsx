@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
+    borderColor: colors.surfaceBorder,
     borderRadius: 22,
     backgroundColor: colors.card,
     padding: 8,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
     borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.6)",
+    backgroundColor: colors.surfaceGlassSoft,
     padding: 5,
   },
   tab: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   tabBadgeActive: {
-    backgroundColor: "rgba(255,255,255,0.25)",
+    backgroundColor: colors.onMediaFill,
   },
   tabBadgeText: {
     color: colors.white,

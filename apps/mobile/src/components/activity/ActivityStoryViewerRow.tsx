@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   viewerSub: {
     marginTop: 2,
-    color: "rgba(255,255,255,0.42)",
+    color: colors.onMediaTextFaint,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -61,12 +61,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
     borderRadius: 999,
-    backgroundColor: "rgba(255,59,78,0.14)",
+    backgroundColor: colors.dangerTint,
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
   likeText: {
-    color: "#FECACA",
+    color: colors.dangerText,
     fontSize: 11,
     fontWeight: "900",
   },

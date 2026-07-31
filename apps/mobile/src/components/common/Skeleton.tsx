@@ -8,6 +8,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { colors } from "../../lib/theme";
+
 type SkeletonBlockProps = {
   radius?: number;
   style?: StyleProp<ViewStyle>;
@@ -42,6 +44,6 @@ export function SkeletonBlock({ radius = 10, style }: SkeletonBlockProps) {
 
 const styles = StyleSheet.create({
   block: {
-    backgroundColor: "#E4E4E7",
+    backgroundColor: colors.skeleton,
   },
 });

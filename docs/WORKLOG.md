@@ -15,6 +15,7 @@
 - **실기기 검증** — 피드 정상 로드, 크루 글 상단(band 0), `post_impressions` 기록 확인(80%·2초), "모두 열람" 마커 표시 확인.
 - **논의(후속)**: 홈 탭 재탭 시 맨 위로(+최상단이면 새로고침) = JS-only 가능(재빌드 X). FlatList가 HomeFeedList에 있어 화면→리스트 ref 배선 필요 → 코덱스 지시문 전달.
 - **앱 홈 탭 재탭 UX 적용** — 커스텀 `BottomTabBar`에서 활성 홈 탭 재탭을 감지해 HomeScreen으로 전달하고, `HomeFeedList`가 `forwardRef`/`useImperativeHandle`로 `scrollToTop`·`isAtTop`을 노출하도록 연결. 홈에서 스크롤이 내려가 있으면 부드럽게 맨 위로 이동하고, 이미 최상단이면 기존 홈 새로고침 로직을 실행한다. 앱 tsc 통과.
+- **앱 색상 의미 토큰화 1단계** — `docs/design/COLOR_TOKENS.md`를 정본으로 `theme.ts`에 flip/fixed 의미 토큰 38개를 추가하고, `apps/mobile/src`의 매핑 대상 raw hex/rgba를 `colors.*` 참조로 치환. Google 브랜드색·스토리 콘텐츠 팔레트·팔레트 비교식은 제외 목록대로 유지했고, 문서 미매핑 값 2종은 임의 변경하지 않았다. 앱 tsc 통과.
 
 ## 2026-07-30
 

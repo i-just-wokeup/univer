@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   schoolCard: {
     marginTop: 24,
     alignItems: "center",
-    borderColor: "rgba(124,58,237,0.1)",
+    borderColor: colors.accentBorderSoft,
     borderRadius: 24,
     borderWidth: 1,
     backgroundColor: colors.card,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   formCard: {
     marginTop: 18,
-    borderColor: "rgba(124,58,237,0.1)",
+    borderColor: colors.accentBorderSoft,
     borderRadius: 24,
     borderWidth: 1,
     backgroundColor: colors.card,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   readOnly: {
-    backgroundColor: "rgba(255,255,255,0.55)",
+    backgroundColor: colors.surfaceGlassSoft,
     color: colors.muted,
   },
   nicknameRow: {
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: "rgba(124,58,237,0.12)",
+    backgroundColor: colors.accentTintBg,
     paddingHorizontal: 14,
   },
   checkButtonText: {

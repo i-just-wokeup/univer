@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   viewerTime: {
     marginTop: 2,
-    color: "rgba(255,255,255,0.38)",
+    color: colors.onMediaTextFaint,
     fontSize: 12,
     fontWeight: "700",
   },
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   viewerEmpty: {
     paddingVertical: 24,
-    color: "rgba(255,255,255,0.42)",
+    color: colors.onMediaTextFaint,
     fontSize: 12,
     fontWeight: "800",
     textAlign: "center",

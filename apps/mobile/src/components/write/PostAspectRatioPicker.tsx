@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 4,
     borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.7)",
+    backgroundColor: colors.surfaceBorder,
     padding: 4,
   },
   option: {

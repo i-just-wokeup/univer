@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
-    backgroundColor: "rgba(255,255,255,0.82)",
+    borderColor: colors.surfaceBorder,
+    backgroundColor: colors.surfaceGlass,
   },
   topRow: {
     flexDirection: "row",
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     gap: 4,
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: "rgba(124,58,237,0.08)",
+    borderTopColor: colors.accentTintBg,
   },
   gridRow: {
     flexDirection: "row",

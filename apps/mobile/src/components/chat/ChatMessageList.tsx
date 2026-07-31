@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   separatorText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.7)",
+    backgroundColor: colors.surfaceBorder,
     paddingHorizontal: 12,
     paddingVertical: 4,
     color: colors.textFaint,

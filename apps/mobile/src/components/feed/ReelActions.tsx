@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 13,
     fontWeight: "800",
-    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowColor: colors.scrimMed,
     textShadowRadius: 3,
   },
 });

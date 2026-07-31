@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     left: 0,
     flexDirection: "row",
     gap: 8,
-    backgroundColor: "rgba(0,0,0,0.48)",
+    backgroundColor: colors.scrimMed,
     paddingHorizontal: 7,
     paddingVertical: 6,
   },

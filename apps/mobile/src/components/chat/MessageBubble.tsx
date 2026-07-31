@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   otherBubble: {
     borderTopLeftRadius: 5,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.8)",
+    borderColor: colors.onMediaBorder,
     backgroundColor: colors.white,
   },
   content: {
@@ -213,12 +213,12 @@ const styles = StyleSheet.create({
   },
   minePostCard: {
     borderTopRightRadius: 5,
-    borderColor: "rgba(255,255,255,0.24)",
+    borderColor: colors.onMediaBorderFaint,
     backgroundColor: colors.accent,
   },
   otherPostCard: {
     borderTopLeftRadius: 5,
-    borderColor: "rgba(124,58,237,0.12)",
+    borderColor: colors.accentTintBg,
     backgroundColor: colors.white,
   },
   postThumbWrap: {
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.42)",
+    backgroundColor: colors.scrimMed,
   },
   postThumbFallback: {
     width: "100%",
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   minePostContent: {
-    color: "rgba(255,255,255,0.86)",
+    color: colors.onMediaTextStrong,
   },
   postMeta: {
     color: colors.textFaint,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   minePostMeta: {
-    color: "rgba(255,255,255,0.72)",
+    color: colors.onMediaText,
   },
   pressed: {
     opacity: 0.72,

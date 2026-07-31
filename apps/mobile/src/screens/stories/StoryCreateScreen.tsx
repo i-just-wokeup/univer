@@ -82,12 +82,12 @@ export function StoryCreateScreen() {
       )}
 
       <LinearGradient
-        colors={["rgba(0,0,0,0.42)", "transparent"]}
+        colors={[colors.scrimMed, "transparent"]}
         pointerEvents="none"
         style={styles.scrimTop}
       />
       <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.48)"]}
+        colors={["transparent", colors.scrimMed]}
         pointerEvents="none"
         style={styles.scrimBottom}
       />
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 23,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: colors.scrimWeak,
   },
   bottomOverlay: {
     position: "absolute",
@@ -276,13 +276,13 @@ const styles = StyleSheet.create({
   sheetLayer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.26)",
+    backgroundColor: colors.scrimWeak,
   },
   colorSheet: {
     gap: 16,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    backgroundColor: "rgba(22,22,26,0.96)",
+    backgroundColor: colors.mediaSheetGlassSoft,
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 18,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     height: 4,
     width: 44,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.32)",
+    backgroundColor: colors.onMediaFill,
   },
   sheetTitle: {
     color: colors.white,
@@ -322,13 +322,13 @@ const styles = StyleSheet.create({
   },
   lightSwatch: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(0,0,0,0.28)",
+    borderColor: colors.scrimWeak,
   },
   errorText: {
     alignSelf: "center",
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: "rgba(255,59,78,0.18)",
+    backgroundColor: colors.dangerTint,
     color: colors.white,
     fontSize: 13,
     fontWeight: "800",

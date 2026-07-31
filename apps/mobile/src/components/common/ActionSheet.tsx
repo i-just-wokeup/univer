@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: colors.scrimMed,
   },
   sheet: {
     overflow: "hidden",
@@ -115,6 +115,6 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   pressed: {
-    backgroundColor: "rgba(20,22,30,0.04)",
+    backgroundColor: colors.overlayInkFaint,
   },
 });

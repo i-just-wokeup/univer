@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   modalRoot: {
     flex: 1,
     justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: colors.scrimMed,
     paddingHorizontal: 20,
   },
   modalCard: {

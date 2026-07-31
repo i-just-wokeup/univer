@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
+    borderColor: colors.surfaceBorder,
     backgroundColor: colors.white,
     paddingHorizontal: 16,
   },

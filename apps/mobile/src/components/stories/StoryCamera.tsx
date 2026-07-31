@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.32)",
+    backgroundColor: colors.scrimWeak,
   },
   bottomControls: {
     position: "absolute",
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 26,
-    backgroundColor: "rgba(0,0,0,0.32)",
+    backgroundColor: colors.scrimWeak,
   },
   captureOuter: {
     height: 78,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     borderRadius: 39,
     borderWidth: 4,
     borderColor: colors.white,
-    backgroundColor: "rgba(255,255,255,0.25)",
+    backgroundColor: colors.onMediaFill,
   },
   captureInner: {
     height: 60,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     bottom: 120,
     left: 24,
     borderRadius: 14,
-    backgroundColor: "rgba(255,59,78,0.92)",
+    backgroundColor: colors.dangerSolid,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   permissionCancelText: {
-    color: "rgba(255,255,255,0.6)",
+    color: colors.onMediaTextFaint,
     fontSize: 14,
     fontWeight: "700",
   },

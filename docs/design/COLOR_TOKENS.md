@@ -38,9 +38,10 @@
 ### 신규 토큰 — flip (앱 UI, 다크모드에서 뒤집힘)
 | 토큰 | 값(현재값 유지) | 용도 |
 |---|---|---|
-| `surfaceGlass` | rgba(255,255,255,0.82) | 반투명 유리 표면(카드보다 진함) |
+| `surfaceGlass` | rgba(255,255,255,0.82) | 반투명 유리 표면(카드보다 진함). 0.78도 여기로 흡수 |
 | `surfaceGlassSoft` | rgba(255,255,255,0.6) | 약한 유리 표면 |
 | `surfaceBorder` | rgba(255,255,255,0.7) | 유리 표면 테두리 (최다 사용) |
+| `switchTrackOff` | rgba(154,157,168,0.36) | 스위치 OFF 회색 트랙 (ON은 `accentTrack`) |
 | `neutralFill` | #F4F4F5 | 썸네일/그리드 빈 배경 |
 | `skeleton` | #E4E4E7 | 스켈레톤/아바타 배경 |
 | `avatarGlyph` | #A1A1AA | 아바타 기본 실루엣 |
@@ -95,6 +96,8 @@
 | rgba(255,255,255,0.72) | `surfaceBorder` |
 | rgba(255,255,255,0.82) | `surfaceGlass` |
 | rgba(255,255,255,0.86) | `surfaceGlass` |
+| rgba(255,255,255,0.78) *(표면 배경)* | `surfaceGlass` |
+| rgba(154,157,168,0.36) | `switchTrackOff` |
 | rgba(255,255,255,0.6) | `surfaceGlassSoft` |
 | rgba(255,255,255,0.55) | `surfaceGlassSoft` |
 | #F4F4F5 | `neutralFill` |

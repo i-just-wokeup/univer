@@ -1,6 +1,8 @@
 import { Image, StyleSheet, View } from "react-native";
 import Svg, { Circle, Ellipse } from "react-native-svg";
 
+import { colors } from "../../lib/theme";
+
 type AvatarProps = {
   imageUrl?: string | null;
   label: string;
@@ -26,9 +28,9 @@ export function Avatar({ imageUrl, label, size = 40 }: AvatarProps) {
           viewBox="0 0 80 80"
           width="100%"
         >
-          <Circle cx="40" cy="40" fill="#A1A1AA" opacity="0.18" r="40" />
-          <Circle cx="40" cy="31" fill="#A1A1AA" r="13" />
-          <Ellipse cx="40" cy="65" fill="#A1A1AA" rx="25" ry="21" />
+          <Circle cx="40" cy="40" fill={colors.avatarGlyph} opacity="0.18" r="40" />
+          <Circle cx="40" cy="31" fill={colors.avatarGlyph} r="13" />
+          <Ellipse cx="40" cy="65" fill={colors.avatarGlyph} rx="25" ry="21" />
         </Svg>
       )}
     </View>
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor: "#E4E4E7",
+    backgroundColor: colors.skeleton,
   },
   image: {
     ...StyleSheet.absoluteFillObject,

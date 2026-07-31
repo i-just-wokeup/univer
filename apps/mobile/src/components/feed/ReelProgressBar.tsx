@@ -9,6 +9,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { colors } from "../../lib/theme";
+
 type ReelProgressBarProps = {
   player: VideoPlayer;
   bottomInset: number;
@@ -56,11 +58,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2.5,
-    backgroundColor: "rgba(255,255,255,0.22)",
+    backgroundColor: colors.onMediaFill,
   },
   fill: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: colors.onMediaFillStrong,
     transformOrigin: "left",
   },
 });

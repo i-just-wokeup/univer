@@ -182,7 +182,7 @@ function ReelItemComponent({
       {/* 일시정지 표시 — 탭을 막지 않게 pointerEvents none */}
       {isActive && isReady && isPaused ? (
         <View pointerEvents="none" style={styles.pauseOverlay}>
-          <Play color="rgba(255,255,255,0.92)" fill="rgba(255,255,255,0.92)" size={62} />
+          <Play color={colors.onMediaGlyph} fill={colors.onMediaGlyph} size={62} />
         </View>
       ) : null}
 
@@ -242,12 +242,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.38)",
+    backgroundColor: colors.scrimWeak,
   },
   processingText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.66)",
+    backgroundColor: colors.scrimStrong,
     color: colors.white,
     fontSize: 14,
     fontWeight: "900",

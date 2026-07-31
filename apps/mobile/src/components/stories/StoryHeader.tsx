@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   time: {
-    color: "rgba(255,255,255,0.78)",
+    color: colors.onMediaText,
     fontSize: 12,
     fontWeight: "700",
   },

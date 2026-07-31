@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.32)",
+    backgroundColor: colors.scrimWeak,
   },
   sheet: {
     position: "absolute",
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     width: 58,
     height: 5,
     borderRadius: 999,
-    backgroundColor: "#DDD6FE",
+    backgroundColor: colors.lavenderTint,
   },
   header: {
     paddingHorizontal: 18,

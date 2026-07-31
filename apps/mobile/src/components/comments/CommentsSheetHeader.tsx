@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     height: 5,
     width: 42,
     borderRadius: 999,
-    backgroundColor: "#D8D4E2",
+    backgroundColor: colors.lavenderTint,
   },
   header: {
     flexDirection: "row",
