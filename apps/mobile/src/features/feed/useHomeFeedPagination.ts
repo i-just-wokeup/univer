@@ -4,7 +4,7 @@ import { useSession } from "../../lib/session";
 import { prefetchImageUrls } from "../shared/imagePrefetch";
 import {
   getBookmarkedPostIds,
-  getFeed,
+  getFeedRanked,
   getLikedPostIds,
 } from "./api";
 import {
@@ -12,10 +12,11 @@ import {
   setFeedPageCache,
   type FeedPageCacheSnapshot,
 } from "./page-cache";
-import type { FeedPost } from "./types";
+import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 
 type LoadFirstPageOptions = {
   ignoreCache?: boolean;
+  seed?: number;
 };
 
 function getFeedPrefetchUrls(posts: FeedPost[]) {
@@ -54,12 +55,19 @@ export function useHomeFeedPagination() {
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(
     () => new Set(initialCache?.likedPostIds ?? []),
   );
-  const [nextCursor, setNextCursor] = useState<string | null>(
+  const [nextCursor, setNextCursor] = useState<FeedRankCursor | null>(
     initialCache?.nextCursor ?? null,
+  );
+  const [postRanks, setPostRanks] = useState<Map<string, FeedPostRank>>(
+    () => new Map(initialCache?.postRanks ?? []),
   );
   const [posts, setPosts] = useState<FeedPost[]>(
     () => initialCache?.posts ?? [],
   );
+  const postsRef = useRef<FeedPost[]>(initialCache?.posts ?? []);
+  const seedRef = useRef(initialCache?.seed ?? Math.random());
+
+  postsRef.current = posts;
 
   useEffect(() => {
     if (feedOwnerUserId === currentUserId) {
@@ -75,10 +83,14 @@ export function useHomeFeedPagination() {
     setIsInitialLoading(!nextCache);
     setLikedPostIds(new Set(nextCache?.likedPostIds ?? []));
     setNextCursor(nextCache?.nextCursor ?? null);
+    setPostRanks(new Map(nextCache?.postRanks ?? []));
     setPosts(nextCache?.posts ?? []);
+    seedRef.current = nextCache?.seed ?? Math.random();
   }, [currentUserId, feedOwnerUserId]);
 
   const loadFirstPage = useCallback(async (options?: LoadFirstPageOptions) => {
+    const requestSeed = options?.seed ?? seedRef.current;
+
     if (!options?.ignoreCache && currentUserId) {
       const cachedPage = getFeedPageCache(currentUserId);
 
@@ -91,14 +103,16 @@ export function useHomeFeedPagination() {
         setIsRefreshing(false);
         setLikedPostIds(new Set(cachedPage.likedPostIds));
         setNextCursor(cachedPage.nextCursor);
+        setPostRanks(new Map(cachedPage.postRanks));
         setPosts(cachedPage.posts);
+        seedRef.current = cachedPage.seed;
         return;
       }
     }
 
     try {
       setErrorMessage("");
-      const result = await getFeed();
+      const result = await getFeedRanked({ seed: requestSeed });
       const postIds = result.posts.map((post) => post.id);
       const [likedIds, bookmarkedIds] = await Promise.all([
         getLikedPostIds(postIds),
@@ -110,6 +124,8 @@ export function useHomeFeedPagination() {
       setFeedOwnerUserId(currentUserId);
       setPosts(result.posts);
       setNextCursor(result.nextCursor);
+      setPostRanks(result.postRanks);
+      seedRef.current = requestSeed;
       setLikedPostIds(new Set(likedIds));
       setBookmarkedPostIds(new Set(bookmarkedIds));
     } catch (error) {
@@ -140,7 +156,9 @@ export function useHomeFeedPagination() {
       bookmarkedPostIds,
       likedPostIds,
       nextCursor,
+      postRanks,
       posts,
+      seed: seedRef.current,
       userId: currentUserId,
     });
   }, [
@@ -150,12 +168,16 @@ export function useHomeFeedPagination() {
     isInitialLoading,
     likedPostIds,
     nextCursor,
+    postRanks,
     posts,
   ]);
 
   const handleRefresh = useCallback(async () => {
+    const nextSeed = Math.random();
+
+    seedRef.current = nextSeed;
     setIsRefreshing(true);
-    await loadFirstPage({ ignoreCache: true });
+    await loadFirstPage({ ignoreCache: true, seed: nextSeed });
   }, [loadFirstPage]);
 
   const handleRetryFirstPage = useCallback(() => {
@@ -170,16 +192,37 @@ export function useHomeFeedPagination() {
 
     try {
       setIsLoadingMore(true);
-      const result = await getFeed({ cursor: nextCursor });
-      const postIds = result.posts.map((post) => post.id);
+      const result = await getFeedRanked({
+        afterBand: nextCursor.band,
+        afterRank: nextCursor.rank,
+        seed: seedRef.current,
+      });
+      const loadedPostIds = new Set(postsRef.current.map((post) => post.id));
+      const nextPosts = result.posts.filter(
+        (post) => !loadedPostIds.has(post.id),
+      );
+      const postIds = nextPosts.map((post) => post.id);
       const [likedIds, bookmarkedIds] = await Promise.all([
         getLikedPostIds(postIds),
         getBookmarkedPostIds(postIds),
       ]);
 
-      prefetchImageUrls(getFeedPrefetchUrls(result.posts), 8);
-      setPosts((currentPosts) => [...currentPosts, ...result.posts]);
+      prefetchImageUrls(getFeedPrefetchUrls(nextPosts), 8);
+      setPosts((currentPosts) => {
+        const currentPostIds = new Set(currentPosts.map((post) => post.id));
+        const dedupedNextPosts = nextPosts.filter(
+          (post) => !currentPostIds.has(post.id),
+        );
+        return [...currentPosts, ...dedupedNextPosts];
+      });
       setNextCursor(result.nextCursor);
+      setPostRanks((currentPostRanks) => {
+        const nextPostRanks = new Map(currentPostRanks);
+        result.postRanks.forEach((rank, postId) => {
+          nextPostRanks.set(postId, rank);
+        });
+        return nextPostRanks;
+      });
       setLikedPostIds((currentLikedPostIds) => {
         const nextLikedPostIds = new Set(currentLikedPostIds);
         likedIds.forEach((postId) => {
@@ -216,6 +259,7 @@ export function useHomeFeedPagination() {
     isRefreshing,
     likedPostIds,
     loadFirstPage,
+    postRanks,
     posts,
     setBookmarkedPostIds,
     setErrorMessage,

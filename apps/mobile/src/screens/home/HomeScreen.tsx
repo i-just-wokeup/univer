@@ -43,6 +43,7 @@ export function HomeScreen() {
     handleCommentCountChange,
     handleDeletePost,
     handleLoadMore,
+    handlePostImpressions,
     handleRefresh,
     handleReportPost,
     handleRetryFirstPage,
@@ -52,6 +53,7 @@ export function HomeScreen() {
     isLoadingMore,
     isRefreshing,
     likedPostIds,
+    postRanks,
     posts,
     refreshInteractions,
     showFeedback,
@@ -152,6 +154,7 @@ export function HomeScreen() {
         onDelete={handleDeletePost}
         onLike={handleToggleLike}
         onLoadMore={handleLoadMore}
+        onPostImpressions={handlePostImpressions}
         onPressCreateStory={handlePressCreateStory}
         onPressMessages={handlePressMessages}
         onPressNotifications={handlePressNotifications}
@@ -163,6 +166,7 @@ export function HomeScreen() {
         onUserPress={handleUserPress}
         onVideoPress={handleVideoPress}
         posts={posts}
+        postRanks={postRanks}
         storyGroups={storyGroups}
         unreadChatCount={unreadChatCount}
         unreadCount={unreadCount}

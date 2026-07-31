@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-07-31
+
+### 완료
+- **앱 홈피드 순서 함수 연동** — 홈피드 첫 페이지/무한스크롤을 created_at cursor 방식에서 DB RPC `get_feed_post_ids(seed, limit, after_band, after_rank)` 기반 순서 조회로 전환. RPC가 준 post id 순서를 유지한 채 기존 posts 임베딩 select와 `hydrateFeedPosts`를 재사용하고, 세션 seed를 캐시에 저장해 재진입/스크롤 중 순서가 흔들리지 않게 했다. 새로고침 때만 seed를 갱신해 본 글 랜덤 꼬리 순서가 바뀐다. `post_impressions` upsert API를 추가하고 Home FlatList viewability(80% 이상·2초 이상)를 안정 참조 pairs로 연결해 본 글 기록을 배치 저장한다. band 2 경계에는 “모두 열람했습니다” 마커를 삽입. 앱 tsc 통과.
+
 ## 2026-07-30
 
 ### 완료

@@ -36,3 +36,16 @@ export type GetFeedResult = {
   nextCursor: string | null;
   posts: FeedPost[];
 };
+
+export type FeedRankCursor = {
+  band: number;
+  rank: number;
+};
+
+export type FeedPostRank = FeedRankCursor;
+
+export type GetRankedFeedResult = {
+  nextCursor: FeedRankCursor | null;
+  postRanks: Map<string, FeedPostRank>;
+  posts: FeedPost[];
+};

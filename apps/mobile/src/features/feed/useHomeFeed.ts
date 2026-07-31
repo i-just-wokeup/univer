@@ -1,3 +1,6 @@
+import { useCallback } from "react";
+
+import { recordPostImpressions } from "./api";
 import { useHomeFeedActions } from "./useHomeFeedActions";
 import { useHomeFeedFeedback } from "./useHomeFeedFeedback";
 import { useHomeFeedPagination } from "./useHomeFeedPagination";
@@ -18,6 +21,7 @@ export function useHomeFeed() {
     isRefreshing,
     likedPostIds,
     loadFirstPage,
+    postRanks,
     posts,
     setBookmarkedPostIds,
     setErrorMessage,
@@ -52,6 +56,14 @@ export function useHomeFeed() {
 
   useHomeVideoStatusPolling({ posts, setPosts, showFeedback });
 
+  const handlePostImpressions = useCallback(async (postIds: string[]) => {
+    try {
+      await recordPostImpressions(postIds);
+    } catch {
+      // 피드 노출 기록 실패는 피드 동작을 막지 않는다.
+    }
+  }, []);
+
   return {
     bookmarkedPostIds,
     errorMessage,
@@ -60,6 +72,7 @@ export function useHomeFeed() {
     handleCommentCountChange,
     handleDeletePost,
     handleLoadMore,
+    handlePostImpressions,
     handleRefresh,
     handleReportPost,
     handleRetryFirstPage,
@@ -70,6 +83,7 @@ export function useHomeFeed() {
     isRefreshing,
     likedPostIds,
     loadFirstPage,
+    postRanks,
     posts,
     refreshInteractions,
     showFeedback,

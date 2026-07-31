@@ -1,4 +1,4 @@
-import type { FeedPost } from "./types";
+import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 
 // 재진입 즉시표시 유지 시간. 잠깐 다른 앱 보고 와도 즉시 뜨도록 5분.
 // (더 길면 새 글이 늦게 보이고, 짧으면 재진입마다 로딩. 당겨서 새로고침으로 언제든 갱신 가능)
@@ -8,8 +8,10 @@ export type FeedPageCacheSnapshot = {
   bookmarkedPostIds: string[];
   cachedAt: number;
   likedPostIds: string[];
-  nextCursor: string | null;
+  nextCursor: FeedRankCursor | null;
+  postRanks: Map<string, FeedPostRank>;
   posts: FeedPost[];
+  seed: number;
 };
 
 type FeedPageCacheEntry = FeedPageCacheSnapshot & {
@@ -19,8 +21,10 @@ type FeedPageCacheEntry = FeedPageCacheSnapshot & {
 type SetFeedPageCacheParams = {
   bookmarkedPostIds: Iterable<string>;
   likedPostIds: Iterable<string>;
-  nextCursor: string | null;
+  nextCursor: FeedRankCursor | null;
+  postRanks: Map<string, FeedPostRank>;
   posts: FeedPost[];
+  seed: number;
   userId: string;
 };
 
@@ -39,7 +43,9 @@ function toSnapshot(entry: FeedPageCacheEntry): FeedPageCacheSnapshot {
     cachedAt: entry.cachedAt,
     likedPostIds: [...entry.likedPostIds],
     nextCursor: entry.nextCursor,
+    postRanks: new Map(entry.postRanks),
     posts: entry.posts,
+    seed: entry.seed,
   };
 }
 
@@ -69,7 +75,9 @@ export function setFeedPageCache(params: SetFeedPageCacheParams) {
     cachedAt: Date.now(),
     likedPostIds: [...params.likedPostIds],
     nextCursor: params.nextCursor,
+    postRanks: new Map(params.postRanks),
     posts: params.posts,
+    seed: params.seed,
     userId: params.userId,
   };
 }

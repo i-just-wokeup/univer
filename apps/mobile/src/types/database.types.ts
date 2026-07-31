@@ -318,6 +318,24 @@ export type Database = {
         }
         Relationships: []
       }
+      post_impressions: {
+        Row: {
+          user_id: string
+          post_id: string
+          seen_at: string
+        }
+        Insert: {
+          user_id: string
+          post_id: string
+          seen_at?: string
+        }
+        Update: {
+          user_id?: string
+          post_id?: string
+          seen_at?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           id: string
@@ -751,6 +769,19 @@ export type Database = {
           avatar_url: string | null
           department: string | null
           created_at: string
+        }>
+      }
+      get_feed_post_ids: {
+        Args: {
+          p_seed: number
+          p_limit: number
+          p_after_band: number | null
+          p_after_rank: number | null
+        }
+        Returns: Array<{
+          post_id: string
+          band: number
+          rank: number
         }>
       }
       unblock_user: {

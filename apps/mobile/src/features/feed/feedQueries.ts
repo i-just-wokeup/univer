@@ -4,7 +4,12 @@ import {
   getBlockRelatedUserIds,
   getCurrentUserContext,
 } from "../shared/userContext";
-import type { FeedPost, GetFeedResult } from "./types";
+import type {
+  FeedPost,
+  FeedRankCursor,
+  GetFeedResult,
+  GetRankedFeedResult,
+} from "./types";
 import { hydrateFeedPosts } from "./feedHydration";
 import {
   POST_WITH_RELATIONS_SELECT_FIELDS,
@@ -26,6 +31,12 @@ function toEmbeddedFeedPostRows(rows: unknown): FeedPostRow[] {
 function toEmbeddedFeedPostRow(row: unknown): FeedPostRow {
   return row as FeedPostRow;
 }
+
+type RankedFeedPostIdRow = {
+  band: number;
+  post_id: string;
+  rank: number;
+};
 
 // 홈 피드 조회. 같은 학교 + 차단 관계 제외, created_at cursor 무한스크롤.
 export async function getFeed({
@@ -74,6 +85,89 @@ export async function getFeed({
 
   return {
     nextCursor: hasMore ? posts[posts.length - 1]?.created_at ?? null : null,
+    posts,
+  };
+}
+
+// 홈 피드 순서는 DB 함수가 정하고, 내용은 기존 posts 임베딩 조회/hydration을 재사용한다.
+export async function getFeedRanked({
+  afterBand,
+  afterRank,
+  limit = PAGE_SIZE.feed,
+  seed,
+}: {
+  afterBand?: number | null;
+  afterRank?: number | null;
+  limit?: number;
+  seed: number;
+}): Promise<GetRankedFeedResult> {
+  const supabase = getSupabaseMobileClient();
+  const { userId } = await getCurrentUserContext();
+  const fetchLimit = limit + 1;
+
+  const { data: rankedData, error: rankedError } = await supabase.rpc(
+    "get_feed_post_ids",
+    {
+      p_after_band: afterBand ?? null,
+      p_after_rank: afterRank ?? null,
+      p_limit: fetchLimit,
+      p_seed: seed,
+    },
+  );
+
+  if (rankedError || !rankedData) {
+    throw new Error("피드를 불러오지 못했습니다.");
+  }
+
+  const rankedRows = rankedData as RankedFeedPostIdRow[];
+  const hasMore = rankedRows.length > limit;
+  const pageRankedRows = hasMore ? rankedRows.slice(0, limit) : rankedRows;
+
+  if (pageRankedRows.length === 0) {
+    return {
+      nextCursor: null,
+      postRanks: new Map(),
+      posts: [],
+    };
+  }
+
+  const postIds = pageRankedRows.map((row) => row.post_id);
+  const { data: postsData, error: postsError } = await supabase
+    .from("posts")
+    .select(POST_WITH_RELATIONS_SELECT_FIELDS)
+    .in("id", postIds)
+    .is("deleted_at", null)
+    .order("order_index", { ascending: true, referencedTable: "post_media" });
+
+  if (postsError || !postsData) {
+    throw new Error("피드를 불러오지 못했습니다.");
+  }
+
+  const rowsById = new Map(
+    toEmbeddedFeedPostRows(postsData).map((postRow) => [postRow.id, postRow]),
+  );
+  const orderedRows = pageRankedRows
+    .map((rankedRow) => rowsById.get(rankedRow.post_id) ?? null)
+    .filter((postRow): postRow is FeedPostRow => postRow !== null);
+  const posts = await hydrateFeedPosts(orderedRows, userId);
+  const rankByPostId = new Map(
+    pageRankedRows.map((row) => [
+      row.post_id,
+      {
+        band: row.band,
+        rank: row.rank,
+      },
+    ]),
+  );
+  const lastRankedRow = pageRankedRows[pageRankedRows.length - 1];
+  const nextCursor: FeedRankCursor | null =
+    hasMore && lastRankedRow
+      ? { band: lastRankedRow.band, rank: lastRankedRow.rank }
+      : null;
+
+  return {
+    nextCursor,
+    postRanks: rankByPostId,
     posts,
   };
 }
