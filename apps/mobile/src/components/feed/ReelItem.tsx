@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { VideoView } from "expo-video";
 import { Play } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,14 +26,14 @@ type ReelItemProps = {
   isLiked: boolean;
   // 음소거는 릴스 전체가 공유(부모가 소유) — 한 번 켜면 다음 영상에서도 유지.
   isMuted: boolean;
-  onBlockUser: () => void;
-  onBookmark: () => void;
-  onComment: () => void;
-  onDelete: () => void;
-  onLike: () => void;
-  onPressUser: () => void;
-  onReport: () => void;
-  onShare: () => void;
+  onBlockUser: (userId: string) => void;
+  onBookmark: (postId: string) => void;
+  onComment: (postId: string) => void;
+  onDelete: (postId: string) => void;
+  onLike: (postId: string) => void;
+  onPressUser: (nickname: string) => void;
+  onReport: (postId: string) => void;
+  onShare: (post: FeedPost) => void;
   onToggleMute: () => void;
   post: FeedPost;
   width: number;
@@ -45,7 +45,7 @@ function getVideo(media: PostMedia[]) {
 
 // 릴스 1개(세로 풀스크린). 활성이면 자동재생(loop), 탭하면 일시정지/재생, 음소거 버튼은 전역 토글.
 // 우측 좋아요/댓글/저장 세로 버튼 + 하단 작성자/캡션 오버레이.
-export function ReelItem({
+function ReelItemComponent({
   currentUserId,
   height,
   isActive,
@@ -107,6 +107,31 @@ export function ReelItem({
     };
   }, [shouldRenderVideo, videoUrl]);
 
+  const handleBlockUser = useCallback(() => {
+    onBlockUser(post.user.id);
+  }, [onBlockUser, post.user.id]);
+  const handleBookmark = useCallback(() => {
+    onBookmark(post.id);
+  }, [onBookmark, post.id]);
+  const handleComment = useCallback(() => {
+    onComment(post.id);
+  }, [onComment, post.id]);
+  const handleDelete = useCallback(() => {
+    onDelete(post.id);
+  }, [onDelete, post.id]);
+  const handleLike = useCallback(() => {
+    onLike(post.id);
+  }, [onLike, post.id]);
+  const handlePressUser = useCallback(() => {
+    onPressUser(post.user.nickname);
+  }, [onPressUser, post.user.nickname]);
+  const handleReport = useCallback(() => {
+    onReport(post.id);
+  }, [onReport, post.id]);
+  const handleShare = useCallback(() => {
+    onShare(post);
+  }, [onShare, post]);
+
   if (!video) {
     return <View style={{ backgroundColor: colors.black, height, width }} />;
   }
@@ -147,7 +172,7 @@ export function ReelItem({
         onDoubleTap={() => {
           if (!isLiked) {
             triggerLightHaptic();
-            onLike();
+            handleLike();
           }
         }}
         onSingleTap={isReady ? togglePaused : undefined}
@@ -164,9 +189,9 @@ export function ReelItem({
       <ReelMoreMenu
         isOwnPost={isOwnPost}
         nickname={post.user.nickname}
-        onBlockUser={onBlockUser}
-        onDelete={onDelete}
-        onReport={onReport}
+        onBlockUser={handleBlockUser}
+        onDelete={handleDelete}
+        onReport={handleReport}
         top={insets.top + 8}
       />
 
@@ -178,10 +203,10 @@ export function ReelItem({
         isMuted={isMuted}
         isReady={isReady}
         likesCount={post.likes_count}
-        onBookmark={onBookmark}
-        onComment={onComment}
-        onLike={onLike}
-        onShare={onShare}
+        onBookmark={handleBookmark}
+        onComment={handleComment}
+        onLike={handleLike}
+        onShare={handleShare}
         onToggleMute={onToggleMute}
       />
 
@@ -189,7 +214,7 @@ export function ReelItem({
           본문 펼치면 패널이 커지며 페이드도 함께 위로 올라간다. */}
       <ReelFooter
         bottomInset={insets.bottom}
-        onPressUser={onPressUser}
+        onPressUser={handlePressUser}
         post={post}
       />
 
@@ -200,6 +225,8 @@ export function ReelItem({
     </View>
   );
 }
+
+export const ReelItem = memo(ReelItemComponent);
 
 const styles = StyleSheet.create({
   page: {

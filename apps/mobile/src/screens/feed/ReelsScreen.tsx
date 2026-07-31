@@ -3,12 +3,14 @@ import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
+  type ListRenderItemInfo,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Pressable,
   StyleSheet,
   Text,
   View,
+  type ViewToken,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -69,6 +71,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     toggleBookmarkPost,
     toggleLike,
   } = useReels(startPostId);
+  const [visibleIndex, setVisibleIndex] = useState(activeIndex);
 
   const handleUserPress = useCallback(
     (nickname: string) => {
@@ -98,6 +101,65 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const flatListRef = useRef<FlatList<ReelFeedItem>>(null);
   const prevPostCountRef = useRef(0);
   const hadPostsRef = useRef(false);
+  const reelActionsRef = useRef({
+    blockAuthor,
+    loadMore,
+    removePost,
+    reportPost,
+    toggleBookmarkPost,
+    toggleLike,
+  });
+  reelActionsRef.current = {
+    blockAuthor,
+    loadMore,
+    removePost,
+    reportPost,
+    toggleBookmarkPost,
+    toggleLike,
+  };
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 60,
+  }).current;
+  const handleViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const visibleItem = viewableItems.find(
+        (item) => item.isViewable && typeof item.index === "number",
+      );
+      const index = visibleItem?.index;
+
+      if (typeof index === "number") {
+        setVisibleIndex((current) => (current === index ? current : index));
+      }
+    },
+  ).current;
+
+  const handleBlockUser = useCallback((userId: string) => {
+    void reelActionsRef.current.blockAuthor(userId);
+  }, []);
+  const handleBookmark = useCallback((postId: string) => {
+    void reelActionsRef.current.toggleBookmarkPost(postId);
+  }, []);
+  const handleComment = useCallback((postId: string) => {
+    setCommentPostId(postId);
+  }, []);
+  const handleDelete = useCallback((postId: string) => {
+    void reelActionsRef.current.removePost(postId);
+  }, []);
+  const handleLike = useCallback((postId: string) => {
+    void reelActionsRef.current.toggleLike(postId);
+  }, []);
+  const handleReport = useCallback((postId: string) => {
+    void reelActionsRef.current.reportPost(postId);
+  }, []);
+  const handleShare = useCallback((post: FeedPost) => {
+    setSharePost(post);
+  }, []);
+  const handleToggleMute = useCallback(() => {
+    setIsMuted((muted) => !muted);
+  }, []);
+  const handleLoadMore = useCallback(() => {
+    void reelActionsRef.current.loadMore();
+  }, []);
 
   const handleMomentumScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -111,6 +173,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         Math.max(0, Math.round(offsetY / size.height)),
       );
 
+      setVisibleIndex(landedIndex);
       setActiveIndex((current) =>
         current === landedIndex ? current : landedIndex,
       );
@@ -137,9 +200,59 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
 
     if (reelItems.length < prevCount) {
       const target = Math.min(activeIndex, reelItems.length - 1);
+      setVisibleIndex(target);
       flatListRef.current?.scrollToIndex({ animated: false, index: target });
     }
   }, [activeIndex, reelItems.length, router]);
+
+  const renderReelItem = useCallback(
+    ({ index, item }: ListRenderItemInfo<ReelFeedItem>) => {
+      const post = item.post;
+
+      return (
+        <ReelItem
+          currentUserId={currentUserId}
+          height={size.height}
+          isActive={index === activeIndex}
+          // 보이는 릴스 ±1만 소스를 유지한다. 재생 전환은 activeIndex로 별도 제어한다.
+          isNearActive={Math.abs(index - visibleIndex) <= 1}
+          isBookmarked={bookmarkedPostIds.has(post.id)}
+          isLiked={likedPostIds.has(post.id)}
+          isMuted={isMuted}
+          onBlockUser={handleBlockUser}
+          onBookmark={handleBookmark}
+          onComment={handleComment}
+          onDelete={handleDelete}
+          onLike={handleLike}
+          onPressUser={handleUserPress}
+          onReport={handleReport}
+          onShare={handleShare}
+          onToggleMute={handleToggleMute}
+          post={post}
+          width={size.width}
+        />
+      );
+    },
+    [
+      activeIndex,
+      bookmarkedPostIds,
+      currentUserId,
+      handleBlockUser,
+      handleBookmark,
+      handleComment,
+      handleDelete,
+      handleLike,
+      handleReport,
+      handleShare,
+      handleToggleMute,
+      handleUserPress,
+      isMuted,
+      likedPostIds,
+      size.height,
+      size.width,
+      visibleIndex,
+    ],
+  );
 
   if (isLoading) {
     return (
@@ -191,53 +304,17 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
           initialScrollIndex={activeIndex}
           keyExtractor={(item) => item.itemKey}
           maxToRenderPerBatch={2}
-          onEndReached={() => {
-            void loadMore();
-          }}
+          onEndReached={handleLoadMore}
           onEndReachedThreshold={1.2}
           onMomentumScrollEnd={handleMomentumScrollEnd}
+          onViewableItemsChanged={handleViewableItemsChanged}
           disableIntervalMomentum
           removeClippedSubviews
-          renderItem={({ index, item }) => {
-            const post = item.post;
-
-            return (
-              <ReelItem
-                currentUserId={currentUserId}
-                height={size.height}
-                isActive={index === activeIndex}
-                // 활성 ±1만 영상 플레이어를 살린다(나머지는 source=null로 메모리 해제, 썸네일만).
-                isNearActive={Math.abs(index - activeIndex) <= 1}
-                isBookmarked={bookmarkedPostIds.has(post.id)}
-                isLiked={likedPostIds.has(post.id)}
-                isMuted={isMuted}
-                onBlockUser={() => {
-                  void blockAuthor(post.user.id);
-                }}
-                onBookmark={() => {
-                  void toggleBookmarkPost(post.id);
-                }}
-                onComment={() => setCommentPostId(post.id)}
-                onDelete={() => {
-                  void removePost(post.id);
-                }}
-                onLike={() => {
-                  void toggleLike(post.id);
-                }}
-                onPressUser={() => handleUserPress(post.user.nickname)}
-                onReport={() => {
-                  void reportPost(post.id);
-                }}
-                onShare={() => setSharePost(post)}
-                onToggleMute={() => setIsMuted((muted) => !muted)}
-                post={post}
-                width={size.width}
-              />
-            );
-          }}
+          renderItem={renderReelItem}
           showsVerticalScrollIndicator={false}
           snapToAlignment="start"
           snapToInterval={size.height}
+          viewabilityConfig={viewabilityConfig}
           windowSize={3}
         />
       ) : null}
