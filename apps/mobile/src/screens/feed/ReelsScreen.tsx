@@ -294,7 +294,6 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         <FlatList
           ref={flatListRef}
           data={reelItems}
-          decelerationRate="fast"
           getItemLayout={(_, index) => ({
             index,
             length: size.height,
@@ -308,12 +307,10 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
           onEndReachedThreshold={1.2}
           onMomentumScrollEnd={handleMomentumScrollEnd}
           onViewableItemsChanged={handleViewableItemsChanged}
-          disableIntervalMomentum
+          pagingEnabled
           removeClippedSubviews
           renderItem={renderReelItem}
           showsVerticalScrollIndicator={false}
-          snapToAlignment="start"
-          snapToInterval={size.height}
           viewabilityConfig={viewabilityConfig}
           windowSize={3}
         />
