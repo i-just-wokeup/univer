@@ -5,6 +5,7 @@ import type { ComponentType } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { emitHomeTabReselect } from "../../lib/navigation/homeTabReselect";
 import { colors } from "../../lib/theme";
 
 type TabMeta = {
@@ -55,6 +56,10 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
             target: route.key,
             canPreventDefault: true,
           });
+
+          if (isActive && route.name === "index" && !event.defaultPrevented) {
+            emitHomeTabReselect();
+          }
 
           if (!isActive && !event.defaultPrevented) {
             navigation.navigate(route.name, route.params);

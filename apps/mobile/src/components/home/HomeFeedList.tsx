@@ -1,7 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   FlatList,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   RefreshControl,
   StyleSheet,
   Text,
@@ -26,6 +36,13 @@ import { StoryBar } from "../stories/StoryBar";
 import { HomeHeader } from "./HomeHeader";
 
 type MaybePromise = void | Promise<void>;
+
+const TOP_OFFSET_THRESHOLD = 8;
+
+export type HomeFeedListHandle = {
+  isAtTop: () => boolean;
+  scrollToTop: () => void;
+};
 
 type HomeFeedListProps = {
   bookmarkedPostIds: Set<string>;
@@ -83,7 +100,8 @@ function getPostIdFromViewToken(token: ViewToken): string | null {
   return isFeedListPostItem(token.item) ? token.item.post.id : null;
 }
 
-export function HomeFeedList({
+export const HomeFeedList = forwardRef<HomeFeedListHandle, HomeFeedListProps>(
+function HomeFeedList({
   bookmarkedPostIds,
   currentUserId,
   isLoadingMore,
@@ -111,9 +129,11 @@ export function HomeFeedList({
   storyGroups,
   unreadChatCount,
   unreadCount,
-}: HomeFeedListProps) {
+}: HomeFeedListProps, ref) {
   // 화면에 가장 크게 보이는 카드만 active로 두어 피드 영상 자동재생을 제한한다.
   const [activePostId, setActivePostId] = useState<string | null>(null);
+  const flatListRef = useRef<FlatList<HomeFeedListItem> | null>(null);
+  const scrollOffsetRef = useRef(0);
   const onPostImpressionsRef = useRef(onPostImpressions);
   const pendingImpressionIdsRef = useRef<Set<string>>(new Set());
   const sentImpressionIdsRef = useRef<Set<string>>(new Set());
@@ -169,6 +189,17 @@ export function HomeFeedList({
   ]).current;
 
   onPostImpressionsRef.current = onPostImpressions;
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      isAtTop: () => scrollOffsetRef.current <= TOP_OFFSET_THRESHOLD,
+      scrollToTop: () => {
+        flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
+      },
+    }),
+    [],
+  );
 
   flushPendingImpressionsRef.current = () => {
     const postIds = Array.from(pendingImpressionIdsRef.current).filter(
@@ -237,6 +268,13 @@ export function HomeFeedList({
   const handleEndReached = useCallback(() => {
     void onLoadMore();
   }, [onLoadMore]);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+    },
+    [],
+  );
 
   const handleRefresh = useCallback(() => {
     triggerLightHaptic();
@@ -380,15 +418,18 @@ export function HomeFeedList({
       maxToRenderPerBatch={5}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.7}
+      onScroll={handleScroll}
+      ref={flatListRef}
       refreshControl={refreshControl}
       removeClippedSubviews
       renderItem={renderItem}
+      scrollEventThrottle={64}
       style={styles.list}
       viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs}
       windowSize={7}
     />
   );
-}
+});
 
 const styles = StyleSheet.create({
   list: {

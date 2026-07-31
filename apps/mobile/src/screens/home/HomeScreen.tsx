@@ -4,7 +4,10 @@ import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HomeFeedbackBanner } from "../../components/home/HomeFeedbackBanner";
-import { HomeFeedList } from "../../components/home/HomeFeedList";
+import {
+  HomeFeedList,
+  type HomeFeedListHandle,
+} from "../../components/home/HomeFeedList";
 import { HomeErrorState, HomeLoadingState } from "../../components/home/HomeScreenStates";
 import { HomeSheets } from "../../components/home/HomeSheets";
 import { signOutMobile } from "../../features/auth/api";
@@ -13,6 +16,7 @@ import { hasFreshFeedPageCache } from "../../features/feed/page-cache";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
 import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { FeedPost } from "../../features/feed/types";
+import { subscribeHomeTabReselect } from "../../lib/navigation/homeTabReselect";
 import { useSession } from "../../lib/session";
 import { colors } from "../../lib/theme";
 import { useHomeNavigation } from "./useHomeNavigation";
@@ -21,6 +25,7 @@ export function HomeScreen() {
   const router = useRouter();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
+  const homeFeedListRef = useRef<HomeFeedListHandle | null>(null);
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
   const [sharePost, setSharePost] = useState<FeedPost | null>(null);
   const closeComments = useCallback(() => {
@@ -95,6 +100,27 @@ export function HomeScreen() {
     }, [currentUserId, refreshInteractions]),
   );
 
+  useEffect(
+    () =>
+      subscribeHomeTabReselect(() => {
+        const homeFeedList = homeFeedListRef.current;
+
+        if (!homeFeedList) {
+          return;
+        }
+
+        if (homeFeedList.isAtTop()) {
+          if (!isRefreshing) {
+            void handleRefresh();
+          }
+          return;
+        }
+
+        homeFeedList.scrollToTop();
+      }),
+    [handleRefresh, isRefreshing],
+  );
+
   const handleSignOut = useCallback(async () => {
     await signOutMobile();
   }, []);
@@ -167,6 +193,7 @@ export function HomeScreen() {
         onVideoPress={handleVideoPress}
         posts={posts}
         postRanks={postRanks}
+        ref={homeFeedListRef}
         storyGroups={storyGroups}
         unreadChatCount={unreadChatCount}
         unreadCount={unreadCount}

@@ -120,6 +120,7 @@
 - [x] 앱 Android 엣지투엣지 하단 네비바 흰색 방향 검증 1차 (인사이트 화면 내부 safe-area 배경 직접 렌더)
 - [x] 앱 프로필 실명/학과 공개 여부 토글 Phase 1 (DB 공개 플래그/RPC 마스킹, 앱 표시 경로 학과 마스킹, 프로필 편집 스위치)
 - [x] 앱 홈피드 순서 함수 연동 (get_feed_post_ids 기반 band/rank 페이지네이션, post_impressions 노출 기록, 모두 열람 마커)
+- [x] 앱 홈 탭 재탭 UX 적용 (스크롤 내려간 상태면 맨 위로, 최상단이면 새로고침)
 - [x] 앱 일반 화면 하단 네비바 배경 방향 재정리 (탭 화면 흰색 유지, 일반 화면은 콘텐츠 배경색 연장)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)
