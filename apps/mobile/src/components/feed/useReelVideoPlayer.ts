@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { useVideoPlayer } from "expo-video";
 
@@ -18,6 +18,7 @@ export function useReelVideoPlayer({
   videoUrl,
 }: UseReelVideoPlayerParams) {
   const [isPaused, setIsPaused] = useState(false);
+  const wasActiveRef = useRef(isActive);
 
   // 초기엔 빈 소스. 가까워지면 replace로 실제 영상을, 멀어지면 null로 교체해 메모리를 푼다.
   const player = useVideoPlayer(null, (instance) => {
@@ -63,12 +64,17 @@ export function useReelVideoPlayer({
   // 돌아온 뒤 되감으면 옛 프레임이 찰나 보이므로, 떠날 때 미리 준비하는 방식을 쓴다.
   // (수동 일시정지는 isActive가 유지돼 리셋되지 않아 이어서 재생됨)
   useEffect(() => {
-    if (isActive) {
+    const wasActive = wasActiveRef.current;
+    wasActiveRef.current = isActive;
+
+    if (!wasActive || isActive) {
       return;
     }
 
     try {
-      player.currentTime = 0;
+      if (player.currentTime > 0.05) {
+        player.currentTime = 0;
+      }
     } catch {
       // 소스 미준비/release 상태면 무시(준비되면 어차피 0부터 시작).
     }

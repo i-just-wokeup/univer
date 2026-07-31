@@ -3,11 +3,12 @@ import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Pressable,
   StyleSheet,
   Text,
   View,
-  type ViewToken,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -69,16 +70,6 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     toggleLike,
   } = useReels(startPostId);
 
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 80 }).current;
-  const handleViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      const index = viewableItems[0]?.index;
-      if (typeof index === "number") {
-        setActiveIndex(index);
-      }
-    },
-  ).current;
-
   const handleUserPress = useCallback(
     (nickname: string) => {
       router.push({ pathname: "/profile/[nickname]", params: { nickname } });
@@ -107,6 +98,25 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const flatListRef = useRef<FlatList<ReelFeedItem>>(null);
   const prevPostCountRef = useRef(0);
   const hadPostsRef = useRef(false);
+
+  const handleMomentumScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (size.height <= 0 || reelItems.length === 0) {
+        return;
+      }
+
+      const offsetY = event.nativeEvent.contentOffset.y;
+      const landedIndex = Math.min(
+        reelItems.length - 1,
+        Math.max(0, Math.round(offsetY / size.height)),
+      );
+
+      setActiveIndex((current) =>
+        current === landedIndex ? current : landedIndex,
+      );
+    },
+    [reelItems.length, setActiveIndex, size.height],
+  );
 
   // 차단/삭제로 영상이 목록에서 빠졌을 때: 남은 영상이 있으면 그 자리(다음 영상)로 스크롤,
   // 마지막 영상까지 사라졌으면 릴스를 닫는다. (초기 로딩/에러의 빈 상태는 hadPostsRef로 구분해 안 닫음)
@@ -185,7 +195,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
             void loadMore();
           }}
           onEndReachedThreshold={1.2}
-          onViewableItemsChanged={handleViewableItemsChanged}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
           disableIntervalMomentum
           removeClippedSubviews
           renderItem={({ index, item }) => {
@@ -228,7 +238,6 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
           showsVerticalScrollIndicator={false}
           snapToAlignment="start"
           snapToInterval={size.height}
-          viewabilityConfig={viewabilityConfig}
           windowSize={3}
         />
       ) : null}
