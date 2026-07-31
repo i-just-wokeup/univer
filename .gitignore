@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Windows NTFS alternate data stream 아티팩트 (다운로드 파일 메타)
+*Zone.Identifier
