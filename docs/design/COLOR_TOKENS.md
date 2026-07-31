@@ -184,4 +184,39 @@
 - scrim/흰오버레이 통일로 인한 미세 차이는 의도된 것(육안 식별 불가).
 
 ---
-*2단계(값 교체 → 회색/애플 팔레트) 및 3단계(다크모드 런타임 전환, `StyleSheet.create` → 테마 훅 구조 변경)는 별도 문서로 진행.*
+
+## 2단계 — 보라 걷어내기 (완전 모노, 값만 교체)
+
+> 1단계로 색이 전부 토큰을 거치므로, 이제 `theme.ts` **값만** 바꾸면 앱 전체가 모노로 바뀐다.
+> 코드(치환된 `colors.*` 참조)는 건드리지 않는다. **예외 1줄**: 하단바 (+)버튼만 `brand`로.
+> 값은 눈대중 초안 — 실기기 확인 후 조정 가능. 다크 값은 3단계.
+
+**결정**: 완전 모노. 단 **하단바 가운데 작성(+) 버튼만 현재 보라 유지**.
+
+### theme.ts 값 교체
+| 토큰 | 기존값 | → 신규값(라이트) |
+|---|---|---|
+| `brand` *(신규 추가)* | — | `#7C3AED` |
+| `accent` | #7C3AED | `#15161B` |
+| `accentSoft` | #EEE9FB | `#F2F2F7` |
+| `accentTintBg` | rgba(124,58,237,0.08) | `rgba(20,22,30,0.05)` |
+| `accentBorderSoft` | rgba(124,58,237,0.16) | `rgba(20,22,30,0.1)` |
+| `accentTrack` | rgba(124,58,237,0.36) | `#15161B` |
+| `lavenderTint` | #D8CCF2 | `#E5E5EA` |
+| `lavenderTintSoft` | #F7F5FB | `#F5F5F7` |
+| `lavenderBorder` | #D9CCFA | `rgba(20,22,30,0.08)` |
+| `imagePlaceholder` | #E8E3F3 | `#E5E5EA` |
+
+- 그 외 토큰(text/muted/scrim/onMedia*/danger/star/success/white/black/neutral·surface 계열)은 **변경 없음**.
+- `danger`(#FF3B4E)·`star`(#FACC15)·`success`(#2FC36B) 상태색은 의미상 유지(모노 대상 아님).
+
+### 코드 변경 — 딱 1곳
+- `components/common/BottomTabBar.tsx` `primaryTab.backgroundColor`: `colors.accent` → `colors.brand` (가운데 (+)버튼).
+  - 같은 파일 활성 탭 아이콘(`colors.accent`, ~L50)은 **그대로** 둔다 → 검정으로 바뀌는 게 의도.
+- 그 외 `colors.accent*` 참조는 전부 그대로(값 교체로 자동 반영).
+
+### 검증
+- `npx tsc --noEmit` 통과.
+- 실기기: 앱 전체가 흑백/회색으로 보이고 **하단 (+)버튼만 보라**면 성공. 배경(연회색)과 카드(흰색) 구분이 남아있는지 확인.
+
+*3단계(다크/라이트 런타임 전환, `StyleSheet.create` → 테마 훅 구조 변경)는 별도.*
