@@ -8,6 +8,11 @@
 
 ### 완료
 - **앱 홈피드 순서 함수 연동** — 홈피드 첫 페이지/무한스크롤을 created_at cursor 방식에서 DB RPC `get_feed_post_ids(seed, limit, after_band, after_rank)` 기반 순서 조회로 전환. RPC가 준 post id 순서를 유지한 채 기존 posts 임베딩 select와 `hydrateFeedPosts`를 재사용하고, 세션 seed를 캐시에 저장해 재진입/스크롤 중 순서가 흔들리지 않게 했다. 새로고침 때만 seed를 갱신해 본 글 랜덤 꼬리 순서가 바뀐다. `post_impressions` upsert API를 추가하고 Home FlatList viewability(80% 이상·2초 이상)를 안정 참조 pairs로 연결해 본 글 기록을 배치 저장한다. band 2 경계에는 “모두 열람했습니다” 마커를 삽입. 앱 tsc 통과.
+- **⚠️ 피드/릴스 로드 실패(PGRST201) 수정 (Claude Code)** — 위 연동 직후 앱에서 "피드를 불러오지 못했습니다". 원인 = 07-30에 만든 `post_impressions`가 posts·users 양쪽에 FK를 걸어 posts↔users 관계가 **2개**가 됨(작성자 FK + post_impressions 우회 M2M) → 기존 `user:users(...)` 임베딩이 관계 모호로 터짐. **RPC는 정상, post_impressions 테이블이 기존 피드/릴스 임베딩을 깨뜨린 것.** 작성자 FK를 명시(`user:users!posts_user_id_fkey(...)`)해 해결(`internalTypes.ts` 임베딩 상수 2개, 다른 기능은 posts·users를 분리 조회라 무영향). 커밋 `b2554ed`.
+  - 디버깅: 폰엔 일반 문구만 뜨고 로그 없어, test 계정 로그인 토큰으로 REST를 직접 호출해 PGRST201 재현(권한/스키마 캐시 아님을 배제 후 특정).
+  - **교훈**: A·B 양쪽에 FK를 건 junction 테이블을 추가하면 A↔B 임베딩이 M2M으로 잡혀 기존 임베딩이 깨질 수 있음 → 임베딩에 FK 명시.
+- **실기기 검증** — 피드 정상 로드, 크루 글 상단(band 0), `post_impressions` 기록 확인(80%·2초), "모두 열람" 마커 표시 확인.
+- **논의(후속)**: 홈 탭 재탭 시 맨 위로(+최상단이면 새로고침) = JS-only 가능(재빌드 X). FlatList가 HomeFeedList에 있어 화면→리스트 ref 배선 필요 → 코덱스 지시문 전달.
 
 ## 2026-07-30
 
