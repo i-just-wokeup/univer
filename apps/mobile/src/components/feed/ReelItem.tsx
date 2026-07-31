@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { VideoView } from "expo-video";
 import { Play } from "lucide-react-native";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -69,6 +69,8 @@ export function ReelItem({
   const video = useMemo(() => getVideo(post.media), [post.media]);
   const videoUrl = video?.url ?? null;
   const isReady = video?.processing_status === "ready";
+  const [hasMountedVideo, setHasMountedVideo] = useState(false);
+  const [hasRenderedFirstFrame, setHasRenderedFirstFrame] = useState(false);
   const insets = useSafeAreaInsets();
   const { isPaused, player, togglePaused } = useReelVideoPlayer({
     isActive,
@@ -78,33 +80,54 @@ export function ReelItem({
     videoUrl,
   });
 
+  useEffect(() => {
+    setHasMountedVideo(false);
+    setHasRenderedFirstFrame(false);
+  }, [videoUrl, isReady]);
+
+  const shouldRenderVideo = isNearActive && isReady;
+  const shouldMountVideo = isReady && (isNearActive || hasMountedVideo);
+
+  useEffect(() => {
+    if (!shouldRenderVideo) {
+      return undefined;
+    }
+
+    setHasMountedVideo(true);
+    setHasRenderedFirstFrame(false);
+
+    // 일부 expo-video 조합에서 onFirstFrameRender가 늦거나 누락되면
+    // 썸네일이 영원히 영상을 덮는다. 안전망으로 일정 시간 뒤 커버를 걷는다.
+    const fallbackTimer = setTimeout(() => {
+      setHasRenderedFirstFrame(true);
+    }, 1200);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+    };
+  }, [shouldRenderVideo, videoUrl]);
+
   if (!video) {
     return <View style={{ backgroundColor: colors.black, height, width }} />;
   }
 
   const isOwnPost = currentUserId === post.user.id;
-  const shouldRenderVideo = isNearActive && isReady;
 
   return (
     <View style={[styles.page, { height, width }]}>
-      {shouldRenderVideo ? (
+      {shouldMountVideo ? (
         <VideoView
           contentFit="contain"
           key={videoUrl}
           nativeControls={false}
+          onFirstFrameRender={() => setHasRenderedFirstFrame(true)}
           player={player}
+          surfaceType="textureView"
           style={StyleSheet.absoluteFill}
+          useExoShutter
         />
       ) : null}
-      {!isActive && video.thumbnail_url ? (
-        <Image
-          cachePolicy="memory-disk"
-          contentFit="contain"
-          source={{ uri: video.thumbnail_url }}
-          style={StyleSheet.absoluteFill}
-        />
-      ) : null}
-      {!isReady && video.thumbnail_url ? (
+      {video.thumbnail_url && (!shouldMountVideo || !hasRenderedFirstFrame) ? (
         <Image
           cachePolicy="memory-disk"
           contentFit="contain"
