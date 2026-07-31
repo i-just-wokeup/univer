@@ -5,6 +5,7 @@ export {
   getFeedRanked,
   getPost,
   getPostCreatedAt,
+  getReelsRanked,
   getVideoFeed,
 } from "./feedQueries";
 export { createPost, deletePost } from "./postMutations";

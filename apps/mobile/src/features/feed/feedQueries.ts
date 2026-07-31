@@ -9,6 +9,7 @@ import type {
   FeedRankCursor,
   GetFeedResult,
   GetRankedFeedResult,
+  GetRankedReelsResult,
 } from "./types";
 import { hydrateFeedPosts } from "./feedHydration";
 import {
@@ -168,6 +169,82 @@ export async function getFeedRanked({
   return {
     nextCursor,
     postRanks: rankByPostId,
+    posts,
+  };
+}
+
+// 릴스 순서는 DB 함수가 정하고, 내용은 기존 영상 posts 임베딩 조회/hydration을 재사용한다.
+export async function getReelsRanked({
+  afterBand,
+  afterRank,
+  limit = PAGE_SIZE.feed,
+  seed,
+  seenIds,
+}: {
+  afterBand?: number | null;
+  afterRank?: number | null;
+  limit?: number;
+  seed: number;
+  seenIds: string[];
+}): Promise<GetRankedReelsResult> {
+  const supabase = getSupabaseMobileClient();
+  const { userId } = await getCurrentUserContext();
+  const fetchLimit = limit + 1;
+
+  const { data: rankedData, error: rankedError } = await supabase.rpc(
+    "get_reel_post_ids",
+    {
+      p_after_band: afterBand ?? null,
+      p_after_rank: afterRank ?? null,
+      p_limit: fetchLimit,
+      p_seed: seed,
+      p_seen_ids: seenIds,
+    },
+  );
+
+  if (rankedError || !rankedData) {
+    throw new Error("영상을 불러오지 못했습니다.");
+  }
+
+  const rankedRows = rankedData as RankedFeedPostIdRow[];
+  const hasMore = rankedRows.length > limit;
+  const pageRankedRows = hasMore ? rankedRows.slice(0, limit) : rankedRows;
+
+  if (pageRankedRows.length === 0) {
+    return {
+      nextCursor: null,
+      posts: [],
+    };
+  }
+
+  const postIds = pageRankedRows.map((row) => row.post_id);
+  const { data: postsData, error: postsError } = await supabase
+    .from("posts")
+    .select(POST_WITH_VIDEO_MEDIA_SELECT_FIELDS)
+    .in("id", postIds)
+    .eq("post_media.type", "video")
+    .is("deleted_at", null)
+    .order("order_index", { ascending: true, referencedTable: "post_media" });
+
+  if (postsError || !postsData) {
+    throw new Error("영상을 불러오지 못했습니다.");
+  }
+
+  const rowsById = new Map(
+    toEmbeddedFeedPostRows(postsData).map((postRow) => [postRow.id, postRow]),
+  );
+  const orderedRows = pageRankedRows
+    .map((rankedRow) => rowsById.get(rankedRow.post_id) ?? null)
+    .filter((postRow): postRow is FeedPostRow => postRow !== null);
+  const posts = await hydrateFeedPosts(orderedRows, userId);
+  const lastRankedRow = pageRankedRows[pageRankedRows.length - 1];
+  const nextCursor: FeedRankCursor | null =
+    hasMore && lastRankedRow
+      ? { band: lastRankedRow.band, rank: lastRankedRow.rank }
+      : null;
+
+  return {
+    nextCursor,
     posts,
   };
 }

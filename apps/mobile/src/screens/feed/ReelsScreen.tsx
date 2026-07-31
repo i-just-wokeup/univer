@@ -17,7 +17,7 @@ import { PostShareSheet } from "../../components/feed/PostShareSheet";
 import { StateView } from "../../components/common/StateView";
 import { usePostShare, type PostShareTarget } from "../../features/chat/usePostShare";
 import { useReels } from "../../features/feed/useReels";
-import type { FeedPost } from "../../features/feed/types";
+import type { FeedPost, ReelFeedItem } from "../../features/feed/types";
 import { useSession } from "../../lib/session";
 import { SITE_URL } from "../../lib/site";
 import { colors } from "../../lib/theme";
@@ -60,7 +60,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     isLoading,
     likedPostIds,
     loadMore,
-    posts,
+    reelItems,
     removePost,
     reportPost,
     setActiveIndex,
@@ -104,7 +104,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     [sharePost, sharePostToTarget, showFeedback],
   );
 
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList<ReelFeedItem>>(null);
   const prevPostCountRef = useRef(0);
   const hadPostsRef = useRef(false);
 
@@ -112,24 +112,24 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   // 마지막 영상까지 사라졌으면 릴스를 닫는다. (초기 로딩/에러의 빈 상태는 hadPostsRef로 구분해 안 닫음)
   useEffect(() => {
     const prevCount = prevPostCountRef.current;
-    prevPostCountRef.current = posts.length;
+    prevPostCountRef.current = reelItems.length;
 
-    if (posts.length > 0) {
+    if (reelItems.length > 0) {
       hadPostsRef.current = true;
     }
 
-    if (posts.length === 0) {
+    if (reelItems.length === 0) {
       if (hadPostsRef.current) {
         router.back();
       }
       return;
     }
 
-    if (posts.length < prevCount) {
-      const target = Math.min(activeIndex, posts.length - 1);
+    if (reelItems.length < prevCount) {
+      const target = Math.min(activeIndex, reelItems.length - 1);
       flatListRef.current?.scrollToIndex({ animated: false, index: target });
     }
-  }, [activeIndex, posts.length, router]);
+  }, [activeIndex, reelItems.length, router]);
 
   if (isLoading) {
     return (
@@ -143,7 +143,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     );
   }
 
-  if (errorMessage && posts.length === 0) {
+  if (errorMessage && reelItems.length === 0) {
     return (
       <View style={styles.center}>
         <StateView
@@ -168,65 +168,69 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
       style={styles.screen}
     >
       {size.height > 0 ? (
-      <FlatList
-        ref={flatListRef}
-        data={posts}
-        decelerationRate="fast"
-        getItemLayout={(_, index) => ({
-          index,
-          length: size.height,
-          offset: size.height * index,
-        })}
-        initialNumToRender={2}
-        initialScrollIndex={activeIndex}
-        keyExtractor={(post) => post.id}
-        maxToRenderPerBatch={2}
-        onEndReached={() => {
-          void loadMore();
-        }}
-        onEndReachedThreshold={1.2}
-        onViewableItemsChanged={handleViewableItemsChanged}
-        disableIntervalMomentum
-        removeClippedSubviews
-        renderItem={({ index, item }) => (
-          <ReelItem
-            currentUserId={currentUserId}
-            height={size.height}
-            isActive={index === activeIndex}
-            // 활성 ±1만 영상 플레이어를 살린다(나머지는 source=null로 메모리 해제, 썸네일만).
-            isNearActive={Math.abs(index - activeIndex) <= 1}
-            isBookmarked={bookmarkedPostIds.has(item.id)}
-            isLiked={likedPostIds.has(item.id)}
-            isMuted={isMuted}
-            onBlockUser={() => {
-              void blockAuthor(item.user.id);
-            }}
-            onBookmark={() => {
-              void toggleBookmarkPost(item.id);
-            }}
-            onComment={() => setCommentPostId(item.id)}
-            onDelete={() => {
-              void removePost(item.id);
-            }}
-            onLike={() => {
-              void toggleLike(item.id);
-            }}
-            onPressUser={() => handleUserPress(item.user.nickname)}
-            onReport={() => {
-              void reportPost(item.id);
-            }}
-            onShare={() => setSharePost(item)}
-            onToggleMute={() => setIsMuted((muted) => !muted)}
-            post={item}
-            width={size.width}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
-        snapToAlignment="start"
-        snapToInterval={size.height}
-        viewabilityConfig={viewabilityConfig}
-        windowSize={3}
-      />
+        <FlatList
+          ref={flatListRef}
+          data={reelItems}
+          decelerationRate="fast"
+          getItemLayout={(_, index) => ({
+            index,
+            length: size.height,
+            offset: size.height * index,
+          })}
+          initialNumToRender={2}
+          initialScrollIndex={activeIndex}
+          keyExtractor={(item) => item.itemKey}
+          maxToRenderPerBatch={2}
+          onEndReached={() => {
+            void loadMore();
+          }}
+          onEndReachedThreshold={1.2}
+          onViewableItemsChanged={handleViewableItemsChanged}
+          disableIntervalMomentum
+          removeClippedSubviews
+          renderItem={({ index, item }) => {
+            const post = item.post;
+
+            return (
+              <ReelItem
+                currentUserId={currentUserId}
+                height={size.height}
+                isActive={index === activeIndex}
+                // 활성 ±1만 영상 플레이어를 살린다(나머지는 source=null로 메모리 해제, 썸네일만).
+                isNearActive={Math.abs(index - activeIndex) <= 1}
+                isBookmarked={bookmarkedPostIds.has(post.id)}
+                isLiked={likedPostIds.has(post.id)}
+                isMuted={isMuted}
+                onBlockUser={() => {
+                  void blockAuthor(post.user.id);
+                }}
+                onBookmark={() => {
+                  void toggleBookmarkPost(post.id);
+                }}
+                onComment={() => setCommentPostId(post.id)}
+                onDelete={() => {
+                  void removePost(post.id);
+                }}
+                onLike={() => {
+                  void toggleLike(post.id);
+                }}
+                onPressUser={() => handleUserPress(post.user.nickname)}
+                onReport={() => {
+                  void reportPost(post.id);
+                }}
+                onShare={() => setSharePost(post)}
+                onToggleMute={() => setIsMuted((muted) => !muted)}
+                post={post}
+                width={size.width}
+              />
+            );
+          }}
+          showsVerticalScrollIndicator={false}
+          snapToAlignment="start"
+          snapToInterval={size.height}
+          viewabilityConfig={viewabilityConfig}
+          windowSize={3}
+        />
       ) : null}
 
       <Pressable

@@ -784,6 +784,20 @@ export type Database = {
           rank: number
         }>
       }
+      get_reel_post_ids: {
+        Args: {
+          p_seed: number
+          p_seen_ids: string[]
+          p_limit: number
+          p_after_band: number | null
+          p_after_rank: number | null
+        }
+        Returns: Array<{
+          post_id: string
+          band: number
+          rank: number
+        }>
+      }
       unblock_user: {
         Args: {
           target_user_id: string

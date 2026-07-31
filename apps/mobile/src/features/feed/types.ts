@@ -49,3 +49,13 @@ export type GetRankedFeedResult = {
   postRanks: Map<string, FeedPostRank>;
   posts: FeedPost[];
 };
+
+export type GetRankedReelsResult = {
+  nextCursor: FeedRankCursor | null;
+  posts: FeedPost[];
+};
+
+export type ReelFeedItem = {
+  itemKey: string;
+  post: FeedPost;
+};

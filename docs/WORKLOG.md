@@ -8,6 +8,7 @@
 
 ### 완료
 - **앱 홈피드 순서 함수 연동** — 홈피드 첫 페이지/무한스크롤을 created_at cursor 방식에서 DB RPC `get_feed_post_ids(seed, limit, after_band, after_rank)` 기반 순서 조회로 전환. RPC가 준 post id 순서를 유지한 채 기존 posts 임베딩 select와 `hydrateFeedPosts`를 재사용하고, 세션 seed를 캐시에 저장해 재진입/스크롤 중 순서가 흔들리지 않게 했다. 새로고침 때만 seed를 갱신해 본 글 랜덤 꼬리 순서가 바뀐다. `post_impressions` upsert API를 추가하고 Home FlatList viewability(80% 이상·2초 이상)를 안정 참조 pairs로 연결해 본 글 기록을 배치 저장한다. band 2 경계에는 “모두 열람했습니다” 마커를 삽입. 앱 tsc 통과.
+- **앱 릴스 순서 함수 연동** — 릴스 첫 페이지/무한스크롤을 created_at cursor 방식에서 DB RPC `get_reel_post_ids(seed, seen_ids, limit, after_band, after_rank)` 기반 순서 조회로 전환. RPC가 준 post id 순서를 유지한 채 기존 영상 posts 임베딩 select와 `hydrateFeedPosts`를 재사용한다. 훅 진입마다 세션 seed를 고정하고, 활성 릴스가 1초 이상 머문 시점에 기존 `reel_view` 지표 기록과 별도로 세션 seen set에 추가해 안 본 영상이 먼저 나오게 했다. 끝 페이지에 도달하면 같은 seed로 커서를 리셋해 계속 이어붙이며, 중복 렌더를 위해 FlatList key를 post id가 아닌 인스턴스 key로 분리. 특정 영상 진입은 해당 영상을 첫 아이템으로 고정하고 ranked 결과를 이어붙인다. 앱 tsc 통과.
 - **⚠️ 피드/릴스 로드 실패(PGRST201) 수정 (Claude Code)** — 위 연동 직후 앱에서 "피드를 불러오지 못했습니다". 원인 = 07-30에 만든 `post_impressions`가 posts·users 양쪽에 FK를 걸어 posts↔users 관계가 **2개**가 됨(작성자 FK + post_impressions 우회 M2M) → 기존 `user:users(...)` 임베딩이 관계 모호로 터짐. **RPC는 정상, post_impressions 테이블이 기존 피드/릴스 임베딩을 깨뜨린 것.** 작성자 FK를 명시(`user:users!posts_user_id_fkey(...)`)해 해결(`internalTypes.ts` 임베딩 상수 2개, 다른 기능은 posts·users를 분리 조회라 무영향). 커밋 `b2554ed`.
   - 디버깅: 폰엔 일반 문구만 뜨고 로그 없어, test 계정 로그인 토큰으로 REST를 직접 호출해 PGRST201 재현(권한/스키마 캐시 아님을 배제 후 특정).
   - **교훈**: A·B 양쪽에 FK를 건 junction 테이블을 추가하면 A↔B 임베딩이 M2M으로 잡혀 기존 임베딩이 깨질 수 있음 → 임베딩에 FK 명시.
