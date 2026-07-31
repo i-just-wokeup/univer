@@ -51,7 +51,7 @@ export type ConnectionUser = {
   id: string;
   nickname: string;
   avatar_url: string | null;
-  department: string;
+  department: string | null; // 학과 비공개 시 서버(get_friends/pending/sent)가 null 반환
 };
 
 function isConnectionStatus(value: Json | null): value is ConnectionStatus {

@@ -3,7 +3,7 @@ import { getBlockRelatedUserIds } from "@/features/blocks/api";
 
 export type SearchUser = {
   avatar_url: string | null;
-  department: string;
+  department: string | null; // 학과 비공개 시 서버(search_users)가 null 반환
   id: string;
   nickname: string;
 };
