@@ -5,6 +5,7 @@ import type { LucideProps } from "lucide-react-native";
 
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { Logo } from "../../components/common/Logo";
 
 type TabPlaceholderScreenProps = {
   description: string;
@@ -23,7 +24,7 @@ export function TabPlaceholderScreen({
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
-        <Text style={styles.logo}>KREW</Text>
+        <Logo height={30} />
       </View>
       <View style={styles.content}>
         <View style={styles.iconBox}>
@@ -44,11 +45,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   header: {
     paddingHorizontal: 24,
     paddingTop: 18,
-  },
-  logo: {
-    color: c.accent,
-    fontSize: 32,
-    fontWeight: "900",
   },
   content: {
     flex: 1,

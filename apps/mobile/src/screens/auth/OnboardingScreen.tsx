@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateView } from "../../components/common/StateView";
+import { Logo } from "../../components/common/Logo";
 import { useOnboarding } from "../../features/auth/useOnboarding";
 import { LEGAL_URLS } from "../../lib/site";
 import { useTheme, useThemedStyles } from "../../lib/theme";
@@ -73,7 +74,7 @@ export function OnboardingScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.logo}>KREW</Text>
+          <Logo height={40} />
           <Text style={styles.title}>학교가 자동으로 인식되었어요</Text>
           <Text style={styles.description}>
             학교 이메일 기준으로 인증된 정보를 확인해주세요.
@@ -235,7 +236,7 @@ export function OnboardingScreen() {
               ]}
             >
               <Text style={styles.primaryButtonText}>
-                {isSubmitting ? "저장 중..." : "KREW 시작하기"}
+                {isSubmitting ? "저장 중..." : "unip 시작하기"}
               </Text>
             </Pressable>
           </View>
@@ -257,11 +258,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     paddingBottom: 32,
-  },
-  logo: {
-    color: c.accent,
-    fontSize: 34,
-    fontWeight: "900",
   },
   title: {
     marginTop: 24,

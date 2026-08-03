@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
+import { Logo } from "../../components/common/Logo";
 import { signInWithGoogle } from "../../features/auth/googleSignIn";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { useTheme, useThemedStyles } from "../../lib/theme";
@@ -76,7 +77,7 @@ export function LoginScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.card}>
-          <Text style={styles.logo}>KREW</Text>
+          <Logo height={40} />
           <Text style={styles.title}>학교 이메일 로그인</Text>
           <Text style={styles.description}>
             국민대학교 이메일과 비밀번호로 로그인합니다.
@@ -153,11 +154,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 24,
     backgroundColor: c.card,
     padding: 24,
-  },
-  logo: {
-    color: c.accent,
-    fontSize: 34,
-    fontWeight: "900",
   },
   title: {
     marginTop: 28,

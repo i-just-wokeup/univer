@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { Logo } from "../common/Logo";
 
 type HomeHeaderProps = {
   onPressMessages: () => void;
@@ -25,7 +26,7 @@ export function HomeHeader({
   return (
     <View style={styles.headerArea}>
       <View style={styles.topBar}>
-        <Text style={styles.logo}>KREW</Text>
+        <Logo height={28} />
         <View style={styles.headerActions}>
           <Pressable
             accessibilityLabel="알림"
@@ -75,11 +76,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 10,
     paddingTop: 12,
-  },
-  logo: {
-    color: c.accent,
-    fontSize: 32,
-    fontWeight: "900",
   },
   headerActions: {
     flexDirection: "row",
