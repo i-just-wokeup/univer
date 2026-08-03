@@ -186,3 +186,15 @@ features/feed/
 - **Supabase 쿼리는 `features/*/` 안에서만** (화면/컴포넌트에서 직접 호출 금지)
 - 화면 훅(`use*.ts`)도 큰 것은 책임 분리: 예) `useHomeFeed` → pagination/actions/sync/feedback 훅으로 쪼갬
 - 세부 진행/미완 항목은 `docs/REFACTOR_PLAN.md` 참고
+
+### 테마/색 시스템 (다크모드, 2026-08 도입)
+색은 **전부 `lib/theme.ts`의 의미 토큰을 거친다. 하드코딩 hex/rgba 금지.**
+
+- `lib/theme.ts` — `lightColors`/`darkColors`(키 동일, `satisfies`로 강제) + `type ThemeColors`. 하위호환용 `colors = lightColors`.
+- 루트 `ThemeProvider`가 `useColorScheme()`으로 시스템 라이트/다크를 따라 팔레트를 준다. (v1은 시스템 자동만, 수동 토글은 이후)
+- **컴포넌트 규칙**: 모듈 최상단 `StyleSheet.create`에 색을 박으면 다크에서 안 바뀐다. 대신
+  - `const makeStyles = (c: ThemeColors) => StyleSheet.create({... c.token ...})` + `const styles = useThemedStyles(makeStyles)`
+  - JSX 인라인 색(`color=`, `fill=` 등)은 `const { colors } = useTheme()`
+- **flip / fixed**: 앱 UI(글씨·배경·테두리)는 flip(라이트↔다크 뒤집힘), 미디어(릴스/스토리) 위 오버레이·상태색은 fixed(라이트=다크 동일). 브랜드색(구글 버튼, `Logo`의 unip 레드)은 팔레트 밖 고정.
+- 정본/상세: `docs/design/COLOR_TOKENS.md`(토큰 정의·매핑), `docs/design/DARK_MODE.md`(다크 아키텍처·현황).
+- 라이브러리 없음(네이티브 리스크 회피). 딥다크 팔레트(배경 `#0F1011`, 카드 `feedCard #000`) 값은 `theme.ts`가 정본.
