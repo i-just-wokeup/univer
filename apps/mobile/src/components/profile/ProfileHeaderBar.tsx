@@ -2,7 +2,9 @@ import { MoreHorizontal, Settings } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
 
 import { useTheme } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { ScreenHeader } from "../common/ScreenHeader";
+import { VerifiedBadge } from "../common/VerifiedBadge";
 
 type ProfileHeaderBarProps = {
   isMine: boolean;
@@ -11,6 +13,7 @@ type ProfileHeaderBarProps = {
   onBack: () => void;
   onOpenMore: () => void;
   onPressSettings: () => void;
+  userId?: string | null;
 };
 
 export function ProfileHeaderBar({
@@ -20,7 +23,12 @@ export function ProfileHeaderBar({
   onBack,
   onOpenMore,
   onPressSettings,
+  userId,
 }: ProfileHeaderBarProps) {
+  const { isVerified } = useVerifiedUsers();
+  const titleAccessory =
+    userId && isVerified(userId) ? <VerifiedBadge size={15} /> : undefined;
+
   if (isPushed) {
     return (
       <ScreenHeader
@@ -42,6 +50,7 @@ export function ProfileHeaderBar({
         }
         themed
         title={nickname}
+        titleAccessory={titleAccessory}
       />
     );
   }
@@ -59,6 +68,7 @@ export function ProfileHeaderBar({
       }
       themed
       title={nickname}
+      titleAccessory={titleAccessory}
     />
   );
 }

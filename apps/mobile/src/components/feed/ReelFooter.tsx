@@ -3,7 +3,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
 import { ExpandableText } from "../common/ExpandableText";
+import { VerifiedBadge } from "../common/VerifiedBadge";
 import { colors, nicknameTextStyle } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import type { FeedPost } from "../../features/feed/types";
 
 type ReelFooterProps = {
@@ -13,6 +15,8 @@ type ReelFooterProps = {
 };
 
 export function ReelFooter({ bottomInset, onPressUser, post }: ReelFooterProps) {
+  const { isVerified } = useVerifiedUsers();
+
   return (
     <LinearGradient
       colors={["transparent", colors.scrimMed, colors.scrimMed]}
@@ -26,7 +30,16 @@ export function ReelFooter({ bottomInset, onPressUser, post }: ReelFooterProps) 
           label={post.user.nickname}
           size={36}
         />
-        <Text style={styles.nickname}>{post.user.nickname}</Text>
+        <View style={styles.nicknameRow}>
+          <Text numberOfLines={1} style={styles.nickname}>
+            {post.user.nickname}
+          </Text>
+          {isVerified(post.user.id) ? (
+            <View style={styles.verifiedBadge}>
+              <VerifiedBadge size={13} />
+            </View>
+          ) : null}
+        </View>
       </Pressable>
       {/* 본문 자리를 항상 확보 — 본문 유무와 상관없이 프로필 위치를 고정한다(접힘 기준) */}
       <View style={styles.captionSlot}>
@@ -72,6 +85,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textShadowColor: colors.scrimStrong,
     textShadowRadius: 4,
+    flexShrink: 1,
+  },
+  nicknameRow: {
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
+  verifiedBadge: {
+    marginLeft: 4,
   },
   caption: {
     color: colors.white,

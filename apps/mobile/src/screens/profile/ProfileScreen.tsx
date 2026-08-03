@@ -120,6 +120,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           setIsActionSheetOpen(true);
         }}
         onPressSettings={handlePressSettings}
+        userId={profile?.id}
       />
 
       <ScrollView

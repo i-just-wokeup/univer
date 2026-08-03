@@ -1,10 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
+import { VerifiedBadge } from "../common/VerifiedBadge";
 import type { ConversationWithUser } from "../../features/chat/api";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 
 type ConversationRowProps = {
   conversation: ConversationWithUser;
@@ -17,6 +19,7 @@ export function ConversationRow({
   currentUserId,
   onPress,
 }: ConversationRowProps) {
+  const { isVerified } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
   const isMine = conversation.last_message_sender_id === currentUserId;
   const preview = conversation.last_message_preview
@@ -38,9 +41,16 @@ export function ConversationRow({
       />
       <View style={styles.body}>
         <View style={styles.nameRow}>
-          <Text numberOfLines={1} style={styles.nickname}>
-            {conversation.other_user.nickname}
-          </Text>
+          <View style={styles.nicknameGroup}>
+            <Text numberOfLines={1} style={styles.nickname}>
+              {conversation.other_user.nickname}
+            </Text>
+            {isVerified(conversation.other_user.id) ? (
+              <View style={styles.verifiedBadge}>
+                <VerifiedBadge size={13} />
+              </View>
+            ) : null}
+          </View>
           {conversation.status === "pending" ? (
             <View style={styles.pendingBadge}>
               <Text style={styles.pendingText}>요청</Text>
@@ -95,6 +105,16 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     minWidth: 0,
     color: c.text,
     fontSize: 15,
+    flexShrink: 1,
+  },
+  nicknameGroup: {
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
+  verifiedBadge: {
+    marginLeft: 4,
   },
   pendingBadge: {
     borderRadius: 999,

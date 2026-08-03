@@ -214,6 +214,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
             nickname={conversation?.other_user.nickname ?? "메시지"}
             onBack={handleBack}
             onPressProfile={conversation ? handlePressProfile : undefined}
+            userId={conversation?.other_user.id}
             right={
               conversation ? (
                 <Pressable

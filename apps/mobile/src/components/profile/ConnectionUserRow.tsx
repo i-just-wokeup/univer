@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { ConnectionUser } from "../../features/profile/types";
 import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
 import type { ConnectionTab } from "./ConnectionTabs";
 
@@ -27,6 +28,7 @@ export function ConnectionUserRow({
   tab,
   user,
 }: ConnectionUserRowProps) {
+  const { isVerified } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -38,6 +40,7 @@ export function ConnectionUserRow({
         nickname={user.nickname}
         onPress={onPressUser}
         style={styles.user}
+        verified={isVerified(user.id)}
       />
       <ConnectionActions
         isBusy={isBusy}

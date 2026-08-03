@@ -13,6 +13,7 @@ import type { Comment } from "../../features/comments/types";
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
 
 type CommentRowProps = {
@@ -41,6 +42,7 @@ function CommentRowComponent({
   onUserPress,
 }: CommentRowProps) {
   const { colors } = useTheme();
+  const { isVerified } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
   const mentionPrefix = isReply && mentionNickname ? `@${mentionNickname}` : "";
   const restContent =
@@ -77,6 +79,7 @@ function CommentRowComponent({
           nicknameSize={13}
           onPress={onUserPress}
           style={styles.commentUser}
+          verified={isVerified(comment.user.id)}
         />
 
         {hasMention && mentionNickname ? (

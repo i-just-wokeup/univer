@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
 
 type ChatRoomHeaderProps = {
@@ -12,6 +13,7 @@ type ChatRoomHeaderProps = {
   onBack: () => void;
   onPressProfile?: (nickname: string) => void;
   right?: ReactNode;
+  userId?: string | null;
 };
 
 // 채팅방 상단 헤더: 뒤로 | 상대 아바타+이름(탭하면 프로필) | 우측 슬롯(메뉴).
@@ -21,8 +23,10 @@ export function ChatRoomHeader({
   onBack,
   onPressProfile,
   right,
+  userId,
 }: ChatRoomHeaderProps) {
   const { colors } = useTheme();
+  const { isVerified } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -43,6 +47,7 @@ export function ChatRoomHeader({
         nicknameSize={16}
         onPress={onPressProfile}
         style={styles.user}
+        verified={Boolean(userId && isVerified(userId))}
       />
 
       {right ? (

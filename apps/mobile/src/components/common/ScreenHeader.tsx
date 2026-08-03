@@ -10,9 +10,16 @@ type ScreenHeaderProps = {
   right?: ReactNode;
   themed?: boolean;
   title: string;
+  titleAccessory?: ReactNode;
 };
 
-export function ScreenHeader({ onBack, right, themed = false, title }: ScreenHeaderProps) {
+export function ScreenHeader({
+  onBack,
+  right,
+  themed = false,
+  title,
+  titleAccessory,
+}: ScreenHeaderProps) {
   const { colors } = useTheme();
 
   return (
@@ -34,12 +41,17 @@ export function ScreenHeader({ onBack, right, themed = false, title }: ScreenHea
       ) : (
         <View style={styles.headerSpacer} />
       )}
-      <Text
-        numberOfLines={1}
-        style={[styles.headerTitle, themed ? { color: colors.text } : null]}
-      >
-        {title}
-      </Text>
+      <View style={styles.titleSlot}>
+        <Text
+          numberOfLines={1}
+          style={[styles.headerTitle, themed ? { color: colors.text } : null]}
+        >
+          {title}
+        </Text>
+        {titleAccessory ? (
+          <View style={styles.titleAccessory}>{titleAccessory}</View>
+        ) : null}
+      </View>
       {right ? (
         <View style={styles.rightSlot}>{right}</View>
       ) : (
@@ -66,12 +78,23 @@ const styles = StyleSheet.create({
     backgroundColor: lightColors.white,
   },
   headerTitle: {
-    flex: 1,
-    marginHorizontal: 12,
+    flexShrink: 1,
     color: lightColors.text,
     fontSize: 18,
     fontWeight: "900",
     textAlign: "center",
+  },
+  titleSlot: {
+    minWidth: 0,
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 12,
+  },
+  titleAccessory: {
+    flexShrink: 0,
+    marginLeft: 4,
   },
   headerSpacer: {
     height: 40,

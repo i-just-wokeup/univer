@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { PostShareTarget } from "../../features/chat/usePostShare";
 import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
 
 type ShareTargetListProps = {
@@ -32,6 +33,7 @@ export function ShareTargetList({
   sendingTargetId,
   targets,
 }: ShareTargetListProps) {
+  const { isVerified } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -55,6 +57,7 @@ export function ShareTargetList({
               meta={target.department ?? getSourceLabel(target.source)}
               nickname={target.nickname}
               style={styles.targetUser}
+              verified={isVerified(target.id)}
             />
             <Pressable
               accessibilityRole="button"
