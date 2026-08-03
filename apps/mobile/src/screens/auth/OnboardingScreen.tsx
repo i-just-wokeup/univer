@@ -17,9 +17,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StateView } from "../../components/common/StateView";
 import { useOnboarding } from "../../features/auth/useOnboarding";
 import { LEGAL_URLS } from "../../lib/site";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function OnboardingScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     canSubmit,
@@ -194,7 +197,7 @@ export function OnboardingScreen() {
                 style={[styles.checkbox, agreed ? styles.checkboxOn : null]}
               >
                 {agreed ? (
-                  <Check color={colors.white} size={13} strokeWidth={3.2} />
+                  <Check color={colors.onAccent} size={13} strokeWidth={3.2} />
                 ) : null}
               </Pressable>
               <Text style={styles.agreeText}>
@@ -242,10 +245,10 @@ export function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   keyboard: {
     flex: 1,
@@ -256,20 +259,20 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   logo: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 34,
     fontWeight: "900",
   },
   title: {
     marginTop: 24,
-    color: colors.text,
+    color: c.text,
     fontSize: 24,
     fontWeight: "900",
     lineHeight: 31,
   },
   description: {
     marginTop: 8,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 21,
@@ -278,7 +281,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     alignItems: "center",
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 22,
   },
   schoolBadge: {
@@ -287,22 +290,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 20,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   schoolBadgeText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 28,
     fontWeight: "900",
   },
   schoolName: {
     marginTop: 14,
-    color: colors.text,
+    color: c.text,
     fontSize: 18,
     fontWeight: "900",
   },
   schoolMeta: {
     marginTop: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "800",
   },
@@ -310,7 +313,7 @@ const styles = StyleSheet.create({
     height: 1,
     alignSelf: "stretch",
     marginVertical: 18,
-    backgroundColor: colors.border,
+    backgroundColor: c.border,
   },
   infoRow: {
     width: "100%",
@@ -321,13 +324,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   infoLabel: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "800",
   },
   infoValue: {
     maxWidth: 210,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
@@ -340,11 +343,11 @@ const styles = StyleSheet.create({
   formCard: {
     marginTop: 18,
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 20,
   },
   sectionTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 20,
     fontWeight: "900",
   },
@@ -353,24 +356,24 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 8,
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },
   input: {
     minHeight: 52,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 18,
     borderWidth: 1,
-    backgroundColor: colors.white,
-    color: colors.text,
+    backgroundColor: c.navBackground,
+    color: c.text,
     fontSize: 15,
     fontWeight: "800",
     paddingHorizontal: 16,
   },
   readOnly: {
-    backgroundColor: colors.surfaceGlassSoft,
-    color: colors.muted,
+    backgroundColor: c.surfaceGlassSoft,
+    color: c.muted,
   },
   nicknameRow: {
     flexDirection: "row",
@@ -385,30 +388,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: colors.accentTintBg,
+    backgroundColor: c.accentTintBg,
     paddingHorizontal: 14,
   },
   checkButtonText: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 13,
     fontWeight: "900",
   },
   helper: {
     marginTop: 8,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 18,
   },
   success: {
-    color: colors.accent,
+    color: c.accent,
   },
   error: {
-    color: colors.danger,
+    color: c.danger,
   },
   errorText: {
     marginTop: 16,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 13,
     fontWeight: "800",
     lineHeight: 19,
@@ -426,22 +429,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 7,
     borderWidth: 1.6,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderColor: c.border,
+    backgroundColor: c.navBackground,
   },
   checkboxOn: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accent,
+    borderColor: c.accent,
+    backgroundColor: c.accent,
   },
   agreeText: {
     flex: 1,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 18,
   },
   agreeLink: {
-    color: colors.accent,
+    color: c.accent,
     fontWeight: "900",
     textDecorationLine: "underline",
   },
@@ -451,10 +454,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   primaryButtonText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 15,
     fontWeight: "900",
   },

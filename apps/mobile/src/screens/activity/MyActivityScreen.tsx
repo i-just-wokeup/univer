@@ -13,7 +13,8 @@ import {
   type ActivityTab,
   useMyActivity,
 } from "../../features/activity/useMyActivity";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 const tabs: Array<{ id: ActivityTab; label: string }> = [
   { id: "stories", label: "스토리" },
@@ -24,6 +25,8 @@ const tabs: Array<{ id: ActivityTab; label: string }> = [
 ];
 
 export function MyActivityScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
@@ -132,8 +135,11 @@ export function MyActivityScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="내 활동" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="내 활동" />
       <View style={styles.tabsWrap}>
         <ScrollView
           contentContainerStyle={styles.tabsContent}
@@ -182,10 +188,10 @@ export function MyActivityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   tabsWrap: {
     paddingVertical: 10,
@@ -199,19 +205,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 999,
-    backgroundColor: colors.surfaceGlass,
+    backgroundColor: c.surfaceGlass,
     paddingHorizontal: 16,
   },
   activeTab: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   tabText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "900",
   },
   activeTabText: {
-    color: colors.white,
+    color: c.onAccent,
   },
   content: {
     paddingHorizontal: 4,
@@ -221,7 +227,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 8,
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 6,
   },
 });

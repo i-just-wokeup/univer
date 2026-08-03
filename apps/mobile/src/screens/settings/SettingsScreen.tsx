@@ -11,9 +11,12 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { signOutMobile } from "../../features/auth/api";
 import { LEGAL_URLS } from "../../lib/site";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 function Section({ children, label }: { children: ReactNode; label: string }) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionLabel}>{label}</Text>
@@ -31,6 +34,9 @@ function Row({
   label: string;
   onPress?: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -54,6 +60,8 @@ function Row({
 }
 
 export function SettingsScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
@@ -92,8 +100,11 @@ export function SettingsScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="설정" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="설정" />
 
       <ScrollView
         contentContainerStyle={[
@@ -185,10 +196,10 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   content: {
     paddingVertical: 8,
@@ -201,13 +212,13 @@ const styles = StyleSheet.create({
   sectionLabel: {
     marginBottom: 8,
     paddingHorizontal: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "900",
   },
   card: {
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 8,
   },
   row: {
@@ -219,29 +230,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   rowPressed: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   rowLabel: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
   rowLabelDisabled: {
-    color: colors.textFaint,
+    color: c.textFaint,
   },
   logoutText: {
-    color: colors.danger,
+    color: c.danger,
     fontSize: 14,
     fontWeight: "900",
   },
   deleteText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "800",
   },
   error: {
     marginTop: 12,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 13,
     fontWeight: "800",
   },

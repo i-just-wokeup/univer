@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { LucideProps } from "lucide-react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type TabPlaceholderScreenProps = {
   description: string;
@@ -16,6 +17,9 @@ export function TabPlaceholderScreen({
   icon: Icon,
   title,
 }: TabPlaceholderScreenProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
@@ -32,17 +36,17 @@ export function TabPlaceholderScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   header: {
     paddingHorizontal: 24,
     paddingTop: 18,
   },
   logo: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 32,
     fontWeight: "900",
   },
@@ -59,18 +63,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 28,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
   },
   title: {
     marginTop: 18,
-    color: colors.text,
+    color: c.text,
     fontSize: 22,
     fontWeight: "900",
     textAlign: "center",
   },
   description: {
     marginTop: 8,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 21,

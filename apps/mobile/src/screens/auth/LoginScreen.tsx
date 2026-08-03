@@ -13,9 +13,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
 import { signInWithGoogle } from "../../features/auth/googleSignIn";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function LoginScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
@@ -133,10 +136,10 @@ export function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   keyboardView: {
     flex: 1,
@@ -148,23 +151,23 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 420,
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 24,
   },
   logo: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 34,
     fontWeight: "900",
   },
   title: {
     marginTop: 28,
-    color: colors.text,
+    color: c.text,
     fontSize: 24,
     fontWeight: "900",
   },
   description: {
     marginTop: 8,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 21,
@@ -172,18 +175,18 @@ const styles = StyleSheet.create({
   input: {
     height: 52,
     marginTop: 14,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 18,
     borderWidth: 1,
-    backgroundColor: colors.white,
-    color: colors.text,
+    backgroundColor: c.navBackground,
+    color: c.text,
     fontSize: 15,
     fontWeight: "700",
     paddingHorizontal: 16,
   },
   errorText: {
     marginTop: 12,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -193,10 +196,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   primaryButtonText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 15,
     fontWeight: "900",
   },
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     flex: 1,
-    backgroundColor: colors.border,
+    backgroundColor: c.border,
   },
   dividerRow: {
     marginVertical: 18,
@@ -215,7 +218,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dividerText: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },

@@ -2,7 +2,8 @@ import { Star } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityFavoriteUser } from "../../features/activity/api";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type ActivityFavoriteUserRowProps = {
@@ -22,6 +23,9 @@ export function ActivityFavoriteUserRow({
   onPress,
   user,
 }: ActivityFavoriteUserRowProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -52,7 +56,7 @@ export function ActivityFavoriteUserRow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -62,7 +66,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   pressed: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   body: {
     minWidth: 0,
@@ -75,16 +79,17 @@ const styles = StyleSheet.create({
   },
   nickname: {
     ...nicknameTextStyle,
+    color: c.text,
     fontSize: 15,
   },
   department: {
     marginTop: 3,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
   },
   time: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },

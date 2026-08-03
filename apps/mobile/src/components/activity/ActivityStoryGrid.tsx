@@ -3,7 +3,8 @@ import { Play } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStory } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 
 type ActivityStoryGridProps = {
@@ -41,6 +42,9 @@ export function ActivityStoryGrid({
   onSelectStory,
   stories,
 }: ActivityStoryGridProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   if (stories.length === 0) {
     return (
       <StateView
@@ -115,7 +119,7 @@ export const activityStoryDisplay = {
   getVisibilityLabel,
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   grid: {
     gap: 4,
     padding: 12,
@@ -129,7 +133,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     overflow: "hidden",
     borderRadius: 12,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   spacer: {
     flex: 1,
@@ -147,19 +151,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 11,
-    backgroundColor: colors.scrimStrong,
+    backgroundColor: c.scrimStrong,
   },
   dateBadge: {
     position: "absolute",
     top: 7,
     left: 7,
     borderRadius: 8,
-    backgroundColor: colors.scrimHeavy,
+    backgroundColor: c.scrimHeavy,
     paddingHorizontal: 7,
     paddingVertical: 4,
   },
   dateText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 10,
     fontWeight: "900",
   },
@@ -171,28 +175,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
     padding: 7,
   },
   statusBadge: {
     borderRadius: 999,
-    backgroundColor: colors.card,
+    backgroundColor: c.onMediaFillStrong,
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
   statusText: {
-    color: colors.text,
+    color: c.black,
     fontSize: 9,
     fontWeight: "900",
   },
   visibilityBadge: {
     borderRadius: 999,
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
   visibilityText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 9,
     fontWeight: "900",
   },

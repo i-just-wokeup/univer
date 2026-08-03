@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
 import type { InsightBar } from "../../features/metrics/useInsights";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 // YYYY-MM-DD → "M/D"
 function shortDay(day: string): string {
@@ -14,6 +15,8 @@ function shortDay(day: string): string {
 // 일별 추이 라인(영역) 차트. gifted-charts는 명시 width가 필요해 onLayout으로 폭을 잰다.
 // 날짜 라벨은 내장 x축(점 간격만큼 좁아 잘림) 대신 아래에 직접 3개(처음/중간/끝)를 깐다.
 export function InsightsTrendChart({ bars }: { bars: InsightBar[] }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [width, setWidth] = useState(0);
   const n = bars.length;
   const mid = Math.floor((n - 1) / 2);
@@ -62,7 +65,7 @@ export function InsightsTrendChart({ bars }: { bars: InsightBar[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   wrap: {
     marginTop: 16,
     overflow: "hidden",
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   label: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 10,
     fontWeight: "700",
   },

@@ -3,7 +3,8 @@ import { Heart, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityPost } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 
 type ActivityPostGridProps = {
@@ -27,6 +28,9 @@ export function ActivityPostGrid({
   onOpenPost,
   posts,
 }: ActivityPostGridProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   if (posts.length === 0) {
     return <StateView message={emptyMessage} title="비어 있습니다" type="empty" />;
   }
@@ -89,7 +93,7 @@ export function ActivityPostGrid({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   grid: {
     gap: 4,
     padding: 12,
@@ -103,7 +107,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     overflow: "hidden",
     borderRadius: 12,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   spacer: {
     flex: 1,
@@ -117,11 +121,11 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
     padding: 8,
   },
   placeholderText: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 11,
     fontWeight: "800",
     textAlign: "center",
@@ -133,7 +137,7 @@ const styles = StyleSheet.create({
     left: 0,
     flexDirection: "row",
     gap: 8,
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
     paddingHorizontal: 7,
     paddingVertical: 6,
   },
@@ -143,7 +147,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   metaText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 11,
     fontWeight: "900",
   },

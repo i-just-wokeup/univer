@@ -1,11 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { InsightMetric } from "../../features/metrics/useInsights";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { InsightsTrendChart } from "./InsightsTrendChart";
-
-// 상승만 연두로 강조, 하락은 회색(빨강 안 씀 — 갓 시작/활동 없는 날 알림처럼 안 보이게).
-const UP_GREEN = colors.success;
 
 type InsightsMetricCardProps = {
   metric: InsightMetric;
@@ -13,12 +11,15 @@ type InsightsMetricCardProps = {
 };
 
 function ChangeBadge({ percent }: { percent: number | null }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   if (percent === null || percent === 0) {
     return <Text style={styles.changeFlat}>—</Text>;
   }
   const up = percent > 0;
   return (
-    <Text style={[styles.change, { color: up ? UP_GREEN : colors.muted }]}>
+    <Text style={[styles.change, { color: up ? colors.success : colors.muted }]}>
       {up ? "+" : "-"}
       {Math.abs(percent)}%
     </Text>
@@ -29,6 +30,8 @@ export function InsightsMetricCard({
   metric,
   showChart,
 }: InsightsMetricCardProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -53,10 +56,10 @@ export function InsightsMetricCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     paddingHorizontal: 18,
     paddingVertical: 18,
   },
@@ -70,13 +73,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "900",
   },
   hint: {
     marginTop: 3,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -84,7 +87,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   value: {
-    color: colors.text,
+    color: c.text,
     fontSize: 26,
     fontWeight: "900",
     letterSpacing: -0.5,
@@ -96,13 +99,13 @@ const styles = StyleSheet.create({
   },
   changeFlat: {
     marginTop: 2,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "900",
   },
   reach: {
     marginTop: 3,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },

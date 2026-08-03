@@ -8,9 +8,12 @@ import { StateView } from "../../components/common/StateView";
 import { InsightsMetricCard } from "../../components/insights/InsightsMetricCard";
 import { InsightsPeriodToggle } from "../../components/insights/InsightsPeriodToggle";
 import { useInsights } from "../../features/metrics/useInsights";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function InsightsScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { period, setPeriod, metrics, isLoading, errorMessage } = useInsights();
@@ -18,8 +21,11 @@ export function InsightsScreen() {
   const showChart = period !== "day";
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="인사이트" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="인사이트" />
 
       <ScrollView
         contentContainerStyle={[
@@ -59,10 +65,10 @@ export function InsightsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   content: {
     paddingHorizontal: 16,
@@ -76,7 +82,7 @@ const styles = StyleSheet.create({
   note: {
     marginTop: 4,
     textAlign: "center",
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "700",
   },

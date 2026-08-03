@@ -9,7 +9,8 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { Avatar } from "../../components/common/Avatar";
 import { useBlockedAccounts } from "../../features/blocks/useBlockedAccounts";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 function formatBlockedAt(createdAt: string) {
   const date = new Date(createdAt);
@@ -22,6 +23,8 @@ function formatBlockedAt(createdAt: string) {
 }
 
 export function BlockedAccountsScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
@@ -48,8 +51,11 @@ export function BlockedAccountsScreen() {
     blockedUsers.find((user) => user.id === unblockTargetId) ?? null;
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="차단한 계정" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="차단한 계정" />
 
       {isLoading ? (
         <StateView
@@ -134,16 +140,16 @@ export function BlockedAccountsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   list: {
     marginHorizontal: 16,
     marginTop: 8,
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 8,
     paddingBottom: 24,
   },
@@ -161,17 +167,18 @@ const styles = StyleSheet.create({
   },
   nickname: {
     ...nicknameTextStyle,
+    color: c.text,
     fontSize: 15,
   },
   department: {
     marginTop: 3,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "800",
   },
   blockedAt: {
     marginTop: 3,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -180,11 +187,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 12,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 12,
   },
   unblockText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -197,7 +204,7 @@ const styles = StyleSheet.create({
   inlineError: {
     marginHorizontal: 20,
     marginTop: 8,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 12,
     fontWeight: "800",
   },

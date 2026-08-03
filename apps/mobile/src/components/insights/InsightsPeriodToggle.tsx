@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { InsightPeriod } from "../../features/metrics/useInsights";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 const OPTIONS: { value: InsightPeriod; label: string }[] = [
   { value: "day", label: "일간" },
@@ -18,6 +19,8 @@ export function InsightsPeriodToggle({
   period,
   onChange,
 }: InsightsPeriodToggleProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
       {OPTIONS.map((option) => {
@@ -39,13 +42,13 @@ export function InsightsPeriodToggle({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: 4,
     padding: 4,
     borderRadius: 16,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   tab: {
     flex: 1,
@@ -55,15 +58,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   tabActive: {
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   tabText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "800",
   },
   tabTextActive: {
-    color: colors.accent,
+    color: c.accent,
     fontWeight: "900",
   },
 });
