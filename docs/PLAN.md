@@ -132,6 +132,7 @@
 - [x] 앱 다크 팔레트 튜닝 (글씨 메타 그레이 #E4E6EB/#B0B3B8/#8A8D91, 딥다크 배경 #0F1011·카드 feedCard #000, 표면 톤다운, 프로필 카드 피드와 통일, 상태바 다크 대응, 헤더 아이콘 원형 제거)
 - [x] 앱 장식 아웃라인 테두리 제거 (카드·버튼·칩·말풍선; 입력필드·구분선·스토리 링은 유지)
 - [x] 앱 unip 워드마크 로고 적용 (Logo 컴포넌트, KREW 텍스트 5곳 교체)
+- [x] 앱 인증 배지 1차 (공식/승격 유저 ID 5분 캐시·요청 dedupe, 세션 Provider, 홈 피드 닉네임 배지)
 - [x] 앱 일반 화면 하단 네비바 배경 방향 재정리 (탭 화면 흰색 유지, 일반 화면은 콘텐츠 배경색 연장)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)
@@ -265,6 +266,7 @@
 ## 다음 작업 (순서대로)
 
 1. Expo 앱 전환 vertical slice (라우터 전환 완료, 다음은 화면 연결)
+   - 인증 배지 2차: 프로필·댓글·검색 등 나머지 유저 표시 경로로 확대
    - WSL2 + 실기기 실행은 `cd apps/mobile && npx expo start --tunnel` (LAN 모드면 번들 다운로드 실패)
    - Google 로그인 dev build 재검증(Web client ID env, 구글 시트 취소/성공, 신규 가입자 온보딩 이동, 완료 후 홈 이동)
    - 푸시 클라이언트 dev build 재검증(권한 요청, `users.fcm_token` 저장, 포그라운드 표시, payload 탭 시 post/story/profile 이동)

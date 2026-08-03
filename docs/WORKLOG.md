@@ -7,6 +7,7 @@
 ## 2026-08-03
 
 ### 완료
+- **앱 인증(공식/승격) 배지 1차** — `get_verified_user_ids` RPC 결과를 5분 TTL과 진행 중 요청 dedupe로 캐시하고, 로그인 세션 하위 `VerifiedUsersProvider`에서 ID 목록을 `Set`으로 관리하도록 연결했다. 고정 파란색 원·흰 체크의 공용 `VerifiedBadge`를 추가하고 `UserInline`의 닉네임 바로 뒤에 표시할 수 있게 확장해 홈 피드 작성자 헤더에 우선 적용했다. RPC 모바일 타입을 동기화했으며 앱 tsc 통과.
 - **앱 다크 팔레트 튜닝 및 크롬 정리** — 다크 글씨를 흰색 alpha에서 불투명 메타 그레이(text `#E4E6EB` / muted `#B0B3B8` / textFaint `#8A8D91`)로 교체해 또렷하게 하고, 배경/카드를 딥다크(배경 `#0F1011`, `feedCard` `#000000`)로, 표면 토큰(`navBackground`/`card`/`surfaceGlass`) 다크값을 배경에 붙여 카드 붕뜸을 완화했다. 프로필 카드를 피드 카드와 통일(풀와이드·테두리 제거), 상태바를 다크에서 `light-content`로 대응(`SystemBarsController`), 헤더 아이콘(설정/알림/메시지)의 원형 배경을 제거했다. 전부 theme.ts 값 조정 또는 컴포넌트 스타일 정리(하드코딩 없음).
 - **앱 unip 워드마크 로고 적용** — 신규 공용 `Logo` SVG 컴포넌트를 홈 헤더(28), 로그인/온보딩(40), 탭 placeholder와 루트 환경 오류 화면(30)에 적용해 기존 `KREW` 텍스트 로고를 교체했다. 라이트/다크 색상은 `Logo` 내부 테마 판별을 따르며 온보딩 CTA 문구도 `unip 시작하기`로 변경했다. 앱 tsc 통과.
 - **앱 다크모드 G4 설정·활동·인사이트·인증 전환** — 설정/차단 목록, 내 활동과 게시물·스토리·즐겨찾기 그리드, 인사이트 카드·그래프·기간 선택, 로그인/온보딩, 탭 placeholder와 공용 `KrewSurface`를 `useTheme`/`useThemedStyles` 기반으로 전환했다. 스크린 배경과 헤더 opt-in, 닉네임 색, 채운 버튼 `onAccent`, 인증 입력 표면과 인사이트 그래프 색을 테마에 연결했으며 Google 브랜드 버튼과 활동 스토리 프리뷰·뷰어의 fixed 미디어 UI는 유지했다. 앱 tsc 통과.

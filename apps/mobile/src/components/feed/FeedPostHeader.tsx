@@ -2,6 +2,7 @@ import { MoreHorizontal } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { UserInline } from "../common/UserInline";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { useTheme } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import type { FeedPost } from "../../features/feed/types";
@@ -18,6 +19,7 @@ export function FeedPostHeader({
   post,
 }: FeedPostHeaderProps) {
   const { colors } = useTheme();
+  const { isVerified } = useVerifiedUsers();
   const relativeTime = getRelativeTimeLabel(post.created_at);
   const meta = post.user.department
     ? `${post.user.department} · ${relativeTime}`
@@ -33,6 +35,7 @@ export function FeedPostHeader({
         nicknameSize={14}
         onPress={onUserPress}
         style={styles.userInline}
+        verified={isVerified(post.user.id)}
       />
       <Pressable
         accessibilityLabel="게시물 더보기"

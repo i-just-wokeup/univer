@@ -23,6 +23,7 @@ import { SessionProvider, useSession } from "../src/lib/session";
 import { Sentry } from "../src/lib/sentry";
 import { SystemBarsController } from "../src/lib/systemBars";
 import { colors, ThemeProvider } from "../src/lib/theme";
+import { VerifiedUsersProvider } from "../src/lib/verifiedUsers";
 
 function RootLayout() {
   return (
@@ -32,10 +33,12 @@ function RootLayout() {
           <SafeAreaProvider initialMetrics={initialWindowMetrics}>
             <BottomSheetModalProvider>
               <SessionProvider>
-                <RootNavigator />
-                <PushNotificationsController />
-                <SystemBarsController />
-                <StatusBar style="auto" />
+                <VerifiedUsersProvider>
+                  <RootNavigator />
+                  <PushNotificationsController />
+                  <SystemBarsController />
+                  <StatusBar style="auto" />
+                </VerifiedUsersProvider>
               </SessionProvider>
             </BottomSheetModalProvider>
           </SafeAreaProvider>

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { Avatar } from "./Avatar";
+import { VerifiedBadge } from "./VerifiedBadge";
 import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -12,6 +13,7 @@ type UserInlineProps = {
   nicknameSize?: number;
   onPress?: (nickname: string) => void;
   style?: ViewStyle;
+  verified?: boolean;
 };
 
 export function UserInline({
@@ -22,6 +24,7 @@ export function UserInline({
   nicknameSize = 15,
   onPress,
   style,
+  verified = false,
 }: UserInlineProps) {
   const styles = useThemedStyles(makeStyles);
 
@@ -39,12 +42,24 @@ export function UserInline({
     >
       <Avatar imageUrl={imageUrl} label={nickname} size={avatarSize} />
       <View style={styles.textBox}>
-        <Text numberOfLines={1} style={styles.metaLine}>
-          <Text style={[styles.nickname, { fontSize: nicknameSize }]}>
+        <View style={styles.metaLine}>
+          <Text
+            numberOfLines={1}
+            style={[styles.nickname, { fontSize: nicknameSize }]}
+          >
             {nickname}
           </Text>
-          {meta ? <Text style={styles.metaText}> · {meta}</Text> : null}
-        </Text>
+          {verified ? (
+            <View style={styles.verifiedBadge}>
+              <VerifiedBadge size={13} />
+            </View>
+          ) : null}
+          {meta ? (
+            <Text numberOfLines={1} style={styles.metaText}>
+              {` · ${meta}`}
+            </Text>
+          ) : null}
+        </View>
       </View>
     </Pressable>
   );
@@ -64,17 +79,22 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     minWidth: 0,
   },
   metaLine: {
-    color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "500",
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
   },
   nickname: {
     ...nicknameTextStyle,
     color: c.text,
+    flexShrink: 1,
   },
   metaText: {
     color: c.textFaint,
     fontSize: 12,
     fontWeight: "500",
+    flexShrink: 1,
+  },
+  verifiedBadge: {
+    marginLeft: 4,
   },
 });
