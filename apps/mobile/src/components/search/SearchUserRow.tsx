@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { SearchUser } from "../../features/search/api";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type SearchUserRowProps = {
@@ -11,6 +12,8 @@ type SearchUserRowProps = {
 
 // 순수 UI. 검색 결과 한 행(아바타 + 닉네임 + 학과).
 export function SearchUserRow({ onPress, user }: SearchUserRowProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -32,7 +35,7 @@ export function SearchUserRow({ onPress, user }: SearchUserRowProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -42,7 +45,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   pressed: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   body: {
     flex: 1,
@@ -50,11 +53,12 @@ const styles = StyleSheet.create({
   },
   nickname: {
     ...nicknameTextStyle,
+    color: c.text,
     fontSize: 14,
   },
   department: {
     marginTop: 3,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "600",
   },

@@ -4,7 +4,8 @@ import { memo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Message, SharedPostPreview } from "../../features/chat/api";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 
 type MessageBubbleProps = {
@@ -19,6 +20,7 @@ function MessageBubbleComponent({
   message,
   onPostPress,
 }: MessageBubbleProps) {
+  const styles = useThemedStyles(makeStyles);
   const [showMeta, setShowMeta] = useState(false);
 
   const meta = isMine
@@ -74,6 +76,8 @@ function PostMessageCard({
   onMetaToggle,
   onPostPress,
 }: PostMessageCardProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const post = message.sharedPost;
 
   if (!post) {
@@ -149,7 +153,7 @@ function PostMessageCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     width: "100%",
     flexDirection: "row",
@@ -178,13 +182,11 @@ const styles = StyleSheet.create({
   },
   mineBubble: {
     borderTopRightRadius: 5,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   otherBubble: {
     borderTopLeftRadius: 5,
-    borderWidth: 1,
-    borderColor: colors.onMediaBorder,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   content: {
     fontSize: 14,
@@ -192,13 +194,13 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   mineText: {
-    color: colors.white,
+    color: c.onAccent,
   },
   otherText: {
-    color: colors.text,
+    color: c.text,
   },
   meta: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -209,17 +211,14 @@ const styles = StyleSheet.create({
     width: 238,
     overflow: "hidden",
     borderRadius: 18,
-    borderWidth: 1,
   },
   minePostCard: {
     borderTopRightRadius: 5,
-    borderColor: colors.onMediaBorderFaint,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   otherPostCard: {
     borderTopLeftRadius: 5,
-    borderColor: colors.accentTintBg,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   postThumbWrap: {
     position: "relative",
@@ -227,7 +226,7 @@ const styles = StyleSheet.create({
   postThumb: {
     width: "100%",
     aspectRatio: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   playBadge: {
     position: "absolute",
@@ -240,17 +239,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 22,
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
   },
   postThumbFallback: {
     width: "100%",
     aspectRatio: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   postThumbFallbackText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -260,29 +259,29 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   postAuthor: {
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },
   minePostAuthor: {
-    color: colors.white,
+    color: c.onAccent,
   },
   postContent: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 17,
   },
   minePostContent: {
-    color: colors.onMediaTextStrong,
+    color: c.onAccent,
   },
   postMeta: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 11,
     fontWeight: "800",
   },
   minePostMeta: {
-    color: colors.onMediaText,
+    color: c.onAccent,
   },
   pressed: {
     opacity: 0.72,

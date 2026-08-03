@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ChatRequestBannerProps = {
   isAccepting: boolean;
@@ -13,6 +14,8 @@ export function ChatRequestBanner({
   isIncomingRequest,
   onAccept,
 }: ChatRequestBannerProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.pendingBox}>
       <Text style={styles.pendingText}>
@@ -36,17 +39,17 @@ export function ChatRequestBanner({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   pendingBox: {
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: colors.accentBorderSoft,
-    backgroundColor: colors.accentSoft,
+    borderColor: c.accentBorderSoft,
+    backgroundColor: c.accentSoft,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   pendingText: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 13,
     fontWeight: "800",
     lineHeight: 19,
@@ -55,12 +58,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginTop: 10,
     borderRadius: 13,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 15,
     paddingVertical: 9,
   },
   acceptText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "900",
   },

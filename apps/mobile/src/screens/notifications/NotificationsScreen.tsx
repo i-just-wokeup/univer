@@ -9,9 +9,12 @@ import { StateView } from "../../components/common/StateView";
 import { routeToNotificationTarget } from "../../features/notifications/navigation";
 import type { NotificationItem } from "../../features/notifications/types";
 import { useNotifications } from "../../features/notifications/useNotifications";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function NotificationsScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     errorMessage,
@@ -31,7 +34,10 @@ export function NotificationsScreen() {
   );
 
   return (
-    <ScreenContainer style={styles.screen}>
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
       <View style={styles.header}>
         <Pressable
           accessibilityLabel="뒤로"
@@ -90,10 +96,10 @@ export function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   header: {
     flexDirection: "row",
@@ -108,12 +114,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   title: {
     flex: 1,
     marginHorizontal: 12,
-    color: colors.text,
+    color: c.text,
     fontSize: 22,
     fontWeight: "900",
   },
@@ -122,11 +128,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 999,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
   },
   markAllText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "900",
   },

@@ -7,14 +7,25 @@ import { SkeletonBlock } from "../common/Skeleton";
 const GRID_ITEMS = 9;
 const GRID_COLUMNS = 3;
 
-export function ProfileSkeleton() {
+type ProfileSkeletonProps = {
+  isPushed?: boolean;
+};
+
+export function ProfileSkeleton({ isPushed = false }: ProfileSkeletonProps) {
   const styles = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <SkeletonBlock radius={8} style={styles.logo} />
-        <SkeletonBlock radius={16} style={styles.headerButton} />
+        <View style={styles.headerSlot}>
+          {isPushed ? (
+            <SkeletonBlock radius={6} style={styles.headerIcon} />
+          ) : null}
+        </View>
+        <SkeletonBlock radius={8} style={styles.headerTitle} />
+        <View style={styles.headerSlot}>
+          <SkeletonBlock radius={6} style={styles.headerIcon} />
+        </View>
       </View>
       <View style={styles.panel}>
         <View style={styles.topRow}>
@@ -61,27 +72,30 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
     paddingBottom: 6,
   },
-  logo: {
-    width: 104,
-    height: 38,
-  },
-  headerButton: {
+  headerSlot: {
     width: 40,
     height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerIcon: {
+    width: 22,
+    height: 22,
+  },
+  headerTitle: {
+    flex: 1,
+    height: 20,
+    marginHorizontal: 12,
   },
   panel: {
     overflow: "hidden",
-    marginHorizontal: 16,
     marginTop: 8,
     borderRadius: 22,
-    borderWidth: 1,
-    borderColor: c.surfaceBorder,
-    backgroundColor: c.surfaceGlass,
+    backgroundColor: c.feedCard,
   },
   topRow: {
     flexDirection: "row",

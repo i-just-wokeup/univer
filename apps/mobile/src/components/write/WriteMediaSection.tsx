@@ -75,8 +75,6 @@ export function WriteMediaSection({
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
     backgroundColor: colors.card,
     padding: 16,
@@ -87,8 +85,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    borderWidth: 1,
-    borderColor: colors.accentBorderSoft,
     borderRadius: 16,
     backgroundColor: colors.white,
   },

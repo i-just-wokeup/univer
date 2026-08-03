@@ -2,7 +2,8 @@ import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { NotificationItem } from "../../features/notifications/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { Avatar } from "../common/Avatar";
 
@@ -37,6 +38,8 @@ function getNotificationText(notification: NotificationItem) {
 
 // 순수 UI. 알림 한 행(안읽음 점/아바타/문구/시간/썸네일).
 export function NotificationRow({ notification, onPress }: NotificationRowProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -84,7 +87,7 @@ export function NotificationRow({ notification, onPress }: NotificationRowProps)
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -94,7 +97,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   unread: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   pressed: {
     opacity: 0.7,
@@ -107,14 +110,14 @@ const styles = StyleSheet.create({
     height: 8,
     width: 8,
     borderRadius: 4,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   body: {
     flex: 1,
     minWidth: 0,
   },
   text: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,
@@ -124,7 +127,7 @@ const styles = StyleSheet.create({
   },
   time: {
     marginTop: 4,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "700",
   },
@@ -132,6 +135,6 @@ const styles = StyleSheet.create({
     height: 48,
     width: 48,
     borderRadius: 14,
-    backgroundColor: colors.imagePlaceholder,
+    backgroundColor: c.imagePlaceholder,
   },
 });

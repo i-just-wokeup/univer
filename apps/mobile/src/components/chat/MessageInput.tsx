@@ -8,7 +8,8 @@ import {
   type LayoutChangeEvent,
 } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type MessageInputProps = {
   disabled?: boolean;
@@ -23,6 +24,8 @@ export function MessageInput({
   onComposerLayout,
   onSend,
 }: MessageInputProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [content, setContent] = useState("");
   const trimmedContent = content.trim();
   const canSend = Boolean(trimmedContent) && !disabled;
@@ -62,7 +65,7 @@ export function MessageInput({
         ]}
       >
         <Send
-          color={canSend ? colors.white : colors.textFaint}
+          color={canSend ? colors.onAccent : colors.textFaint}
           size={19}
           strokeWidth={2.6}
         />
@@ -71,14 +74,14 @@ export function MessageInput({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.onMediaFillStrong,
+    borderTopColor: c.border,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 12,
     paddingTop: 8,
     paddingBottom: 8,
@@ -88,13 +91,13 @@ const styles = StyleSheet.create({
     minHeight: 38,
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.onMediaBorder,
+    borderColor: c.border,
     borderRadius: 18,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
     paddingTop: 8,
     paddingBottom: 8,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "700",
   },
@@ -104,10 +107,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   sendButtonDisabled: {
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
   },
   pressed: {
     opacity: 0.75,

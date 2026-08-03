@@ -164,8 +164,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.accent,
   },
   secondary: {
-    borderWidth: 1,
-    borderColor: c.border,
     backgroundColor: c.navBackground,
   },
   muted: {

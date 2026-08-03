@@ -32,8 +32,6 @@ export function WriteContentField({
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
     backgroundColor: colors.card,
     padding: 16,

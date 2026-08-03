@@ -150,8 +150,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.accent,
   },
   secondaryButton: {
-    borderWidth: 1,
-    borderColor: c.border,
     backgroundColor: c.navBackground,
   },
   buttonText: {

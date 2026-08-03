@@ -206,8 +206,6 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
     backgroundColor: colors.card,
     padding: 8,

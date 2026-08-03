@@ -107,8 +107,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: c.border,
     backgroundColor: c.navBackground,
   },
   editButtonPressed: {

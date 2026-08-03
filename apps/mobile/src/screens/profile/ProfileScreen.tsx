@@ -84,7 +84,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
         contentBackgroundColor={colors.accentSoft}
         style={styles.screen}
       >
-        <ProfileSkeleton />
+        <ProfileSkeleton isPushed={Boolean(nickname)} />
       </ScreenContainer>
     );
   }

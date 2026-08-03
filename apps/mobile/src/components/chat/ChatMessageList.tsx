@@ -9,7 +9,8 @@ import {
 } from "react-native";
 
 import { type ChatMessage } from "../../features/chat/useChatRoom";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 import { MessageBubble } from "./MessageBubble";
 
@@ -55,6 +56,8 @@ function ChatMessageItemComponent({
   olderMessage,
   onPostPress,
 }: ChatMessageItemProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View>
       {shouldShowSeparator(olderMessage, message) ? (
@@ -87,6 +90,7 @@ export function ChatMessageList({
   onPostPress,
   renderScrollComponent,
 }: ChatMessageListProps) {
+  const styles = useThemedStyles(makeStyles);
   const keyExtractor = useCallback((message: ChatMessage) => message.id, []);
   const handleEndReached = useCallback(() => {
     if (hasMore && !isLoadingMore) {
@@ -137,7 +141,7 @@ export function ChatMessageList({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   messages: {
     flex: 1,
   },
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     paddingVertical: 10,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
     textAlign: "center",
@@ -163,10 +167,10 @@ const styles = StyleSheet.create({
   separatorText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: colors.surfaceBorder,
+    backgroundColor: c.surfaceBorder,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 11,
     fontWeight: "700",
   },

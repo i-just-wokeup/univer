@@ -179,8 +179,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingBottom: 40,
   },
   card: {
-    borderWidth: 1,
-    borderColor: c.surfaceBorder,
     borderRadius: 24,
     backgroundColor: c.card,
     paddingHorizontal: 18,

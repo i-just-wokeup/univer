@@ -58,9 +58,7 @@ const styles = StyleSheet.create({
     width: 72,
     alignItems: "center",
     justifyContent: "center",
-    borderColor: colors.accentBorderSoft,
     borderRadius: 28,
-    borderWidth: 1,
     backgroundColor: colors.card,
   },
   title: {

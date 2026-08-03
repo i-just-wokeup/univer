@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Avatar } from "../common/Avatar";
 import type { ConversationWithUser } from "../../features/chat/api";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ConversationRowProps = {
   conversation: ConversationWithUser;
@@ -16,6 +17,7 @@ export function ConversationRow({
   currentUserId,
   onPress,
 }: ConversationRowProps) {
+  const styles = useThemedStyles(makeStyles);
   const isMine = conversation.last_message_sender_id === currentUserId;
   const preview = conversation.last_message_preview
     ? isMine
@@ -67,7 +69,7 @@ export function ConversationRow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -77,7 +79,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   pressed: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   body: {
     minWidth: 0,
@@ -91,22 +93,23 @@ const styles = StyleSheet.create({
   nickname: {
     ...nicknameTextStyle,
     minWidth: 0,
+    color: c.text,
     fontSize: 15,
   },
   pendingBadge: {
     borderRadius: 999,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   pendingText: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 11,
     fontWeight: "900",
   },
   preview: {
     marginTop: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   time: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -126,11 +129,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 6,
   },
   unreadText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 11,
     fontWeight: "900",
   },

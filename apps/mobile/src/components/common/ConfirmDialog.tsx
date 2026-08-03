@@ -125,8 +125,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 16,
   },
   cancelButton: {
-    borderWidth: 1,
-    borderColor: c.border,
     backgroundColor: c.navBackground,
   },
   cancelText: {

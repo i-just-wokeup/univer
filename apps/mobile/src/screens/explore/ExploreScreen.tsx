@@ -22,7 +22,8 @@ import { useExploreFeed } from "../../features/explore/useExploreFeed";
 import type { ExplorePost } from "../../features/explore/types";
 import type { PostAspectRatio } from "../../features/feed/types";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 const H_PADDING = 10;
 const GAP = 8;
@@ -37,6 +38,8 @@ function getImageAspectRatio(aspectRatio: PostAspectRatio) {
 }
 
 export function ExploreScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { width } = useWindowDimensions();
   const tileWidth = (width - H_PADDING * 2 - GAP) / 2;
@@ -179,6 +182,9 @@ function MasonryColumn({
   posts: ExplorePost[];
   tileWidth: number;
 }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={[styles.column, { width: tileWidth }]}>
       {posts.map((post) => {
@@ -213,10 +219,10 @@ function MasonryColumn({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   scrollContent: {
     paddingBottom: 96,
@@ -227,7 +233,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 26,
     fontWeight: "900",
   },
@@ -242,7 +248,7 @@ const styles = StyleSheet.create({
   tile: {
     overflow: "hidden",
     borderRadius: 20,
-    backgroundColor: colors.neutralFill,
+    backgroundColor: c.neutralFill,
   },
   tileImage: {
     height: "100%",
@@ -262,7 +268,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 13,
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
   },
   likeBadge: {
     position: "absolute",
@@ -272,12 +278,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
     borderRadius: 999,
-    backgroundColor: colors.surfaceGlass,
+    backgroundColor: c.surfaceGlass,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   likeText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 12,
     fontWeight: "800",
   },

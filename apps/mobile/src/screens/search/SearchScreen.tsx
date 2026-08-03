@@ -6,9 +6,12 @@ import { RecentSearchList } from "../../components/search/RecentSearchList";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchResultsList } from "../../components/search/SearchResultsList";
 import { useUserSearch } from "../../features/search/useUserSearch";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function SearchScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     clearRecent,
@@ -28,7 +31,10 @@ export function SearchScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>검색</Text>
         <Text style={styles.description}>닉네임과 해시태그를 찾아보세요</Text>
@@ -70,10 +76,10 @@ export function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   header: {
     paddingHorizontal: 20,
@@ -81,13 +87,13 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 28,
     fontWeight: "900",
   },
   description: {
     marginTop: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "600",
   },

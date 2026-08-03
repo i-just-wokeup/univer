@@ -1,7 +1,8 @@
 import { X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type RecentSearchListProps = {
   onClearAll: () => void;
@@ -17,6 +18,9 @@ export function RecentSearchList({
   onRemoveRecent,
   recentSearches,
 }: RecentSearchListProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   if (recentSearches.length === 0) {
     return (
       <View style={styles.emptyCard}>
@@ -60,19 +64,15 @@ export function RecentSearchList({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 8,
   },
   emptyCard: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     paddingHorizontal: 20,
     paddingVertical: 28,
   },
@@ -85,18 +85,18 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   cardTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
   clearAllText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "800",
   },
   stateText: {
     paddingVertical: 28,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "700",
     textAlign: "center",
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   recentText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "800",
   },
@@ -124,6 +124,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 15,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
 });

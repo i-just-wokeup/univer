@@ -7,6 +7,7 @@ import type { ThemeColors } from "../../lib/theme";
 type SearchInputProps = {
   autoFocus?: boolean;
   onChange: (value: string) => void;
+  outlined?: boolean;
   placeholder?: string;
   value: string;
 };
@@ -14,6 +15,7 @@ type SearchInputProps = {
 export function SearchInput({
   autoFocus = true,
   onChange,
+  outlined = true,
   placeholder = "닉네임, 해시태그 검색",
   value,
 }: SearchInputProps) {
@@ -21,7 +23,7 @@ export function SearchInput({
   const styles = useThemedStyles(makeStyles);
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, outlined ? styles.outline : null]}>
       <Search color={colors.textFaint} size={18} strokeWidth={2.4} />
       <TextInput
         autoFocus={autoFocus}
@@ -54,10 +56,12 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     gap: 10,
     height: 52,
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: c.surfaceBorder,
     backgroundColor: c.navBackground,
     paddingHorizontal: 16,
+  },
+  outline: {
+    borderWidth: 1,
+    borderColor: c.surfaceBorder,
   },
   input: {
     flex: 1,

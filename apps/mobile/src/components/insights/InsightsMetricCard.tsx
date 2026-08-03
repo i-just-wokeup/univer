@@ -55,8 +55,6 @@ export function InsightsMetricCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
     backgroundColor: colors.card,
     paddingHorizontal: 18,

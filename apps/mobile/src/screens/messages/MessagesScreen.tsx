@@ -8,11 +8,14 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchUserRow } from "../../components/search/SearchUserRow";
 import { useMessagesList } from "../../features/chat/useMessagesList";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ConversationTab = "active" | "pending";
 
 export function MessagesScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     active,
@@ -40,8 +43,11 @@ export function MessagesScreen() {
   const visibleConversations = activeTab === "active" ? active : pending;
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="메시지" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="메시지" />
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -50,6 +56,7 @@ export function MessagesScreen() {
         <SearchInput
           autoFocus={false}
           onChange={setQuery}
+          outlined={false}
           placeholder="닉네임으로 대화 시작"
           value={query}
         />
@@ -153,10 +160,10 @@ export function MessagesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   content: {
     padding: 16,
@@ -164,23 +171,21 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 8,
   },
   cardTitle: {
     paddingHorizontal: 10,
     paddingTop: 8,
     paddingBottom: 4,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
   stateText: {
     paddingVertical: 28,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "700",
     textAlign: "center",
@@ -189,7 +194,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
     borderRadius: 18,
-    backgroundColor: colors.surfaceGlassSoft,
+    backgroundColor: c.surfaceGlassSoft,
     padding: 5,
   },
   tab: {
@@ -202,15 +207,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   tabActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   tabText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "900",
   },
   tabTextActive: {
-    color: colors.white,
+    color: c.onAccent,
   },
   tabBadge: {
     minWidth: 20,
@@ -218,18 +223,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 6,
   },
   tabBadgeActive: {
-    backgroundColor: colors.onMediaFill,
+    backgroundColor: c.onAccent,
   },
   tabBadgeText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 11,
     fontWeight: "900",
   },
   tabBadgeTextActive: {
-    color: colors.white,
+    color: c.accent,
   },
 });

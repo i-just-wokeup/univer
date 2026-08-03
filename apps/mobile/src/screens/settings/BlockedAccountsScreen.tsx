@@ -180,8 +180,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.white,
     paddingHorizontal: 12,
   },

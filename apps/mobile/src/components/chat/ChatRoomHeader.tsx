@@ -2,8 +2,9 @@ import { ChevronLeft } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { UserInline } from "../common/UserInline";
-import { colors } from "../../lib/theme";
 
 type ChatRoomHeaderProps = {
   avatarUrl: string | null;
@@ -21,6 +22,9 @@ export function ChatRoomHeader({
   onPressProfile,
   right,
 }: ChatRoomHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.header}>
       <Pressable
@@ -50,7 +54,7 @@ export function ChatRoomHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -64,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   user: {
     flex: 1,

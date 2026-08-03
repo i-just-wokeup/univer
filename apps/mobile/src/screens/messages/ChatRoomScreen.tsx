@@ -32,8 +32,9 @@ import { MessageInput } from "../../components/chat/MessageInput";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { useChatRoom } from "../../features/chat/useChatRoom";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { useStableInsets } from "../../lib/useStableInsets";
-import { colors } from "../../lib/theme";
 
 const CHAT_INPUT_ID = "chat-input";
 const CHAT_COMPOSER_HEIGHT = 56;
@@ -62,6 +63,8 @@ const ChatScrollView = forwardRef<
 });
 
 export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const insets = useStableInsets();
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
@@ -200,7 +203,10 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   }, [handleBlockUser]);
 
   return (
-    <ScreenContainer style={styles.screen}>
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
       <View style={styles.content}>
         <View style={styles.headerArea}>
           <ChatRoomHeader
@@ -318,39 +324,39 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   content: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: c.accentSoft,
   },
   headerArea: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   keyboardArea: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   gestureArea: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   stateArea: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   inputSticky: {
     position: "absolute",
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   inputWrap: {
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   headerMenuButton: {
     height: 40,
@@ -358,7 +364,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   pressed: {
     opacity: 0.75,

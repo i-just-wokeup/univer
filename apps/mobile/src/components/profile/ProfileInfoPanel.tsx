@@ -180,8 +180,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     alignItems: "center",
     gap: 7,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: c.border,
     backgroundColor: c.navBackground,
     paddingHorizontal: 12,
     paddingVertical: 7,

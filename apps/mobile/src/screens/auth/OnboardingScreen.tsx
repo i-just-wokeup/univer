@@ -277,9 +277,7 @@ const styles = StyleSheet.create({
   schoolCard: {
     marginTop: 24,
     alignItems: "center",
-    borderColor: colors.accentBorderSoft,
     borderRadius: 24,
-    borderWidth: 1,
     backgroundColor: colors.card,
     padding: 22,
   },
@@ -341,9 +339,7 @@ const styles = StyleSheet.create({
   },
   formCard: {
     marginTop: 18,
-    borderColor: colors.accentBorderSoft,
     borderRadius: 24,
-    borderWidth: 1,
     backgroundColor: colors.card,
     padding: 20,
   },

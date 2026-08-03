@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { SearchUser } from "../../features/search/api";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { SearchUserRow } from "./SearchUserRow";
 
 type SearchResultsListProps = {
@@ -18,6 +19,8 @@ export function SearchResultsList({
   query,
   results,
 }: SearchResultsListProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -40,12 +43,10 @@ export function SearchResultsList({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 8,
   },
   cardHeader: {
@@ -57,19 +58,19 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   cardTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
   cardEyebrow: {
     maxWidth: "55%",
-    color: colors.accent,
+    color: c.accent,
     fontSize: 12,
     fontWeight: "800",
   },
   stateText: {
     paddingVertical: 28,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "700",
     textAlign: "center",

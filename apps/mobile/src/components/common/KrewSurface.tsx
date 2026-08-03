@@ -16,8 +16,6 @@ export function KrewSurface({ children, style }: KrewSurfaceProps) {
 const styles = StyleSheet.create({
   surface: {
     borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     backgroundColor: colors.surfaceGlass,
   },
 });

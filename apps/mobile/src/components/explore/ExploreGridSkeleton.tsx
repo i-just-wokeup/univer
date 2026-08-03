@@ -1,6 +1,7 @@
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { SkeletonBlock } from "../common/Skeleton";
 
 const H_PADDING = 10;
@@ -9,6 +10,7 @@ const LEFT_TILE_RATIOS = [1, 4 / 5, 1, 4 / 5] as const;
 const RIGHT_TILE_RATIOS = [4 / 5, 1, 4 / 5, 1] as const;
 
 export function ExploreGridSkeleton() {
+  const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
   const tileWidth = (width - H_PADDING * 2 - GAP) / 2;
 
@@ -41,10 +43,10 @@ export function ExploreGridSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   header: {
     paddingHorizontal: 24,
