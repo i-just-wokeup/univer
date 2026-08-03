@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 const OPTIONS: Array<{ label: string; value: PostAspectRatio }> = [
   { label: "정사각 1:1", value: "square" },
@@ -18,6 +19,8 @@ export function PostAspectRatioPicker({
   onChange,
   value,
 }: PostAspectRatioPickerProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
       {OPTIONS.map((option) => {
@@ -44,12 +47,12 @@ export function PostAspectRatioPicker({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: 4,
     borderRadius: 18,
-    backgroundColor: colors.surfaceBorder,
+    backgroundColor: c.surfaceBorder,
     padding: 4,
   },
   option: {
@@ -61,16 +64,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   activeOption: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   label: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "900",
     textAlign: "center",
   },
   activeLabel: {
-    color: colors.white,
+    color: c.onAccent,
   },
   pressed: {
     opacity: 0.72,

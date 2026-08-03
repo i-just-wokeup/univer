@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type WriteContentFieldProps = {
   content: string;
@@ -13,6 +14,9 @@ export function WriteContentField({
   disabled,
   onChangeContent,
 }: WriteContentFieldProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.card}>
       <Text style={styles.sectionTitle}>내용</Text>
@@ -30,25 +34,25 @@ export function WriteContentField({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 16,
   },
   sectionTitle: {
     marginBottom: 12,
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "900",
   },
   textInput: {
     minHeight: 132,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 18,
-    backgroundColor: colors.white,
-    color: colors.text,
+    backgroundColor: c.navBackground,
+    color: c.text,
     fontSize: 16,
     fontWeight: "600",
     lineHeight: 23,

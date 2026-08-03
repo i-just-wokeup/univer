@@ -15,9 +15,12 @@ import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
 import { WriteSettingsSection } from "../../components/write/WriteSettingsSection";
 import { useWriteForm } from "../../features/feed/useWriteForm";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function WriteScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [isDiscardOpen, setIsDiscardOpen] = useState(false);
   const {
@@ -75,7 +78,10 @@ export function WriteScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardView}
@@ -142,10 +148,10 @@ export function WriteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   keyboardView: {
     flex: 1,
@@ -164,16 +170,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 12,
   },
   cancelText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "900",
   },
   headerTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 18,
     fontWeight: "900",
   },
@@ -183,14 +189,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 12,
   },
   disabledButton: {
     opacity: 0.4,
   },
   submitText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 14,
     fontWeight: "900",
   },
@@ -200,7 +206,7 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
   errorText: {
-    color: colors.danger,
+    color: c.danger,
     fontSize: 13,
     fontWeight: "800",
     lineHeight: 19,

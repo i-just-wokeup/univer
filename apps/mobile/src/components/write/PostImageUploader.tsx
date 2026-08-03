@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 
 type PostImageUploaderProps = {
@@ -22,6 +23,8 @@ export function PostImageUploader({
   onAdd,
   onRemove,
 }: PostImageUploaderProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const canAdd = imageUris.length < maxCount;
   const activeIndex =
@@ -72,7 +75,7 @@ export function PostImageUploader({
           ]}
         >
           <View style={styles.emptyIcon}>
-            <Plus color={colors.white} size={28} strokeWidth={2.8} />
+            <Plus color={colors.onAccent} size={28} strokeWidth={2.8} />
           </View>
           <Text style={styles.emptyText}>사진 선택</Text>
         </Pressable>
@@ -133,7 +136,7 @@ export function PostImageUploader({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     gap: 12,
   },
@@ -143,12 +146,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "900",
   },
   count: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 13,
     fontWeight: "800",
   },
@@ -156,7 +159,7 @@ const styles = StyleSheet.create({
     width: "100%",
     overflow: "hidden",
     borderRadius: 20,
-    backgroundColor: colors.imagePlaceholder,
+    backgroundColor: c.imagePlaceholder,
   },
   previewImage: {
     height: "100%",
@@ -167,12 +170,12 @@ const styles = StyleSheet.create({
     bottom: 10,
     left: 10,
     borderRadius: 999,
-    backgroundColor: colors.mediaControlBg,
+    backgroundColor: c.mediaControlBg,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   previewBadgeText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -181,10 +184,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
-    borderColor: colors.accentBorderSoft,
+    borderColor: c.accentBorderSoft,
     borderRadius: 20,
     borderWidth: 1,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   emptyIcon: {
     height: 52,
@@ -192,10 +195,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 26,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   emptyText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
@@ -213,10 +216,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     borderColor: "transparent",
-    backgroundColor: colors.imagePlaceholder,
+    backgroundColor: c.imagePlaceholder,
   },
   thumbnailActive: {
-    borderColor: colors.accent,
+    borderColor: c.accent,
   },
   thumbnailImage: {
     height: "100%",
@@ -231,17 +234,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 999,
-    backgroundColor: colors.mediaControlBg,
+    backgroundColor: c.mediaControlBg,
   },
   addButton: {
     height: 72,
     width: 72,
     alignItems: "center",
     justifyContent: "center",
-    borderColor: colors.accentBorderSoft,
+    borderColor: c.accentBorderSoft,
     borderRadius: 14,
     borderWidth: 1,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   pressed: {
     opacity: 0.72,

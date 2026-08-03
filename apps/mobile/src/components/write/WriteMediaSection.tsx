@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
 import { MAX_IMAGES } from "../../features/feed/useWriteForm";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { PostImageUploader } from "./PostImageUploader";
 import { WriteVideoPreview } from "./WriteVideoPreview";
 
@@ -33,6 +34,9 @@ export function WriteMediaSection({
   onRemoveVideo,
   selectedVideo,
 }: WriteMediaSectionProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   if (selectedVideo) {
     return (
       <View style={styles.card}>
@@ -73,10 +77,10 @@ export function WriteMediaSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 16,
   },
   videoPickButton: {
@@ -86,10 +90,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   videoPickText: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 14,
     fontWeight: "900",
   },

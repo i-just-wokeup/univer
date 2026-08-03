@@ -9,13 +9,16 @@ import { StateView } from "../../components/common/StateView";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { usePostDetail } from "../../features/feed/usePostDetail";
 import { useSession } from "../../lib/session";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type PostDetailScreenProps = {
   postId: string;
 };
 
 export function PostDetailScreen({ postId }: PostDetailScreenProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
@@ -74,8 +77,11 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
   );
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="게시물" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="게시물" />
 
       {isLoading ? (
         <StateView
@@ -137,10 +143,10 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   scrollContent: {
     paddingTop: 8,
@@ -152,12 +158,12 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: 16,
     borderRadius: 16,
-    backgroundColor: colors.text,
+    backgroundColor: c.accent,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   feedbackText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "800",
     textAlign: "center",

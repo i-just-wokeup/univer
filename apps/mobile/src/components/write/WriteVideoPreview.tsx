@@ -1,7 +1,8 @@
 import { X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { StoryVideoView } from "../stories/StoryVideoView";
 
 type WriteVideoPreviewProps = {
@@ -15,6 +16,9 @@ export function WriteVideoPreview({
   onRemove,
   uri,
 }: WriteVideoPreviewProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.videoUploader}>
       <View style={styles.mediaHeader}>
@@ -46,7 +50,7 @@ export function WriteVideoPreview({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   videoUploader: {
     gap: 12,
   },
@@ -56,12 +60,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   mediaTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "900",
   },
   mediaCount: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 13,
     fontWeight: "800",
   },
@@ -69,7 +73,7 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     borderRadius: 20,
-    backgroundColor: colors.black,
+    backgroundColor: c.black,
   },
   videoPreview: {
     width: "100%",
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 17,
-    backgroundColor: colors.mediaControlBg,
+    backgroundColor: c.mediaControlBg,
   },
   pressed: {
     opacity: 0.72,

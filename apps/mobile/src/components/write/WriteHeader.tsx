@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type WriteHeaderProps = {
   canSubmit: boolean;
@@ -17,6 +18,8 @@ export function WriteHeader({
   onCancel,
   onSubmit,
 }: WriteHeaderProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.header}>
       <Pressable
@@ -49,7 +52,7 @@ export function WriteHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -64,16 +67,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 12,
   },
   cancelText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "900",
   },
   headerTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 18,
     fontWeight: "900",
   },
@@ -83,14 +86,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 12,
   },
   disabledButton: {
     opacity: 0.4,
   },
   submitText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 14,
     fontWeight: "900",
   },

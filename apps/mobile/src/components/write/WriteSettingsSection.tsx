@@ -5,7 +5,8 @@ import type {
   PostAspectRatio,
   PostVisibility,
 } from "../../features/feed/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { PostAspectRatioPicker } from "./PostAspectRatioPicker";
 
 type WriteSettingsSectionProps = {
@@ -21,6 +22,8 @@ export function WriteSettingsSection({
   onChangeVisibility,
   visibility,
 }: WriteSettingsSectionProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <>
       <View style={styles.card}>
@@ -39,15 +42,15 @@ export function WriteSettingsSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: 22,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     padding: 16,
   },
   sectionTitle: {
     marginBottom: 12,
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "900",
   },
