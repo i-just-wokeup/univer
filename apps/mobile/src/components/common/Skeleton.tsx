@@ -8,7 +8,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type SkeletonBlockProps = {
   radius?: number;
@@ -17,6 +18,7 @@ type SkeletonBlockProps = {
 
 // 로딩 중 실제 콘텐츠 자리를 먼저 잡아두는 기본 블록. 화면별 스켈레톤은 이 블록을 조합한다.
 export function SkeletonBlock({ radius = 10, style }: SkeletonBlockProps) {
+  const styles = useThemedStyles(makeStyles);
   const opacity = useSharedValue(0.48);
 
   useEffect(() => {
@@ -42,8 +44,8 @@ export function SkeletonBlock({ radius = 10, style }: SkeletonBlockProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   block: {
-    backgroundColor: colors.skeleton,
+    backgroundColor: c.skeleton,
   },
 });

@@ -1,7 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { PostShareTarget } from "../../features/chat/usePostShare";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { UserInline } from "../common/UserInline";
 
 type ShareTargetListProps = {
@@ -31,6 +32,8 @@ export function ShareTargetList({
   sendingTargetId,
   targets,
 }: ShareTargetListProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <ScrollView
       contentContainerStyle={[
@@ -74,7 +77,7 @@ export function ShareTargetList({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   targetList: {
     paddingHorizontal: 10,
   },
@@ -91,12 +94,12 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     borderRadius: 999,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 15,
     paddingVertical: 9,
   },
   sendText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "900",
   },

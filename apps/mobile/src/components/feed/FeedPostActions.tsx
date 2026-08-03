@@ -1,7 +1,8 @@
 import { Bookmark, Heart, MessageCircle, Send } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
 type FeedPostActionsProps = {
@@ -33,6 +34,9 @@ export function FeedPostActions({
   onShare,
   post,
 }: FeedPostActionsProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={[styles.actionRow, hasContent ? styles.actionRowTight : null]}>
       <View style={styles.leftActions}>
@@ -85,7 +89,7 @@ export function FeedPostActions({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -109,7 +113,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   actionText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "700",
   },

@@ -2,7 +2,8 @@ import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import type { PostShareTarget } from "../../features/chat/usePostShare";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { SearchInput } from "../search/SearchInput";
 import { ExternalShareSection } from "./ExternalShareSection";
 import { ShareTargetList } from "./ShareTargetList";
@@ -35,6 +36,7 @@ export function PostShareSheet({
   sendingTargetId,
   targets,
 }: PostShareSheetProps) {
+  const styles = useThemedStyles(makeStyles);
   const {
     backdropOpacity,
     closeWithAnimation,
@@ -123,14 +125,14 @@ export function PostShareSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   root: {
     flex: 1,
     justifyContent: "flex-end",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.scrimWeak,
+    backgroundColor: c.scrimWeak,
   },
   sheet: {
     position: "absolute",
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
     left: 0,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   sheetContent: {
     flex: 1,
@@ -153,7 +155,7 @@ const styles = StyleSheet.create({
     width: 58,
     height: 5,
     borderRadius: 999,
-    backgroundColor: colors.lavenderTint,
+    backgroundColor: c.lavenderTint,
   },
   header: {
     paddingHorizontal: 18,
@@ -161,7 +163,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 18,
     fontWeight: "900",
   },
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
   stateText: {
     paddingHorizontal: 18,
     paddingVertical: 34,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "800",
     textAlign: "center",

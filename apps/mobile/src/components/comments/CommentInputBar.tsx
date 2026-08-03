@@ -8,7 +8,8 @@ import {
   View,
 } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ReplyTarget = {
   nickname: string;
@@ -37,6 +38,8 @@ export function CommentInputBar({
   onSubmit,
   replyTarget,
 }: CommentInputBarProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const canSubmit = !isSubmitting && content.trim().length > 0;
 
   return (
@@ -71,16 +74,16 @@ export function CommentInputBar({
           onPress={onSubmit}
           style={[styles.sendButton, !canSubmit ? styles.sendButtonDisabled : null]}
         >
-          <Send color={colors.white} size={18} strokeWidth={2.7} />
+          <Send color={colors.onAccent} size={18} strokeWidth={2.7} />
         </Pressable>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   footer: {
-    borderTopColor: colors.border,
+    borderTopColor: c.border,
     borderTopWidth: 1,
     paddingHorizontal: 14,
     paddingTop: 12,
@@ -91,17 +94,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
     borderRadius: 16,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   replyBannerText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "800",
   },
   replyBannerCancel: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -113,11 +116,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 44,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 999,
     borderWidth: 1,
-    backgroundColor: colors.lavenderTintSoft,
-    color: colors.text,
+    backgroundColor: c.lavenderTintSoft,
+    color: c.text,
     fontSize: 14,
     fontWeight: "700",
     paddingHorizontal: 16,
@@ -128,7 +131,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 21,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   sendButtonDisabled: {
     opacity: 0.45,

@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { HomeFeedbackState } from "../../features/feed/useHomeFeedFeedback";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type HomeFeedbackBannerProps = {
   errorMessage: string;
@@ -12,6 +13,8 @@ export function HomeFeedbackBanner({
   errorMessage,
   feedback,
 }: HomeFeedbackBannerProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <>
       {errorMessage ? (
@@ -33,14 +36,14 @@ export function HomeFeedbackBanner({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   inlineError: {
     position: "absolute",
     right: 16,
     bottom: 96,
     left: 16,
     borderRadius: 16,
-    backgroundColor: colors.text,
+    backgroundColor: c.text,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -50,15 +53,15 @@ const styles = StyleSheet.create({
     bottom: 96,
     left: 16,
     borderRadius: 16,
-    backgroundColor: colors.text,
+    backgroundColor: c.text,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   inlineFeedbackError: {
-    backgroundColor: colors.danger,
+    backgroundColor: c.danger,
   },
   inlineText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "800",
     textAlign: "center",

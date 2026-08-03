@@ -12,7 +12,8 @@ import {
 } from "react-native";
 
 import { DoubleTapLike } from "../common/DoubleTapLike";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio } from "../../features/feed/types";
 
@@ -40,6 +41,8 @@ export function FeedVideoPlayer({
   thumbnailUrl,
   uri,
 }: FeedVideoPlayerProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(true);
   const [hasMountedVideo, setHasMountedVideo] = useState(false);
@@ -179,10 +182,10 @@ export function FeedVideoPlayer({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   frame: {
     overflow: "hidden",
-    backgroundColor: colors.imagePlaceholder,
+    backgroundColor: c.imagePlaceholder,
   },
   muteBadge: {
     position: "absolute",
@@ -193,19 +196,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
   },
   processingOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.scrimWeak,
+    backgroundColor: c.scrimWeak,
   },
   processingText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: colors.scrimStrong,
-    color: colors.white,
+    backgroundColor: c.scrimStrong,
+    color: c.white,
     fontSize: 13,
     fontWeight: "900",
     paddingHorizontal: 12,

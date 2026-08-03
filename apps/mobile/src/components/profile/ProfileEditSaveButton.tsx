@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditSaveButtonProps = {
   disabled: boolean;
@@ -13,6 +14,8 @@ export function ProfileEditSaveButton({
   isSaving,
   onPress,
 }: ProfileEditSaveButtonProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -29,7 +32,7 @@ export function ProfileEditSaveButton({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   button: {
     height: 40,
     width: 40,
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 14,
     fontWeight: "900",
   },

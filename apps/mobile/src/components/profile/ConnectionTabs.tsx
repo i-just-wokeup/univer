@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export type ConnectionTab = "friends" | "received" | "sent";
 
@@ -16,6 +17,8 @@ type ConnectionTabsProps = {
 };
 
 export function ConnectionTabs({ activeTab, onChange }: ConnectionTabsProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
       {CONNECTION_TABS.map((tab) => {
@@ -42,12 +45,12 @@ export function ConnectionTabs({ activeTab, onChange }: ConnectionTabsProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: 4,
     borderRadius: 18,
-    backgroundColor: colors.surfaceBorder,
+    backgroundColor: c.surfaceBorder,
     padding: 4,
   },
   tab: {
@@ -58,15 +61,15 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   activeTab: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   label: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "900",
   },
   activeLabel: {
-    color: colors.white,
+    color: c.onAccent,
   },
   pressed: {
     opacity: 0.72,

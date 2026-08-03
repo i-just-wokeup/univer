@@ -124,6 +124,8 @@
 - [x] 앱 홈 탭 재탭 UX 적용 (스크롤 내려간 상태면 맨 위로, 최상단이면 새로고침)
 - [x] 앱 색상 의미 토큰화 1단계 (`COLOR_TOKENS.md` 기준 신규 토큰 38개 추가, raw hex/rgba 치환, 제외 목록 유지)
 - [x] 앱 다크모드 Phase 0 배선 (`lightColors`/`darkColors`, ThemeProvider/useTheme/useThemedStyles, 시스템 테마 자동 구독, 기존 화면 라이트 하위호환)
+- [x] 앱 다크모드 Phase 1 홈 탭 전환 (공통 프리미티브, 홈 피드 카드·스토리바, 댓글·공유 시트 테마 대응)
+- [x] 앱 다크모드 Phase 2 프로필 탭 전환 (프로필·편집·크루 관리, 하단바 이음새 제거, 미전환 화면 라이트 기본값 복구)
 - [x] 앱 일반 화면 하단 네비바 배경 방향 재정리 (탭 화면 흰색 유지, 일반 화면은 콘텐츠 배경색 연장)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)

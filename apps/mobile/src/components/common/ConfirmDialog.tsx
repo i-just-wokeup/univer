@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ConfirmDialogProps = {
   cancelLabel?: string;
@@ -24,6 +25,8 @@ export function ConfirmDialog({
   onConfirm,
   title,
 }: ConfirmDialogProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Modal
       animationType="fade"
@@ -78,32 +81,32 @@ export function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   overlay: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
     paddingHorizontal: 32,
   },
   dialog: {
     width: "100%",
     maxWidth: 360,
     borderRadius: 24,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 22,
     paddingTop: 24,
     paddingBottom: 16,
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 17,
     fontWeight: "900",
     textAlign: "center",
   },
   description: {
     marginTop: 10,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,
@@ -123,27 +126,27 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderColor: c.border,
+    backgroundColor: c.navBackground,
   },
   cancelText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 15,
     fontWeight: "800",
   },
   confirmButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   confirmText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 15,
     fontWeight: "900",
   },
   dangerButton: {
-    backgroundColor: colors.danger,
+    backgroundColor: c.danger,
   },
   dangerText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 15,
     fontWeight: "900",
   },

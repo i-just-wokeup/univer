@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme } from "../../lib/theme";
 
 // 이 시간 안에 두 번 탭하면 더블탭(좋아요)으로 본다. 단일 탭은 이 시간만큼 기다렸다 확정.
 const DOUBLE_TAP_MS = 220;
@@ -30,6 +30,7 @@ export function DoubleTapLike({
   onSingleTap,
   style,
 }: DoubleTapLikeProps) {
+  const { colors } = useTheme();
   const lastTapRef = useRef(0);
   const singleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scale = useRef(new Animated.Value(0)).current;

@@ -10,7 +10,8 @@ import {
 } from "react-native";
 
 import type { Comment } from "../../features/comments/types";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { UserInline } from "../common/UserInline";
 
@@ -39,6 +40,8 @@ function CommentRowComponent({
   onToggleLike,
   onUserPress,
 }: CommentRowProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const mentionPrefix = isReply && mentionNickname ? `@${mentionNickname}` : "";
   const restContent =
     mentionPrefix && comment.content.startsWith(mentionPrefix)
@@ -119,7 +122,7 @@ function CommentRowComponent({
 
 export const CommentRow = memo(CommentRowComponent);
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: 8,
@@ -144,19 +147,19 @@ const styles = StyleSheet.create({
   content: {
     marginTop: 4,
     marginLeft: 44,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,
   },
   mention: {
-    color: colors.accent,
+    color: c.accent,
     fontWeight: "800",
   },
   replyButton: {
     marginTop: 6,
     marginLeft: 44,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },
@@ -172,11 +175,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   likeCount: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },
   likeCountOn: {
-    color: colors.danger,
+    color: c.danger,
   },
 });

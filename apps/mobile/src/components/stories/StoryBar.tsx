@@ -4,7 +4,8 @@ import { Plus } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { StoryGroup } from "../../features/stories/types";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type StoryBarProps = {
   groups: StoryGroup[];
@@ -25,6 +26,9 @@ function StoryCard({
   nickname: string;
   thumbnailUrl: string | null;
 }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View
       style={[
@@ -54,6 +58,8 @@ function StoryCard({
 
 // 홈 상단 스토리 레일. 첫 칸은 내 스토리(없으면 추가, 있으면 미리보기+추가 배지), 이후 타 유저 그룹.
 export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const myGroup = groups.find((group) => group.stories[0]?.isMine);
   const otherGroups = groups.filter((group) => !group.stories[0]?.isMine);
   const latestMyStory = myGroup?.stories[myGroup.stories.length - 1] ?? null;
@@ -87,7 +93,7 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
             onPress={onPressCreate}
             style={styles.addBadge}
           >
-            <Plus color={colors.white} size={18} strokeWidth={3} />
+            <Plus color={colors.onAccent} size={18} strokeWidth={3} />
           </Pressable>
         </View>
       ) : (
@@ -101,7 +107,7 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
           ]}
         >
           <View style={styles.createPlus}>
-            <Plus color={colors.white} size={26} strokeWidth={2.6} />
+            <Plus color={colors.onAccent} size={26} strokeWidth={2.6} />
           </View>
           <Text style={styles.createLabel}>내 스토리</Text>
         </Pressable>
@@ -130,7 +136,7 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   list: {
     gap: 12,
     paddingBottom: 14,
@@ -149,8 +155,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: colors.white,
-    backgroundColor: colors.accent,
+    borderColor: c.white,
+    backgroundColor: c.accent,
   },
   card: {
     height: CARD_HEIGHT,
@@ -159,13 +165,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 22,
     borderWidth: 2,
-    backgroundColor: colors.lavenderTint,
+    backgroundColor: c.lavenderTint,
   },
   cardUnviewed: {
-    borderColor: colors.accent,
+    borderColor: c.accent,
   },
   cardViewed: {
-    borderColor: colors.border,
+    borderColor: c.border,
   },
   cardImage: {
     ...StyleSheet.absoluteFillObject,
@@ -179,7 +185,7 @@ const styles = StyleSheet.create({
   },
   cardName: {
     margin: 8,
-    color: colors.white,
+    color: c.white,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -188,10 +194,10 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     alignItems: "center",
     justifyContent: "center",
-    borderColor: colors.lavenderBorder,
+    borderColor: c.lavenderBorder,
     borderRadius: 22,
     borderWidth: 2.5,
-    backgroundColor: colors.onMediaFill,
+    backgroundColor: c.onMediaFill,
   },
   createPlus: {
     height: 42,
@@ -199,11 +205,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 21,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   createLabel: {
     marginTop: 10,
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },

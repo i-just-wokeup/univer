@@ -18,10 +18,12 @@ import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { FeedPost } from "../../features/feed/types";
 import { subscribeHomeTabReselect } from "../../lib/navigation/homeTabReselect";
 import { useSession } from "../../lib/session";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { useHomeNavigation } from "./useHomeNavigation";
 
 export function HomeScreen() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
@@ -214,9 +216,9 @@ export function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
 });

@@ -22,7 +22,8 @@ import { ConnectionUserRow } from "../../components/profile/ConnectionUserRow";
 import { useConnections } from "../../features/profile/useConnections";
 import type { ConnectionUser } from "../../features/profile/types";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
   friends: "아직 연결된 크루가 없습니다.",
@@ -31,6 +32,8 @@ const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
 };
 
 export function ConnectionsScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     acceptUser,
@@ -77,8 +80,11 @@ export function ConnectionsScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
-      <ScreenHeader onBack={() => router.back()} title="크루 관리" />
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
+      <ScreenHeader onBack={() => router.back()} themed title="크루 관리" />
 
       <View style={styles.tabsWrap}>
         <ConnectionTabs activeTab={activeTab} onChange={setActiveTab} />
@@ -164,10 +170,10 @@ export function ConnectionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   tabsWrap: {
     paddingHorizontal: 16,
@@ -180,18 +186,22 @@ const styles = StyleSheet.create({
   },
   surface: {
     overflow: "hidden",
+    borderColor: c.surfaceBorder,
+    backgroundColor: c.surfaceGlass,
     padding: 6,
   },
   inlineError: {
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 12,
     fontWeight: "800",
   },
   emptySurface: {
     minHeight: 280,
     justifyContent: "center",
+    borderColor: c.surfaceBorder,
+    backgroundColor: c.surfaceGlass,
   },
   feedback: {
     position: "absolute",
@@ -199,12 +209,12 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: 16,
     borderRadius: 16,
-    backgroundColor: colors.text,
+    backgroundColor: c.text,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   feedbackText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "800",
     textAlign: "center",

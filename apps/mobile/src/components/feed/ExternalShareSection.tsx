@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ExternalShareSectionProps = {
   insetsBottom: number;
@@ -12,6 +13,7 @@ export function ExternalShareSection({
   insetsBottom,
   url,
 }: ExternalShareSectionProps) {
+  const styles = useThemedStyles(makeStyles);
   const handleExternalShare = useCallback(() => {
     void Share.share({
       message: url,
@@ -45,33 +47,33 @@ export function ExternalShareSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   externalShare: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
+    borderTopColor: c.border,
     paddingHorizontal: 18,
     paddingTop: 12,
   },
   externalTitle: {
     marginBottom: 8,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "900",
   },
   externalButton: {
     borderRadius: 18,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
   externalButtonText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
   externalButtonMeta: {
     marginTop: 3,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
   },

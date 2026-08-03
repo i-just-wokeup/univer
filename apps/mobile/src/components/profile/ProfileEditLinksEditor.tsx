@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { MAX_PROFILE_LINKS } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditLinksEditorProps = {
   hasInvalidLink: boolean;
@@ -20,6 +21,8 @@ export function ProfileEditLinksEditor({
   onChangeLink,
   onRemoveLink,
 }: ProfileEditLinksEditorProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const canAdd = links.length < MAX_PROFILE_LINKS;
 
   return (
@@ -76,7 +79,7 @@ export function ProfileEditLinksEditor({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   field: {
     marginTop: 20,
   },
@@ -88,18 +91,18 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 8,
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },
   input: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "800",
   },
@@ -110,7 +113,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   addLinkText: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -129,16 +132,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   helper: {
     marginTop: 7,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "800",
   },
   error: {
-    color: colors.danger,
+    color: c.danger,
   },
   pressed: {
     opacity: 0.72,

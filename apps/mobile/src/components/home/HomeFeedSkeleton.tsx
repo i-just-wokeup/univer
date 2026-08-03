@@ -1,13 +1,16 @@
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { SkeletonBlock } from "../common/Skeleton";
 
 const CARD_COUNT = 3;
 const STORY_CARD_COUNT = 3;
 
 export function HomeFeedSkeleton() {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView
@@ -50,10 +53,10 @@ export function HomeFeedSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   content: {
     paddingBottom: 96,
@@ -92,7 +95,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 10,
     borderRadius: 18,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   cardHeader: {
     flexDirection: "row",

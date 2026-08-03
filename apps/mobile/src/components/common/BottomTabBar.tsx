@@ -6,7 +6,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { emitHomeTabReselect } from "../../lib/navigation/homeTabReselect";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type TabMeta = {
   icon: ComponentType<LucideProps>;
@@ -24,6 +25,8 @@ const TAB_META: Record<string, TabMeta> = {
 
 export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   return (
     <View
@@ -87,7 +90,7 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   bottomNav: {
     position: "absolute",
     right: 0,
@@ -97,7 +100,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    backgroundColor: colors.white,
+    backgroundColor: c.navBar,
   },
   navTab: {
     height: 44,
@@ -111,6 +114,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-    backgroundColor: colors.brand,
+    backgroundColor: c.brand,
   },
 });

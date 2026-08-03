@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { Pressable, StyleSheet, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { colors as lightColors, useTheme } from "../../lib/theme";
 
 export type ThumbnailGridItem = {
   id: string;
@@ -11,6 +11,7 @@ export type ThumbnailGridItem = {
 type PostThumbnailGridProps = {
   items: ThumbnailGridItem[];
   onPressItem?: (id: string) => void;
+  themed?: boolean;
 };
 
 function chunkIntoRows<T>(items: T[], size: number): T[][] {
@@ -27,7 +28,9 @@ function chunkIntoRows<T>(items: T[], size: number): T[][] {
 export function PostThumbnailGrid({
   items,
   onPressItem,
+  themed = false,
 }: PostThumbnailGridProps) {
+  const { colors } = useTheme();
   const rows = chunkIntoRows(items, 3);
 
   return (
@@ -39,7 +42,10 @@ export function PostThumbnailGrid({
               key={item.id}
               disabled={!onPressItem}
               onPress={() => onPressItem?.(item.id)}
-              style={styles.tile}
+              style={[
+                styles.tile,
+                themed ? { backgroundColor: colors.neutralFill } : null,
+              ]}
             >
               {item.image_url ? (
                 <Image
@@ -50,7 +56,12 @@ export function PostThumbnailGrid({
                   style={styles.tileImage}
                 />
               ) : (
-                <View style={styles.tilePlaceholder} />
+                <View
+                  style={[
+                    styles.tilePlaceholder,
+                    themed ? { backgroundColor: colors.accentSoft } : null,
+                  ]}
+                />
               )}
             </Pressable>
           ))}
@@ -79,7 +90,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     overflow: "hidden",
     borderRadius: 10,
-    backgroundColor: colors.neutralFill,
+    backgroundColor: lightColors.neutralFill,
   },
   spacer: {
     flex: 1,
@@ -91,6 +102,6 @@ const styles = StyleSheet.create({
   tilePlaceholder: {
     height: "100%",
     width: "100%",
-    backgroundColor: colors.accentSoft,
+    backgroundColor: lightColors.accentSoft,
   },
 });

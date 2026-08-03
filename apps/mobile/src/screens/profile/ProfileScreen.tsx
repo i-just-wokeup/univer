@@ -14,13 +14,16 @@ import { ProfileMoreMenu } from "../../components/profile/ProfileMoreMenu";
 import { ProfileSkeleton } from "../../components/profile/ProfileSkeleton";
 import { useProfile } from "../../features/profile/useProfile";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileScreenProps = {
   nickname?: string;
 };
 
 export function ProfileScreen({ nickname }: ProfileScreenProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     connectionStatus,
@@ -77,7 +80,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   if (isLoading) {
     return (
-      <ScreenContainer style={styles.screen}>
+      <ScreenContainer
+        contentBackgroundColor={colors.accentSoft}
+        style={styles.screen}
+      >
         <ProfileSkeleton />
       </ScreenContainer>
     );
@@ -85,7 +91,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   if (errorMessage && !profile) {
     return (
-      <ScreenContainer style={styles.screen}>
+      <ScreenContainer
+        contentBackgroundColor={colors.accentSoft}
+        style={styles.screen}
+      >
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
@@ -98,7 +107,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
       <ProfileHeaderBar
         isMine={isMine}
         isPushed={Boolean(nickname)}
@@ -161,10 +173,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   scrollContent: {
     paddingBottom: 110,

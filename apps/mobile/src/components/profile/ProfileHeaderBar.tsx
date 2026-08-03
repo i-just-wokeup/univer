@@ -1,7 +1,7 @@
 import { MoreHorizontal, Settings } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme } from "../../lib/theme";
 import { ScreenHeader } from "../common/ScreenHeader";
 
 type ProfileHeaderBarProps = {
@@ -40,6 +40,7 @@ export function ProfileHeaderBar({
             />
           )
         }
+        themed
         title={nickname}
       />
     );
@@ -56,6 +57,7 @@ export function ProfileHeaderBar({
           onPress={onPressSettings}
         />
       }
+      themed
       title={nickname}
     />
   );
@@ -72,6 +74,7 @@ function HeaderIconButton({
   icon,
   onPress,
 }: HeaderIconButtonProps) {
+  const { colors } = useTheme();
   const Icon = icon === "settings" ? Settings : MoreHorizontal;
 
   return (
@@ -92,7 +95,5 @@ const styles = StyleSheet.create({
     width: 40,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 16,
-    backgroundColor: colors.white,
   },
 });

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, type GestureResponderHandlers } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type CommentsSheetHeaderProps = {
   panHandlers: GestureResponderHandlers;
@@ -8,6 +9,8 @@ type CommentsSheetHeaderProps = {
 
 // 시트 상단의 드래그 핸들과 제목. 드래그 제스처는 부모 시트가 소유한다.
 export function CommentsSheetHeader({ panHandlers }: CommentsSheetHeaderProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <>
       <View style={styles.dragArea} {...panHandlers}>
@@ -20,7 +23,7 @@ export function CommentsSheetHeader({ panHandlers }: CommentsSheetHeaderProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   dragArea: {
     alignItems: "center",
     paddingTop: 10,
@@ -30,19 +33,19 @@ const styles = StyleSheet.create({
     height: 5,
     width: 42,
     borderRadius: 999,
-    backgroundColor: colors.lavenderTint,
+    backgroundColor: c.lavenderTint,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
     borderBottomWidth: 1,
     paddingHorizontal: 18,
     paddingBottom: 14,
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 17,
     fontWeight: "900",
   },

@@ -19,9 +19,12 @@ import { ProfileEditPrivacyToggles } from "../../components/profile/ProfileEditP
 import { ProfileEditReadonlyField } from "../../components/profile/ProfileEditReadonlyField";
 import { ProfileEditSaveButton } from "../../components/profile/ProfileEditSaveButton";
 import { useProfileEdit } from "../../features/profile/useProfileEdit";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export function ProfileEditScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
     avatarUrl,
@@ -59,8 +62,11 @@ export function ProfileEditScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer style={styles.screen}>
-        <ScreenHeader onBack={() => router.back()} title="프로필 편집" />
+      <ScreenContainer
+        contentBackgroundColor={colors.accentSoft}
+        style={styles.screen}
+      >
+        <ScreenHeader onBack={() => router.back()} themed title="프로필 편집" />
         <StateView
           message="현재 프로필 정보를 불러오는 중입니다."
           title="프로필 준비 중"
@@ -72,8 +78,11 @@ export function ProfileEditScreen() {
 
   if (errorMessage && !nickname) {
     return (
-      <ScreenContainer style={styles.screen}>
-        <ScreenHeader onBack={() => router.back()} title="프로필 편집" />
+      <ScreenContainer
+        contentBackgroundColor={colors.accentSoft}
+        style={styles.screen}
+      >
+        <ScreenHeader onBack={() => router.back()} themed title="프로필 편집" />
         <StateView
           actionLabel="다시 시도"
           message={errorMessage}
@@ -86,7 +95,10 @@ export function ProfileEditScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.screen}>
+    <ScreenContainer
+      contentBackgroundColor={colors.accentSoft}
+      style={styles.screen}
+    >
       <ScreenHeader
         onBack={() => router.back()}
         right={
@@ -98,6 +110,7 @@ export function ProfileEditScreen() {
             }}
           />
         }
+        themed
         title="프로필 편집"
       />
 
@@ -152,10 +165,10 @@ export function ProfileEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   keyboard: {
     flex: 1,
@@ -167,15 +180,15 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: c.surfaceBorder,
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     paddingHorizontal: 18,
     paddingVertical: 20,
   },
   formError: {
     marginTop: 12,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 13,
     fontWeight: "800",
   },

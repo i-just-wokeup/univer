@@ -1,7 +1,8 @@
 import { Search, X } from "lucide-react-native";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type SearchInputProps = {
   autoFocus?: boolean;
@@ -16,6 +17,9 @@ export function SearchInput({
   placeholder = "닉네임, 해시태그 검색",
   value,
 }: SearchInputProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.wrap}>
       <Search color={colors.textFaint} size={18} strokeWidth={2.4} />
@@ -43,7 +47,7 @@ export function SearchInput({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   wrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -51,13 +55,13 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-    backgroundColor: colors.white,
+    borderColor: c.surfaceBorder,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 16,
   },
   input: {
     flex: 1,
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "600",
   },

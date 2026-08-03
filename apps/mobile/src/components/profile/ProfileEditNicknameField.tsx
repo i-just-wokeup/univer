@@ -12,7 +12,8 @@ import {
 
 import type { NicknameStatus } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditNicknameFieldProps = {
   message: string;
@@ -27,6 +28,8 @@ export function ProfileEditNicknameField({
   onChangeNickname,
   status,
 }: ProfileEditNicknameFieldProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [isEditing, setIsEditing] = useState(false);
   const isInvalid = status === "duplicate" || status === "invalid";
 
@@ -114,24 +117,24 @@ export function ProfileEditNicknameField({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   field: {
     marginTop: 20,
   },
   label: {
     marginBottom: 8,
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },
   input: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "800",
   },
@@ -139,27 +142,27 @@ const styles = StyleSheet.create({
     minHeight: 48,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
   },
   valueText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "800",
   },
   helper: {
     marginTop: 7,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "800",
   },
   success: {
-    color: colors.accent,
+    color: c.accent,
   },
   error: {
-    color: colors.danger,
+    color: c.danger,
   },
   pressed: {
     opacity: 0.72,
@@ -167,12 +170,12 @@ const styles = StyleSheet.create({
   modalRoot: {
     flex: 1,
     justifyContent: "center",
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
     paddingHorizontal: 20,
   },
   modalCard: {
     borderRadius: 24,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     padding: 18,
   },
   modalHeader: {
@@ -183,7 +186,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   modalTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 17,
     fontWeight: "900",
   },
@@ -191,11 +194,11 @@ const styles = StyleSheet.create({
     minHeight: 36,
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 14,
   },
   doneText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "900",
   },

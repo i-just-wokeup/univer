@@ -11,7 +11,8 @@ import {
 } from "react-native";
 
 import { DoubleTapLike } from "../common/DoubleTapLike";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
 
@@ -26,6 +27,7 @@ export function FeedImageCarousel({
   images,
   onDoubleLike,
 }: FeedImageCarouselProps) {
+  const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const imageAspectRatio = getAspectRatioValue(aspectRatio);
@@ -89,24 +91,24 @@ export function FeedImageCarousel({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
-    backgroundColor: colors.imagePlaceholder,
+    backgroundColor: c.imagePlaceholder,
   },
   image: {
-    backgroundColor: colors.imagePlaceholder,
+    backgroundColor: c.imagePlaceholder,
   },
   mediaBadge: {
     position: "absolute",
     right: 18,
     top: 18,
     borderRadius: 999,
-    backgroundColor: colors.mediaControlBg,
+    backgroundColor: c.mediaControlBg,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   mediaBadgeText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 12,
     fontWeight: "500",
   },

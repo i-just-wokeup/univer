@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
 type ProfileEditAvatarProps = {
@@ -14,6 +15,8 @@ export function ProfileEditAvatar({
   label,
   onPress,
 }: ProfileEditAvatarProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -29,7 +32,7 @@ export function ProfileEditAvatar({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
   },
   text: {
     marginTop: 10,
-    color: colors.accent,
+    color: c.accent,
     fontSize: 13,
     fontWeight: "900",
   },

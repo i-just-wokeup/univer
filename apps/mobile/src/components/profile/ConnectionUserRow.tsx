@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConnectionUser } from "../../features/profile/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { UserInline } from "../common/UserInline";
 import type { ConnectionTab } from "./ConnectionTabs";
 
@@ -26,6 +27,8 @@ export function ConnectionUserRow({
   tab,
   user,
 }: ConnectionUserRowProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.row}>
       <UserInline
@@ -65,6 +68,8 @@ function ConnectionActions({
   onRemove,
   tab,
 }: ConnectionActionsProps) {
+  const styles = useThemedStyles(makeStyles);
+
   if (tab === "friends") {
     return (
       <RowButton disabled={isBusy} label="삭제" onPress={onRemove} />
@@ -96,6 +101,8 @@ function RowButton({
   onPress,
   primary = false,
 }: RowButtonProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -115,7 +122,7 @@ function RowButton({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -140,20 +147,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   primaryButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderColor: c.border,
+    backgroundColor: c.navBackground,
   },
   buttonText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "900",
   },
   primaryText: {
-    color: colors.white,
+    color: c.onAccent,
   },
   disabled: {
     opacity: 0.5,

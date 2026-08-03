@@ -3,7 +3,8 @@ import { StyleSheet, View } from "react-native";
 
 import { FeedMediaCarousel } from "./FeedMediaCarousel";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 import { FeedPostActions } from "./FeedPostActions";
 import { FeedPostContent } from "./FeedPostContent";
@@ -45,6 +46,7 @@ function FeedPostCardComponent({
   onVideoPress,
   post,
 }: FeedPostCardProps) {
+  const styles = useThemedStyles(makeStyles);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
 
   return (
@@ -100,11 +102,11 @@ function FeedPostCardComponent({
 
 export const FeedPostCard = memo(FeedPostCardComponent);
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
     marginBottom: 10,
     overflow: "hidden",
     borderRadius: 18,
-    backgroundColor: colors.white,
+    backgroundColor: c.feedCard,
   },
 });

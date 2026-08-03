@@ -19,7 +19,8 @@ import { CommentsSheetHeader } from "./CommentsSheetHeader";
 import { useCommentsSheetDrag } from "./useCommentsSheetDrag";
 import type { Comment } from "../../features/comments/types";
 import { useComments } from "../../features/comments/useComments";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type CommentsSheetProps = {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export function CommentsSheet({
   onUserPress,
   postId,
 }: CommentsSheetProps) {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
@@ -146,24 +148,24 @@ export function CommentsSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.scrimWeak,
+    backgroundColor: c.scrimWeak,
   },
   sheet: {
     height: "94%",
     overflow: "hidden",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   errorText: {
-    color: colors.danger,
+    color: c.danger,
     fontSize: 13,
     fontWeight: "800",
     paddingHorizontal: 18,
@@ -179,8 +181,8 @@ const styles = StyleSheet.create({
   feedbackToastText: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: colors.text,
-    color: colors.white,
+    backgroundColor: c.text,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "800",
     paddingHorizontal: 16,

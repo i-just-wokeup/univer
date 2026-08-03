@@ -5,6 +5,7 @@ import {
   AppState,
   Platform,
   StatusBar as NativeStatusBar,
+  useColorScheme,
 } from "react-native";
 
 let navigationBarModule:
@@ -34,8 +35,9 @@ function isImmersiveRoute(pathname: string) {
   );
 }
 
-function getPreset(pathname: string): SystemBarPreset {
-  if (isImmersiveRoute(pathname)) {
+function getPreset(pathname: string, isDark: boolean): SystemBarPreset {
+  // 다크 배경이거나 몰입 화면(릴스/스토리)이면 흰 아이콘(light-content).
+  if (isImmersiveRoute(pathname) || isDark) {
     return immersivePreset;
   }
 
@@ -93,7 +95,8 @@ export async function applySystemBars(preset: SystemBarPreset): Promise<void> {
 
 export function SystemBarsController() {
   const pathname = usePathname();
-  const preset = getPreset(pathname);
+  const scheme = useColorScheme();
+  const preset = getPreset(pathname, scheme === "dark");
 
   useEffect(() => {
     const timeoutIds = new Set<ReturnType<typeof setTimeout>>();

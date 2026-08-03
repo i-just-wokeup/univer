@@ -7,7 +7,8 @@ import type {
   ProfileGridPost,
   ProfileLink,
 } from "../../features/profile/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { KrewSurface } from "../common/KrewSurface";
 import { ProfileConnectionActions } from "./ProfileConnectionActions";
 import { ProfileInfoPanel } from "./ProfileInfoPanel";
@@ -50,6 +51,8 @@ export function ProfileContent({
   posts,
   profile,
 }: ProfileContentProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <KrewSurface style={styles.panel}>
       <ProfileInfoPanel
@@ -90,11 +93,12 @@ export function ProfileContent({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   panel: {
-    marginHorizontal: 16,
     marginTop: 8,
     overflow: "hidden",
+    borderWidth: 0,
+    backgroundColor: c.feedCard,
   },
   editButton: {
     height: 42,
@@ -104,26 +108,26 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderColor: c.border,
+    backgroundColor: c.navBackground,
   },
   editButtonPressed: {
     opacity: 0.75,
   },
   editButtonText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "900",
   },
   inlineError: {
     marginHorizontal: 16,
     marginBottom: 12,
-    color: colors.danger,
+    color: c.danger,
     fontSize: 12,
     fontWeight: "800",
   },
   divider: {
     height: 1,
-    backgroundColor: colors.accentTintBg,
+    backgroundColor: c.accentTintBg,
   },
 });

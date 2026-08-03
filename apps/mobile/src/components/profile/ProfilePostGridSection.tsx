@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { ProfileGridPost } from "../../features/profile/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { PostThumbnailGrid } from "../common/PostThumbnailGrid";
 
 type ProfilePostGridSectionProps = {
@@ -13,6 +14,8 @@ export function ProfilePostGridSection({
   onPressPost,
   posts,
 }: ProfilePostGridSectionProps) {
+  const styles = useThemedStyles(makeStyles);
+
   if (posts.length === 0) {
     return (
       <View style={styles.emptyGrid}>
@@ -21,17 +24,17 @@ export function ProfilePostGridSection({
     );
   }
 
-  return <PostThumbnailGrid items={posts} onPressItem={onPressPost} />;
+  return <PostThumbnailGrid items={posts} onPressItem={onPressPost} themed />;
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   emptyGrid: {
     paddingHorizontal: 24,
     paddingVertical: 48,
     alignItems: "center",
   },
   emptyText: {
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "700",
   },

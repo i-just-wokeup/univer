@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { ExpandableText } from "../common/ExpandableText";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
 type FeedPostContentProps = {
@@ -9,6 +10,8 @@ type FeedPostContentProps = {
 };
 
 export function FeedPostContent({ post }: FeedPostContentProps) {
+  const styles = useThemedStyles(makeStyles);
+
   if (!post.content) {
     return null;
   }
@@ -27,25 +30,26 @@ export function FeedPostContent({ post }: FeedPostContentProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   contentWrap: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     paddingTop: 0,
   },
   content: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "400",
     lineHeight: 20,
   },
   contentMore: {
     marginTop: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "800",
   },
   contentNickname: {
     fontWeight: nicknameTextStyle.fontWeight,
+    color: c.text,
   },
 });

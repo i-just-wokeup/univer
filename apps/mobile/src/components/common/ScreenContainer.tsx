@@ -15,17 +15,19 @@ type ScreenContainerProps = PropsWithChildren<{
 
 export function ScreenContainer({
   children,
-  contentBackgroundColor = colors.accentSoft,
+  contentBackgroundColor,
   edges = ["top"],
   style,
 }: ScreenContainerProps) {
+  const resolvedBackgroundColor = contentBackgroundColor ?? colors.accentSoft;
+
   return (
-    <View style={[styles.root, { backgroundColor: contentBackgroundColor }]}>
+    <View style={[styles.root, { backgroundColor: resolvedBackgroundColor }]}>
       <SafeAreaView
         edges={edges}
         style={[
           styles.content,
-          { backgroundColor: contentBackgroundColor },
+          { backgroundColor: resolvedBackgroundColor },
           style,
         ]}
       >

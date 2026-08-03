@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 import { HomeFeedSkeleton } from "./HomeFeedSkeleton";
 import { HomeHeader } from "./HomeHeader";
@@ -34,6 +35,8 @@ export function HomeErrorState({
   unreadChatCount,
   unreadCount,
 }: HomeErrorStateProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <SafeAreaView style={styles.screen}>
       <HomeHeader
@@ -54,9 +57,9 @@ export function HomeErrorState({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
 });

@@ -29,7 +29,8 @@ import {
   FEED_IMPRESSION_VIEW_AREA_PERCENT,
 } from "../../lib/constants/feedViewability";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 import { FeedPostCard } from "../feed/FeedPostCard";
 import { StoryBar } from "../stories/StoryBar";
@@ -130,6 +131,8 @@ function HomeFeedList({
   unreadChatCount,
   unreadCount,
 }: HomeFeedListProps, ref) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   // 화면에 가장 크게 보이는 카드만 active로 두어 피드 영상 자동재생을 제한한다.
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList<HomeFeedListItem> | null>(null);
@@ -343,6 +346,7 @@ function HomeFeedList({
       onShare,
       onUserPress,
       onVideoPress,
+      styles,
     ],
   );
 
@@ -363,7 +367,7 @@ function HomeFeedList({
           <ActivityIndicator color={colors.accent} size="small" />
         </View>
       ) : null,
-    [isLoadingMore],
+    [colors.accent, isLoadingMore, styles],
   );
 
   const listHeaderComponent = useMemo(
@@ -403,7 +407,7 @@ function HomeFeedList({
         tintColor={colors.accent}
       />
     ),
-    [handleRefresh, isRefreshing],
+    [colors.accent, handleRefresh, isRefreshing],
   );
 
   return (
@@ -431,7 +435,7 @@ function HomeFeedList({
   );
 });
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   list: {
     flex: 1,
   },
@@ -449,7 +453,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
   },
   readMarkerText: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },

@@ -1,7 +1,8 @@
 import { Image, StyleSheet, View } from "react-native";
 import Svg, { Circle, Ellipse } from "react-native-svg";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type AvatarProps = {
   imageUrl?: string | null;
@@ -10,6 +11,8 @@ type AvatarProps = {
 };
 
 export function Avatar({ imageUrl, label, size = 40 }: AvatarProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const frameStyle = { height: size, width: size, borderRadius: size / 2 };
 
   return (
@@ -37,12 +40,12 @@ export function Avatar({ imageUrl, label, size = 40 }: AvatarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   avatar: {
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor: colors.skeleton,
+    backgroundColor: c.skeleton,
   },
   image: {
     ...StyleSheet.absoluteFillObject,

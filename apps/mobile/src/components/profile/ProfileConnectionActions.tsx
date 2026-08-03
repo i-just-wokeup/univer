@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View, type TextStyle } from "react-native";
 
 import type { ConnectionStatus } from "../../features/profile/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileConnectionActionsProps = {
   connectionStatus: ConnectionStatus;
@@ -22,6 +23,8 @@ export function ProfileConnectionActions({
   onRemove,
   onSend,
 }: ProfileConnectionActionsProps) {
+  const styles = useThemedStyles(makeStyles);
+
   if (
     connectionStatus.status === "none" ||
     connectionStatus.status === "rejected"
@@ -115,6 +118,7 @@ function ActionButton({
   onPress,
   variant,
 }: ActionButtonProps) {
+  const styles = useThemedStyles(makeStyles);
   const textStyleByVariant: Record<ActionButtonProps["variant"], TextStyle> = {
     accentSoft: styles.accentSoftText,
     muted: styles.mutedText,
@@ -141,7 +145,7 @@ function ActionButton({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: 8,
@@ -157,34 +161,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   primary: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
   },
   secondary: {
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderColor: c.border,
+    backgroundColor: c.navBackground,
   },
   muted: {
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   accentSoft: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   buttonText: {
     fontSize: 13,
     fontWeight: "900",
   },
   primaryText: {
-    color: colors.white,
+    color: c.onAccent,
   },
   secondaryText: {
-    color: colors.muted,
+    color: c.muted,
   },
   mutedText: {
-    color: colors.muted,
+    color: c.muted,
   },
   accentSoftText: {
-    color: colors.accent,
+    color: c.accent,
   },
   disabled: {
     opacity: 0.95,

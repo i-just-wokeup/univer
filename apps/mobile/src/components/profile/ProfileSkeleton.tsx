@@ -1,12 +1,15 @@
 import { StyleSheet, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import { SkeletonBlock } from "../common/Skeleton";
 
 const GRID_ITEMS = 9;
 const GRID_COLUMNS = 3;
 
 export function ProfileSkeleton() {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -50,10 +53,10 @@ export function ProfileSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: c.accentSoft,
   },
   header: {
     flexDirection: "row",
@@ -77,8 +80,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-    backgroundColor: colors.surfaceGlass,
+    borderColor: c.surfaceBorder,
+    backgroundColor: c.surfaceGlass,
   },
   topRow: {
     flexDirection: "row",
@@ -138,7 +141,7 @@ const styles = StyleSheet.create({
     gap: 4,
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.accentTintBg,
+    borderTopColor: c.accentTintBg,
   },
   gridRow: {
     flexDirection: "row",

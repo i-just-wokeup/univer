@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CommentRow } from "./CommentRow";
 import type { Comment } from "../../features/comments/types";
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type CommentThreadProps = {
   comment: Comment;
@@ -129,6 +130,8 @@ function ReplyToggle({
   label: string;
   onPress: () => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable onPress={onPress} style={styles.replyToggle}>
       <Text style={styles.replyToggleText}>{label}</Text>
@@ -136,13 +139,13 @@ function ReplyToggle({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   replyToggle: {
     marginLeft: 80,
     paddingVertical: 4,
   },
   replyToggleText: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },

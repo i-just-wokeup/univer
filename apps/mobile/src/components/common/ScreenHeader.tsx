@@ -2,26 +2,42 @@ import { ChevronLeft } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { colors as lightColors, useTheme } from "../../lib/theme";
 
 type ScreenHeaderProps = {
   // 없으면 뒤로가기 버튼 대신 빈 공간을 둬서 title이 가운데 정렬을 유지한다(루트 탭 헤더용).
   onBack?: () => void;
   right?: ReactNode;
+  themed?: boolean;
   title: string;
 };
 
-export function ScreenHeader({ onBack, right, title }: ScreenHeaderProps) {
+export function ScreenHeader({ onBack, right, themed = false, title }: ScreenHeaderProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.header}>
       {onBack ? (
-        <Pressable onPress={onBack} style={styles.headerButton}>
-          <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
+        <Pressable
+          onPress={onBack}
+          style={[
+            styles.headerButton,
+            themed ? { backgroundColor: colors.navBackground } : null,
+          ]}
+        >
+          <ChevronLeft
+            color={themed ? colors.text : lightColors.text}
+            size={22}
+            strokeWidth={2.4}
+          />
         </Pressable>
       ) : (
         <View style={styles.headerSpacer} />
       )}
-      <Text numberOfLines={1} style={styles.headerTitle}>
+      <Text
+        numberOfLines={1}
+        style={[styles.headerTitle, themed ? { color: colors.text } : null]}
+      >
         {title}
       </Text>
       {right ? (
@@ -47,12 +63,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: lightColors.white,
   },
   headerTitle: {
     flex: 1,
     marginHorizontal: 12,
-    color: colors.text,
+    color: lightColors.text,
     fontSize: 18,
     fontWeight: "900",
     textAlign: "center",

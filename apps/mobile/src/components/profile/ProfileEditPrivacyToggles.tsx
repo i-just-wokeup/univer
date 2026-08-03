@@ -1,6 +1,7 @@
 import { StyleSheet, Switch, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditPrivacyTogglesProps = {
   departmentPublic: boolean;
@@ -15,6 +16,8 @@ export function ProfileEditPrivacyToggles({
   onChangeRealNamePublic,
   realNamePublic,
 }: ProfileEditPrivacyTogglesProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.group}>
       <PrivacyToggleRow
@@ -47,6 +50,9 @@ function PrivacyToggleRow({
   onValueChange,
   value,
 }: PrivacyToggleRowProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.row}>
       <View style={styles.textColumn}>
@@ -56,7 +62,7 @@ function PrivacyToggleRow({
       <Switch
         ios_backgroundColor={colors.switchTrackOff}
         onValueChange={onValueChange}
-        thumbColor={colors.white}
+        thumbColor={value ? colors.onAccent : colors.switchThumb}
         trackColor={{
           false: colors.switchTrackOff,
           true: colors.accentTrack,
@@ -67,11 +73,11 @@ function PrivacyToggleRow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   group: {
     marginTop: 20,
     borderRadius: 16,
-    backgroundColor: colors.accentTintBg,
+    backgroundColor: c.accentTintBg,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -85,19 +91,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },
   description: {
     marginTop: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
   },
   divider: {
     height: 1,
     marginVertical: 12,
-    backgroundColor: colors.overlayInkFaint,
+    backgroundColor: c.overlayInkFaint,
   },
 });

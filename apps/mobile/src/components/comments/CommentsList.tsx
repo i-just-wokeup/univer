@@ -3,7 +3,8 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-nativ
 
 import { CommentThread } from "./CommentThread";
 import type { Comment } from "../../features/comments/types";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type CommentsListProps = {
   comments: Comment[];
@@ -31,6 +32,8 @@ export function CommentsList({
   onToggleReplies,
   onUserPress,
 }: CommentsListProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const keyExtractor = useCallback((comment: Comment) => comment.id, []);
   const renderItem = useCallback(
     ({ item }: { item: Comment }) => (
@@ -89,7 +92,7 @@ export function CommentsList({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   loadingBox: {
     flex: 1,
     alignItems: "center",
@@ -98,7 +101,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -113,13 +116,13 @@ const styles = StyleSheet.create({
     paddingVertical: 42,
   },
   emptyTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "900",
   },
   emptyDescription: {
     marginTop: 6,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "700",
   },

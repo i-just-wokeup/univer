@@ -1,6 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type StateViewProps = {
   actionLabel?: string;
@@ -17,6 +18,9 @@ export function StateView({
   title,
   type = "empty",
 }: StateViewProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
       {type === "loading" ? (
@@ -33,7 +37,7 @@ export function StateView({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
@@ -44,14 +48,14 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 17,
     fontWeight: "900",
     textAlign: "center",
   },
   message: {
     marginTop: 8,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 13,
     fontWeight: "600",
     lineHeight: 19,
@@ -60,12 +64,12 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 18,
     borderRadius: 14,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
   buttonText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "900",
   },

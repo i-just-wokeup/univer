@@ -9,11 +9,12 @@ const YOUTUBE_ICON = require("../../../assets/social/yt_icon_red.png");
 const YOUTUBE_ICON_ASPECT_RATIO = 1255 / 1075;
 
 type SocialIconProps = {
+  color?: string;
   platform: SocialPlatform;
   size?: number;
 };
 
-export function SocialIcon({ platform, size = 20 }: SocialIconProps) {
+export function SocialIcon({ color = colors.muted, platform, size = 20 }: SocialIconProps) {
   if (platform === "instagram") {
     return (
       <Image
@@ -37,7 +38,7 @@ export function SocialIcon({ platform, size = 20 }: SocialIconProps) {
     );
   }
 
-  return <Globe color={colors.muted} size={size} strokeWidth={2.3} />;
+  return <Globe color={color} size={size} strokeWidth={2.3} />;
 }
 
 const styles = StyleSheet.create({

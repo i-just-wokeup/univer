@@ -5,7 +5,8 @@ import type {
   ProfileDetail,
   ProfileLink,
 } from "../../features/profile/types";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 import {
   getProfileLinkDisplayLabel,
   getProfileLinkPlatform,
@@ -27,6 +28,9 @@ export function ProfileInfoPanel({
   onPressCrew,
   profile,
 }: ProfileInfoPanelProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.section}>
       <View style={styles.identityRow}>
@@ -93,7 +97,7 @@ export function ProfileInfoPanel({
                   pressed ? styles.pressedLinkButton : null,
                 ]}
               >
-                <SocialIcon platform={platform} size={18} />
+                <SocialIcon color={colors.muted} platform={platform} size={18} />
                 <Text style={styles.linkText} numberOfLines={1}>
                   {displayLabel}
                 </Text>
@@ -106,7 +110,7 @@ export function ProfileInfoPanel({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   section: {
     padding: 16,
   },
@@ -127,13 +131,13 @@ const styles = StyleSheet.create({
     opacity: 0.65,
   },
   statNumber: {
-    color: colors.text,
+    color: c.text,
     fontSize: 18,
     fontWeight: "900",
   },
   statLabel: {
     marginTop: 2,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 12,
     fontWeight: "700",
   },
@@ -142,23 +146,24 @@ const styles = StyleSheet.create({
   },
   nickname: {
     ...nicknameTextStyle,
+    color: c.text,
     fontSize: 20,
   },
   realName: {
     marginTop: 4,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "700",
   },
   department: {
     marginTop: 4,
-    color: colors.muted,
+    color: c.muted,
     fontSize: 14,
     fontWeight: "700",
   },
   bio: {
     marginTop: 16,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "500",
     lineHeight: 22,
@@ -176,8 +181,8 @@ const styles = StyleSheet.create({
     gap: 7,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderColor: c.border,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
@@ -186,7 +191,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     minWidth: 0,
-    color: colors.text,
+    color: c.text,
     fontSize: 12,
     fontWeight: "800",
   },

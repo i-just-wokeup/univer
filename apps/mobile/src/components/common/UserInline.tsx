@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { Avatar } from "./Avatar";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type UserInlineProps = {
   avatarSize: number;
@@ -22,6 +23,8 @@ export function UserInline({
   onPress,
   style,
 }: UserInlineProps) {
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       accessibilityLabel={`${nickname} 프로필 보기`}
@@ -47,7 +50,7 @@ export function UserInline({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
@@ -61,15 +64,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   metaLine: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "500",
   },
   nickname: {
     ...nicknameTextStyle,
+    color: c.text,
   },
   metaText: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "500",
   },

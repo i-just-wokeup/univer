@@ -8,7 +8,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors } from "../../lib/theme";
+import { useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 export type ActionSheetItem = {
   danger?: boolean;
@@ -25,6 +26,7 @@ type ActionSheetProps = {
 
 export function ActionSheet({ isOpen, items, onClose }: ActionSheetProps) {
   const insets = useSafeAreaInsets();
+  const styles = useThemedStyles(makeStyles);
   const sheetStyle: ViewStyle = {
     paddingBottom: Math.max(insets.bottom, 12),
   };
@@ -80,41 +82,41 @@ export function ActionSheet({ isOpen, items, onClose }: ActionSheetProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
   },
   sheet: {
     overflow: "hidden",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
   },
   item: {
     minHeight: 56,
     alignItems: "center",
     justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
     paddingHorizontal: 20,
   },
   lastItem: {
     borderBottomWidth: 0,
   },
   itemText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 15,
     fontWeight: "800",
   },
   dangerText: {
-    color: colors.danger,
+    color: c.danger,
   },
   disabled: {
     opacity: 0.45,
   },
   pressed: {
-    backgroundColor: colors.overlayInkFaint,
+    backgroundColor: c.overlayInkFaint,
   },
 });

@@ -1,7 +1,8 @@
 import { Bell, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type HomeHeaderProps = {
   onPressMessages: () => void;
@@ -18,6 +19,9 @@ export function HomeHeader({
   unreadChatCount,
   unreadCount,
 }: HomeHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.headerArea}>
       <View style={styles.topBar}>
@@ -60,7 +64,7 @@ export function HomeHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   headerArea: {
     paddingBottom: 6,
   },
@@ -73,7 +77,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   logo: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 32,
     fontWeight: "900",
   },
@@ -86,8 +90,6 @@ const styles = StyleSheet.create({
     width: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 22,
-    backgroundColor: colors.white,
   },
   badge: {
     position: "absolute",
@@ -98,11 +100,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 9,
-    backgroundColor: colors.danger,
+    backgroundColor: c.danger,
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: colors.white,
+    color: c.white,
     fontSize: 10,
     fontWeight: "900",
   },

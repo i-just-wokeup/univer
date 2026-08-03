@@ -2,7 +2,7 @@ import { MoreHorizontal } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { UserInline } from "../common/UserInline";
-import { colors } from "../../lib/theme";
+import { useTheme } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -17,6 +17,7 @@ export function FeedPostHeader({
   onUserPress,
   post,
 }: FeedPostHeaderProps) {
+  const { colors } = useTheme();
   const relativeTime = getRelativeTimeLabel(post.created_at);
   const meta = post.user.department
     ? `${post.user.department} · ${relativeTime}`

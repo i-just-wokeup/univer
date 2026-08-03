@@ -12,7 +12,8 @@ import {
 
 import { BIO_MAX_LENGTH } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemedStyles } from "../../lib/theme";
+import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditBioFieldProps = {
   bio: string;
@@ -23,6 +24,8 @@ export function ProfileEditBioField({
   bio,
   onChangeBio,
 }: ProfileEditBioFieldProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [isEditing, setIsEditing] = useState(false);
   const displayBio = bio.trim() || "나를 소개해보세요.";
 
@@ -107,7 +110,7 @@ export function ProfileEditBioField({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) => StyleSheet.create({
   field: {
     marginTop: 20,
   },
@@ -119,24 +122,24 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 8,
-    color: colors.text,
+    color: c.text,
     fontSize: 13,
     fontWeight: "900",
   },
   counter: {
     marginBottom: 8,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },
   input: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "800",
   },
@@ -144,20 +147,20 @@ const styles = StyleSheet.create({
     minHeight: 92,
     justifyContent: "flex-start",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 16,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     paddingHorizontal: 14,
     paddingVertical: 13,
   },
   bioValueText: {
-    color: colors.text,
+    color: c.text,
     fontSize: 14,
     fontWeight: "800",
     lineHeight: 21,
   },
   placeholder: {
-    color: colors.textFaint,
+    color: c.textFaint,
   },
   bioInput: {
     minHeight: 92,
@@ -169,12 +172,12 @@ const styles = StyleSheet.create({
   modalRoot: {
     flex: 1,
     justifyContent: "center",
-    backgroundColor: colors.scrimMed,
+    backgroundColor: c.scrimMed,
     paddingHorizontal: 20,
   },
   modalCard: {
     borderRadius: 24,
-    backgroundColor: colors.white,
+    backgroundColor: c.navBackground,
     padding: 18,
   },
   modalHeader: {
@@ -185,13 +188,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   modalTitle: {
-    color: colors.text,
+    color: c.text,
     fontSize: 17,
     fontWeight: "900",
   },
   modalCounter: {
     marginTop: 3,
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     fontWeight: "800",
   },
@@ -199,11 +202,11 @@ const styles = StyleSheet.create({
     minHeight: 36,
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     paddingHorizontal: 14,
   },
   doneText: {
-    color: colors.white,
+    color: c.onAccent,
     fontSize: 13,
     fontWeight: "900",
   },
