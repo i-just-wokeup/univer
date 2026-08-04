@@ -5,6 +5,7 @@ import { Linking } from "react-native";
 import { useSession } from "../../lib/session";
 import { recordMetric } from "../metrics/api";
 import { getOrCreateConversation } from "../chat/api";
+import { normalizeProfileUrl } from "../../lib/utils/profileLinks";
 import {
   acceptFriendRequest,
   getConnectionStatus,
@@ -341,7 +342,10 @@ export function useProfile(nickname?: string) {
     if (profile) {
       void recordMetric("link_click", link.url, profile.id);
     }
-    void Linking.openURL(link.url);
+    const safeUrl = normalizeProfileUrl(link.url);
+    if (safeUrl) {
+      void Linking.openURL(safeUrl);
+    }
   }
 
   // 대화방 생성까지만 담당하고 conversationId를 반환한다(화면 이동은 호출부에서).

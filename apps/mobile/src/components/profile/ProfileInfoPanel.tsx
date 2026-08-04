@@ -10,6 +10,7 @@ import type { ThemeColors } from "../../lib/theme";
 import {
   getProfileLinkDisplayLabel,
   getProfileLinkPlatform,
+  normalizeProfileUrl,
 } from "../../lib/utils/profileLinks";
 import { Avatar } from "../common/Avatar";
 import { SocialIcon } from "../common/SocialIcon";
@@ -89,7 +90,10 @@ export function ProfileInfoPanel({
                   if (onLinkPress) {
                     onLinkPress(link);
                   } else {
-                    void Linking.openURL(link.url);
+                    const safeUrl = normalizeProfileUrl(link.url);
+                    if (safeUrl) {
+                      void Linking.openURL(safeUrl);
+                    }
                   }
                 }}
                 style={({ pressed }) => [
