@@ -1,4 +1,6 @@
+import { useCallback, useState } from "react";
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import type { LayoutChangeEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import type { PostShareTarget } from "../../features/chat/usePostShare";
@@ -37,6 +39,7 @@ export function PostShareSheet({
   targets,
 }: PostShareSheetProps) {
   const styles = useThemedStyles(makeStyles);
+  const [footerHeight, setFooterHeight] = useState(0);
   const {
     backdropOpacity,
     closeWithAnimation,
@@ -45,6 +48,16 @@ export function PostShareSheet({
     panHandlers,
     translateY,
   } = usePostShareSheetDrag({ isOpen, onClose });
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextHeight = Math.ceil(event.nativeEvent.layout.height);
+
+    setFooterHeight((currentHeight) =>
+      currentHeight === nextHeight ? currentHeight : nextHeight,
+    );
+  }, []);
+  const listBottomPadding = externalShareUrl
+    ? footerHeight + 16
+    : insets.bottom + 16;
 
   return (
     <Modal
@@ -104,22 +117,23 @@ export function PostShareSheet({
               </Text>
             ) : (
               <ShareTargetList
-                externalShareUrl={externalShareUrl}
-                insetsBottom={insets.bottom}
+                contentBottomPadding={listBottomPadding}
                 onSelectTarget={onSelectTarget}
                 sendingTargetId={sendingTargetId}
                 targets={targets}
               />
             )}
-
-            {externalShareUrl ? (
-              <ExternalShareSection
-                insetsBottom={insets.bottom}
-                url={externalShareUrl}
-              />
-            ) : null}
           </SafeAreaView>
         </Animated.View>
+
+        {externalShareUrl ? (
+          <View onLayout={handleFooterLayout} style={styles.fixedFooter}>
+            <ExternalShareSection
+              insetsBottom={insets.bottom}
+              url={externalShareUrl}
+            />
+          </View>
+        ) : null}
       </View>
     </Modal>
   );
@@ -145,6 +159,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   sheetContent: {
     flex: 1,
+  },
+  fixedFooter: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 2,
+    backgroundColor: c.navBackground,
   },
   dragArea: {
     alignItems: "center",

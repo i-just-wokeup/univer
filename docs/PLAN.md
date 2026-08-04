@@ -140,6 +140,7 @@
 - [x] 앱 채팅 키보드 3a 적용 (react-native-keyboard-controller 설치, 채팅방 입력창 KeyboardStickyView 전환)
 - [x] 보안 후속: 탈퇴 계정 영구삭제 보존기간 하한 강제 (Edge Function 입력검증 + DB 함수 30일 미만 거부)
 - [x] 게시물 외부 공유 Phase 2 (public 게시물만 `/p/[postId]` 웹 미리보기 + 앱 OS 공유)
+- [x] 앱 게시물 공유 시트 외부 공유 푸터 고정 (55%/92% detent와 독립된 화면 하단 위치, 대상 목록만 스크롤)
 - [x] 채팅방 fullscreen route group 분리 (하단 탭바/사이드바 제거, `h-dvh` 전용 레이아웃)
 - [x] 채팅 전송 후 모바일 키보드 깜빡임 완화 (조건부 focus, 중복 스크롤/reload 제거)
 - [x] 채팅 Realtime 구독 필터 수정 및 publication 등록 migration 추가

@@ -7,6 +7,7 @@
 ## 2026-08-03
 
 ### 완료
+- **앱 게시물 공유 시트 외부 공유 푸터 고정** — 공개 게시물의 `ExternalShareSection`을 드래그되는 시트 바깥 `Modal` 루트의 화면 하단 절대 위치 푸터로 옮겨 55%/92% detent 전환 중에도 움직이지 않게 했다. 푸터의 실제 높이를 `onLayout`으로 측정해 공유 대상 목록의 하단 콘텐츠 패딩으로 반영하고 목록 `ScrollView`가 남은 시트 영역을 채우도록 해 마지막 대상도 푸터 위로 스크롤된다. 크루 공개 게시물은 기존처럼 푸터 없이 목록이 바닥까지 표시되며 앱 tsc 통과.
 - **앱 인증 배지 표시 확산** — 공용 `UserInline`의 `verified` prop을 댓글 작성자·크루 목록·채팅방 헤더·게시물 공유 대상에 연결하고, 직접 닉네임을 렌더하는 프로필 상단 헤더·릴스 작성자·채팅 목록·유저 검색 결과에도 `VerifiedBadge`를 추가했다. 공용 `ScreenHeader`에는 중앙 정렬을 유지하는 `titleAccessory` 슬롯을 마련해 프로필 중간 정보 영역의 중복 배지는 제거했다. 모든 판별은 기존 데이터의 유저 ID와 전역 `useVerifiedUsers().isVerified`를 사용해 추가 쿼리 없이 처리했으며 앱 tsc 통과.
 - **앱 인증(공식/승격) 배지 1차** — `get_verified_user_ids` RPC 결과를 5분 TTL과 진행 중 요청 dedupe로 캐시하고, 로그인 세션 하위 `VerifiedUsersProvider`에서 ID 목록을 `Set`으로 관리하도록 연결했다. 고정 파란색 원·흰 체크의 공용 `VerifiedBadge`를 추가하고 `UserInline`의 닉네임 바로 뒤에 표시할 수 있게 확장해 홈 피드 작성자 헤더에 우선 적용했다. RPC 모바일 타입을 동기화했으며 앱 tsc 통과.
 - **앱 다크 팔레트 튜닝 및 크롬 정리** — 다크 글씨를 흰색 alpha에서 불투명 메타 그레이(text `#E4E6EB` / muted `#B0B3B8` / textFaint `#8A8D91`)로 교체해 또렷하게 하고, 배경/카드를 딥다크(배경 `#0F1011`, `feedCard` `#000000`)로, 표면 토큰(`navBackground`/`card`/`surfaceGlass`) 다크값을 배경에 붙여 카드 붕뜸을 완화했다. 프로필 카드를 피드 카드와 통일(풀와이드·테두리 제거), 상태바를 다크에서 `light-content`로 대응(`SystemBarsController`), 헤더 아이콘(설정/알림/메시지)의 원형 배경을 제거했다. 전부 theme.ts 값 조정 또는 컴포넌트 스타일 정리(하드코딩 없음).

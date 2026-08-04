@@ -7,8 +7,7 @@ import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
 
 type ShareTargetListProps = {
-  externalShareUrl?: string | null;
-  insetsBottom: number;
+  contentBottomPadding: number;
   onSelectTarget: (target: PostShareTarget) => void;
   sendingTargetId: string | null;
   targets: PostShareTarget[];
@@ -27,8 +26,7 @@ function getSourceLabel(source: PostShareTarget["source"]) {
 }
 
 export function ShareTargetList({
-  externalShareUrl = null,
-  insetsBottom,
+  contentBottomPadding,
   onSelectTarget,
   sendingTargetId,
   targets,
@@ -40,11 +38,10 @@ export function ShareTargetList({
     <ScrollView
       contentContainerStyle={[
         styles.targetList,
-        {
-          paddingBottom: insetsBottom + (externalShareUrl ? 10 : 16),
-        },
+        { paddingBottom: contentBottomPadding },
       ]}
       keyboardShouldPersistTaps="handled"
+      style={styles.scroll}
     >
       {targets.map((target) => {
         const isSending = sendingTargetId === target.id;
@@ -81,6 +78,9 @@ export function ShareTargetList({
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
+  scroll: {
+    flex: 1,
+  },
   targetList: {
     paddingHorizontal: 10,
   },
