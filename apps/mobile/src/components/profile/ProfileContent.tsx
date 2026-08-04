@@ -107,7 +107,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 14,
-    backgroundColor: c.navBackground,
+    backgroundColor: c.chipFill,
   },
   editButtonPressed: {
     opacity: 0.75,

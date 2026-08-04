@@ -164,10 +164,10 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.accent,
   },
   secondary: {
-    backgroundColor: c.navBackground,
+    backgroundColor: c.chipFill,
   },
   muted: {
-    backgroundColor: c.navBackground,
+    backgroundColor: c.chipFill,
   },
   accentSoft: {
     backgroundColor: c.accentSoft,
