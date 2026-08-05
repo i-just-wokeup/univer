@@ -1,7 +1,7 @@
 import { Bell, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { Logo } from "../common/Logo";
 
@@ -101,7 +101,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   badgeText: {
     color: c.white,
-    fontSize: 10,
-    fontWeight: "900",
+    fontSize: fontSize.tiny,
+    fontWeight: fontWeight.heavy,
   },
 });

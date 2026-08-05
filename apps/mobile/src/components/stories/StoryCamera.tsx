@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import type { StoryCaptureMedia } from "../../features/stories/useStoryCreate";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type StoryCameraProps = {
   onClose: () => void;
@@ -277,8 +277,8 @@ const styles = StyleSheet.create({
   },
   cameraErrorText: {
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
   permissionScreen: {
@@ -291,8 +291,8 @@ const styles = StyleSheet.create({
   },
   permissionText: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
     lineHeight: 22,
     textAlign: "center",
   },
@@ -304,18 +304,18 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   permissionAltText: {
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   permissionCancelText: {
     color: colors.onMediaTextFaint,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
   },
   pressed: {
     opacity: 0.7,

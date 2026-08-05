@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
 import type { InsightBar } from "../../features/metrics/useInsights";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 // YYYY-MM-DD → "M/D"
@@ -77,7 +77,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   label: {
     color: c.textFaint,
-    fontSize: 10,
-    fontWeight: "700",
+    fontSize: fontSize.tiny,
+    fontWeight: fontWeight.semibold,
   },
 });

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { ExpandableText } from "../common/ExpandableText";
-import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -38,15 +38,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   content: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "400",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.normal,
     lineHeight: 20,
   },
   contentMore: {
     marginTop: 4,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   contentNickname: {
     fontWeight: nicknameTextStyle.fontWeight,

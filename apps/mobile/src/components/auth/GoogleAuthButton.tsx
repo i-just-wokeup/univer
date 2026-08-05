@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type GoogleAuthButtonProps = {
   disabled?: boolean;
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colors.text,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.82,

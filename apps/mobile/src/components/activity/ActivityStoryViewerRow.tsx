@@ -2,7 +2,7 @@ import { Heart } from "lucide-react-native";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStoryViewer } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 import { formatActivityViewerTime } from "./activityDateFormat";
 
@@ -47,14 +47,14 @@ const styles = StyleSheet.create({
   },
   viewerName: {
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   viewerSub: {
     marginTop: 2,
     color: colors.onMediaTextFaint,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.semibold,
   },
   likeBadge: {
     flexDirection: "row",
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
   likeText: {
     color: colors.dangerText,
-    fontSize: 11,
-    fontWeight: "900",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.heavy,
   },
 });

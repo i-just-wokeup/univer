@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { PostShareTarget } from "../../features/chat/usePostShare";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
@@ -103,8 +103,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   sendText: {
     color: c.onAccent,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   disabled: {
     opacity: 0.45,

@@ -2,7 +2,7 @@ import { ChevronLeft } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors as lightColors, useTheme } from "../../lib/theme";
+import { colors as lightColors, useTheme, fontSize, fontWeight } from "../../lib/theme";
 
 type ScreenHeaderProps = {
   // 없으면 뒤로가기 버튼 대신 빈 공간을 둬서 title이 가운데 정렬을 유지한다(루트 탭 헤더용).
@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     flexShrink: 1,
     color: lightColors.text,
-    fontSize: 18,
-    fontWeight: "900",
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.heavy,
     textAlign: "center",
   },
   titleSlot: {

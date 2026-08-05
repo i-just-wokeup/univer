@@ -1,7 +1,7 @@
 import { X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type RecentSearchListProps = {
@@ -86,19 +86,19 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   cardTitle: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   clearAllText: {
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   stateText: {
     paddingVertical: 28,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
     textAlign: "center",
   },
   recentRow: {
@@ -114,8 +114,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   recentText: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   recentRemove: {
     marginLeft: 12,

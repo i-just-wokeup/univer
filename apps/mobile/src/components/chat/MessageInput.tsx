@@ -8,7 +8,7 @@ import {
   type LayoutChangeEvent,
 } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type MessageInputProps = {
@@ -98,8 +98,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
   },
   sendButton: {
     height: 38,

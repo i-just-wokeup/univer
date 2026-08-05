@@ -9,7 +9,7 @@ import { StateView } from "../../components/common/StateView";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
 import { usePostDetail } from "../../features/feed/usePostDetail";
 import { useSession } from "../../lib/session";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type PostDetailScreenProps = {
@@ -164,8 +164,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   feedbackText: {
     color: c.onAccent,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
 });

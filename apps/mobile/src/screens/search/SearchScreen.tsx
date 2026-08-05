@@ -6,7 +6,7 @@ import { RecentSearchList } from "../../components/search/RecentSearchList";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchResultsList } from "../../components/search/SearchResultsList";
 import { useUserSearch } from "../../features/search/useUserSearch";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function SearchScreen() {
@@ -88,14 +88,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   title: {
     color: c.text,
-    fontSize: 28,
-    fontWeight: "900",
+    fontSize: fontSize.displayLarge,
+    fontWeight: fontWeight.heavy,
   },
   description: {
     marginTop: 4,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.medium,
   },
   inputWrap: {
     paddingHorizontal: 16,

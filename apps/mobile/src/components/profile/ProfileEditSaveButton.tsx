@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditSaveButtonProps = {
@@ -41,8 +41,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   text: {
     color: c.accent,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.72,

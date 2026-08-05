@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import type { Comment } from "../../features/comments/types";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
@@ -151,20 +151,20 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     marginTop: 4,
     marginLeft: 44,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.medium,
     lineHeight: 20,
   },
   mention: {
     color: c.accent,
-    fontWeight: "800",
+    fontWeight: fontWeight.bold,
   },
   replyButton: {
     marginTop: 6,
     marginLeft: 44,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   sideActions: {
     flexDirection: "row",
@@ -179,8 +179,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   likeCount: {
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   likeCountOn: {
     color: c.danger,

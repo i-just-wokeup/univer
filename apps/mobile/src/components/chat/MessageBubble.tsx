@@ -4,7 +4,7 @@ import { memo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Message, SharedPostPreview } from "../../features/chat/api";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 
@@ -189,8 +189,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.navBackground,
   },
   content: {
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
     lineHeight: 21,
   },
   mineText: {
@@ -201,8 +201,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   meta: {
     color: c.textFaint,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.semibold,
   },
   unavailableBubble: {
     opacity: 0.9,
@@ -250,8 +250,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   postThumbFallbackText: {
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   postBody: {
     gap: 4,
@@ -260,16 +260,16 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   postAuthor: {
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   minePostAuthor: {
     color: c.onAccent,
   },
   postContent: {
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
     lineHeight: 17,
   },
   minePostContent: {
@@ -277,8 +277,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   postMeta: {
     color: c.textFaint,
-    fontSize: 11,
-    fontWeight: "800",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.bold,
   },
   minePostMeta: {
     color: c.onAccent,

@@ -5,7 +5,13 @@ import type {
   ProfileDetail,
   ProfileLink,
 } from "../../features/profile/types";
-import { nicknameTextStyle, useTheme, useThemedStyles } from "../../lib/theme";
+import {
+  nicknameTextStyle,
+  useTheme,
+  useThemedStyles,
+  fontSize,
+  fontWeight,
+} from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import {
   getProfileLinkDisplayLabel,
@@ -136,14 +142,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   statNumber: {
     color: c.text,
-    fontSize: 18,
-    fontWeight: "900",
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.heavy,
   },
   statLabel: {
     marginTop: 2,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   nameBlock: {
     marginTop: 16,
@@ -151,25 +157,25 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   nickname: {
     ...nicknameTextStyle,
     color: c.text,
-    fontSize: 20,
+    fontSize: fontSize.heading,
   },
   realName: {
     marginTop: 4,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   department: {
     marginTop: 4,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
   },
   bio: {
     marginTop: 16,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.regular,
     lineHeight: 22,
   },
   links: {
@@ -194,7 +200,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   linkText: {
     minWidth: 0,
     color: c.text,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

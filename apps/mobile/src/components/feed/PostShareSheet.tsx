@@ -4,7 +4,7 @@ import type { LayoutChangeEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import type { PostShareTarget } from "../../features/chat/usePostShare";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { SearchInput } from "../search/SearchInput";
 import { ExternalShareSection } from "./ExternalShareSection";
@@ -186,8 +186,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   title: {
     color: c.text,
-    fontSize: 18,
-    fontWeight: "900",
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.heavy,
   },
   searchWrap: {
     paddingHorizontal: 16,
@@ -197,8 +197,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 34,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
 });

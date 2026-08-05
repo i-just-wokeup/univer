@@ -1,7 +1,7 @@
 import { Bookmark, Heart, MessageCircle, Send } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -114,8 +114,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   actionText: {
     color: c.text,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
   },
   bookmarkButton: {
     minHeight: 40,

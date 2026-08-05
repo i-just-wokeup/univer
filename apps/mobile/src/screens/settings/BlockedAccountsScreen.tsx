@@ -9,7 +9,13 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { Avatar } from "../../components/common/Avatar";
 import { useBlockedAccounts } from "../../features/blocks/useBlockedAccounts";
-import { nicknameTextStyle, useTheme, useThemedStyles } from "../../lib/theme";
+import {
+  nicknameTextStyle,
+  useTheme,
+  useThemedStyles,
+  fontSize,
+  fontWeight,
+} from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 function formatBlockedAt(createdAt: string) {
@@ -168,19 +174,19 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   nickname: {
     ...nicknameTextStyle,
     color: c.text,
-    fontSize: 15,
+    fontSize: fontSize.body,
   },
   department: {
     marginTop: 3,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   blockedAt: {
     marginTop: 3,
     color: c.textFaint,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.semibold,
   },
   unblockButton: {
     height: 36,
@@ -192,8 +198,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   unblockText: {
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.7,
@@ -205,7 +211,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 8,
     color: c.danger,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

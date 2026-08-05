@@ -8,7 +8,7 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchUserRow } from "../../components/search/SearchUserRow";
 import { useMessagesList } from "../../features/chat/useMessagesList";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ConversationTab = "active" | "pending";
@@ -180,14 +180,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 4,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   stateText: {
     paddingVertical: 28,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
     textAlign: "center",
   },
   tabs: {
@@ -211,8 +211,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   tabText: {
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   tabTextActive: {
     color: c.onAccent,
@@ -231,8 +231,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   tabBadgeText: {
     color: c.onAccent,
-    fontSize: 11,
-    fontWeight: "900",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.heavy,
   },
   tabBadgeTextActive: {
     color: c.accent,

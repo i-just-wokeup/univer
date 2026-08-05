@@ -29,7 +29,7 @@ import {
   FEED_IMPRESSION_VIEW_AREA_PERCENT,
 } from "../../lib/constants/feedViewability";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 import { FeedPostCard } from "../feed/FeedPostCard";
@@ -454,7 +454,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   readMarkerText: {
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

@@ -23,7 +23,7 @@ import { useReels } from "../../features/feed/useReels";
 import type { FeedPost, ReelFeedItem } from "../../features/feed/types";
 import { useSession } from "../../lib/session";
 import { SITE_URL } from "../../lib/site";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type ReelsScreenProps = {
   startPostId?: string;
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.scrimHeavy,
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
     paddingHorizontal: 18,
     paddingVertical: 10,
     textAlign: "center",

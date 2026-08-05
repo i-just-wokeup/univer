@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { SearchUser } from "../../features/search/api";
-import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { Avatar } from "../common/Avatar";
@@ -64,7 +64,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   nickname: {
     ...nicknameTextStyle,
     color: c.text,
-    fontSize: 14,
+    fontSize: fontSize.bodySmall,
     flexShrink: 1,
   },
   nicknameRow: {
@@ -78,7 +78,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   department: {
     marginTop: 3,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.medium,
   },
 });

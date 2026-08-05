@@ -10,7 +10,7 @@ import {
 
 import { Avatar } from "../common/Avatar";
 import type { StoryViewer } from "../../features/stories/types";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type StoryViewersSheetProps = {
   isOpen: boolean;
@@ -86,8 +86,8 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 8,
     color: colors.text,
-    fontSize: 16,
-    fontWeight: "900",
+    fontSize: fontSize.bodyLarge,
+    fontWeight: fontWeight.heavy,
   },
   sheetList: {
     flexGrow: 0,
@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
   sheetEmpty: {
     paddingVertical: 28,
     color: colors.textFaint,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
     textAlign: "center",
   },
   viewerRow: {
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   viewerName: {
     flex: 1,
     color: colors.text,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
 });

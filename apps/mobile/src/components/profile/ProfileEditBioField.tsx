@@ -12,7 +12,7 @@ import {
 
 import { BIO_MAX_LENGTH } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditBioFieldProps = {
@@ -123,14 +123,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   label: {
     marginBottom: 8,
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   counter: {
     marginBottom: 8,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   input: {
     minHeight: 48,
@@ -140,8 +140,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.navBackground,
     paddingHorizontal: 14,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   bioValueButton: {
     minHeight: 92,
@@ -155,8 +155,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   bioValueText: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
     lineHeight: 21,
   },
   placeholder: {
@@ -189,14 +189,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   modalTitle: {
     color: c.text,
-    fontSize: 17,
-    fontWeight: "900",
+    fontSize: fontSize.titleSmall,
+    fontWeight: fontWeight.heavy,
   },
   modalCounter: {
     marginTop: 3,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   doneButton: {
     minHeight: 36,
@@ -207,7 +207,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   doneText: {
     color: c.onAccent,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
 });

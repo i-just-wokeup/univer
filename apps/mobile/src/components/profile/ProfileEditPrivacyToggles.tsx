@@ -1,6 +1,6 @@
 import { StyleSheet, Switch, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditPrivacyTogglesProps = {
@@ -92,14 +92,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   label: {
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   description: {
     marginTop: 4,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   divider: {
     height: 1,

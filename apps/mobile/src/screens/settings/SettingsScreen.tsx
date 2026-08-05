@@ -11,7 +11,7 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { signOutMobile } from "../../features/auth/api";
 import { LEGAL_URLS } from "../../lib/site";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 function Section({ children, label }: { children: ReactNode; label: string }) {
@@ -213,8 +213,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 4,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   card: {
     borderRadius: 22,
@@ -234,26 +234,26 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   rowLabel: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   rowLabelDisabled: {
     color: c.textFaint,
   },
   logoutText: {
     color: c.danger,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   deleteText: {
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   error: {
     marginTop: 12,
     color: c.danger,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
   },
 });

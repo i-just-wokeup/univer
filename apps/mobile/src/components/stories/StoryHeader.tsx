@@ -2,7 +2,7 @@ import { MoreHorizontal, Pause, X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { colors, nicknameTextStyle, fontSize, fontWeight } from "../../lib/theme";
 
 type StoryHeaderProps = {
   avatarUrl: string | null;
@@ -69,12 +69,12 @@ const styles = StyleSheet.create({
   authorName: {
     ...nicknameTextStyle,
     color: colors.white,
-    fontSize: 14,
+    fontSize: fontSize.bodySmall,
   },
   time: {
     color: colors.onMediaText,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   headerActions: {
     flexDirection: "row",

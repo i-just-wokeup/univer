@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, type GestureResponderHandlers } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type CommentsSheetHeaderProps = {
@@ -46,7 +46,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   title: {
     color: c.text,
-    fontSize: 17,
-    fontWeight: "900",
+    fontSize: fontSize.titleSmall,
+    fontWeight: fontWeight.heavy,
   },
 });

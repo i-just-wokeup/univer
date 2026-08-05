@@ -13,7 +13,7 @@ import {
   type ActivityTab,
   useMyActivity,
 } from "../../features/activity/useMyActivity";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const tabs: Array<{ id: ActivityTab; label: string }> = [
@@ -213,8 +213,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   tabText: {
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   activeTabText: {
     color: c.onAccent,

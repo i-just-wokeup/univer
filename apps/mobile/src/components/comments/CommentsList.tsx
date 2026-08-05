@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-nativ
 
 import { CommentThread } from "./CommentThread";
 import type { Comment } from "../../features/comments/types";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type CommentsListProps = {
@@ -102,8 +102,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
   },
   commentList: {
     paddingVertical: 8,
@@ -117,13 +117,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   emptyTitle: {
     color: c.text,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   emptyDescription: {
     marginTop: 6,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
   },
 });

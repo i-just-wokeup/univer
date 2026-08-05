@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
@@ -41,8 +41,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   text: {
     marginTop: 10,
     color: c.accent,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.72,

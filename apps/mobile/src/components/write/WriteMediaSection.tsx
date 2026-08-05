@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
 import { MAX_IMAGES } from "../../features/feed/useWriteForm";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { PostImageUploader } from "./PostImageUploader";
 import { WriteVideoPreview } from "./WriteVideoPreview";
@@ -94,8 +94,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   videoPickText: {
     color: c.accent,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.72,

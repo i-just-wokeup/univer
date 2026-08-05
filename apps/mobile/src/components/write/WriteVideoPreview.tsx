@@ -1,7 +1,7 @@
 import { X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StoryVideoView } from "../stories/StoryVideoView";
 
@@ -61,13 +61,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   mediaTitle: {
     color: c.text,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   mediaCount: {
     color: c.textFaint,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
   },
   videoPreviewWrap: {
     position: "relative",

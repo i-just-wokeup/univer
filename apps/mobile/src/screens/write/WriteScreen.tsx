@@ -15,7 +15,7 @@ import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
 import { WriteSettingsSection } from "../../components/write/WriteSettingsSection";
 import { useWriteForm } from "../../features/feed/useWriteForm";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function WriteScreen() {
@@ -175,13 +175,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   cancelText: {
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   headerTitle: {
     color: c.text,
-    fontSize: 18,
-    fontWeight: "900",
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.heavy,
   },
   submitButton: {
     minWidth: 58,
@@ -197,8 +197,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   submitText: {
     color: c.onAccent,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   content: {
     gap: 12,
@@ -207,8 +207,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   errorText: {
     color: c.danger,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     lineHeight: 19,
     paddingHorizontal: 4,
   },

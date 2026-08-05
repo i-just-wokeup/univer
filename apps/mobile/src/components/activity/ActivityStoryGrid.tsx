@@ -3,7 +3,7 @@ import { Play } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStory } from "../../features/activity/api";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 
@@ -164,8 +164,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   dateText: {
     color: c.white,
-    fontSize: 10,
-    fontWeight: "900",
+    fontSize: fontSize.tiny,
+    fontWeight: fontWeight.heavy,
   },
   bottomMeta: {
     position: "absolute",
@@ -186,8 +186,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   statusText: {
     color: c.black,
-    fontSize: 9,
-    fontWeight: "900",
+    fontSize: fontSize.micro,
+    fontWeight: fontWeight.heavy,
   },
   visibilityBadge: {
     borderRadius: 999,
@@ -197,7 +197,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   visibilityText: {
     color: c.white,
-    fontSize: 9,
-    fontWeight: "900",
+    fontSize: fontSize.micro,
+    fontWeight: fontWeight.heavy,
   },
 });

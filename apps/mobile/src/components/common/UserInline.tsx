@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native"
 
 import { Avatar } from "./Avatar";
 import { VerifiedBadge } from "./VerifiedBadge";
-import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type UserInlineProps = {
@@ -90,8 +90,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   metaText: {
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "500",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.regular,
     flexShrink: 1,
   },
   verifiedBadge: {

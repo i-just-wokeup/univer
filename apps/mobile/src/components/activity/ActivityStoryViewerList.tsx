@@ -5,7 +5,7 @@ import type {
   ActivityStory,
   ActivityStoryViewer,
 } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { formatActivityStoryDateTime } from "./activityDateFormat";
 import { ActivityStoryViewerRow } from "./ActivityStoryViewerRow";
 
@@ -63,14 +63,14 @@ const styles = StyleSheet.create({
   },
   viewerTitle: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   viewerTime: {
     marginTop: 2,
     color: colors.onMediaTextFaint,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   viewerList: {
     paddingHorizontal: 16,
@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
   viewerEmpty: {
     paddingVertical: 24,
     color: colors.onMediaTextFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
 });

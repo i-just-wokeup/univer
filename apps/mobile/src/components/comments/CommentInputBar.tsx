@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ReplyTarget = {
@@ -100,13 +100,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   replyBannerText: {
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   replyBannerCancel: {
     color: c.accent,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   inputRow: {
     flexDirection: "row",
@@ -121,8 +121,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderWidth: 1,
     backgroundColor: c.lavenderTintSoft,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
     paddingHorizontal: 16,
   },
   sendButton: {

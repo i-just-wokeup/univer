@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { MAX_PROFILE_LINKS } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditLinksEditorProps = {
@@ -92,8 +92,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   label: {
     marginBottom: 8,
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   input: {
     minHeight: 48,
@@ -103,8 +103,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.navBackground,
     paddingHorizontal: 14,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   addLinkButton: {
     marginBottom: 8,
@@ -114,8 +114,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   addLinkText: {
     color: c.accent,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   linkRow: {
     marginTop: 8,
@@ -137,8 +137,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   helper: {
     marginTop: 7,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   error: {
     color: c.danger,

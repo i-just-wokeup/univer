@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { NotificationItem } from "../../features/notifications/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { Avatar } from "../common/Avatar";
@@ -118,18 +118,18 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   text: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.medium,
     lineHeight: 20,
   },
   textUnread: {
-    fontWeight: "900",
+    fontWeight: fontWeight.heavy,
   },
   time: {
     marginTop: 4,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   thumbnail: {
     height: 48,

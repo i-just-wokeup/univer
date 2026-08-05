@@ -14,7 +14,7 @@ import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
 import { Logo } from "../../components/common/Logo";
 import { signInWithGoogle } from "../../features/auth/googleSignIn";
 import { getSupabaseMobileClient } from "../../lib/supabase";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function LoginScreen() {
@@ -158,14 +158,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   title: {
     marginTop: 28,
     color: c.text,
-    fontSize: 24,
-    fontWeight: "900",
+    fontSize: fontSize.displaySmall,
+    fontWeight: fontWeight.heavy,
   },
   description: {
     marginTop: 8,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.medium,
     lineHeight: 21,
   },
   input: {
@@ -176,15 +176,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderWidth: 1,
     backgroundColor: c.navBackground,
     color: c.text,
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
     paddingHorizontal: 16,
   },
   errorText: {
     marginTop: 12,
     color: c.danger,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
   },
   primaryButton: {
     height: 52,
@@ -196,8 +196,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   primaryButtonText: {
     color: c.onAccent,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   disabled: {
     opacity: 0.6,
@@ -215,7 +215,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   dividerText: {
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

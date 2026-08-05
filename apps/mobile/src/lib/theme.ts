@@ -148,15 +148,29 @@ export const spacing = {
 } as const;
 
 export const fontSize = {
+  micro: 9,
+  tiny: 10,
+  footnote: 11,
   label: 12,
   caption: 13,
+  bodySmall: 14,
   body: 15,
+  bodyLarge: 16,
+  titleSmall: 17,
   title: 18,
+  heading: 20,
+  headingLarge: 22,
+  displaySmall: 24,
+  displayMedium: 26,
+  displayLarge: 28,
   display: 32,
 } as const;
 
 export const fontWeight = {
+  normal: "400",
+  regular: "500",
   medium: "600",
+  semibold: "700",
   bold: "800",
   heavy: "900",
 } as const;

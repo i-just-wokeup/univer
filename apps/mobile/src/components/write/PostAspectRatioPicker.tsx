@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const OPTIONS: Array<{ label: string; value: PostAspectRatio }> = [
@@ -68,8 +68,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   label: {
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
     textAlign: "center",
   },
   activeLabel: {

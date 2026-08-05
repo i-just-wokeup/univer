@@ -133,6 +133,7 @@
 - [x] 앱 장식 아웃라인 테두리 제거 (카드·버튼·칩·말풍선; 입력필드·구분선·스토리 링은 유지)
 - [x] 앱 unip 워드마크 로고 적용 (Logo 컴포넌트, KREW 텍스트 5곳 교체)
 - [x] 앱 인증 배지 1~2차 (공식/승격 유저 ID 5분 캐시·요청 dedupe, 세션 Provider, 홈·댓글·프로필·크루·채팅·공유·릴스·검색 닉네임 배지)
+- [x] 앱 타이포 토큰화 1차 (실사용 fontSize 14종·fontWeight 6종 스케일 정의, src 하드코딩 435건 1:1 무변화 치환)
 - [x] 앱 일반 화면 하단 네비바 배경 방향 재정리 (탭 화면 흰색 유지, 일반 화면은 콘텐츠 배경색 연장)
 - [x] 앱 Android 네비바 contrast scrim 비활성화 (androidNavigationBar.enforceContrast=false, 실패한 JS 하단 오버레이 정리)
 - [x] 앱 일반 화면 하단 네비바 흰색 공용 컨테이너 적용 (ScreenContainer로 흰 루트/연보라 콘텐츠 배경 분리)

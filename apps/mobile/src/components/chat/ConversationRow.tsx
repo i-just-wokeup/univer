@@ -4,7 +4,7 @@ import { Avatar } from "../common/Avatar";
 import { VerifiedBadge } from "../common/VerifiedBadge";
 import type { ConversationWithUser } from "../../features/chat/api";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
-import { nicknameTextStyle, useThemedStyles } from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 
@@ -104,7 +104,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     ...nicknameTextStyle,
     minWidth: 0,
     color: c.text,
-    fontSize: 15,
+    fontSize: fontSize.body,
     flexShrink: 1,
   },
   nicknameGroup: {
@@ -124,14 +124,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   pendingText: {
     color: c.accent,
-    fontSize: 11,
-    fontWeight: "900",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.heavy,
   },
   preview: {
     marginTop: 4,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
   },
   meta: {
     minWidth: 42,
@@ -140,8 +140,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   time: {
     color: c.textFaint,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.semibold,
   },
   unreadBadge: {
     minWidth: 20,
@@ -154,7 +154,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   unreadText: {
     color: c.onAccent,
-    fontSize: 11,
-    fontWeight: "900",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.heavy,
   },
 });

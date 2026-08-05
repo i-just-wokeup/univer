@@ -2,7 +2,7 @@ import { Eye, Heart } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStory } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { activityStoryDisplay } from "./ActivityStoryGrid";
 
 type ActivityStoryPreviewMetaProps = {
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     color: colors.onMediaText,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

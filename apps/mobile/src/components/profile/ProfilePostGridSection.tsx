@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { ProfileGridPost } from "../../features/profile/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { PostThumbnailGrid } from "../common/PostThumbnailGrid";
 
@@ -35,7 +35,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   emptyText: {
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
   },
 });

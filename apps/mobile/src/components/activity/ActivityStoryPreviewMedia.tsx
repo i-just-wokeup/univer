@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStory } from "../../features/activity/api";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { StoryVideoView } from "../stories/StoryVideoView";
 import { formatActivityStoryDateTime } from "./activityDateFormat";
 
@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.scrimStrong,
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: colors.white,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
 });

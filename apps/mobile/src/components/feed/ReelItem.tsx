@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DoubleTapLike } from "../common/DoubleTapLike";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 import type { FeedPost, PostMedia } from "../../features/feed/types";
 import { ReelActions } from "./ReelActions";
 import { ReelFooter } from "./ReelFooter";
@@ -249,8 +249,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.scrimStrong,
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },

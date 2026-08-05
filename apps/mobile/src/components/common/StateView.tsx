@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type StateViewProps = {
@@ -49,15 +49,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   title: {
     color: c.text,
-    fontSize: 17,
-    fontWeight: "900",
+    fontSize: fontSize.titleSmall,
+    fontWeight: fontWeight.heavy,
     textAlign: "center",
   },
   message: {
     marginTop: 8,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.medium,
     lineHeight: 19,
     textAlign: "center",
   },
@@ -70,7 +70,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   buttonText: {
     color: c.onAccent,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
 });

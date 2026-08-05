@@ -1,6 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ConfirmDialogProps = {
@@ -100,15 +100,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   title: {
     color: c.text,
-    fontSize: 17,
-    fontWeight: "900",
+    fontSize: fontSize.titleSmall,
+    fontWeight: fontWeight.heavy,
     textAlign: "center",
   },
   description: {
     marginTop: 10,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.medium,
     lineHeight: 20,
     textAlign: "center",
   },
@@ -129,24 +129,24 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   cancelText: {
     color: c.muted,
-    fontSize: 15,
-    fontWeight: "800",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
   },
   confirmButton: {
     backgroundColor: c.accent,
   },
   confirmText: {
     color: c.onAccent,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   dangerButton: {
     backgroundColor: c.danger,
   },
   dangerText: {
     color: c.white,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.8,

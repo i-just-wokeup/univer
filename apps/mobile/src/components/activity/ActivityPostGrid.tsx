@@ -3,7 +3,7 @@ import { Heart, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityPost } from "../../features/activity/api";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 
@@ -126,8 +126,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   placeholderText: {
     color: c.textFaint,
-    fontSize: 11,
-    fontWeight: "800",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
   metaBar: {
@@ -148,7 +148,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   metaText: {
     color: c.white,
-    fontSize: 11,
-    fontWeight: "900",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.heavy,
   },
 });

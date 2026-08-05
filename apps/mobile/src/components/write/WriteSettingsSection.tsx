@@ -5,7 +5,7 @@ import type {
   PostAspectRatio,
   PostVisibility,
 } from "../../features/feed/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { PostAspectRatioPicker } from "./PostAspectRatioPicker";
 
@@ -51,7 +51,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   sectionTitle: {
     marginBottom: 12,
     color: c.text,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
 });

@@ -19,7 +19,7 @@ import { ProfileEditPrivacyToggles } from "../../components/profile/ProfileEditP
 import { ProfileEditReadonlyField } from "../../components/profile/ProfileEditReadonlyField";
 import { ProfileEditSaveButton } from "../../components/profile/ProfileEditSaveButton";
 import { useProfileEdit } from "../../features/profile/useProfileEdit";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function ProfileEditScreen() {
@@ -187,7 +187,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   formError: {
     marginTop: 12,
     color: c.danger,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
   },
 });

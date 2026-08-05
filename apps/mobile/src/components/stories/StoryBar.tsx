@@ -4,7 +4,7 @@ import { Plus } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { StoryGroup } from "../../features/stories/types";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type StoryBarProps = {
@@ -186,8 +186,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   cardName: {
     margin: 8,
     color: c.white,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   createCard: {
     height: CARD_HEIGHT,
@@ -210,8 +210,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   createLabel: {
     marginTop: 10,
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.8,

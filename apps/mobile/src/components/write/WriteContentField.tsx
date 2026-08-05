@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type WriteContentFieldProps = {
@@ -43,8 +43,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   sectionTitle: {
     marginBottom: 12,
     color: c.text,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   textInput: {
     minHeight: 132,
@@ -53,8 +53,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 18,
     backgroundColor: c.navBackground,
     color: c.text,
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: fontSize.bodyLarge,
+    fontWeight: fontWeight.medium,
     lineHeight: 23,
     paddingHorizontal: 14,
     paddingVertical: 14,

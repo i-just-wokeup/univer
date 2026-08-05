@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export type ActionSheetItem = {
@@ -107,8 +107,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   itemText: {
     color: c.text,
-    fontSize: 15,
-    fontWeight: "800",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
   },
   dangerText: {
     color: c.danger,

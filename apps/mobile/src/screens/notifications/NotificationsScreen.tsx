@@ -9,7 +9,7 @@ import { StateView } from "../../components/common/StateView";
 import { routeToNotificationTarget } from "../../features/notifications/navigation";
 import type { NotificationItem } from "../../features/notifications/types";
 import { useNotifications } from "../../features/notifications/useNotifications";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function NotificationsScreen() {
@@ -120,8 +120,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     flex: 1,
     marginHorizontal: 12,
     color: c.text,
-    fontSize: 22,
-    fontWeight: "900",
+    fontSize: fontSize.headingLarge,
+    fontWeight: fontWeight.heavy,
   },
   markAllButton: {
     height: 36,
@@ -133,8 +133,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   markAllText: {
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.7,

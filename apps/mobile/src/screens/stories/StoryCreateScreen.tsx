@@ -13,7 +13,7 @@ import { StoryVideoView } from "../../components/stories/StoryVideoView";
 import { STORY_BACKGROUND_COLORS } from "../../features/stories/backgroundColors";
 import { useStoryCreate } from "../../features/stories/useStoryCreate";
 import { useStableInsets } from "../../lib/useStableInsets";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 export function StoryCreateScreen() {
   const router = useRouter();
@@ -267,8 +267,8 @@ const styles = StyleSheet.create({
   },
   shareText: {
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   disabledButton: {
     opacity: 0.45,
@@ -296,8 +296,8 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: "900",
+    fontSize: fontSize.bodyLarge,
+    fontWeight: fontWeight.heavy,
   },
   sheetPalette: {
     flexDirection: "row",
@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.dangerTint,
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },

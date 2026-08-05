@@ -18,7 +18,7 @@ import { StateView } from "../../components/common/StateView";
 import { Logo } from "../../components/common/Logo";
 import { useOnboarding } from "../../features/auth/useOnboarding";
 import { LEGAL_URLS } from "../../lib/site";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function OnboardingScreen() {
@@ -262,15 +262,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   title: {
     marginTop: 24,
     color: c.text,
-    fontSize: 24,
-    fontWeight: "900",
+    fontSize: fontSize.displaySmall,
+    fontWeight: fontWeight.heavy,
     lineHeight: 31,
   },
   description: {
     marginTop: 8,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
     lineHeight: 21,
   },
   schoolCard: {
@@ -290,20 +290,20 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   schoolBadgeText: {
     color: c.onAccent,
-    fontSize: 28,
-    fontWeight: "900",
+    fontSize: fontSize.displayLarge,
+    fontWeight: fontWeight.heavy,
   },
   schoolName: {
     marginTop: 14,
     color: c.text,
-    fontSize: 18,
-    fontWeight: "900",
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.heavy,
   },
   schoolMeta: {
     marginTop: 4,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   cardDivider: {
     height: 1,
@@ -321,14 +321,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   infoLabel: {
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   infoValue: {
     maxWidth: 210,
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   lockedValue: {
     minWidth: 0,
@@ -344,8 +344,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   sectionTitle: {
     color: c.text,
-    fontSize: 20,
-    fontWeight: "900",
+    fontSize: fontSize.heading,
+    fontWeight: fontWeight.heavy,
   },
   field: {
     marginTop: 18,
@@ -353,8 +353,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   label: {
     marginBottom: 8,
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   input: {
     minHeight: 52,
@@ -363,8 +363,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderWidth: 1,
     backgroundColor: c.navBackground,
     color: c.text,
-    fontSize: 15,
-    fontWeight: "800",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
     paddingHorizontal: 16,
   },
   readOnly: {
@@ -389,14 +389,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   checkButtonText: {
     color: c.accent,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   helper: {
     marginTop: 8,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
     lineHeight: 18,
   },
   success: {
@@ -408,8 +408,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   errorText: {
     marginTop: 16,
     color: c.danger,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     lineHeight: 19,
   },
   agreeRow: {
@@ -435,13 +435,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   agreeText: {
     flex: 1,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
     lineHeight: 18,
   },
   agreeLink: {
     color: c.accent,
-    fontWeight: "900",
+    fontWeight: fontWeight.heavy,
     textDecorationLine: "underline",
   },
   primaryButton: {
@@ -454,8 +454,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   primaryButtonText: {
     color: c.onAccent,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   disabled: {
     opacity: 0.55,

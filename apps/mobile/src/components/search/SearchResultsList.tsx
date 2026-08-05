@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { SearchUser } from "../../features/search/api";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { SearchUserRow } from "./SearchUserRow";
 
@@ -59,20 +59,20 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   cardTitle: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   cardEyebrow: {
     maxWidth: "55%",
     color: c.accent,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   stateText: {
     paddingVertical: 28,
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.semibold,
     textAlign: "center",
   },
 });

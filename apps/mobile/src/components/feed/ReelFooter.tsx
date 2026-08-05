@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Avatar } from "../common/Avatar";
 import { ExpandableText } from "../common/ExpandableText";
 import { VerifiedBadge } from "../common/VerifiedBadge";
-import { colors, nicknameTextStyle } from "../../lib/theme";
+import { colors, nicknameTextStyle, fontSize, fontWeight } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   nickname: {
     ...nicknameTextStyle,
     color: colors.white,
-    fontSize: 15,
+    fontSize: fontSize.body,
     textShadowColor: colors.scrimStrong,
     textShadowRadius: 4,
     flexShrink: 1,
@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
   },
   caption: {
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "400",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.normal,
     lineHeight: 20,
     textShadowColor: colors.scrimStrong,
     textShadowRadius: 4,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   captionMore: {
     marginTop: 4,
     color: colors.onMediaText,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
   },
 });

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 import { DoubleTapLike } from "../common/DoubleTapLike";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio, PostMedia } from "../../features/feed/types";
@@ -109,7 +109,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   mediaBadgeText: {
     color: c.white,
-    fontSize: 12,
-    fontWeight: "500",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.regular,
   },
 });

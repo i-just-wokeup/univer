@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { type ChatMessage } from "../../features/chat/useChatRoom";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 import { MessageBubble } from "./MessageBubble";
@@ -153,8 +153,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   loadMoreText: {
     paddingVertical: 10,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
   optimistic: {
@@ -171,7 +171,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     color: c.textFaint,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.semibold,
   },
 });

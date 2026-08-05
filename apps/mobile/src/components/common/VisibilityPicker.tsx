@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { PostVisibility } from "../../features/feed/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const OPTIONS: Array<{ label: string; value: PostVisibility }> = [
@@ -63,8 +63,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   label: {
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   activeLabel: {
     color: c.onAccent,

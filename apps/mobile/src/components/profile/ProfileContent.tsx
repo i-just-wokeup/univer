@@ -7,7 +7,7 @@ import type {
   ProfileGridPost,
   ProfileLink,
 } from "../../features/profile/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { KrewSurface } from "../common/KrewSurface";
 import { ProfileConnectionActions } from "./ProfileConnectionActions";
@@ -114,15 +114,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   editButtonText: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   inlineError: {
     marginHorizontal: 16,
     marginBottom: 12,
     color: c.danger,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   divider: {
     height: 1,

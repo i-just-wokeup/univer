@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View, type TextStyle } from "react-native";
 
 import type { ConnectionStatus } from "../../features/profile/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ProfileConnectionActionsProps = {
@@ -173,8 +173,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     backgroundColor: c.accentSoft,
   },
   buttonText: {
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   primaryText: {
     color: c.onAccent,

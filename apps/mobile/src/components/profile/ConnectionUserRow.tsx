@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConnectionUser } from "../../features/profile/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
@@ -157,8 +157,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   buttonText: {
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   primaryText: {
     color: c.onAccent,

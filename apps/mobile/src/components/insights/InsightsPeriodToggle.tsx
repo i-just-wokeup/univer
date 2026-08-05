@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { InsightPeriod } from "../../features/metrics/useInsights";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const OPTIONS: { value: InsightPeriod; label: string }[] = [
@@ -62,11 +62,11 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   tabText: {
     color: c.muted,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
   },
   tabTextActive: {
     color: c.accent,
-    fontWeight: "900",
+    fontWeight: fontWeight.heavy,
   },
 });

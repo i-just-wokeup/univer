@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ExternalShareSectionProps = {
@@ -57,8 +57,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   externalTitle: {
     marginBottom: 8,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   externalButton: {
     borderRadius: 18,
@@ -68,14 +68,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   externalButtonText: {
     color: c.text,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   externalButtonMeta: {
     marginTop: 3,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   pressed: {
     opacity: 0.7,

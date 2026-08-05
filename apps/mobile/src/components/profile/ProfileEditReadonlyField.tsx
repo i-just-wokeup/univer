@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ProfileEditReadonlyFieldProps = {
@@ -29,8 +29,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   label: {
     marginBottom: 8,
     color: c.text,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
   },
   readOnlyText: {
     minHeight: 48,
@@ -39,7 +39,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
 });

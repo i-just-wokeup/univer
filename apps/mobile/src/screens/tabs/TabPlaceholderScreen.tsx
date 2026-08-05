@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { LucideProps } from "lucide-react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { Logo } from "../../components/common/Logo";
 
@@ -64,15 +64,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   title: {
     marginTop: 18,
     color: c.text,
-    fontSize: 22,
-    fontWeight: "900",
+    fontSize: fontSize.headingLarge,
+    fontWeight: fontWeight.heavy,
     textAlign: "center",
   },
   description: {
     marginTop: 8,
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.semibold,
     lineHeight: 21,
     textAlign: "center",
   },

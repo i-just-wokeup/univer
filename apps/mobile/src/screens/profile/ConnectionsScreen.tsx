@@ -22,7 +22,7 @@ import { ConnectionUserRow } from "../../components/profile/ConnectionUserRow";
 import { useConnections } from "../../features/profile/useConnections";
 import type { ConnectionUser } from "../../features/profile/types";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
@@ -194,8 +194,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     color: c.danger,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   emptySurface: {
     minHeight: 280,
@@ -215,8 +215,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   feedbackText: {
     color: c.onAccent,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
 });

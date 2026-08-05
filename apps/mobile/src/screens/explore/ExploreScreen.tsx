@@ -22,7 +22,7 @@ import { useExploreFeed } from "../../features/explore/useExploreFeed";
 import type { ExplorePost } from "../../features/explore/types";
 import type { PostAspectRatio } from "../../features/feed/types";
 import { triggerLightHaptic } from "../../lib/haptics";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const H_PADDING = 10;
@@ -234,8 +234,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   title: {
     color: c.text,
-    fontSize: 26,
-    fontWeight: "900",
+    fontSize: fontSize.displayMedium,
+    fontWeight: fontWeight.heavy,
   },
   columns: {
     flexDirection: "row",
@@ -284,7 +284,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   likeText: {
     color: c.text,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

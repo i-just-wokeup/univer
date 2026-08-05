@@ -8,7 +8,7 @@ import { StateView } from "../../components/common/StateView";
 import { InsightsMetricCard } from "../../components/insights/InsightsMetricCard";
 import { InsightsPeriodToggle } from "../../components/insights/InsightsPeriodToggle";
 import { useInsights } from "../../features/metrics/useInsights";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function InsightsScreen() {
@@ -83,7 +83,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     marginTop: 4,
     textAlign: "center",
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
 });

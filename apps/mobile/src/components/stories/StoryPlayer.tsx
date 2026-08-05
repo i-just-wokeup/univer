@@ -13,7 +13,7 @@ import { ConfirmDialog } from "../common/ConfirmDialog";
 import type { StoryGroup } from "../../features/stories/types";
 import { useStoryPlayer } from "../../features/stories/useStoryPlayer";
 import { useStableInsets } from "../../lib/useStableInsets";
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 
 type StoryPlayerProps = {
@@ -285,8 +285,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.scrimStrong,
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
@@ -345,8 +345,8 @@ const styles = StyleSheet.create({
   },
   viewersText: {
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   likeButton: {
     alignSelf: "flex-end",

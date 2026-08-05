@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { InsightMetric } from "../../features/metrics/useInsights";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { InsightsTrendChart } from "./InsightsTrendChart";
 
@@ -74,39 +74,39 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   label: {
     color: c.text,
-    fontSize: 15,
-    fontWeight: "900",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.heavy,
   },
   hint: {
     marginTop: 3,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.medium,
   },
   valueCol: {
     alignItems: "flex-end",
   },
   value: {
     color: c.text,
-    fontSize: 26,
-    fontWeight: "900",
+    fontSize: fontSize.displayMedium,
+    fontWeight: fontWeight.heavy,
     letterSpacing: -0.5,
   },
   change: {
     marginTop: 2,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   changeFlat: {
     marginTop: 2,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.heavy,
   },
   reach: {
     marginTop: 3,
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

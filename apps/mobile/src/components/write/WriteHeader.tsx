@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type WriteHeaderProps = {
@@ -72,13 +72,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   cancelText: {
     color: c.muted,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   headerTitle: {
     color: c.text,
-    fontSize: 18,
-    fontWeight: "900",
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.heavy,
   },
   submitButton: {
     minWidth: 58,
@@ -94,8 +94,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   submitText: {
     color: c.onAccent,
-    fontSize: 14,
-    fontWeight: "900",
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.heavy,
   },
   pressed: {
     opacity: 0.72,

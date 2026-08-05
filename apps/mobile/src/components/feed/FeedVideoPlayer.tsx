@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { DoubleTapLike } from "../common/DoubleTapLike";
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio } from "../../features/feed/types";
@@ -209,8 +209,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 999,
     backgroundColor: c.scrimStrong,
     color: c.white,
-    fontSize: 13,
-    fontWeight: "900",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.heavy,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },

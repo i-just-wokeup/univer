@@ -2,7 +2,13 @@ import { Star } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityFavoriteUser } from "../../features/activity/api";
-import { nicknameTextStyle, useTheme, useThemedStyles } from "../../lib/theme";
+import {
+  nicknameTextStyle,
+  useTheme,
+  useThemedStyles,
+  fontSize,
+  fontWeight,
+} from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
@@ -80,17 +86,17 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   nickname: {
     ...nicknameTextStyle,
     color: c.text,
-    fontSize: 15,
+    fontSize: fontSize.body,
   },
   department: {
     marginTop: 3,
     color: c.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
   },
   time: {
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });

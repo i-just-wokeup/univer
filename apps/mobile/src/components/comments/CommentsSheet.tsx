@@ -19,7 +19,7 @@ import { CommentsSheetHeader } from "./CommentsSheetHeader";
 import { useCommentsSheetDrag } from "./useCommentsSheetDrag";
 import type { Comment } from "../../features/comments/types";
 import { useComments } from "../../features/comments/useComments";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type CommentsSheetProps = {
@@ -166,8 +166,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   errorText: {
     color: c.danger,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     paddingHorizontal: 18,
     paddingBottom: 8,
   },
@@ -183,8 +183,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 999,
     backgroundColor: c.text,
     color: c.onAccent,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     paddingHorizontal: 16,
     paddingVertical: 9,
     textAlign: "center",

@@ -1,7 +1,7 @@
 import { Search, X } from "lucide-react-native";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type SearchInputProps = {
@@ -66,8 +66,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   input: {
     flex: 1,
     color: c.text,
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.medium,
   },
   clear: {
     height: 24,

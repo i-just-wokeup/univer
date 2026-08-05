@@ -8,7 +8,7 @@ import {
   VolumeX,
 } from "lucide-react-native";
 
-import { colors } from "../../lib/theme";
+import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type ReelActionsProps = {
   bottom: number;
@@ -124,8 +124,8 @@ const styles = StyleSheet.create({
     height: 14,
     lineHeight: 14,
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: fontSize.caption,
+    fontWeight: fontWeight.bold,
     textShadowColor: colors.scrimMed,
     textShadowRadius: 3,
   },

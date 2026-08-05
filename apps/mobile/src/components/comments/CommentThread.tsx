@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CommentRow } from "./CommentRow";
 import type { Comment } from "../../features/comments/types";
-import { useThemedStyles } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type CommentThreadProps = {
@@ -146,7 +146,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   replyToggleText: {
     color: c.textFaint,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
 });
