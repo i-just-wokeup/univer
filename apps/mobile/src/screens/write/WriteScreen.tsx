@@ -13,7 +13,7 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { WriteContentField } from "../../components/write/WriteContentField";
 import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
-import { PostMediaGrid } from "../../components/write/PostMediaGrid";
+import { PostMediaPickerBody } from "../../components/write/PostMediaPickerBody";
 import { PostMediaPickerHeader } from "../../components/write/PostMediaPickerHeader";
 import { WriteSettingsSection } from "../../components/write/WriteSettingsSection";
 import { usePostMediaLibraryPicker } from "../../features/feed/usePostMediaLibraryPicker";
@@ -152,7 +152,7 @@ export function WriteScreen() {
             void handlePickerNext();
           }}
         />
-        <PostMediaGrid
+        <PostMediaPickerBody
           aspectRatio={aspectRatio}
           canRequestPermission={mediaPicker.canRequestPermission}
           disabled={mediaPicker.isPreparing}
