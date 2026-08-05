@@ -15,7 +15,6 @@ import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
 import { PostMediaGrid } from "../../components/write/PostMediaGrid";
 import { PostMediaPickerHeader } from "../../components/write/PostMediaPickerHeader";
-import { PostMediaPreview } from "../../components/write/PostMediaPreview";
 import { WriteSettingsSection } from "../../components/write/WriteSettingsSection";
 import { usePostMediaLibraryPicker } from "../../features/feed/usePostMediaLibraryPicker";
 import { useWriteForm } from "../../features/feed/useWriteForm";
@@ -153,12 +152,8 @@ export function WriteScreen() {
             void handlePickerNext();
           }}
         />
-        <PostMediaPreview
-          aspectRatio={aspectRatio}
-          onCycleAspectRatio={mediaPicker.cycleAspectRatio}
-          photo={mediaPicker.previewPhoto}
-        />
         <PostMediaGrid
+          aspectRatio={aspectRatio}
           canRequestPermission={mediaPicker.canRequestPermission}
           disabled={mediaPicker.isPreparing}
           errorMessage={mediaPicker.errorMessage}
@@ -166,6 +161,7 @@ export function WriteScreen() {
           isLoading={mediaPicker.isLoading}
           isLoadingMore={mediaPicker.isLoadingMore}
           isMultiSelect={mediaPicker.isMultiSelect}
+          onCycleAspectRatio={mediaPicker.cycleAspectRatio}
           onLoadMore={mediaPicker.loadMore}
           onOpenSettings={mediaPicker.openSettings}
           onRequestPermission={mediaPicker.requestPermission}
@@ -173,6 +169,7 @@ export function WriteScreen() {
           onToggleMultiSelect={mediaPicker.toggleMultiSelect}
           permissionState={mediaPicker.permissionState}
           photos={mediaPicker.photos}
+          previewPhoto={mediaPicker.previewPhoto}
           selectedIndexes={mediaPicker.selectedIndexes}
         />
 
