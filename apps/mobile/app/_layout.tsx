@@ -2,7 +2,9 @@ import "../src/lib/globalFont";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -17,6 +19,7 @@ import {
   initialWindowMetrics,
 } from "react-native-safe-area-context";
 
+import { AppSplash } from "../src/components/common/AppSplash";
 import { Logo } from "../src/components/common/Logo";
 import { usePushNotifications } from "../src/features/notifications/usePushNotifications";
 import { SessionProvider, useSession } from "../src/lib/session";
@@ -25,7 +28,15 @@ import { SystemBarsController } from "../src/lib/systemBars";
 import { colors, ThemeProvider } from "../src/lib/theme";
 import { VerifiedUsersProvider } from "../src/lib/verifiedUsers";
 
+// 네이티브 스플래시(배경색)를 JS가 준비될 때까지 유지 → AppSplash(워드마크)로 이어받는다.
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 function RootLayout() {
+  // JS 첫 렌더 시 네이티브 스플래시를 내리고 AppSplash 오버레이가 이어받게 한다.
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
+
   return (
     <ThemeProvider>
       <GestureHandlerRootView style={styles.root}>
@@ -38,6 +49,7 @@ function RootLayout() {
                   <PushNotificationsController />
                   <SystemBarsController />
                   <StatusBar style="auto" />
+                  <AppSplash />
                 </VerifiedUsersProvider>
               </SessionProvider>
             </BottomSheetModalProvider>
