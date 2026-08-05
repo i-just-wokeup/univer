@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -13,16 +13,28 @@ import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { WriteContentField } from "../../components/write/WriteContentField";
 import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
+import { PostMediaGrid } from "../../components/write/PostMediaGrid";
+import { PostMediaPickerHeader } from "../../components/write/PostMediaPickerHeader";
+import { PostMediaPreview } from "../../components/write/PostMediaPreview";
 import { WriteSettingsSection } from "../../components/write/WriteSettingsSection";
+import { usePostMediaLibraryPicker } from "../../features/feed/usePostMediaLibraryPicker";
 import { useWriteForm } from "../../features/feed/useWriteForm";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import {
+  fontSize,
+  fontWeight,
+  useTheme,
+  useThemedStyles,
+} from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function WriteScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const navigation = useNavigation();
   const router = useRouter();
+  const [stage, setStage] = useState<"form" | "picker">("picker");
   const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+  const allowRouteExitRef = useRef(false);
   const {
     aspectRatio,
     canSubmit,
@@ -33,6 +45,7 @@ export function WriteScreen() {
     isSubmitting,
     pickImages,
     pickVideo,
+    replaceImages,
     removeImage,
     removeVideo,
     resetForm,
@@ -43,23 +56,66 @@ export function WriteScreen() {
     submit,
     visibility,
   } = useWriteForm();
+  const mediaPicker = usePostMediaLibraryPicker({
+    aspectRatio,
+    setAspectRatio,
+  });
+
+  useEffect(
+    () =>
+      navigation.addListener("beforeRemove", (event) => {
+        if (allowRouteExitRef.current) {
+          return;
+        }
+
+        if (stage === "form") {
+          event.preventDefault();
+          if (!isSubmitting) {
+            setStage("picker");
+          }
+          return;
+        }
+
+        if (hasDraft) {
+          event.preventDefault();
+          setIsDiscardOpen(true);
+        }
+      }),
+    [hasDraft, isSubmitting, navigation, stage],
+  );
+
+  function handlePickerClose() {
+    if (hasDraft) {
+      setIsDiscardOpen(true);
+      return;
+    }
+
+    allowRouteExitRef.current = true;
+    router.back();
+  }
+
+  async function handlePickerNext() {
+    const selectedImageUris = await mediaPicker.resolveSelectedImageUris();
+    if (!selectedImageUris || selectedImageUris.length === 0) {
+      return;
+    }
+
+    replaceImages(selectedImageUris);
+    setStage("form");
+  }
 
   function handleCancel() {
     if (isSubmitting) {
       return;
     }
 
-    if (hasDraft) {
-      setIsDiscardOpen(true);
-      return;
-    }
-
-    router.back();
+    setStage("picker");
   }
 
   function handleConfirmDiscard() {
     setIsDiscardOpen(false);
     resetForm();
+    allowRouteExitRef.current = true;
     router.back();
   }
 
@@ -69,12 +125,69 @@ export function WriteScreen() {
     const wasVideo = selectedVideo !== null;
     const created = await submit();
     if (created) {
+      allowRouteExitRef.current = true;
       if (wasVideo) {
         router.replace("/");
       } else {
         router.replace({ pathname: "/", params: { posted: "1" } });
       }
     }
+  }
+
+  if (stage === "picker") {
+    return (
+      <ScreenContainer
+        contentBackgroundColor={colors.accentSoft}
+        edges={["top", "bottom"]}
+        style={styles.screen}
+      >
+        <PostMediaPickerHeader
+          canContinue={
+            mediaPicker.selectedCount > 0 &&
+            mediaPicker.permissionState === "granted" &&
+            !mediaPicker.isPreparing
+          }
+          isPreparing={mediaPicker.isPreparing}
+          onClose={handlePickerClose}
+          onNext={() => {
+            void handlePickerNext();
+          }}
+        />
+        <PostMediaPreview
+          aspectRatio={aspectRatio}
+          onCycleAspectRatio={mediaPicker.cycleAspectRatio}
+          photo={mediaPicker.previewPhoto}
+        />
+        <PostMediaGrid
+          canRequestPermission={mediaPicker.canRequestPermission}
+          disabled={mediaPicker.isPreparing}
+          errorMessage={mediaPicker.errorMessage}
+          hasNextPage={mediaPicker.hasNextPage}
+          isLoading={mediaPicker.isLoading}
+          isLoadingMore={mediaPicker.isLoadingMore}
+          isMultiSelect={mediaPicker.isMultiSelect}
+          onLoadMore={mediaPicker.loadMore}
+          onOpenSettings={mediaPicker.openSettings}
+          onRequestPermission={mediaPicker.requestPermission}
+          onSelectPhoto={mediaPicker.selectPhoto}
+          onToggleMultiSelect={mediaPicker.toggleMultiSelect}
+          permissionState={mediaPicker.permissionState}
+          photos={mediaPicker.photos}
+          selectedIndexes={mediaPicker.selectedIndexes}
+        />
+
+        <ConfirmDialog
+          cancelLabel="계속 작성"
+          confirmLabel="나가기"
+          danger
+          description="지금 나가면 작성 중인 내용이 사라집니다."
+          isOpen={isDiscardOpen}
+          onCancel={() => setIsDiscardOpen(false)}
+          onConfirm={handleConfirmDiscard}
+          title="작성을 취소할까요?"
+        />
+      </ScreenContainer>
+    );
   }
 
   return (

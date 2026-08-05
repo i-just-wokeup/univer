@@ -16,7 +16,10 @@ type SelectedVideo = {
   uri: string;
 };
 
-function detectAspectRatio(width?: number, height?: number): PostAspectRatio {
+export function detectAspectRatio(
+  width?: number,
+  height?: number,
+): PostAspectRatio {
   if (!width || !height) {
     return "square";
   }
@@ -169,6 +172,12 @@ export function useWriteForm() {
     setSelectedVideo(null);
   }
 
+  function replaceImages(nextImageUris: string[]) {
+    setErrorMessage("");
+    setSelectedVideo(null);
+    setImageUris(nextImageUris.slice(0, MAX_IMAGES));
+  }
+
   // 작성 성공 시 true 반환(화면 이동은 호출부). 실패 시 false.
   async function submit(): Promise<boolean> {
     if (!canSubmit) {
@@ -238,6 +247,7 @@ export function useWriteForm() {
     isSubmitting,
     pickImages,
     pickVideo,
+    replaceImages,
     removeImage,
     removeVideo,
     resetForm,

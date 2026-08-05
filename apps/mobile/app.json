@@ -39,6 +39,13 @@
           "photosPermission": "사진을 게시물·스토리에 올리려면 사진 접근 권한이 필요합니다."
         }
       ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "새 게시물에 올릴 사진을 선택하려면 사진 접근 권한이 필요합니다.",
+          "granularPermissions": ["photo"]
+        }
+      ],
       "expo-secure-store",
       [
         "@react-native-google-signin/google-signin",
