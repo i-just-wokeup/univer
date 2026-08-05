@@ -78,7 +78,13 @@ export async function loadNotificationRelatedData(
   const actorUserIds = Array.from(
     new Set(
       metaItems
-        .map((meta) => meta.actorUserId)
+        .flatMap((meta) =>
+          meta.actorUserIds && meta.actorUserIds.length > 0
+            ? meta.actorUserIds
+            : meta.actorUserId
+              ? [meta.actorUserId]
+              : [],
+        )
         .filter((actorUserId): actorUserId is string => Boolean(actorUserId)),
     ),
   );

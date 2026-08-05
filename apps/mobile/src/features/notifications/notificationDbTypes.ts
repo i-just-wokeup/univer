@@ -12,6 +12,9 @@ export type StoryRow = Database["public"]["Tables"]["stories"]["Row"];
 
 export type NotificationMeta = {
   actorUserId: string | null;
+  // 집계형(좋아요) 알림: 최근순 행위자 id들(최대 3)과 총 인원 수.
+  actorUserIds?: string[];
+  actorCount?: number;
   postId: string | null;
   storyId: string | null;
 };

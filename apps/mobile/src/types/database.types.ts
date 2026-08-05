@@ -581,7 +581,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'friend_request' | 'friend_accepted' | 'report_received'
           reference_type: 'post' | 'user' | 'comment' | 'story' | null
           reference_id: string | null
           message: string | null
@@ -591,7 +591,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'friend_request' | 'friend_accepted' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -601,7 +601,7 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
+          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'friend_request' | 'friend_accepted' | 'report_received'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null

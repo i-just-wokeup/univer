@@ -6,8 +6,10 @@ import type {
   NotificationRow,
   PostLikeRow,
 } from "./notificationDbTypes";
-import { getReferenceIds } from "./notificationMetaUtils";
-import { getLatestRowsByTargetId } from "./notificationUtils";
+import {
+  getReferenceIds,
+  groupRecentActorsByTargetId,
+} from "./notificationMetaUtils";
 
 type MobileSupabaseClient = SupabaseClient<Database>;
 
@@ -34,7 +36,7 @@ async function applyPostLikeMeta(
     throw new Error("좋아요 알림 정보를 불러오지 못했습니다.");
   }
 
-  const latestPostLikesByPostId = getLatestRowsByTargetId(
+  const actorsByPostId = groupRecentActorsByTargetId(
     postLikes as PostLikeRow[],
     (postLike) => postLike.target_id,
   );
@@ -44,12 +46,14 @@ async function applyPostLikeMeta(
       return;
     }
 
-    const postLike = latestPostLikesByPostId.get(notification.reference_id);
+    const actors = actorsByPostId.get(notification.reference_id);
 
-    if (postLike) {
+    if (actors && actors.userIds.length > 0) {
       metaByNotificationId.set(notification.id, {
-        actorUserId: postLike.user_id,
-        postId: postLike.target_id,
+        actorUserId: actors.userIds[0],
+        actorUserIds: actors.userIds,
+        actorCount: actors.count,
+        postId: notification.reference_id,
         storyId: null,
       });
     }
@@ -79,7 +83,7 @@ async function applyStoryLikeMeta(
     throw new Error("스토리 좋아요 알림 정보를 불러오지 못했습니다.");
   }
 
-  const latestStoryLikesByStoryId = getLatestRowsByTargetId(
+  const actorsByStoryId = groupRecentActorsByTargetId(
     storyLikes as PostLikeRow[],
     (storyLike) => storyLike.target_id,
   );
@@ -89,13 +93,15 @@ async function applyStoryLikeMeta(
       return;
     }
 
-    const storyLike = latestStoryLikesByStoryId.get(notification.reference_id);
+    const actors = actorsByStoryId.get(notification.reference_id);
 
-    if (storyLike) {
+    if (actors && actors.userIds.length > 0) {
       metaByNotificationId.set(notification.id, {
-        actorUserId: storyLike.user_id,
+        actorUserId: actors.userIds[0],
+        actorUserIds: actors.userIds,
+        actorCount: actors.count,
         postId: null,
-        storyId: storyLike.target_id,
+        storyId: notification.reference_id,
       });
     }
   });

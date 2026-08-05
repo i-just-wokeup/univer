@@ -7,7 +7,10 @@ import type {
   NotificationMeta,
   NotificationRow,
 } from "./notificationDbTypes";
-import { getReferenceIds } from "./notificationMetaUtils";
+import {
+  getReferenceIds,
+  groupRecentActorsByTargetId,
+} from "./notificationMetaUtils";
 import { getLatestRowsByTargetId } from "./notificationUtils";
 
 type MobileSupabaseClient = SupabaseClient<Database>;
@@ -46,7 +49,7 @@ async function applyCommentLikeMeta(
     throw new Error("댓글 알림 정보를 불러오지 못했습니다.");
   }
 
-  const latestCommentLikesByCommentId = getLatestRowsByTargetId(
+  const actorsByCommentId = groupRecentActorsByTargetId(
     commentLikes as CommentLikeRow[],
     (commentLike) => commentLike.comment_id,
   );
@@ -55,20 +58,18 @@ async function applyCommentLikeMeta(
   );
 
   notifications.forEach((notification) => {
-    if (notification.type !== "comment_like") {
+    if (notification.type !== "comment_like" || !notification.reference_id) {
       return;
     }
 
-    const commentLike = notification.reference_id
-      ? latestCommentLikesByCommentId.get(notification.reference_id)
-      : null;
-    const comment = commentLike
-      ? commentsById.get(commentLike.comment_id)
-      : null;
+    const actors = actorsByCommentId.get(notification.reference_id);
+    const comment = commentsById.get(notification.reference_id);
 
-    if (commentLike && comment) {
+    if (actors && actors.userIds.length > 0 && comment) {
       metaByNotificationId.set(notification.id, {
-        actorUserId: commentLike.user_id,
+        actorUserId: actors.userIds[0],
+        actorUserIds: actors.userIds,
+        actorCount: actors.count,
         postId: comment.post_id,
         storyId: null,
       });
@@ -122,6 +123,70 @@ async function applyPostCommentMeta(
   });
 }
 
+// 대댓글(comment_reply) 알림: reference_id는 게시물 id라서, 내가 그 게시물에 단
+// 댓글에 달린 "남의 답글" 중 최신 것으로 행위자를 되짚는다.
+async function applyCommentReplyMeta(
+  supabase: MobileSupabaseClient,
+  notifications: NotificationRow[],
+  userId: string,
+  metaByNotificationId: Map<string, NotificationMeta>,
+) {
+  const replyPostIds = getReferenceIds(notifications, "comment_reply");
+
+  if (replyPostIds.length === 0) {
+    return;
+  }
+
+  const { data: myComments, error: myCommentsError } = await supabase
+    .from("comments")
+    .select("id, post_id")
+    .eq("user_id", userId)
+    .in("post_id", replyPostIds);
+
+  if (myCommentsError || !myComments) {
+    throw new Error("답글 알림 정보를 불러오지 못했습니다.");
+  }
+
+  if (myComments.length === 0) {
+    return;
+  }
+
+  const myCommentIds = myComments.map(
+    (comment: Pick<CommentRow, "id">) => comment.id,
+  );
+
+  const { data: replies, error: repliesError } = await supabase
+    .from("comments")
+    .select("id, user_id, post_id, parent_id, content, likes_count, created_at")
+    .neq("user_id", userId)
+    .in("parent_id", myCommentIds);
+
+  if (repliesError || !replies) {
+    throw new Error("답글 알림 정보를 불러오지 못했습니다.");
+  }
+
+  const latestReplyByPostId = getLatestRowsByTargetId(
+    replies as CommentRow[],
+    (reply) => reply.post_id,
+  );
+
+  notifications.forEach((notification) => {
+    if (notification.type !== "comment_reply" || !notification.reference_id) {
+      return;
+    }
+
+    const reply = latestReplyByPostId.get(notification.reference_id);
+
+    if (reply) {
+      metaByNotificationId.set(notification.id, {
+        actorUserId: reply.user_id,
+        postId: reply.post_id,
+        storyId: null,
+      });
+    }
+  });
+}
+
 export async function applyCommentNotificationMeta(
   supabase: MobileSupabaseClient,
   notifications: NotificationRow[],
@@ -135,6 +200,12 @@ export async function applyCommentNotificationMeta(
     metaByNotificationId,
   );
   await applyPostCommentMeta(
+    supabase,
+    notifications,
+    userId,
+    metaByNotificationId,
+  );
+  await applyCommentReplyMeta(
     supabase,
     notifications,
     userId,

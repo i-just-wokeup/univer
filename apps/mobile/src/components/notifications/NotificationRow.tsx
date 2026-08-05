@@ -12,19 +12,49 @@ type NotificationRowProps = {
   onPress: (notification: NotificationItem) => void;
 };
 
+// 좋아요류 알림에서 "무엇을" 좋아하는지 목적어 문구.
+const LIKE_OBJECT_PHRASE: Partial<Record<NotificationItem["type"], string>> = {
+  post_like: "회원님의 게시물을",
+  story_like: "회원님의 스토리를",
+  comment_like: "회원님의 댓글을",
+};
+
+// "철수님, 영희님 외 3명이 회원님의 게시물을 좋아합니다" 형태의 집계 문구.
+function getLikeText(notification: NotificationItem, objectPhrase: string) {
+  const names = notification.actors.map((actor) => actor.nickname);
+  const count = Math.max(notification.actorCount, names.length);
+  const shownNames = names.slice(0, 2);
+
+  let subject: string;
+  if (shownNames.length === 0) {
+    subject = "누군가님";
+  } else if (count > shownNames.length) {
+    subject = `${shownNames.map((name) => `${name}님`).join(", ")} 외 ${
+      count - shownNames.length
+    }명`;
+  } else {
+    subject = shownNames.map((name) => `${name}님`).join(", ");
+  }
+
+  return `${subject}이 ${objectPhrase} 좋아합니다`;
+}
+
 // 알림 타입별 문구. actor 닉네임이 없으면 "누군가"로 대체.
 function getNotificationText(notification: NotificationItem) {
   const nickname = notification.actor?.nickname ?? "누군가";
+  const likeObjectPhrase = LIKE_OBJECT_PHRASE[notification.type];
+
+  if (likeObjectPhrase) {
+    return getLikeText(notification, likeObjectPhrase);
+  }
 
   switch (notification.type) {
-    case "post_like":
-      return `${nickname}님이 회원님의 게시물을 좋아합니다`;
-    case "story_like":
-      return `${nickname}님이 회원님의 스토리를 좋아합니다`;
-    case "comment_like":
-      return `${nickname}님이 회원님의 댓글을 좋아합니다`;
     case "post_comment":
       return `${nickname}님이 회원님의 게시물에 댓글을 남겼습니다`;
+    case "comment_reply":
+      return `${nickname}님이 회원님의 댓글에 답글을 남겼습니다`;
+    case "user_like":
+      return `${nickname}님이 회원님을 좋아합니다`;
     case "friend_request":
       return `${nickname}님이 친구 신청을 보냈습니다`;
     case "friend_accepted":
@@ -54,11 +84,30 @@ export function NotificationRow({ notification, onPress }: NotificationRowProps)
         {notification.is_read ? null : <View style={styles.dot} />}
       </View>
 
-      <Avatar
-        imageUrl={notification.actor?.avatar_url ?? null}
-        label={notification.actor?.nickname ?? "알림"}
-        size={44}
-      />
+      {notification.actors.length > 1 ? (
+        <View style={styles.avatarStack}>
+          <View style={styles.avatarBack}>
+            <Avatar
+              imageUrl={notification.actors[1].avatar_url}
+              label={notification.actors[1].nickname}
+              size={28}
+            />
+          </View>
+          <View style={styles.avatarFront}>
+            <Avatar
+              imageUrl={notification.actors[0].avatar_url}
+              label={notification.actors[0].nickname}
+              size={32}
+            />
+          </View>
+        </View>
+      ) : (
+        <Avatar
+          imageUrl={notification.actor?.avatar_url ?? null}
+          label={notification.actor?.nickname ?? "알림"}
+          size={44}
+        />
+      )}
 
       <View style={styles.body}>
         <Text
@@ -101,6 +150,23 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  avatarStack: {
+    width: 44,
+    height: 44,
+  },
+  avatarBack: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+  },
+  avatarFront: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: c.feedCard,
   },
   dotWrap: {
     width: 8,
