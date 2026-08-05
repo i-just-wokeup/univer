@@ -1,56 +1,75 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
-const VERIFIED_USER_IDS_CACHE_TTL_MS = 5 * 60 * 1000;
+const ACCOUNT_BADGES_CACHE_TTL_MS = 5 * 60 * 1000;
 
-type VerifiedUserIdsCache = {
-  expiresAt: number;
-  userIds: string[];
+// 계정 배지: 소속(학생회/동아리) + 승격 여부. 크루는 표시하지 않는다.
+export type AccountAffiliation = "council" | "club";
+
+export type AccountBadge = {
+  affiliation: AccountAffiliation | null;
+  promoted: boolean;
+  userId: string;
 };
 
-let verifiedUserIdsCache: VerifiedUserIdsCache | null = null;
-let verifiedUserIdsInFlight: Promise<string[]> | null = null;
+type AccountBadgesCache = {
+  badges: AccountBadge[];
+  expiresAt: number;
+};
 
-export async function getVerifiedUserIds(): Promise<string[]> {
+let accountBadgesCache: AccountBadgesCache | null = null;
+let accountBadgesInFlight: Promise<AccountBadge[]> | null = null;
+
+function toAffiliation(value: unknown): AccountAffiliation | null {
+  return value === "council" || value === "club" ? value : null;
+}
+
+export async function getAccountBadges(): Promise<AccountBadge[]> {
   const now = Date.now();
 
-  if (verifiedUserIdsCache && verifiedUserIdsCache.expiresAt > now) {
-    return verifiedUserIdsCache.userIds;
+  if (accountBadgesCache && accountBadgesCache.expiresAt > now) {
+    return accountBadgesCache.badges;
   }
 
-  if (verifiedUserIdsInFlight) {
-    return verifiedUserIdsInFlight;
+  if (accountBadgesInFlight) {
+    return accountBadgesInFlight;
   }
 
   const supabase = getSupabaseMobileClient();
   const promise = (async () => {
-    const { data, error } = await supabase.rpc("get_verified_user_ids");
+    const { data, error } = await supabase.rpc("get_account_badges");
 
     if (error || !Array.isArray(data)) {
-      throw error ?? new Error("인증 유저 목록을 불러오지 못했습니다.");
+      throw error ?? new Error("계정 배지 목록을 불러오지 못했습니다.");
     }
 
-    const userIds = data
-      .map((row) => row.user_id)
-      .filter((userId): userId is string => typeof userId === "string");
+    const badges = data
+      .filter((row) => typeof row.user_id === "string")
+      .map(
+        (row): AccountBadge => ({
+          affiliation: toAffiliation(row.affiliation),
+          promoted: row.promoted === true,
+          userId: row.user_id as string,
+        }),
+      );
 
-    verifiedUserIdsCache = {
-      expiresAt: Date.now() + VERIFIED_USER_IDS_CACHE_TTL_MS,
-      userIds,
+    accountBadgesCache = {
+      badges,
+      expiresAt: Date.now() + ACCOUNT_BADGES_CACHE_TTL_MS,
     };
 
-    return userIds;
+    return badges;
   })();
 
-  verifiedUserIdsInFlight = promise;
+  accountBadgesInFlight = promise;
 
   try {
     return await promise;
   } catch (error) {
-    verifiedUserIdsCache = null;
+    accountBadgesCache = null;
     throw error;
   } finally {
-    if (verifiedUserIdsInFlight === promise) {
-      verifiedUserIdsInFlight = null;
+    if (accountBadgesInFlight === promise) {
+      accountBadgesInFlight = null;
     }
   }
 }

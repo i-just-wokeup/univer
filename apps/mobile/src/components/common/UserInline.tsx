@@ -1,12 +1,17 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { Avatar } from "./Avatar";
+import { AccountBadge } from "./AccountBadge";
 import { VerifiedBadge } from "./VerifiedBadge";
+import type { AccountBadge as AccountBadgeData } from "../../features/verified/api";
 import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type UserInlineProps = {
   avatarSize: number;
+  // badge를 주면 새 계정 배지(학생회/동아리/승격)를 표시. variant로 pill 포함/심볼만 선택.
+  badge?: AccountBadgeData | null;
+  badgeVariant?: "full" | "symbol";
   imageUrl: string | null;
   meta?: string;
   nickname: string;
@@ -18,6 +23,8 @@ type UserInlineProps = {
 
 export function UserInline({
   avatarSize,
+  badge,
+  badgeVariant = "full",
   imageUrl,
   meta,
   nickname,
@@ -49,7 +56,11 @@ export function UserInline({
           >
             {nickname}
           </Text>
-          {verified ? (
+          {badge ? (
+            <View style={styles.verifiedBadge}>
+              <AccountBadge badge={badge} variant={badgeVariant} />
+            </View>
+          ) : verified ? (
             <View style={styles.verifiedBadge}>
               <VerifiedBadge size={13} />
             </View>
@@ -95,6 +106,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     flexShrink: 1,
   },
   verifiedBadge: {
-    marginLeft: 4,
+    marginLeft: 5,
   },
 });

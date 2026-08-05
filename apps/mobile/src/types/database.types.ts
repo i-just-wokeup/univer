@@ -845,6 +845,14 @@ export type Database = {
           user_id: string
         }>
       }
+      get_account_badges: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          user_id: string
+          affiliation: string | null
+          promoted: boolean
+        }>
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json

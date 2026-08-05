@@ -3,8 +3,8 @@ import { Pressable, StyleSheet } from "react-native";
 
 import { useTheme } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
+import { AccountBadge } from "../common/AccountBadge";
 import { ScreenHeader } from "../common/ScreenHeader";
-import { VerifiedBadge } from "../common/VerifiedBadge";
 
 type ProfileHeaderBarProps = {
   isMine: boolean;
@@ -25,9 +25,9 @@ export function ProfileHeaderBar({
   onPressSettings,
   userId,
 }: ProfileHeaderBarProps) {
-  const { isVerified } = useVerifiedUsers();
-  const titleAccessory =
-    userId && isVerified(userId) ? <VerifiedBadge size={15} /> : undefined;
+  const { getBadge } = useVerifiedUsers();
+  const badge = userId ? getBadge(userId) : null;
+  const titleAccessory = badge ? <AccountBadge badge={badge} /> : undefined;
 
   if (isPushed) {
     return (

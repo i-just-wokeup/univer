@@ -19,7 +19,7 @@ export function FeedPostHeader({
   post,
 }: FeedPostHeaderProps) {
   const { colors } = useTheme();
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
   const relativeTime = getRelativeTimeLabel(post.created_at);
   const meta = post.user.department
     ? `${post.user.department} · ${relativeTime}`
@@ -35,7 +35,7 @@ export function FeedPostHeader({
         nicknameSize={14}
         onPress={onUserPress}
         style={styles.userInline}
-        verified={isVerified(post.user.id)}
+        badge={getBadge(post.user.id)}
       />
       <Pressable
         accessibilityLabel="게시물 더보기"
