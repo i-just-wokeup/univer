@@ -84,7 +84,6 @@ export function usePostMediaLibraryPicker({
           after: reset ? undefined : endCursorRef.current ?? undefined,
           first: PAGE_SIZE,
           mediaType: MediaLibrary.MediaType.photo,
-          resolveWithFullInfo: true,
           sortBy: [[MediaLibrary.SortBy.creationTime, false]],
         });
         const nextPhotos = page.assets.map(toLibraryPhoto);
@@ -275,6 +274,12 @@ export function usePostMediaLibraryPicker({
     setErrorMessage("");
 
     try {
+      // Android의 Asset URI는 이미 로컬 file:// 경로다. 전체 EXIF 조회는
+      // ACCESS_MEDIA_LOCATION을 요구하므로 iOS의 ph:// 해석에만 사용한다.
+      if (process.env.EXPO_OS === "android") {
+        return selectedPhotos.map((photo) => photo.uri);
+      }
+
       return await Promise.all(
         selectedPhotos.map(async (photo) => {
           const info = await MediaLibrary.getAssetInfoAsync(photo.id, {
