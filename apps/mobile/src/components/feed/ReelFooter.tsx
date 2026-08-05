@@ -2,8 +2,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
+import { AccountBadge } from "../common/AccountBadge";
 import { ExpandableText } from "../common/ExpandableText";
-import { VerifiedBadge } from "../common/VerifiedBadge";
 import { colors, nicknameTextStyle, fontSize, fontWeight } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import type { FeedPost } from "../../features/feed/types";
@@ -15,7 +15,8 @@ type ReelFooterProps = {
 };
 
 export function ReelFooter({ bottomInset, onPressUser, post }: ReelFooterProps) {
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
+  const badge = getBadge(post.user.id);
 
   return (
     <LinearGradient
@@ -34,9 +35,9 @@ export function ReelFooter({ bottomInset, onPressUser, post }: ReelFooterProps) 
           <Text numberOfLines={1} style={styles.nickname}>
             {post.user.nickname}
           </Text>
-          {isVerified(post.user.id) ? (
+          {badge ? (
             <View style={styles.verifiedBadge}>
-              <VerifiedBadge size={13} />
+              <AccountBadge badge={badge} forceScheme="dark" />
             </View>
           ) : null}
         </View>

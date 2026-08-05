@@ -31,7 +31,7 @@ export function ShareTargetList({
   sendingTargetId,
   targets,
 }: ShareTargetListProps) {
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -54,7 +54,7 @@ export function ShareTargetList({
               meta={target.department ?? getSourceLabel(target.source)}
               nickname={target.nickname}
               style={styles.targetUser}
-              verified={isVerified(target.id)}
+              badge={getBadge(target.id)}
             />
             <Pressable
               accessibilityRole="button"

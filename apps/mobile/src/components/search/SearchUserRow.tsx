@@ -5,7 +5,7 @@ import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../
 import type { ThemeColors } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { Avatar } from "../common/Avatar";
-import { VerifiedBadge } from "../common/VerifiedBadge";
+import { AccountBadge } from "../common/AccountBadge";
 
 type SearchUserRowProps = {
   onPress: (user: SearchUser) => void;
@@ -14,7 +14,8 @@ type SearchUserRowProps = {
 
 // 순수 UI. 검색 결과 한 행(아바타 + 닉네임 + 학과).
 export function SearchUserRow({ onPress, user }: SearchUserRowProps) {
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
+  const badge = getBadge(user.id);
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -29,9 +30,9 @@ export function SearchUserRow({ onPress, user }: SearchUserRowProps) {
           <Text numberOfLines={1} style={styles.nickname}>
             {user.nickname}
           </Text>
-          {isVerified(user.id) ? (
+          {badge ? (
             <View style={styles.verifiedBadge}>
-              <VerifiedBadge size={13} />
+              <AccountBadge badge={badge} />
             </View>
           ) : null}
         </View>

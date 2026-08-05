@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../common/Avatar";
-import { VerifiedBadge } from "../common/VerifiedBadge";
+import { AccountBadge } from "../common/AccountBadge";
 import type { ConversationWithUser } from "../../features/chat/api";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
@@ -19,8 +19,9 @@ export function ConversationRow({
   currentUserId,
   onPress,
 }: ConversationRowProps) {
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
+  const otherBadge = getBadge(conversation.other_user.id);
   const isMine = conversation.last_message_sender_id === currentUserId;
   const preview = conversation.last_message_preview
     ? isMine
@@ -45,9 +46,9 @@ export function ConversationRow({
             <Text numberOfLines={1} style={styles.nickname}>
               {conversation.other_user.nickname}
             </Text>
-            {isVerified(conversation.other_user.id) ? (
+            {otherBadge ? (
               <View style={styles.verifiedBadge}>
-                <VerifiedBadge size={13} />
+                <AccountBadge badge={otherBadge} variant="symbol" />
               </View>
             ) : null}
           </View>

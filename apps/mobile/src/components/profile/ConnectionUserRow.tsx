@@ -28,7 +28,7 @@ export function ConnectionUserRow({
   tab,
   user,
 }: ConnectionUserRowProps) {
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -40,7 +40,7 @@ export function ConnectionUserRow({
         nickname={user.nickname}
         onPress={onPressUser}
         style={styles.user}
-        verified={isVerified(user.id)}
+        badge={getBadge(user.id)}
       />
       <ConnectionActions
         isBusy={isBusy}

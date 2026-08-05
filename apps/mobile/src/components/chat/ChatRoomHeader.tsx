@@ -26,7 +26,7 @@ export function ChatRoomHeader({
   userId,
 }: ChatRoomHeaderProps) {
   const { colors } = useTheme();
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -47,7 +47,8 @@ export function ChatRoomHeader({
         nicknameSize={16}
         onPress={onPressProfile}
         style={styles.user}
-        verified={Boolean(userId && isVerified(userId))}
+        badge={userId ? getBadge(userId) : null}
+        badgeVariant="symbol"
       />
 
       {right ? (

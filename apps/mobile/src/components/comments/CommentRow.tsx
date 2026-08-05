@@ -42,7 +42,7 @@ function CommentRowComponent({
   onUserPress,
 }: CommentRowProps) {
   const { colors } = useTheme();
-  const { isVerified } = useVerifiedUsers();
+  const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
   const mentionPrefix = isReply && mentionNickname ? `@${mentionNickname}` : "";
   const restContent =
@@ -79,7 +79,8 @@ function CommentRowComponent({
           nicknameSize={13}
           onPress={onUserPress}
           style={styles.commentUser}
-          verified={isVerified(comment.user.id)}
+          badge={getBadge(comment.user.id)}
+          badgeVariant="symbol"
         />
 
         {hasMention && mentionNickname ? (

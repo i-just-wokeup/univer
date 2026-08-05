@@ -30,6 +30,8 @@ type AccountBadgeProps = {
   // full = 소속 pill + 승격 심볼 / symbol = 승격 심볼만(댓글·DM)
   variant?: "full" | "symbol";
   symbolSize?: number;
+  // 어두운 미디어(릴스 등) 위에선 앱 테마와 무관하게 다크 색으로 고정.
+  forceScheme?: "light" | "dark";
 };
 
 function PromotedSeal({ size, isDark }: { size: number; isDark: boolean }) {
@@ -78,9 +80,10 @@ export function AccountBadge({
   badge,
   variant = "full",
   symbolSize,
+  forceScheme,
 }: AccountBadgeProps) {
   const { scheme } = useTheme();
-  const isDark = scheme === "dark";
+  const isDark = (forceScheme ?? scheme) === "dark";
 
   if (!badge) {
     return null;
@@ -110,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    transform: [{ translateY: -0.5 }],
+    transform: [{ translateY: 1 }],
   },
   pill: {
     height: 18,
