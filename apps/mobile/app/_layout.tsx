@@ -28,11 +28,9 @@ import { SystemBarsController } from "../src/lib/systemBars";
 import { colors, ThemeProvider } from "../src/lib/theme";
 import { VerifiedUsersProvider } from "../src/lib/verifiedUsers";
 
-// 네이티브 스플래시(배경색)를 JS가 준비될 때까지 유지 → AppSplash(워드마크)로 이어받는다.
-SplashScreen.preventAutoHideAsync().catch(() => {});
-
 function RootLayout() {
-  // JS 첫 렌더 시 네이티브 스플래시를 내리고 AppSplash 오버레이가 이어받게 한다.
+  // 네이티브 스플래시는 기본 자동 숨김에 맡기고, JS 첫 렌더 시 확실히 한 번 더 내린다.
+  // (preventAutoHide로 잡아두면 시작 중 크래시 시 스플래시에서 얼어붙어 원인을 가림)
   useEffect(() => {
     SplashScreen.hideAsync().catch(() => {});
   }, []);
