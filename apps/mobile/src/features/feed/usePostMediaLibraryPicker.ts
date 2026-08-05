@@ -1,204 +1,53 @@
-import * as MediaLibrary from "expo-media-library";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Linking } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import type { PostLibraryPhoto } from "./postMediaLibrary";
+import { resolvePostLibraryPhotoUris } from "./postMediaLibrary";
 import type { PostAspectRatio } from "./types";
+import { usePostMediaLibrarySource } from "./usePostMediaLibrarySource";
 import { detectAspectRatio, MAX_IMAGES } from "./useWriteForm";
 
-const PAGE_SIZE = 60;
 const ASPECT_RATIO_CYCLE: PostAspectRatio[] = [
   "square",
   "portrait",
   "landscape",
 ];
 
-export type PostLibraryPhoto = {
-  height: number;
-  id: string;
-  uri: string;
-  width: number;
-};
-
-export type PostLibraryPermissionState =
-  | "checking"
-  | "denied"
-  | "granted"
-  | "unavailable";
-
 type UsePostMediaLibraryPickerParams = {
   aspectRatio: PostAspectRatio;
   setAspectRatio: (aspectRatio: PostAspectRatio) => void;
 };
 
-function toLibraryPhoto(asset: MediaLibrary.Asset): PostLibraryPhoto {
-  return {
-    height: asset.height,
-    id: asset.id,
-    uri: asset.uri,
-    width: asset.width,
-  };
-}
+type SelectionEditSnapshot = {
+  aspectRatio: PostAspectRatio;
+  isMultiSelect: boolean;
+  previewPhoto: PostLibraryPhoto | null;
+  selectedPhotos: PostLibraryPhoto[];
+};
 
 export function usePostMediaLibraryPicker({
   aspectRatio,
   setAspectRatio,
 }: UsePostMediaLibraryPickerParams) {
-  const [photos, setPhotos] = useState<PostLibraryPhoto[]>([]);
+  const source = usePostMediaLibrarySource();
   const [selectedPhotos, setSelectedPhotos] = useState<PostLibraryPhoto[]>([]);
   const [previewPhoto, setPreviewPhoto] = useState<PostLibraryPhoto | null>(null);
-  const [permissionState, setPermissionState] =
-    useState<PostLibraryPermissionState>("checking");
-  const [canRequestPermission, setCanRequestPermission] = useState(true);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [selectionErrorMessage, setSelectionErrorMessage] = useState("");
   const [isMultiSelect, setIsMultiSelect] = useState(false);
-  const endCursorRef = useRef<string | null>(null);
-  const hasNextPageRef = useRef(false);
-  const isPageLoadingRef = useRef(false);
-  const hasInitializedRef = useRef(false);
   const hasInitializedSelectionRef = useRef(false);
-
-  const loadPage = useCallback(
-    async (reset: boolean) => {
-      if (isPageLoadingRef.current) {
-        return;
-      }
-
-      if (!reset && !hasNextPageRef.current) {
-        return;
-      }
-
-      isPageLoadingRef.current = true;
-      setErrorMessage("");
-      if (reset) {
-        setIsLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
-
-      try {
-        const page = await MediaLibrary.getAssetsAsync({
-          after: reset ? undefined : endCursorRef.current ?? undefined,
-          first: PAGE_SIZE,
-          mediaType: MediaLibrary.MediaType.photo,
-          sortBy: [[MediaLibrary.SortBy.creationTime, false]],
-        });
-        const nextPhotos = page.assets.map(toLibraryPhoto);
-
-        setPhotos((currentPhotos) => {
-          if (reset) {
-            return nextPhotos;
-          }
-
-          const existingIds = new Set(currentPhotos.map((photo) => photo.id));
-          return [
-            ...currentPhotos,
-            ...nextPhotos.filter((photo) => !existingIds.has(photo.id)),
-          ];
-        });
-
-        endCursorRef.current = page.endCursor;
-        hasNextPageRef.current = page.hasNextPage;
-        setHasNextPage(page.hasNextPage);
-
-        const firstPhoto = nextPhotos[0];
-        if (!hasInitializedSelectionRef.current && firstPhoto) {
-          hasInitializedSelectionRef.current = true;
-          setSelectedPhotos([firstPhoto]);
-          setPreviewPhoto(firstPhoto);
-          setAspectRatio(detectAspectRatio(firstPhoto.width, firstPhoto.height));
-        }
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "사진을 불러오지 못했습니다.",
-        );
-      } finally {
-        isPageLoadingRef.current = false;
-        setIsLoading(false);
-        setIsLoadingMore(false);
-      }
-    },
-    [setAspectRatio],
-  );
-
-  const requestPermission = useCallback(async () => {
-    setPermissionState("checking");
-    setErrorMessage("");
-
-    try {
-      const permission = await MediaLibrary.requestPermissionsAsync(false, [
-        "photo",
-      ]);
-      setCanRequestPermission(permission.canAskAgain);
-
-      if (!permission.granted) {
-        setPermissionState("denied");
-        setIsLoading(false);
-        return;
-      }
-
-      setPermissionState("granted");
-      await loadPage(true);
-    } catch (error) {
-      setPermissionState("denied");
-      setIsLoading(false);
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "사진 접근 권한을 확인하지 못했습니다.",
-      );
-    }
-  }, [loadPage]);
+  const selectionEditSnapshotRef = useRef<SelectionEditSnapshot | null>(null);
 
   useEffect(() => {
-    if (hasInitializedRef.current) {
+    const firstPhoto = source.photos[0];
+    if (hasInitializedSelectionRef.current || !firstPhoto) {
       return;
     }
-    hasInitializedRef.current = true;
 
-    async function initialize() {
-      const isAvailable = await MediaLibrary.isAvailableAsync();
-      if (!isAvailable) {
-        setPermissionState("unavailable");
-        setIsLoading(false);
-        return;
-      }
-
-      const permission = await MediaLibrary.getPermissionsAsync(false, [
-        "photo",
-      ]);
-      setCanRequestPermission(permission.canAskAgain);
-
-      if (permission.granted) {
-        setPermissionState("granted");
-        await loadPage(true);
-        return;
-      }
-
-      if (permission.status === "undetermined") {
-        await requestPermission();
-        return;
-      }
-
-      setPermissionState("denied");
-      setIsLoading(false);
-    }
-
-    void initialize().catch((error: unknown) => {
-      setPermissionState("denied");
-      setIsLoading(false);
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "사진 보관함을 열지 못했습니다.",
-      );
-    });
-  }, [loadPage, requestPermission]);
+    hasInitializedSelectionRef.current = true;
+    setSelectedPhotos([firstPhoto]);
+    setPreviewPhoto(firstPhoto);
+    setAspectRatio(detectAspectRatio(firstPhoto.width, firstPhoto.height));
+  }, [setAspectRatio, source.photos]);
 
   const selectedIndexes = useMemo(
     () =>
@@ -208,8 +57,40 @@ export function usePostMediaLibraryPicker({
     [selectedPhotos],
   );
 
+  function clearErrors() {
+    setSelectionErrorMessage("");
+    source.clearErrorMessage();
+  }
+
+  function beginSelectionEdit() {
+    selectionEditSnapshotRef.current = {
+      aspectRatio,
+      isMultiSelect,
+      previewPhoto,
+      selectedPhotos: [...selectedPhotos],
+    };
+  }
+
+  function cancelSelectionEdit() {
+    const snapshot = selectionEditSnapshotRef.current;
+    if (!snapshot) {
+      return;
+    }
+
+    setSelectedPhotos(snapshot.selectedPhotos);
+    setPreviewPhoto(snapshot.previewPhoto);
+    setIsMultiSelect(snapshot.isMultiSelect);
+    setAspectRatio(snapshot.aspectRatio);
+    selectionEditSnapshotRef.current = null;
+    clearErrors();
+  }
+
+  function commitSelectionEdit() {
+    selectionEditSnapshotRef.current = null;
+  }
+
   function selectPhoto(photo: PostLibraryPhoto) {
-    setErrorMessage("");
+    clearErrors();
     setPreviewPhoto(photo);
 
     if (!isMultiSelect) {
@@ -229,7 +110,9 @@ export function usePostMediaLibraryPicker({
       );
     } else {
       if (selectedPhotos.length >= MAX_IMAGES) {
-        setErrorMessage(`사진은 최대 ${MAX_IMAGES}장까지 선택할 수 있습니다.`);
+        setSelectionErrorMessage(
+          `사진은 최대 ${MAX_IMAGES}장까지 선택할 수 있습니다.`,
+        );
         return;
       }
       nextSelectedPhotos = [...selectedPhotos, photo];
@@ -259,6 +142,24 @@ export function usePostMediaLibraryPicker({
     setIsMultiSelect(!isMultiSelect);
   }
 
+  function removeSelectedPhoto(index: number) {
+    const removedPhoto = selectedPhotos[index];
+    const nextSelectedPhotos = selectedPhotos.filter(
+      (_, currentIndex) => currentIndex !== index,
+    );
+    const nextFirstPhoto = nextSelectedPhotos[0];
+
+    setSelectedPhotos(nextSelectedPhotos);
+    if (removedPhoto?.id === previewPhoto?.id) {
+      setPreviewPhoto(nextFirstPhoto ?? source.photos[0] ?? null);
+    }
+    if (index === 0 && nextFirstPhoto) {
+      setAspectRatio(
+        detectAspectRatio(nextFirstPhoto.width, nextFirstPhoto.height),
+      );
+    }
+  }
+
   function cycleAspectRatio() {
     const currentIndex = ASPECT_RATIO_CYCLE.indexOf(aspectRatio);
     const nextIndex = (currentIndex + 1) % ASPECT_RATIO_CYCLE.length;
@@ -271,25 +172,12 @@ export function usePostMediaLibraryPicker({
     }
 
     setIsPreparing(true);
-    setErrorMessage("");
+    clearErrors();
 
     try {
-      // Android의 Asset URI는 이미 로컬 file:// 경로다. 전체 EXIF 조회는
-      // ACCESS_MEDIA_LOCATION을 요구하므로 iOS의 ph:// 해석에만 사용한다.
-      if (process.env.EXPO_OS === "android") {
-        return selectedPhotos.map((photo) => photo.uri);
-      }
-
-      return await Promise.all(
-        selectedPhotos.map(async (photo) => {
-          const info = await MediaLibrary.getAssetInfoAsync(photo.id, {
-            shouldDownloadFromNetwork: true,
-          });
-          return info.localUri ?? info.uri ?? photo.uri;
-        }),
-      );
+      return await resolvePostLibraryPhotoUris(selectedPhotos);
     } catch (error) {
-      setErrorMessage(
+      setSelectionErrorMessage(
         error instanceof Error
           ? error.message
           : "선택한 사진을 준비하지 못했습니다.",
@@ -301,26 +189,16 @@ export function usePostMediaLibraryPicker({
   }
 
   return {
-    canRequestPermission,
+    ...source,
+    beginSelectionEdit,
+    cancelSelectionEdit,
+    commitSelectionEdit,
     cycleAspectRatio,
-    errorMessage,
-    hasNextPage,
-    isLoading,
-    isLoadingMore,
+    errorMessage: selectionErrorMessage || source.errorMessage,
     isMultiSelect,
     isPreparing,
-    loadMore: () => {
-      void loadPage(false);
-    },
-    openSettings: () => {
-      void Linking.openSettings().catch(() => undefined);
-    },
-    permissionState,
-    photos,
     previewPhoto,
-    requestPermission: () => {
-      void requestPermission();
-    },
+    removeSelectedPhoto,
     resolveSelectedImageUris,
     selectPhoto,
     selectedCount: selectedPhotos.length,

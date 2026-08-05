@@ -32,6 +32,8 @@ export function WriteScreen() {
   const navigation = useNavigation();
   const router = useRouter();
   const [stage, setStage] = useState<"form" | "picker">("picker");
+  const [pickerExitTarget, setPickerExitTarget] =
+    useState<"form" | "route">("route");
   const [isDiscardOpen, setIsDiscardOpen] = useState(false);
   const allowRouteExitRef = useRef(false);
   const {
@@ -42,7 +44,6 @@ export function WriteScreen() {
     hasDraft,
     imageUris,
     isSubmitting,
-    pickImages,
     pickVideo,
     replaceImages,
     removeImage,
@@ -70,8 +71,17 @@ export function WriteScreen() {
         if (stage === "form") {
           event.preventDefault();
           if (!isSubmitting) {
+            setPickerExitTarget("route");
             setStage("picker");
           }
+          return;
+        }
+
+        if (pickerExitTarget === "form") {
+          event.preventDefault();
+          mediaPicker.cancelSelectionEdit();
+          setPickerExitTarget("route");
+          setStage("form");
           return;
         }
 
@@ -80,10 +90,17 @@ export function WriteScreen() {
           setIsDiscardOpen(true);
         }
       }),
-    [hasDraft, isSubmitting, navigation, stage],
+    [hasDraft, isSubmitting, navigation, pickerExitTarget, stage],
   );
 
   function handlePickerClose() {
+    if (pickerExitTarget === "form") {
+      mediaPicker.cancelSelectionEdit();
+      setPickerExitTarget("route");
+      setStage("form");
+      return;
+    }
+
     if (hasDraft) {
       setIsDiscardOpen(true);
       return;
@@ -100,6 +117,8 @@ export function WriteScreen() {
     }
 
     replaceImages(selectedImageUris);
+    mediaPicker.commitSelectionEdit();
+    setPickerExitTarget("route");
     setStage("form");
   }
 
@@ -108,7 +127,23 @@ export function WriteScreen() {
       return;
     }
 
+    setPickerExitTarget("route");
     setStage("picker");
+  }
+
+  function handleAddImages() {
+    if (isSubmitting) {
+      return;
+    }
+
+    mediaPicker.beginSelectionEdit();
+    setPickerExitTarget("form");
+    setStage("picker");
+  }
+
+  function handleRemoveImage(index: number) {
+    removeImage(index);
+    mediaPicker.removeSelectedPhoto(index);
   }
 
   function handleConfirmDiscard() {
@@ -153,23 +188,31 @@ export function WriteScreen() {
           }}
         />
         <PostMediaPickerBody
+          albumErrorMessage={mediaPicker.albumErrorMessage}
+          albumOptions={mediaPicker.albumOptions}
           aspectRatio={aspectRatio}
           canRequestPermission={mediaPicker.canRequestPermission}
           disabled={mediaPicker.isPreparing}
           errorMessage={mediaPicker.errorMessage}
           hasNextPage={mediaPicker.hasNextPage}
           isLoading={mediaPicker.isLoading}
+          isLoadingAlbums={mediaPicker.isLoadingAlbums}
           isLoadingMore={mediaPicker.isLoadingMore}
           isMultiSelect={mediaPicker.isMultiSelect}
           onCycleAspectRatio={mediaPicker.cycleAspectRatio}
           onLoadMore={mediaPicker.loadMore}
           onOpenSettings={mediaPicker.openSettings}
           onRequestPermission={mediaPicker.requestPermission}
+          onRetryAlbums={mediaPicker.retryAlbums}
+          onSelectAlbum={mediaPicker.selectAlbum}
           onSelectPhoto={mediaPicker.selectPhoto}
           onToggleMultiSelect={mediaPicker.toggleMultiSelect}
           permissionState={mediaPicker.permissionState}
           photos={mediaPicker.photos}
           previewPhoto={mediaPicker.previewPhoto}
+          selectedAlbumId={mediaPicker.selectedAlbumId}
+          selectedAlbumKey={mediaPicker.selectedAlbumKey}
+          selectedAlbumTitle={mediaPicker.selectedAlbumTitle}
           selectedIndexes={mediaPicker.selectedIndexes}
         />
 
@@ -214,13 +257,11 @@ export function WriteScreen() {
             aspectRatio={aspectRatio}
             imageUris={imageUris}
             isSubmitting={isSubmitting}
-            onPickImages={() => {
-              void pickImages();
-            }}
+            onPickImages={handleAddImages}
             onPickVideo={() => {
               void pickVideo();
             }}
-            onRemoveImage={removeImage}
+            onRemoveImage={handleRemoveImage}
             onRemoveVideo={removeVideo}
             selectedVideo={selectedVideo}
           />

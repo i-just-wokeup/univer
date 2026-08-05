@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { PostLibraryPhoto } from "../../features/feed/usePostMediaLibraryPicker";
+import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
 import {
   fontSize,
   fontWeight,

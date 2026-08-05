@@ -62,49 +62,6 @@ export function useWriteForm() {
     setErrorMessage("");
   }
 
-  async function pickImages() {
-    setErrorMessage("");
-
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      setErrorMessage("사진 접근 권한이 필요합니다.");
-      return;
-    }
-
-    setSelectedVideo(null);
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsMultipleSelection: true,
-      mediaTypes: ["images"],
-      quality: 1,
-      selectionLimit: MAX_IMAGES,
-    });
-
-    if (result.canceled) {
-      return;
-    }
-
-    const selectedAssets = result.assets.slice(
-      0,
-      Math.max(0, MAX_IMAGES - imageUris.length),
-    );
-
-    if (selectedAssets.length === 0) {
-      return;
-    }
-
-    if (imageUris.length === 0) {
-      const firstAsset = selectedAssets[0];
-      setAspectRatio(detectAspectRatio(firstAsset.width, firstAsset.height));
-    }
-
-    setImageUris((currentUris) => [
-      ...currentUris,
-      ...selectedAssets.map((asset) => asset.uri),
-    ]);
-  }
-
   async function pickVideo() {
     setErrorMessage("");
 
@@ -245,7 +202,6 @@ export function useWriteForm() {
     hasDraft,
     imageUris,
     isSubmitting,
-    pickImages,
     pickVideo,
     replaceImages,
     removeImage,

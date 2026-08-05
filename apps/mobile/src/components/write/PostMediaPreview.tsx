@@ -3,7 +3,7 @@ import { ImageIcon, Scaling } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
-import type { PostLibraryPhoto } from "../../features/feed/usePostMediaLibraryPicker";
+import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";

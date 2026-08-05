@@ -1,12 +1,13 @@
 import BottomSheet from "@gorhom/bottom-sheet";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 
 import type { PostAspectRatio } from "../../features/feed/types";
 import type {
-  PostLibraryPermissionState,
+  PostLibraryAlbumOption,
   PostLibraryPhoto,
-} from "../../features/feed/usePostMediaLibraryPicker";
+} from "../../features/feed/postMediaLibrary";
+import type { PostLibraryPermissionState } from "../../features/feed/usePostMediaLibrarySource";
 import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
@@ -14,6 +15,7 @@ import {
   getPostMediaGridItemSize,
   PostMediaGalleryList,
 } from "./PostMediaGalleryList";
+import { PostMediaAlbumPicker } from "./PostMediaAlbumPicker";
 import {
   PostMediaPickerState,
   resolvePostMediaPickerState,
@@ -26,16 +28,21 @@ import { PostMediaPreview } from "./PostMediaPreview";
 import { usePostMediaPickerSheet } from "./usePostMediaPickerSheet";
 
 type PostMediaPickerBodyProps = {
+  albumErrorMessage: string;
+  albumOptions: PostLibraryAlbumOption[];
   aspectRatio: PostAspectRatio;
   canRequestPermission: boolean;
   disabled: boolean;
   errorMessage: string;
   hasNextPage: boolean;
   isLoading: boolean;
+  isLoadingAlbums: boolean;
   isLoadingMore: boolean;
   isMultiSelect: boolean;
   onCycleAspectRatio: () => void;
   onLoadMore: () => void;
+  onRetryAlbums: () => void;
+  onSelectAlbum: (albumId: string | null) => void;
   onOpenSettings: () => void;
   onRequestPermission: () => void;
   onSelectPhoto: (photo: PostLibraryPhoto) => void;
@@ -43,30 +50,42 @@ type PostMediaPickerBodyProps = {
   permissionState: PostLibraryPermissionState;
   photos: PostLibraryPhoto[];
   previewPhoto: PostLibraryPhoto | null;
+  selectedAlbumId: string | null;
+  selectedAlbumKey: string;
+  selectedAlbumTitle: string;
   selectedIndexes: ReadonlyMap<string, number>;
 };
 
 export function PostMediaPickerBody({
+  albumErrorMessage,
+  albumOptions,
   aspectRatio,
   canRequestPermission,
   disabled,
   errorMessage,
   hasNextPage,
   isLoading,
+  isLoadingAlbums,
   isLoadingMore,
   isMultiSelect,
   onCycleAspectRatio,
   onLoadMore,
   onOpenSettings,
   onRequestPermission,
+  onRetryAlbums,
+  onSelectAlbum,
   onSelectPhoto,
   onToggleMultiSelect,
   permissionState,
   photos,
   previewPhoto,
+  selectedAlbumId,
+  selectedAlbumKey,
+  selectedAlbumTitle,
   selectedIndexes,
 }: PostMediaPickerBodyProps) {
   const styles = useThemedStyles(makeStyles);
+  const [isAlbumPickerOpen, setIsAlbumPickerOpen] = useState(false);
   const { width } = useWindowDimensions();
   const itemSize = getPostMediaGridItemSize(width);
   const {
@@ -94,12 +113,14 @@ export function PostMediaPickerBody({
   const renderSheetHandle = useCallback(
     () => (
       <PostMediaPickerToolbar
+        albumTitle={selectedAlbumTitle}
         disabled={disabled}
         isMultiSelect={isMultiSelect}
+        onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
         onToggleMultiSelect={onToggleMultiSelect}
       />
     ),
-    [disabled, isMultiSelect, onToggleMultiSelect],
+    [disabled, isMultiSelect, onToggleMultiSelect, selectedAlbumTitle],
   );
 
   const handleSelectPhoto = useCallback(
@@ -148,6 +169,7 @@ export function PostMediaPickerBody({
           style={styles.sheet}
         >
           <PostMediaGalleryList
+            key={selectedAlbumKey}
             disabled={disabled}
             errorMessage={errorMessage}
             hasNextPage={hasNextPage}
@@ -160,6 +182,17 @@ export function PostMediaPickerBody({
           />
         </BottomSheet>
       ) : null}
+
+      <PostMediaAlbumPicker
+        albums={albumOptions}
+        errorMessage={albumErrorMessage}
+        isLoading={isLoadingAlbums}
+        onClose={() => setIsAlbumPickerOpen(false)}
+        onRetry={onRetryAlbums}
+        onSelect={onSelectAlbum}
+        selectedAlbumId={selectedAlbumId}
+        visible={isAlbumPickerOpen}
+      />
     </View>
   );
 }

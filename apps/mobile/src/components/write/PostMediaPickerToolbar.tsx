@@ -1,4 +1,4 @@
-import { Images } from "lucide-react-native";
+import { ChevronDown, Images } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -12,14 +12,18 @@ import type { ThemeColors } from "../../lib/theme";
 export const POST_MEDIA_PICKER_TOOLBAR_HEIGHT = 50;
 
 type PostMediaPickerToolbarProps = {
+  albumTitle: string;
   disabled: boolean;
   isMultiSelect: boolean;
+  onOpenAlbumPicker: () => void;
   onToggleMultiSelect: () => void;
 };
 
 export function PostMediaPickerToolbar({
+  albumTitle,
   disabled,
   isMultiSelect,
+  onOpenAlbumPicker,
   onToggleMultiSelect,
 }: PostMediaPickerToolbarProps) {
   const { colors } = useTheme();
@@ -27,7 +31,21 @@ export function PostMediaPickerToolbar({
 
   return (
     <View style={styles.toolbar}>
-      <Text style={styles.title}>최근 항목</Text>
+      <Pressable
+        accessibilityLabel={`앨범 선택, 현재 ${albumTitle}`}
+        accessibilityRole="button"
+        disabled={disabled}
+        onPress={onOpenAlbumPicker}
+        style={({ pressed }) => [
+          styles.albumButton,
+          pressed ? styles.pressed : null,
+        ]}
+      >
+        <Text numberOfLines={1} style={styles.title}>
+          {albumTitle}
+        </Text>
+        <ChevronDown color={colors.text} size={18} strokeWidth={2.4} />
+      </Pressable>
       <Pressable
         accessibilityLabel={
           isMultiSelect ? "여러 사진 선택 끄기" : "여러 사진 선택"
@@ -68,7 +86,16 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: c.accentSoft,
   },
+  albumButton: {
+    minWidth: 0,
+    maxWidth: "58%",
+    minHeight: 34,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   title: {
+    flexShrink: 1,
     color: c.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.heavy,

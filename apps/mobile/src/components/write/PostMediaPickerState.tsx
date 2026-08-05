@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
-import type { PostLibraryPermissionState } from "../../features/feed/usePostMediaLibraryPicker";
+import type { PostLibraryPermissionState } from "../../features/feed/usePostMediaLibrarySource";
 import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";

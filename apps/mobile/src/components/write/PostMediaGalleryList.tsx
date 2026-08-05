@@ -1,7 +1,7 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { ActivityIndicator, StyleSheet, Text } from "react-native";
 
-import type { PostLibraryPhoto } from "../../features/feed/usePostMediaLibraryPicker";
+import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
 import { fontSize, fontWeight, useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
