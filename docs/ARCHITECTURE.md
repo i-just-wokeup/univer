@@ -155,14 +155,20 @@ apps/mobile/
     _layout.tsx             ← 루트(Provider들 + Sentry.wrap)
   src/
     screens/                ← 화면 = 훅 연결 + 레이아웃 조합만 (로직/UI 인라인 금지)
-      home/ feed(릴스)/ explore/ post/ profile/ messages/
-      stories/ search/ notifications/ activity/ settings/ auth/ tabs/
+      home/ feed(릴스)/ explore/ post/ profile/ messages/ stories/
+      search/ notifications/ activity/ insights/ settings/ auth/ write/ tabs/
     components/             ← 순수 UI (props로만 동작)
-      home/ feed/ comments/ profile/ stories/ chat/ search/
-      activity/ notifications/ common/ auth/ write/
+      home/ feed/ comments/ profile/ stories/ chat/ search/ activity/
+      notifications/ insights/ auth/ explore/ common/ write/
+      · common/badge/       ← 계정 배지(AccountBadge·PromotedBadge·AffiliationPill·badgeSpec)
+      · common/AppSplash·Logo(unip 워드마크)
+      · write/PostMedia*     ← 사진 선택/앨범 picker(인스타식 2단계)
     features/              ← 로직/훅/API (앱 전환 재사용 핵심)
-    lib/                    ← supabase, theme, session, sentry, site,
-                              constants/(storage·pagination), utils/
+      feed·notifications·chat·stories·profile·activity·explore·comments·search·
+      blocks·reports·auth·metrics(지표/인사이트)·verified(계정 배지)·session(page-cache)·shared
+    lib/                    ← supabase, theme(+theme/ThemeProvider), session, sentry, site,
+                              systemBars, secureStorage, haptics, globalFont, verifiedUsers,
+                              constants/(storage·pagination·feedViewability), navigation/, utils/
 ```
 
 ### features API 모듈 패턴 (2026-07 리팩토링 결과)
@@ -198,3 +204,11 @@ features/feed/
 - **flip / fixed**: 앱 UI(글씨·배경·테두리)는 flip(라이트↔다크 뒤집힘), 미디어(릴스/스토리) 위 오버레이·상태색은 fixed(라이트=다크 동일). 브랜드색(구글 버튼, `Logo`의 unip 레드)은 팔레트 밖 고정.
 - 정본/상세: `docs/design/COLOR_TOKENS.md`(토큰 정의·매핑), `docs/design/DARK_MODE.md`(다크 아키텍처·현황).
 - 라이브러리 없음(네이티브 리스크 회피). 딥다크 팔레트(배경 `#0F1011`, 카드 `feedCard #000`) 값은 `theme.ts`가 정본.
+
+### 계정 배지 (2026-08)
+학생회/동아리 pill + 승격 심볼 3종(크루는 미표시). 배지 브랜드 고정색·SVG path는 `components/common/badge/badgeSpec.ts` 단일 소스(팔레트 토큰 밖, 로고와 동일 원칙). 데이터는 RPC `get_account_badges`(유저별 소속 council/club + 승격 bool) → `features/verified`(5분 TTL 캐시) → `lib/verifiedUsers`의 `useVerifiedUsers().getBadge`. 표시 규칙: 피드·프로필·검색·크루·공유·릴스 = 소속 pill + 승격 심볼, 댓글·DM = 승격 심볼만. (DB `official_accounts.type`은 official/club뿐 → official을 학생회로 매핑, "학생회 vs 운영자" 구분은 미룸)
+
+### 미디어·스플래시·푸시 (2026-08)
+- **사진 선택**: `expo-media-library`로 앱 내장 그리드/앨범 picker(`features/feed/usePostMediaLibraryPicker`·`usePostMediaLibrarySource` + `components/write/PostMedia*`). 작성 흐름 = 사진 선택 → 캡션 폼 2단계. (크롭 제스처는 후속)
+- **스플래시**: 네이티브(배경색)에서 JS `components/common/AppSplash`(화면 폭 기준 반응형 워드마크)로 이어받아 안드로이드 12+ 원형 아이콘 클리핑 우회.
+- **푸시 알림**: 안드로이드 포그라운드 배너는 채널 중요도 HIGH(채널 id `alerts`) + 핸들러 `shouldPlaySound`가 켜져야 뜬다(활성 채팅방은 억제). 서버 트리거 `push_on_message`·`push_on_notification`(post_comment·comment_reply·DM만 발송).
