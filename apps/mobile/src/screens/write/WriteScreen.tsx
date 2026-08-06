@@ -199,6 +199,7 @@ export function WriteScreen() {
           isLoadingAlbums={mediaPicker.isLoadingAlbums}
           isLoadingMore={mediaPicker.isLoadingMore}
           isMultiSelect={mediaPicker.isMultiSelect}
+          onChangeCropTransform={mediaPicker.updatePreviewCropTransform}
           onCycleAspectRatio={mediaPicker.cycleAspectRatio}
           onLoadMore={mediaPicker.loadMore}
           onOpenSettings={mediaPicker.openSettings}
@@ -210,6 +211,7 @@ export function WriteScreen() {
           permissionState={mediaPicker.permissionState}
           photos={mediaPicker.photos}
           previewPhoto={mediaPicker.previewPhoto}
+          previewCropTransform={mediaPicker.previewCropTransform}
           selectedAlbumId={mediaPicker.selectedAlbumId}
           selectedAlbumKey={mediaPicker.selectedAlbumKey}
           selectedAlbumTitle={mediaPicker.selectedAlbumTitle}

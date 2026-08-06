@@ -1,21 +1,26 @@
-import { Image } from "expo-image";
 import { ImageIcon, Scaling } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import type { PostMediaCropTransform } from "../../features/feed/postMediaCrop";
 import type { PostAspectRatio } from "../../features/feed/types";
 import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
+import { PostMediaCropSurface } from "./PostMediaCropSurface";
 
 type PostMediaPreviewProps = {
   aspectRatio: PostAspectRatio;
+  cropTransform: PostMediaCropTransform;
+  onChangeCropTransform: (transform: PostMediaCropTransform) => void;
   onCycleAspectRatio: () => void;
   photo: PostLibraryPhoto | null;
 };
 
 export function PostMediaPreview({
   aspectRatio,
+  cropTransform,
+  onChangeCropTransform,
   onCycleAspectRatio,
   photo,
 }: PostMediaPreviewProps) {
@@ -30,13 +35,10 @@ export function PostMediaPreview({
       ]}
     >
       {photo ? (
-        <Image
-          cachePolicy="memory-disk"
-          contentFit="cover"
-          recyclingKey={photo.id}
-          source={{ uri: photo.uri }}
-          style={styles.image}
-          transition={100}
+        <PostMediaCropSurface
+          cropTransform={cropTransform}
+          onChangeCropTransform={onChangeCropTransform}
+          photo={photo}
         />
       ) : (
         <View style={styles.empty}>
@@ -67,10 +69,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     width: "100%",
     overflow: "hidden",
     backgroundColor: c.imagePlaceholder,
-  },
-  image: {
-    height: "100%",
-    width: "100%",
   },
   empty: {
     flex: 1,

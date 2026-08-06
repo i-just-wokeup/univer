@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  cropPostLibraryPhotos,
+  DEFAULT_POST_MEDIA_CROP_TRANSFORM,
+  normalizePostMediaCropTransform,
+} from "./postMediaCrop";
+import type {
+  PostMediaCropTransform,
+  PostMediaCropTransforms,
+} from "./postMediaCrop";
 import type { PostLibraryPhoto } from "./postMediaLibrary";
 import { resolvePostLibraryPhotoUris } from "./postMediaLibrary";
 import type { PostAspectRatio } from "./types";
@@ -19,6 +28,7 @@ type UsePostMediaLibraryPickerParams = {
 
 type SelectionEditSnapshot = {
   aspectRatio: PostAspectRatio;
+  cropTransforms: PostMediaCropTransforms;
   isMultiSelect: boolean;
   previewPhoto: PostLibraryPhoto | null;
   selectedPhotos: PostLibraryPhoto[];
@@ -31,6 +41,8 @@ export function usePostMediaLibraryPicker({
   const source = usePostMediaLibrarySource();
   const [selectedPhotos, setSelectedPhotos] = useState<PostLibraryPhoto[]>([]);
   const [previewPhoto, setPreviewPhoto] = useState<PostLibraryPhoto | null>(null);
+  const [cropTransforms, setCropTransforms] =
+    useState<PostMediaCropTransforms>({});
   const [isPreparing, setIsPreparing] = useState(false);
   const [selectionErrorMessage, setSelectionErrorMessage] = useState("");
   const [isMultiSelect, setIsMultiSelect] = useState(false);
@@ -56,6 +68,14 @@ export function usePostMediaLibraryPicker({
       ),
     [selectedPhotos],
   );
+  const previewCropTransform = useMemo(
+    () =>
+      previewPhoto
+        ? cropTransforms[previewPhoto.id] ??
+          DEFAULT_POST_MEDIA_CROP_TRANSFORM
+        : DEFAULT_POST_MEDIA_CROP_TRANSFORM,
+    [cropTransforms, previewPhoto],
+  );
 
   function clearErrors() {
     setSelectionErrorMessage("");
@@ -65,6 +85,7 @@ export function usePostMediaLibraryPicker({
   function beginSelectionEdit() {
     selectionEditSnapshotRef.current = {
       aspectRatio,
+      cropTransforms: { ...cropTransforms },
       isMultiSelect,
       previewPhoto,
       selectedPhotos: [...selectedPhotos],
@@ -79,6 +100,7 @@ export function usePostMediaLibraryPicker({
 
     setSelectedPhotos(snapshot.selectedPhotos);
     setPreviewPhoto(snapshot.previewPhoto);
+    setCropTransforms(snapshot.cropTransforms);
     setIsMultiSelect(snapshot.isMultiSelect);
     setAspectRatio(snapshot.aspectRatio);
     selectionEditSnapshotRef.current = null;
@@ -160,6 +182,18 @@ export function usePostMediaLibraryPicker({
     }
   }
 
+  function updatePreviewCropTransform(transform: PostMediaCropTransform) {
+    if (!previewPhoto) {
+      return;
+    }
+
+    const normalizedTransform = normalizePostMediaCropTransform(transform);
+    setCropTransforms((currentTransforms) => ({
+      ...currentTransforms,
+      [previewPhoto.id]: normalizedTransform,
+    }));
+  }
+
   function cycleAspectRatio() {
     const currentIndex = ASPECT_RATIO_CYCLE.indexOf(aspectRatio);
     const nextIndex = (currentIndex + 1) % ASPECT_RATIO_CYCLE.length;
@@ -175,7 +209,13 @@ export function usePostMediaLibraryPicker({
     clearErrors();
 
     try {
-      return await resolvePostLibraryPhotoUris(selectedPhotos);
+      const sourceUris = await resolvePostLibraryPhotoUris(selectedPhotos);
+      return await cropPostLibraryPhotos(
+        selectedPhotos,
+        sourceUris,
+        aspectRatio,
+        cropTransforms,
+      );
     } catch (error) {
       setSelectionErrorMessage(
         error instanceof Error
@@ -197,6 +237,7 @@ export function usePostMediaLibraryPicker({
     errorMessage: selectionErrorMessage || source.errorMessage,
     isMultiSelect,
     isPreparing,
+    previewCropTransform,
     previewPhoto,
     removeSelectedPhoto,
     resolveSelectedImageUris,
@@ -204,5 +245,6 @@ export function usePostMediaLibraryPicker({
     selectedCount: selectedPhotos.length,
     selectedIndexes,
     toggleMultiSelect,
+    updatePreviewCropTransform,
   };
 }

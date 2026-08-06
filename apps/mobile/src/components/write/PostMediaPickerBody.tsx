@@ -2,6 +2,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { useCallback, useState } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 
+import type { PostMediaCropTransform } from "../../features/feed/postMediaCrop";
 import type { PostAspectRatio } from "../../features/feed/types";
 import type {
   PostLibraryAlbumOption,
@@ -39,6 +40,7 @@ type PostMediaPickerBodyProps = {
   isLoadingAlbums: boolean;
   isLoadingMore: boolean;
   isMultiSelect: boolean;
+  onChangeCropTransform: (transform: PostMediaCropTransform) => void;
   onCycleAspectRatio: () => void;
   onLoadMore: () => void;
   onRetryAlbums: () => void;
@@ -50,6 +52,7 @@ type PostMediaPickerBodyProps = {
   permissionState: PostLibraryPermissionState;
   photos: PostLibraryPhoto[];
   previewPhoto: PostLibraryPhoto | null;
+  previewCropTransform: PostMediaCropTransform;
   selectedAlbumId: string | null;
   selectedAlbumKey: string;
   selectedAlbumTitle: string;
@@ -68,6 +71,7 @@ export function PostMediaPickerBody({
   isLoadingAlbums,
   isLoadingMore,
   isMultiSelect,
+  onChangeCropTransform,
   onCycleAspectRatio,
   onLoadMore,
   onOpenSettings,
@@ -79,6 +83,7 @@ export function PostMediaPickerBody({
   permissionState,
   photos,
   previewPhoto,
+  previewCropTransform,
   selectedAlbumId,
   selectedAlbumKey,
   selectedAlbumTitle,
@@ -137,6 +142,8 @@ export function PostMediaPickerBody({
   const preview = (
     <PostMediaPreview
       aspectRatio={aspectRatio}
+      cropTransform={previewCropTransform}
+      onChangeCropTransform={onChangeCropTransform}
       onCycleAspectRatio={onCycleAspectRatio}
       photo={previewPhoto}
     />
