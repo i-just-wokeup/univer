@@ -49,7 +49,7 @@ signup_allowlist (
 **users** (RLS 활성화, 민감 컬럼 BEFORE UPDATE 트리거 보호)
 - **가입 도메인 강제 (2026-07-07)**: `handle_new_user`가 가입 이메일 도메인을 `universities.domain`과 대조 → 매칭 시 해당 학교로 배정. 매칭 없으면 `signup_allowlist`에 있는 이메일만 통과(기본 활성 학교로 배정), 아니면 가입 거부. 폼/API 우회와 무관하게 서버에서 강제.
 - `real_name` 공개 범위: 기본은 본인 또는 친구(accepted)만 조회 가능. `real_name_public=true`이면 같은 학교 유저에게도 RPC(`get_user_real_name`)가 반환
-- `department` 공개 범위: 기본 공개(`department_public=true`). `department_public=false`이면 본인 외 표시 경로/RPC에서 `NULL`로 마스킹(Phase 1: raw REST 컬럼 차단은 별도 Phase 2)
+- `department` 공개 범위: **기본 비공개(`department_public=false`, 2026-08-06 변경 — 실명과 동일 opt-in)**. 본인이 프로필 설정에서 켜야 공개. `false`이면 본인 외 표시 경로/RPC에서 `NULL`로 마스킹(Phase 1: raw REST 컬럼 차단은 별도 Phase 2)
 - Google OAuth 가입 시 `handle_new_user` 트리거가 `full_name`(`심재성(학부생-자동차공학과)` 형식) 파싱 → `real_name`, `department` 자동 저장 (avatar_url 제외)
 - 신규 가입 기본 `nickname`은 `user_랜덤값` 임시값으로 생성 — 온보딩에서 사용자가 직접 입력해야 시작 가능
 - 활성 유저(`deleted_at IS NULL`) 기준 `lower(nickname)` 고유 인덱스로 중복 닉네임 방지
@@ -65,7 +65,7 @@ users (
   avatar_url    text,
   university_id uuid FK → universities not null,
   department    text not null,
-  department_public bool default true,
+  department_public bool default false,        -- opt-in(2026-08-06 변경, 이전 true). 본인이 켜야 공개
   credit_balance int default 0,
   level         int default 1,
   level_score   float8 default 0,
@@ -322,9 +322,14 @@ notifications (
 -- story_like     내 스토리 좋아요
 -- comment_like   내 댓글 좋아요
 -- post_comment   내 게시물 댓글
+-- comment_reply  내 댓글에 답글(대댓글)
+-- user_like      내 프로필/계정 좋아요
 -- friend_request 친구 신청
 -- friend_accepted 친구 신청 수락
 -- report_received 신고 접수
+-- ⚠️ 좋아요 알림 집계(2026-08-05): notify_on_like/notify_on_comment_like 트리거가 새 알림을 만들지 않고,
+--    같은 (수신자·type·대상)이 이미 있으면 created_at 갱신+is_read=false로 "맨 위로 올림"(인스타식 뭉치기).
+--    앱은 좋아요 테이블을 대상별 실시간 집계(최근 N명+총 인원)해 "A님 외 N명"으로 표시.
 ```
 
 **blocks**
@@ -377,6 +382,7 @@ get_friends()
 get_pending_requests()
 get_sent_requests()
 get_user_real_name(p_user_id uuid) returns text
+get_account_badges() returns table(user_id uuid, affiliation text, promoted boolean)
 get_feed_post_ids(p_seed float8, p_limit int, p_after_band int, p_after_rank float8)
   returns table(post_id uuid, band int, rank float8)
 get_reel_post_ids(p_seed float8, p_seen_ids uuid[], p_limit int, p_after_band int, p_after_rank float8)
@@ -398,8 +404,10 @@ take_action_on_report(report_id uuid)
 - `get_reel_post_ids`는 릴스(영상 전용) **순서만** 반환한다. 크루 구분 없이 다 섞기 — band 0=세션에서 안 본 영상(시드 셔플) / 1=세션에서 본 영상(시드 셔플, 무한 루프용). "본 것"은 세션 개념이라 DB 저장 없이 앱이 `p_seen_ids`(이번 세션 본 릴스 id)로 넘긴다. 영상(`post_media.type='video'`)만, SECURITY INVOKER(공개범위 자동), 차단 제외, `(band, rank)` 커서. 완주율/가중치 추천은 나중.
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
+- `get_account_badges`(2026-08-06)는 배지 있는 유저마다 소속(`official_accounts.type` official→`council`·club→`club`)과 승격(`users.is_promoted`)을 한 행으로 반환. 계정 배지(학생회/동아리 pill + 승격 심볼)용. SECURITY DEFINER, `authenticated`/`anon` GRANT. ⚠️ `official`이 운영자/공식 계정까지 포함 → "학생회 vs 운영자" 구분(type `council` 추가)은 실 학생회 계정 받을 때 결정.
 
-**푸시 토큰 (한 기기 = 한 계정)**
+**푸시 (한 기기 = 한 계정 + 서버 트리거 발송)**
+- 발송: `push_on_message`(messages insert), `push_on_notification`(notifications insert; `post_comment`·`comment_reply`만) 트리거가 `net.http_post`로 Expo Push(`exp.host/--/api/v2/push/send`) 호출. payload `priority:'high'` + `channelId:'alerts'`(2026-08-06 `default`→`alerts`, 낮게 굳은 채널 회피). 제목은 발신자 닉네임 or `unip`.
 - `claim_push_token(p_token text)` — SECURITY DEFINER. 등록 시 `p_token`을 가진 **다른 유저 행에서 `fcm_token`을 NULL로** 떼어내고(`id <> auth.uid()`) 현재 유저에 등록. 클라가 RLS로 남의 행을 못 비우므로 definer로 처리. (2026-06-28 추가)
 - 앱 `registerForPushNotifications`가 `users.fcm_token` 직접 UPDATE 대신 이 RPC 호출. 로그아웃 시에도 본인 토큰 NULL(`signOutMobile`). → 같은 기기로 계정 전환해도 이전 계정으로 푸시 안 감.
 - 멀티기기(한 계정이 여러 기기 동시 수신)는 단일 `fcm_token` 컬럼이라 미지원(마지막 로그인 기기만 수신). 별도 토큰 테이블은 백로그.
