@@ -52,6 +52,7 @@ export function PostMediaCropThumbnailStrip({
         extraData={previewPhotoId}
         horizontal
         keyExtractor={(photo) => photo.id}
+        removeClippedSubviews={false}
         renderItem={({ item, index }) => {
           const isFocused = item.id === previewPhotoId;
           return (
@@ -61,11 +62,11 @@ export function PostMediaCropThumbnailStrip({
               onPress={() => onFocusPhoto(item.id)}
               style={({ pressed }) => [
                 styles.thumbnailButton,
-                isFocused ? styles.thumbnailButtonFocused : null,
                 pressed ? styles.pressed : null,
               ]}
             >
               <Image
+                allowDownscaling
                 cachePolicy="memory-disk"
                 contentFit="cover"
                 recyclingKey={item.id}
@@ -73,10 +74,17 @@ export function PostMediaCropThumbnailStrip({
                 style={styles.thumbnail}
                 transition={100}
               />
+              {isFocused ? (
+                <Animated.View
+                  pointerEvents="none"
+                  style={styles.thumbnailFocusRing}
+                />
+              ) : null}
             </Pressable>
           );
         }}
         showsHorizontalScrollIndicator={false}
+        style={styles.list}
       />
     </Animated.View>
   );
@@ -86,6 +94,10 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     overflow: "hidden",
     backgroundColor: c.accentSoft,
+  },
+  list: {
+    height: STRIP_HEIGHT,
+    flexGrow: 0,
   },
   content: {
     minHeight: STRIP_HEIGHT,
@@ -101,15 +113,15 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 6,
     backgroundColor: c.imagePlaceholder,
   },
-  thumbnailButtonFocused: {
+  thumbnail: {
+    height: THUMBNAIL_SIZE,
+    width: THUMBNAIL_SIZE,
+  },
+  thumbnailFocusRing: {
+    ...StyleSheet.absoluteFillObject,
     borderWidth: 2,
     borderColor: c.accent,
-    padding: 2,
-  },
-  thumbnail: {
-    height: "100%",
-    width: "100%",
-    borderRadius: 4,
+    borderRadius: 6,
   },
   pressed: {
     opacity: 0.7,
