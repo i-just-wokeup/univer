@@ -853,6 +853,17 @@ export type Database = {
           promoted: boolean
         }>
       }
+      get_popular_post_ids: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_recency_hours?: number
+        }
+        Returns: Array<{
+          post_id: string
+          score: number
+        }>
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
