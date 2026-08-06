@@ -4,6 +4,7 @@ import {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import {
@@ -56,6 +57,9 @@ export function usePostMediaCropGesture({
   const pinchStartY = useSharedValue(0);
   const pinchFocalX = useSharedValue(0);
   const pinchFocalY = useSharedValue(0);
+  const gridOpacity = useSharedValue(0);
+  const isPanActive = useSharedValue(false);
+  const isPinchActive = useSharedValue(false);
 
   useEffect(() => {
     if (baseSize.width <= 0 || baseSize.height <= 0) {
@@ -88,6 +92,12 @@ export function usePostMediaCropGesture({
     translateY,
   ]);
 
+  useEffect(() => {
+    gridOpacity.value = 0;
+    isPanActive.value = false;
+    isPinchActive.value = false;
+  }, [gridOpacity, isPanActive, isPinchActive, resetKey]);
+
   function commitTransform(
     nextScale: number,
     nextTranslateX: number,
@@ -113,6 +123,8 @@ export function usePostMediaCropGesture({
   const panGesture = Gesture.Pan()
     .maxPointers(1)
     .onStart(() => {
+      isPanActive.value = true;
+      gridOpacity.value = withTiming(1, { duration: 100 });
       panStartX.value = translateX.value;
       panStartY.value = translateY.value;
     })
@@ -144,10 +156,18 @@ export function usePostMediaCropGesture({
         translateX.value,
         translateY.value,
       );
+    })
+    .onFinalize(() => {
+      isPanActive.value = false;
+      if (!isPinchActive.value) {
+        gridOpacity.value = withTiming(0, { duration: 220 });
+      }
     });
 
   const pinchGesture = Gesture.Pinch()
     .onStart((event) => {
+      isPinchActive.value = true;
+      gridOpacity.value = withTiming(1, { duration: 100 });
       pinchStartScale.value = scale.value;
       pinchStartX.value = translateX.value;
       pinchStartY.value = translateY.value;
@@ -188,6 +208,12 @@ export function usePostMediaCropGesture({
         translateX.value,
         translateY.value,
       );
+    })
+    .onFinalize(() => {
+      isPinchActive.value = false;
+      if (!isPanActive.value) {
+        gridOpacity.value = withTiming(0, { duration: 220 });
+      }
     });
 
   const translationStyle = useAnimatedStyle(() => ({
@@ -202,6 +228,7 @@ export function usePostMediaCropGesture({
 
   return {
     gesture: Gesture.Simultaneous(panGesture, pinchGesture),
+    gridOpacity,
     scaleStyle,
     translationStyle,
   };

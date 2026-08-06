@@ -8,6 +8,7 @@ import type { PostMediaCropTransform } from "../../features/feed/postMediaCrop";
 import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
 import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { PostMediaCropGrid } from "./PostMediaCropGrid";
 import { usePostMediaCropGesture } from "./usePostMediaCropGesture";
 import type { PostMediaCropSurfaceSize } from "./usePostMediaCropGesture";
 
@@ -46,7 +47,7 @@ export function PostMediaCropSurface({
       width: photo.width * coverScale,
     };
   }, [frameSize.height, frameSize.width, photo.height, photo.width]);
-  const { gesture, scaleStyle, translationStyle } =
+  const { gesture, gridOpacity, scaleStyle, translationStyle } =
     usePostMediaCropGesture({
       baseSize,
       cropTransform,
@@ -93,6 +94,7 @@ export function PostMediaCropSurface({
           </Animated.View>
         </GestureDetector>
       ) : null}
+      <PostMediaCropGrid opacity={gridOpacity} />
     </View>
   );
 }

@@ -201,6 +201,7 @@ export function WriteScreen() {
           isMultiSelect={mediaPicker.isMultiSelect}
           onChangeCropTransform={mediaPicker.updatePreviewCropTransform}
           onCycleAspectRatio={mediaPicker.cycleAspectRatio}
+          onFocusSelectedPhoto={mediaPicker.focusSelectedPhoto}
           onLoadMore={mediaPicker.loadMore}
           onOpenSettings={mediaPicker.openSettings}
           onRequestPermission={mediaPicker.requestPermission}
@@ -216,6 +217,7 @@ export function WriteScreen() {
           selectedAlbumKey={mediaPicker.selectedAlbumKey}
           selectedAlbumTitle={mediaPicker.selectedAlbumTitle}
           selectedIndexes={mediaPicker.selectedIndexes}
+          selectedPhotos={mediaPicker.selectedPhotos}
         />
 
         <ConfirmDialog

@@ -22,9 +22,10 @@ import {
   resolvePostMediaPickerState,
 } from "./PostMediaPickerState";
 import {
-  POST_MEDIA_PICKER_TOOLBAR_HEIGHT,
-  PostMediaPickerToolbar,
-} from "./PostMediaPickerToolbar";
+  PostMediaPickerSheetHandle,
+  PostMediaPickerSheetHandleProvider,
+} from "./PostMediaPickerSheetHandle";
+import { POST_MEDIA_PICKER_TOOLBAR_HEIGHT } from "./PostMediaPickerToolbar";
 import { PostMediaPreview } from "./PostMediaPreview";
 import { usePostMediaPickerSheet } from "./usePostMediaPickerSheet";
 
@@ -43,6 +44,7 @@ type PostMediaPickerBodyProps = {
   onChangeCropTransform: (transform: PostMediaCropTransform) => void;
   onCycleAspectRatio: () => void;
   onLoadMore: () => void;
+  onFocusSelectedPhoto: (photoId: string) => void;
   onRetryAlbums: () => void;
   onSelectAlbum: (albumId: string | null) => void;
   onOpenSettings: () => void;
@@ -57,6 +59,7 @@ type PostMediaPickerBodyProps = {
   selectedAlbumKey: string;
   selectedAlbumTitle: string;
   selectedIndexes: ReadonlyMap<string, number>;
+  selectedPhotos: PostLibraryPhoto[];
 };
 
 export function PostMediaPickerBody({
@@ -73,6 +76,7 @@ export function PostMediaPickerBody({
   isMultiSelect,
   onChangeCropTransform,
   onCycleAspectRatio,
+  onFocusSelectedPhoto,
   onLoadMore,
   onOpenSettings,
   onRequestPermission,
@@ -88,6 +92,7 @@ export function PostMediaPickerBody({
   selectedAlbumKey,
   selectedAlbumTitle,
   selectedIndexes,
+  selectedPhotos,
 }: PostMediaPickerBodyProps) {
   const styles = useThemedStyles(makeStyles);
   const [isAlbumPickerOpen, setIsAlbumPickerOpen] = useState(false);
@@ -114,19 +119,6 @@ export function PostMediaPickerBody({
     permissionState,
     photoCount: photos.length,
   });
-
-  const renderSheetHandle = useCallback(
-    () => (
-      <PostMediaPickerToolbar
-        albumTitle={selectedAlbumTitle}
-        disabled={disabled}
-        isMultiSelect={isMultiSelect}
-        onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
-        onToggleMultiSelect={onToggleMultiSelect}
-      />
-    ),
-    [disabled, isMultiSelect, onToggleMultiSelect, selectedAlbumTitle],
-  );
 
   const handleSelectPhoto = useCallback(
     (photo: PostLibraryPhoto) => {
@@ -163,31 +155,42 @@ export function PostMediaPickerBody({
       {preview}
 
       {isReady ? (
-        <BottomSheet
-          animateOnMount={false}
-          backgroundStyle={styles.sheetBackground}
-          enableDynamicSizing={false}
-          enableOverDrag={false}
-          enablePanDownToClose={false}
-          handleComponent={renderSheetHandle}
-          index={0}
-          ref={sheetRef}
-          snapPoints={snapPoints}
-          style={styles.sheet}
+        <PostMediaPickerSheetHandleProvider
+          albumTitle={selectedAlbumTitle}
+          disabled={disabled}
+          isMultiSelect={isMultiSelect}
+          onFocusSelectedPhoto={onFocusSelectedPhoto}
+          onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
+          onToggleMultiSelect={onToggleMultiSelect}
+          previewPhotoId={previewPhoto?.id ?? null}
+          selectedPhotos={selectedPhotos}
         >
-          <PostMediaGalleryList
-            key={selectedAlbumKey}
-            disabled={disabled}
-            errorMessage={errorMessage}
-            hasNextPage={hasNextPage}
-            isLoadingMore={isLoadingMore}
-            itemSize={itemSize}
-            onLoadMore={onLoadMore}
-            onSelectPhoto={handleSelectPhoto}
-            photos={photos}
-            selectedIndexes={selectedIndexes}
-          />
-        </BottomSheet>
+          <BottomSheet
+            animateOnMount={false}
+            backgroundStyle={styles.sheetBackground}
+            enableDynamicSizing={false}
+            enableOverDrag={false}
+            enablePanDownToClose={false}
+            handleComponent={PostMediaPickerSheetHandle}
+            index={0}
+            ref={sheetRef}
+            snapPoints={snapPoints}
+            style={styles.sheet}
+          >
+            <PostMediaGalleryList
+              key={selectedAlbumKey}
+              disabled={disabled}
+              errorMessage={errorMessage}
+              hasNextPage={hasNextPage}
+              isLoadingMore={isLoadingMore}
+              itemSize={itemSize}
+              onLoadMore={onLoadMore}
+              onSelectPhoto={handleSelectPhoto}
+              photos={photos}
+              selectedIndexes={selectedIndexes}
+            />
+          </BottomSheet>
+        </PostMediaPickerSheetHandleProvider>
       ) : null}
 
       <PostMediaAlbumPicker

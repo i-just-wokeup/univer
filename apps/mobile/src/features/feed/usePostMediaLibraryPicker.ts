@@ -155,6 +155,16 @@ export function usePostMediaLibraryPicker({
     }
   }
 
+  function focusSelectedPhoto(photoId: string) {
+    const selectedPhoto = selectedPhotos.find((photo) => photo.id === photoId);
+    if (!selectedPhoto) {
+      return;
+    }
+
+    clearErrors();
+    setPreviewPhoto(selectedPhoto);
+  }
+
   function toggleMultiSelect() {
     if (isMultiSelect && selectedPhotos.length > 1) {
       const firstPhoto = selectedPhotos[0];
@@ -235,6 +245,7 @@ export function usePostMediaLibraryPicker({
     commitSelectionEdit,
     cycleAspectRatio,
     errorMessage: selectionErrorMessage || source.errorMessage,
+    focusSelectedPhoto,
     isMultiSelect,
     isPreparing,
     previewCropTransform,
@@ -244,6 +255,7 @@ export function usePostMediaLibraryPicker({
     selectPhoto,
     selectedCount: selectedPhotos.length,
     selectedIndexes,
+    selectedPhotos,
     toggleMultiSelect,
     updatePreviewCropTransform,
   };
