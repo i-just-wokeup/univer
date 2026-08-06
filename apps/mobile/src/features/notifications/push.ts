@@ -19,8 +19,10 @@ Notifications.setNotificationHandler({
       typeof data.conversationId === "string" &&
       data.conversationId === getActiveConversationId();
 
+    // 안드로이드는 포그라운드에서 sound가 꺼져 있으면 heads-up 배너를 안 띄운다(expo #19090).
+    // 그래서 보고 있는 채팅방이 아니면 소리도 켜야 배너가 뜬다.
     return {
-      shouldPlaySound: false,
+      shouldPlaySound: !isActiveChatMessage,
       shouldSetBadge: false,
       shouldShowBanner: !isActiveChatMessage,
       shouldShowList: !isActiveChatMessage,
