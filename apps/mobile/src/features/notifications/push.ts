@@ -28,17 +28,29 @@ Notifications.setNotificationHandler({
   },
 });
 
+// 안드로이드는 채널 중요도를 한번 만들면 못 바꿔서, 예전 "default"(낮은 중요도로 굳음)
+// 대신 새 채널 id로 heads-up(HIGH) 채널을 만든다. 서버 푸시도 이 channelId로 보낸다.
+export const ANDROID_NOTIFICATION_CHANNEL_ID = "alerts";
+
 async function ensureAndroidNotificationChannel() {
   if (Platform.OS !== "android") {
     return;
   }
 
-  await Notifications.setNotificationChannelAsync("default", {
-    importance: Notifications.AndroidImportance.MAX,
-    lightColor: colors.accent,
-    name: "default",
-    vibrationPattern: [0, 250, 250, 250],
-  });
+  await Notifications.setNotificationChannelAsync(
+    ANDROID_NOTIFICATION_CHANNEL_ID,
+    {
+      importance: Notifications.AndroidImportance.HIGH,
+      lightColor: colors.accent,
+      name: "알림",
+      vibrationPattern: [0, 250, 250, 250],
+    },
+  );
+
+  // 낮은 중요도로 굳은 옛 채널 정리(있으면).
+  await Notifications.deleteNotificationChannelAsync("default").catch(
+    () => undefined,
+  );
 }
 
 function getProjectId() {
