@@ -387,6 +387,8 @@ get_feed_post_ids(p_seed float8, p_limit int, p_after_band int, p_after_rank flo
   returns table(post_id uuid, band int, rank float8)
 get_reel_post_ids(p_seed float8, p_seen_ids uuid[], p_limit int, p_after_band int, p_after_rank float8)
   returns table(post_id uuid, band int, rank float8)
+get_popular_post_ids(p_limit int, p_offset int, p_half_life_hours float8 DEFAULT 120)
+  returns table(post_id uuid, score float8)
 recount_post_likes(p_post_id uuid) returns int
 recount_post_comments(p_post_id uuid) returns int
 recount_comment_likes(p_comment_id uuid) returns int
@@ -402,6 +404,7 @@ take_action_on_report(report_id uuid)
 - `search_users`, `get_blocked_users`, `get_friends`, `get_pending_requests`, `get_sent_requests`는 department를 본인 또는 `department_public=true`일 때만 반환하고, 그 외에는 `null`을 반환한다.
 - `get_feed_post_ids`는 홈피드 **순서(정렬된 post id + band + rank)만** 반환한다. 내용(작성자·미디어)은 앱이 이 순서로 기존 임베딩 쿼리를 돌려 채운다. band 0=크루 안 본 최신 / 1=전교생 안 본 최신 / 2=본 글 랜덤 꼬리(시드 고정). SECURITY INVOKER라 posts RLS(같은 학교+공개범위)가 자동 적용, 차단만 함수에서 제외. `(band, rank)` 커서로 무한스크롤. 승격/인기 재삽입은 v2(미구현).
 - `get_reel_post_ids`는 릴스(영상 전용) **순서만** 반환한다. 크루 구분 없이 다 섞기 — band 0=세션에서 안 본 영상(시드 셔플) / 1=세션에서 본 영상(시드 셔플, 무한 루프용). "본 것"은 세션 개념이라 DB 저장 없이 앱이 `p_seen_ids`(이번 세션 본 릴스 id)로 넘긴다. 영상(`post_media.type='video'`)만, SECURITY INVOKER(공개범위 자동), 차단 제외, `(band, rank)` 커서. 완주율/가중치 추천은 나중.
+- `get_popular_post_ids`(2026-08-06)는 탐색 그리드/검색 인기 차트용 **인기순 post id + score**를 반환한다. 점수 = `(likes_count + comments_count*2) × 0.5^(경과h / half_life_hours, 기본 120h)`. SECURITY INVOKER(posts RLS=같은 학교+공개범위 자동), 함수에서 내 글·차단·미디어 없는 글 제외. `explore/api.ts`가 이 순서로 그리드 조립. ⚠️ 설계상 창작자 유저당 2개 캡(마이그레이션 `20260806160000`)이 있으나 라이브 DB는 테스트로 캡 제거 상태(2026-08-07), 최종 캡 값 확정 시 정리 예정.
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
 - `get_account_badges`(2026-08-06)는 배지 있는 유저마다 소속(`official_accounts.type` official→`council`·club→`club`)과 승격(`users.is_promoted`)을 한 행으로 반환. 계정 배지(학생회/동아리 pill + 승격 심볼)용. SECURITY DEFINER, `authenticated`/`anon` GRANT. ⚠️ `official`이 운영자/공식 계정까지 포함 → "학생회 vs 운영자" 구분(type `council` 추가)은 실 학생회 계정 받을 때 결정.
