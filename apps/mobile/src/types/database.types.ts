@@ -771,6 +771,18 @@ export type Database = {
           created_at: string
         }>
       }
+      get_friend_recommendations: {
+        Args: {
+          p_limit?: number
+        }
+        Returns: Array<{
+          user_id: string
+          nickname: string
+          avatar_url: string | null
+          mutual_count: number
+          same_dept: boolean
+        }>
+      }
       get_feed_post_ids: {
         Args: {
           p_seed: number

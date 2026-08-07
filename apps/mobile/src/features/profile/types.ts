@@ -38,3 +38,11 @@ export type ConnectionUser = {
   id: string;
   nickname: string;
 };
+
+export type FriendRecommendation = {
+  avatarUrl: string | null;
+  mutualCount: number;
+  nickname: string;
+  sameDept: boolean;
+  userId: string;
+};

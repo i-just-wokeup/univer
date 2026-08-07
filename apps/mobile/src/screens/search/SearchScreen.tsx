@@ -1,10 +1,13 @@
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { RecentSearchList } from "../../components/search/RecentSearchList";
+import { RecommendedCrewCarousel } from "../../components/search/RecommendedCrewCarousel";
 import { SearchInput } from "../../components/search/SearchInput";
 import { SearchResultsList } from "../../components/search/SearchResultsList";
+import type { FriendRecommendation } from "../../features/profile/api";
+import { useFriendRecommendations } from "../../features/profile/useFriendRecommendations";
 import { useUserSearch } from "../../features/search/useUserSearch";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
@@ -23,11 +26,31 @@ export function SearchScreen() {
     results,
     setQuery,
   } = useUserSearch();
+  const {
+    dismiss: dismissRecommendation,
+    recommendations,
+    requestCrew,
+  } = useFriendRecommendations();
   const trimmedQuery = query.trim();
 
   async function moveToProfile(nickname: string) {
     await recordSearch(nickname);
     router.push({ pathname: "/profile/[nickname]", params: { nickname } });
+  }
+
+  function moveToRecommendedProfile(recommendation: FriendRecommendation) {
+    router.push({
+      pathname: "/profile/[nickname]",
+      params: { nickname: recommendation.nickname },
+    });
+  }
+
+  async function requestRecommendedCrew(recommendation: FriendRecommendation) {
+    try {
+      await requestCrew(recommendation.userId);
+    } catch {
+      Alert.alert("크루 신청 실패", "잠시 후 다시 시도해 주세요.");
+    }
   }
 
   return (
@@ -58,18 +81,28 @@ export function SearchScreen() {
             results={results}
           />
         ) : (
-          <RecentSearchList
-            onClearAll={() => {
-              void clearRecent();
-            }}
-            onPressRecent={(item) => {
-              void moveToProfile(item);
-            }}
-            onRemoveRecent={(item) => {
-              void removeRecent(item);
-            }}
-            recentSearches={recentSearches}
-          />
+          <View style={styles.emptyQueryContent}>
+            <RecommendedCrewCarousel
+              onDismiss={dismissRecommendation}
+              onPressUser={moveToRecommendedProfile}
+              onRequest={(recommendation) => {
+                void requestRecommendedCrew(recommendation);
+              }}
+              recommendations={recommendations}
+            />
+            <RecentSearchList
+              onClearAll={() => {
+                void clearRecent();
+              }}
+              onPressRecent={(item) => {
+                void moveToProfile(item);
+              }}
+              onRemoveRecent={(item) => {
+                void removeRecent(item);
+              }}
+              recentSearches={recentSearches}
+            />
+          </View>
         )}
       </ScrollView>
     </ScreenContainer>
@@ -103,5 +136,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   content: {
     padding: 16,
     paddingBottom: 40,
+  },
+  emptyQueryContent: {
+    gap: 16,
   },
 });

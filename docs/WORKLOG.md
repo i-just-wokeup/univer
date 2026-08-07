@@ -7,6 +7,7 @@
 ## 2026-08-07
 
 ### 완료
+- **앱 검색 추천 크루 캐러셀** — 검색어가 비어 있을 때 최근 검색 위에 같은 학교의 추천 크루를 2~2.5장 보이는 가로 카드로 표시하고, 카드에서 프로필 이동·크루 신청·세션 숨기기를 지원한다. `get_friend_recommendations(p_limit=20)` RPC는 공통 크루 수×3+같은 학과 1점으로 정렬하고 본인·accepted/pending 양방향 연결·양방향 차단·다른 학교·비활성/탈퇴 유저를 제외하며, 학과명/실명 없이 `mutual_count`/`same_dept`만 반환한다. SECURITY DEFINER 내부 인증/학교 범위를 고정하고 `PUBLIC`/`anon` 실행 권한을 회수했으며 원격 적용 후 실제 사용자 문맥에서 점수·학교·연결/차단 제외와 ACL을 검증했다. 앱은 `profileRecommendations` API, `useFriendRecommendations` 상태/낙관적 롤백 훅, `RecommendedCrewCarousel`/`RecommendedCrewCard` 순수 UI로 분리했고 앱 tsc 통과.
 - **앱 게시물 작성 커스텀 영상 보관함 선택 및 플랫폼 안정화** — 사진 선택 화면에서 사진/영상 보관함을 전환하고, 영상 앨범·3열 그리드·커서 페이지네이션·단일 선택·무음 반복 미리보기·60초/250MB 사전 제한을 기존 작성 폼과 연결했다. Android는 권한 응답이 `granted`여도 `accessPrivileges=limited`이면 허용 영상이 0개가 될 수 있어 제한 접근 상태와 시스템 영상 추가 선택 흐름을 별도로 처리했다. iOS는 Photos 보관함 외부 `file://` URI를 `expo-video`/`expo-video-thumbnails`에 직접 전달해 미리보기 실패와 크래시가 발생하던 경로를 제거하고, 그리드 썸네일은 `expo-image`의 PhotoKit `ph://` 로더를 사용하며 선택 영상만 앱 캐시로 복사해 미리보기·썸네일 생성·업로드가 읽을 수 있는 파일로 통일했다. Android 썸네일은 셀이 잠시 비가시 상태가 되어도 생성 결과를 유지하도록 캐시 생명주기를 보정했다. Android·iOS 실기기에서 영상 목록/썸네일/미리보기 표시를 확인했고 앱 tsc 통과. 커밋 `423f67e`.
 
 ## 2026-08-05

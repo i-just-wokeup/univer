@@ -383,6 +383,8 @@ get_pending_requests()
 get_sent_requests()
 get_user_real_name(p_user_id uuid) returns text
 get_account_badges() returns table(user_id uuid, affiliation text, promoted boolean)
+get_friend_recommendations(p_limit int DEFAULT 20)
+  returns table(user_id uuid, nickname text, avatar_url text, mutual_count int, same_dept boolean)
 get_feed_post_ids(p_seed float8, p_limit int, p_after_band int, p_after_rank float8)
   returns table(post_id uuid, band int, rank float8)
 get_reel_post_ids(p_seed float8, p_seen_ids uuid[], p_limit int, p_after_band int, p_after_rank float8)
@@ -408,6 +410,7 @@ take_action_on_report(report_id uuid)
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
 - `get_account_badges`(2026-08-06)는 배지 있는 유저마다 소속(`official_accounts.type` official→`council`·club→`club`)과 승격(`users.is_promoted`)을 한 행으로 반환. 계정 배지(학생회/동아리 pill + 승격 심볼)용. SECURITY DEFINER, `authenticated`/`anon` GRANT. ⚠️ `official`이 운영자/공식 계정까지 포함 → "학생회 vs 운영자" 구분(type `council` 추가)은 실 학생회 계정 받을 때 결정.
+- `get_friend_recommendations`(2026-08-07)는 같은 학교의 아직 크루가 아닌 유저 중 공통 크루 또는 같은 학과인 후보를 반환한다. 점수는 `공통 크루 수*3 + 같은 학과 1`, 동점은 공통 크루 수 우선이다. 본인·accepted/pending 양방향 연결·양방향 차단·다른 학교·비활성/탈퇴 유저를 제외하며, 개인정보 보호를 위해 학과명/실명 대신 `mutual_count`와 `same_dept`만 반환한다. 연결 전체 계산을 위해 SECURITY DEFINER를 사용하되 함수 내부 `auth.uid()` 확인, 같은 학교 범위, `PUBLIC`/`anon` 실행 권한 회수 후 `authenticated`만 허용한다. 보조 인덱스 `idx_users_university_active`, `idx_blocks_blocked_id`를 함께 추가했다.
 
 **푸시 (한 기기 = 한 계정 + 서버 트리거 발송)**
 - 발송: `push_on_message`(messages insert), `push_on_notification`(notifications insert; `post_comment`·`comment_reply`만) 트리거가 `net.http_post`로 Expo Push(`exp.host/--/api/v2/push/send`) 호출. payload `priority:'high'` + `channelId:'alerts'`(2026-08-06 `default`→`alerts`, 낮게 굳은 채널 회피). 제목은 발신자 닉네임 or `unip`.

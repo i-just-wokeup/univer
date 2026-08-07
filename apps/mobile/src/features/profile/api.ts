@@ -16,8 +16,10 @@ export {
   getFavoriteUserStatus,
   toggleUserFavorite,
 } from "./profileFavorites";
+export { getFriendRecommendations } from "./profileRecommendations";
 export {
   getProfile,
   getProfileCounts,
   getProfilePosts,
 } from "./profileQueries";
+export type { FriendRecommendation } from "./types";
