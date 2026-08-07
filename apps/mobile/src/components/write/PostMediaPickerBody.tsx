@@ -48,6 +48,7 @@ type PostMediaPickerBodyProps = {
   onRetryAlbums: () => void;
   onSelectAlbum: (albumId: string | null) => void;
   onOpenSettings: () => void;
+  onPickVideo: () => void;
   onRequestPermission: () => void;
   onSelectPhoto: (photo: PostLibraryPhoto) => void;
   onToggleMultiSelect: () => void;
@@ -79,6 +80,7 @@ export function PostMediaPickerBody({
   onFocusSelectedPhoto,
   onLoadMore,
   onOpenSettings,
+  onPickVideo,
   onRequestPermission,
   onRetryAlbums,
   onSelectAlbum,
@@ -161,6 +163,7 @@ export function PostMediaPickerBody({
           isMultiSelect={isMultiSelect}
           onFocusSelectedPhoto={onFocusSelectedPhoto}
           onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
+          onPickVideo={onPickVideo}
           onToggleMultiSelect={onToggleMultiSelect}
           previewPhotoId={previewPhoto?.id ?? null}
           selectedPhotos={selectedPhotos}

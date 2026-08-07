@@ -21,6 +21,7 @@ type StoryVideoViewProps = {
   isPaused?: boolean;
   // 미리보기는 반복 재생(true). 뷰어는 false여야 끝에서 onEnd로 다음 스토리로 넘어간다.
   loop?: boolean;
+  muted?: boolean;
   posterUrl?: string | null;
   style?: ViewStyle;
   uri: string;
@@ -35,6 +36,7 @@ export function StoryVideoView({
   isCurrent = true,
   isPaused = false,
   loop = false,
+  muted = false,
   onEnd,
   onProgress,
   posterUrl = null,
@@ -54,7 +56,7 @@ export function StoryVideoView({
 
   const player = useVideoPlayer(null, (instance) => {
     instance.loop = loop;
-    instance.muted = false;
+    instance.muted = muted;
     instance.timeUpdateEventInterval = 0.1;
     // 뷰어(Cloudflare HLS 스트리밍)와 작성 미리보기(무압축 로컬 원본)의 버퍼 전략을 나눈다.
     if (/^https?:/i.test(uri)) {
@@ -73,6 +75,14 @@ export function StoryVideoView({
       };
     }
   });
+
+  useEffect(() => {
+    try {
+      player.muted = muted;
+    } catch {
+      // 화면 전환 중 native player가 먼저 release된 경우 무시한다.
+    }
+  }, [muted, player]);
 
   useEffect(() => {
     let isCancelled = false;

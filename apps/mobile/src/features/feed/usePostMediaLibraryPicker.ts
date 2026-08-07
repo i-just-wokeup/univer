@@ -165,6 +165,15 @@ export function usePostMediaLibraryPicker({
     setPreviewPhoto(selectedPhoto);
   }
 
+  function resetSelection() {
+    setSelectedPhotos([]);
+    setPreviewPhoto(null);
+    setCropTransforms({});
+    setIsMultiSelect(false);
+    selectionEditSnapshotRef.current = null;
+    clearErrors();
+  }
+
   function toggleMultiSelect() {
     if (isMultiSelect && selectedPhotos.length > 1) {
       const firstPhoto = selectedPhotos[0];
@@ -251,6 +260,7 @@ export function usePostMediaLibraryPicker({
     previewCropTransform,
     previewPhoto,
     removeSelectedPhoto,
+    resetSelection,
     resolveSelectedImageUris,
     selectPhoto,
     selectedCount: selectedPhotos.length,

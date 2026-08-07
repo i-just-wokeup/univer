@@ -122,6 +122,18 @@ export function WriteScreen() {
     setStage("form");
   }
 
+  async function handlePickerVideo() {
+    const didSelectVideo = await pickVideo();
+    if (!didSelectVideo) {
+      return;
+    }
+
+    mediaPicker.resetSelection();
+    mediaPicker.commitSelectionEdit();
+    setPickerExitTarget("route");
+    setStage("form");
+  }
+
   function handleCancel() {
     if (isSubmitting) {
       return;
@@ -193,7 +205,7 @@ export function WriteScreen() {
           aspectRatio={aspectRatio}
           canRequestPermission={mediaPicker.canRequestPermission}
           disabled={mediaPicker.isPreparing}
-          errorMessage={mediaPicker.errorMessage}
+          errorMessage={errorMessage || mediaPicker.errorMessage}
           hasNextPage={mediaPicker.hasNextPage}
           isLoading={mediaPicker.isLoading}
           isLoadingAlbums={mediaPicker.isLoadingAlbums}
@@ -204,6 +216,9 @@ export function WriteScreen() {
           onFocusSelectedPhoto={mediaPicker.focusSelectedPhoto}
           onLoadMore={mediaPicker.loadMore}
           onOpenSettings={mediaPicker.openSettings}
+          onPickVideo={() => {
+            void handlePickerVideo();
+          }}
           onRequestPermission={mediaPicker.requestPermission}
           onRetryAlbums={mediaPicker.retryAlbums}
           onSelectAlbum={mediaPicker.selectAlbum}

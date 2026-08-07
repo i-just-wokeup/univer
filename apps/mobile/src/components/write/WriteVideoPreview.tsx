@@ -1,4 +1,5 @@
-import { X } from "lucide-react-native";
+import { Volume2, VolumeX, X } from "lucide-react-native";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
@@ -18,6 +19,8 @@ export function WriteVideoPreview({
 }: WriteVideoPreviewProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const [unmutedUri, setUnmutedUri] = useState<string | null>(null);
+  const isMuted = unmutedUri !== uri;
 
   return (
     <View style={styles.videoUploader}>
@@ -30,6 +33,7 @@ export function WriteVideoPreview({
           isActive={!disabled}
           key={uri}
           loop
+          muted={isMuted}
           style={styles.videoPreview}
           uri={uri}
         />
@@ -44,6 +48,26 @@ export function WriteVideoPreview({
           ]}
         >
           <X color={colors.white} size={18} strokeWidth={3} />
+        </Pressable>
+        <Pressable
+          accessibilityLabel={isMuted ? "영상 소리 켜기" : "영상 소리 끄기"}
+          accessibilityRole="button"
+          disabled={disabled}
+          onPress={() =>
+            setUnmutedUri((currentUri) =>
+              currentUri === uri ? null : uri,
+            )
+          }
+          style={({ pressed }) => [
+            styles.soundButton,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          {isMuted ? (
+            <VolumeX color={colors.onMediaGlyph} size={19} strokeWidth={2.4} />
+          ) : (
+            <Volume2 color={colors.onMediaGlyph} size={19} strokeWidth={2.4} />
+          )}
         </Pressable>
       </View>
     </View>
@@ -88,6 +112,17 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 17,
+    backgroundColor: c.mediaControlBg,
+  },
+  soundButton: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    height: 36,
+    width: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 18,
     backgroundColor: c.mediaControlBg,
   },
   pressed: {

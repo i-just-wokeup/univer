@@ -1,4 +1,4 @@
-import { ChevronDown, Images } from "lucide-react-native";
+import { ChevronDown, Film, Images } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -16,6 +16,7 @@ type PostMediaPickerToolbarProps = {
   disabled: boolean;
   isMultiSelect: boolean;
   onOpenAlbumPicker: () => void;
+  onPickVideo: () => void;
   onToggleMultiSelect: () => void;
 };
 
@@ -24,6 +25,7 @@ export function PostMediaPickerToolbar({
   disabled,
   isMultiSelect,
   onOpenAlbumPicker,
+  onPickVideo,
   onToggleMultiSelect,
 }: PostMediaPickerToolbarProps) {
   const { colors } = useTheme();
@@ -46,33 +48,48 @@ export function PostMediaPickerToolbar({
         </Text>
         <ChevronDown color={colors.text} size={18} strokeWidth={2.4} />
       </Pressable>
-      <Pressable
-        accessibilityLabel={
-          isMultiSelect ? "여러 사진 선택 끄기" : "여러 사진 선택"
-        }
-        accessibilityRole="button"
-        disabled={disabled}
-        onPress={onToggleMultiSelect}
-        style={({ pressed }) => [
-          styles.multiSelectButton,
-          isMultiSelect ? styles.multiSelectButtonActive : null,
-          pressed ? styles.pressed : null,
-        ]}
-      >
-        <Images
-          color={isMultiSelect ? colors.onAccent : colors.text}
-          size={18}
-          strokeWidth={2.2}
-        />
-        <Text
-          style={[
-            styles.multiSelectText,
-            isMultiSelect ? styles.multiSelectTextActive : null,
+      <View style={styles.actions}>
+        <Pressable
+          accessibilityLabel="영상 선택"
+          accessibilityRole="button"
+          disabled={disabled}
+          onPress={onPickVideo}
+          style={({ pressed }) => [
+            styles.actionButton,
+            pressed ? styles.pressed : null,
           ]}
         >
-          선택
-        </Text>
-      </Pressable>
+          <Film color={colors.text} size={18} strokeWidth={2.2} />
+          <Text style={styles.actionText}>영상</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={
+            isMultiSelect ? "여러 사진 선택 끄기" : "여러 사진 선택"
+          }
+          accessibilityRole="button"
+          disabled={disabled}
+          onPress={onToggleMultiSelect}
+          style={({ pressed }) => [
+            styles.actionButton,
+            isMultiSelect ? styles.multiSelectButtonActive : null,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Images
+            color={isMultiSelect ? colors.onAccent : colors.text}
+            size={18}
+            strokeWidth={2.2}
+          />
+          <Text
+            style={[
+              styles.actionText,
+              isMultiSelect ? styles.multiSelectTextActive : null,
+            ]}
+          >
+            선택
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -88,7 +105,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   albumButton: {
     minWidth: 0,
-    maxWidth: "58%",
+    flex: 1,
     minHeight: 34,
     flexDirection: "row",
     alignItems: "center",
@@ -100,7 +117,12 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     fontSize: fontSize.body,
     fontWeight: fontWeight.heavy,
   },
-  multiSelectButton: {
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  actionButton: {
     minHeight: 34,
     flexDirection: "row",
     alignItems: "center",
@@ -112,7 +134,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   multiSelectButtonActive: {
     backgroundColor: c.accent,
   },
-  multiSelectText: {
+  actionText: {
     color: c.text,
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,

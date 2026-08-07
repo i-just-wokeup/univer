@@ -62,14 +62,14 @@ export function useWriteForm() {
     setErrorMessage("");
   }
 
-  async function pickVideo() {
+  async function pickVideo(): Promise<boolean> {
     setErrorMessage("");
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
       setErrorMessage("영상 접근 권한이 필요합니다.");
-      return;
+      return false;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -79,13 +79,13 @@ export function useWriteForm() {
     });
 
     if (result.canceled) {
-      return;
+      return false;
     }
 
     const [asset] = result.assets;
 
     if (!asset) {
-      return;
+      return false;
     }
 
     // 길이 제한: 60초 초과면 업로드 전에 차단.
@@ -96,7 +96,7 @@ export function useWriteForm() {
       setErrorMessage(
         `${MAX_VIDEO_DURATION_SECONDS}초 이하 영상만 올릴 수 있어요.`,
       );
-      return;
+      return false;
     }
 
     // 용량 제한: 250MB 초과면 차단(파일 크기 확인 실패 시엔 통과시켜 업로드 시도).
@@ -104,7 +104,7 @@ export function useWriteForm() {
       const info = await FileSystem.getInfoAsync(asset.uri);
       if (info.exists && info.size > MAX_VIDEO_SIZE_BYTES) {
         setErrorMessage("영상 용량이 너무 커요. (250MB 이하)");
-        return;
+        return false;
       }
     } catch {
       // 크기 확인 실패는 무시하고 업로드 진행(서버/타임아웃이 최종 방어).
@@ -117,6 +117,7 @@ export function useWriteForm() {
       uri: asset.uri,
     });
     setAspectRatio(detectAspectRatio(asset.width, asset.height));
+    return true;
   }
 
   function removeImage(index: number) {

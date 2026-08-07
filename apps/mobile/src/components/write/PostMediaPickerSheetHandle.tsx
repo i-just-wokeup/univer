@@ -12,6 +12,7 @@ type PostMediaPickerSheetHandleContextValue = {
   isMultiSelect: boolean;
   onFocusSelectedPhoto: (photoId: string) => void;
   onOpenAlbumPicker: () => void;
+  onPickVideo: () => void;
   onToggleMultiSelect: () => void;
   previewPhotoId: string | null;
   selectedPhotos: PostLibraryPhoto[];
@@ -32,6 +33,7 @@ export function PostMediaPickerSheetHandleProvider({
   isMultiSelect,
   onFocusSelectedPhoto,
   onOpenAlbumPicker,
+  onPickVideo,
   onToggleMultiSelect,
   previewPhotoId,
   selectedPhotos,
@@ -44,6 +46,7 @@ export function PostMediaPickerSheetHandleProvider({
         isMultiSelect,
         onFocusSelectedPhoto,
         onOpenAlbumPicker,
+        onPickVideo,
         onToggleMultiSelect,
         previewPhotoId,
         selectedPhotos,
@@ -75,6 +78,7 @@ export function PostMediaPickerSheetHandle() {
         disabled={context.disabled}
         isMultiSelect={context.isMultiSelect}
         onOpenAlbumPicker={context.onOpenAlbumPicker}
+        onPickVideo={context.onPickVideo}
         onToggleMultiSelect={context.onToggleMultiSelect}
       />
     </View>
