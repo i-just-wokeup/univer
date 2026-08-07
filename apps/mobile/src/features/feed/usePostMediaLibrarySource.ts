@@ -2,16 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Linking } from "react-native";
 
 import {
+  getPostLibraryAssetPage,
   getPostLibraryAlbums,
   getPostLibraryPermission,
-  getPostLibraryPhotoPage,
   isPostLibraryAvailable,
   requestPostLibraryPermission,
+  updatePostLibraryPermissionSelection,
 } from "./postMediaLibrary";
 import type {
   PostLibraryAlbum,
   PostLibraryAlbumOption,
-  PostLibraryPhoto,
+  PostLibraryAsset,
+  PostLibraryMediaType,
 } from "./postMediaLibrary";
 
 const PAGE_SIZE = 60;
@@ -20,10 +22,20 @@ export type PostLibraryPermissionState =
   | "checking"
   | "denied"
   | "granted"
+  | "limited"
   | "unavailable";
 
-export function usePostMediaLibrarySource() {
-  const [photos, setPhotos] = useState<PostLibraryPhoto[]>([]);
+function getGrantedPermissionState(
+  permission: Awaited<ReturnType<typeof getPostLibraryPermission>>,
+): PostLibraryPermissionState {
+  return permission.accessPrivileges === "limited" ? "limited" : "granted";
+}
+
+export function usePostMediaLibrarySource(
+  mediaType: PostLibraryMediaType,
+  enabled = true,
+) {
+  const [assets, setAssets] = useState<PostLibraryAsset[]>([]);
   const [albums, setAlbums] = useState<PostLibraryAlbum[]>([]);
   const [recentAlbum, setRecentAlbum] =
     useState<PostLibraryAlbumOption | null>(null);
@@ -43,6 +55,7 @@ export function usePostMediaLibrarySource() {
   const requestGenerationRef = useRef(0);
   const selectedAlbumIdRef = useRef<string | null>(null);
   const hasInitializedRef = useRef(false);
+  const mediaLabel = mediaType === "video" ? "영상" : "사진";
 
   const loadPage = useCallback(
     async (reset: boolean, albumId = selectedAlbumIdRef.current) => {
@@ -63,7 +76,7 @@ export function usePostMediaLibrarySource() {
         endCursorRef.current = null;
         hasNextPageRef.current = false;
         setHasNextPage(false);
-        setPhotos([]);
+        setAssets([]);
         setIsLoadingMore(false);
       }
 
@@ -76,10 +89,11 @@ export function usePostMediaLibrarySource() {
       }
 
       try {
-        const page = await getPostLibraryPhotoPage({
+        const page = await getPostLibraryAssetPage({
           after: reset ? undefined : endCursorRef.current ?? undefined,
           albumId,
           first: PAGE_SIZE,
+          mediaType,
         });
         if (
           generation !== requestGenerationRef.current ||
@@ -88,27 +102,27 @@ export function usePostMediaLibrarySource() {
           return;
         }
 
-        setPhotos((currentPhotos) => {
+        setAssets((currentAssets) => {
           if (reset) {
-            return page.photos;
+            return page.assets;
           }
 
-          const existingIds = new Set(currentPhotos.map((photo) => photo.id));
+          const existingIds = new Set(currentAssets.map((asset) => asset.id));
           return [
-            ...currentPhotos,
-            ...page.photos.filter((photo) => !existingIds.has(photo.id)),
+            ...currentAssets,
+            ...page.assets.filter((asset) => !existingIds.has(asset.id)),
           ];
         });
         endCursorRef.current = page.endCursor;
         hasNextPageRef.current = page.hasNextPage;
         setHasNextPage(page.hasNextPage);
         if (reset && albumId === null) {
-          const coverPhoto = page.photos[0];
+          const coverAsset = page.assets[0];
           setRecentAlbum(
-            coverPhoto
+            coverAsset
               ? {
                   assetCount: page.totalCount,
-                  coverPhoto,
+                  coverAsset,
                   id: null,
                   title: "최근 항목",
                 }
@@ -125,7 +139,7 @@ export function usePostMediaLibrarySource() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "사진을 불러오지 못했습니다.",
+            : `${mediaLabel}을 불러오지 못했습니다.`,
         );
       } finally {
         if (pageLoadingGenerationRef.current === generation) {
@@ -135,7 +149,7 @@ export function usePostMediaLibrarySource() {
         }
       }
     },
-    [],
+    [mediaLabel, mediaType],
   );
 
   const loadAlbums = useCallback(async () => {
@@ -143,18 +157,18 @@ export function usePostMediaLibrarySource() {
     setAlbumErrorMessage("");
 
     try {
-      setAlbums(await getPostLibraryAlbums());
+      setAlbums(await getPostLibraryAlbums(mediaType));
     } catch (error) {
       setAlbums([]);
       setAlbumErrorMessage(
         error instanceof Error
           ? error.message
-          : "앨범을 불러오지 못했습니다.",
+          : `${mediaLabel} 앨범을 불러오지 못했습니다.`,
       );
     } finally {
       setIsLoadingAlbums(false);
     }
-  }, []);
+  }, [mediaLabel, mediaType]);
 
   const loadGrantedLibrary = useCallback(async () => {
     await Promise.all([loadPage(true), loadAlbums()]);
@@ -165,7 +179,10 @@ export function usePostMediaLibrarySource() {
     setErrorMessage("");
 
     try {
-      const permission = await requestPostLibraryPermission();
+      const permission =
+        permissionState === "limited"
+          ? await updatePostLibraryPermissionSelection(mediaType)
+          : await requestPostLibraryPermission(mediaType);
       setCanRequestPermission(permission.canAskAgain);
 
       if (!permission.granted) {
@@ -174,7 +191,7 @@ export function usePostMediaLibrarySource() {
         return;
       }
 
-      setPermissionState("granted");
+      setPermissionState(getGrantedPermissionState(permission));
       await loadGrantedLibrary();
     } catch (error) {
       setPermissionState("denied");
@@ -182,13 +199,13 @@ export function usePostMediaLibrarySource() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "사진 접근 권한을 확인하지 못했습니다.",
+          : `${mediaLabel} 접근 권한을 확인하지 못했습니다.`,
       );
     }
-  }, [loadGrantedLibrary]);
+  }, [loadGrantedLibrary, mediaLabel, mediaType, permissionState]);
 
   useEffect(() => {
-    if (hasInitializedRef.current) {
+    if (!enabled || hasInitializedRef.current) {
       return;
     }
     hasInitializedRef.current = true;
@@ -201,11 +218,11 @@ export function usePostMediaLibrarySource() {
         return;
       }
 
-      const permission = await getPostLibraryPermission();
+      const permission = await getPostLibraryPermission(mediaType);
       setCanRequestPermission(permission.canAskAgain);
 
       if (permission.granted) {
-        setPermissionState("granted");
+        setPermissionState(getGrantedPermissionState(permission));
         await loadGrantedLibrary();
         return;
       }
@@ -225,10 +242,10 @@ export function usePostMediaLibrarySource() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "사진 보관함을 열지 못했습니다.",
+          : `${mediaLabel} 보관함을 열지 못했습니다.`,
       );
     });
-  }, [loadGrantedLibrary, requestPermission]);
+  }, [enabled, loadGrantedLibrary, mediaLabel, mediaType, requestPermission]);
 
   const albumOptions = useMemo<PostLibraryAlbumOption[]>(
     () => (recentAlbum ? [recentAlbum, ...albums] : albums),
@@ -273,7 +290,7 @@ export function usePostMediaLibrarySource() {
       void Linking.openSettings().catch(() => undefined);
     },
     permissionState,
-    photos,
+    assets,
     requestPermission: () => {
       void requestPermission();
     },

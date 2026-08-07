@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import type { PostLibraryAlbumOption } from "../../features/feed/postMediaLibrary";
+import type { PostLibraryMediaType } from "../../features/feed/postMediaLibrary";
 import {
   fontSize,
   fontWeight,
@@ -21,6 +22,7 @@ const CARD_GAP = 10;
 
 type PostMediaAlbumOverviewProps = {
   albums: PostLibraryAlbumOption[];
+  mediaType: PostLibraryMediaType;
   onSelect: (albumId: string | null) => void;
   onShowAll: () => void;
   selectedAlbumId: string | null;
@@ -28,6 +30,7 @@ type PostMediaAlbumOverviewProps = {
 
 export function PostMediaAlbumOverview({
   albums,
+  mediaType,
   onSelect,
   onShowAll,
   selectedAlbumId,
@@ -39,7 +42,9 @@ export function PostMediaAlbumOverview({
   return (
     <View style={styles.container}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>사진첩</Text>
+        <Text style={styles.sectionTitle}>
+          {mediaType === "video" ? "영상 앨범" : "사진첩"}
+        </Text>
         <Pressable
           accessibilityRole="button"
           onPress={onShowAll}

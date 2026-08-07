@@ -2,21 +2,18 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { useCallback, useState } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 
-import type { PostMediaCropTransform } from "../../features/feed/postMediaCrop";
-import type { PostAspectRatio } from "../../features/feed/types";
 import type {
   PostLibraryAlbumOption,
   PostLibraryPhoto,
+  PostLibraryVideo,
 } from "../../features/feed/postMediaLibrary";
+import type { PostAspectRatio } from "../../features/feed/types";
 import type { PostLibraryPermissionState } from "../../features/feed/usePostMediaLibrarySource";
 import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
-import {
-  getPostMediaGridItemSize,
-  PostMediaGalleryList,
-} from "./PostMediaGalleryList";
 import { PostMediaAlbumPicker } from "./PostMediaAlbumPicker";
+import { getPostMediaGridItemSize } from "./PostMediaGalleryList";
 import {
   PostMediaPickerState,
   resolvePostMediaPickerState,
@@ -26,10 +23,14 @@ import {
   PostMediaPickerSheetHandleProvider,
 } from "./PostMediaPickerSheetHandle";
 import { POST_MEDIA_PICKER_TOOLBAR_HEIGHT } from "./PostMediaPickerToolbar";
-import { PostMediaPreview } from "./PostMediaPreview";
+import { PostVideoGalleryList } from "./PostVideoGalleryList";
+import { PostVideoPickerPreview } from "./PostVideoPickerPreview";
 import { usePostMediaPickerSheet } from "./usePostMediaPickerSheet";
 
-type PostMediaPickerBodyProps = {
+const EMPTY_PHOTOS: PostLibraryPhoto[] = [];
+const NOOP = () => undefined;
+
+type PostVideoPickerBodyProps = {
   albumErrorMessage: string;
   albumOptions: PostLibraryAlbumOption[];
   aspectRatio: PostAspectRatio;
@@ -40,30 +41,23 @@ type PostMediaPickerBodyProps = {
   isLoading: boolean;
   isLoadingAlbums: boolean;
   isLoadingMore: boolean;
-  isMultiSelect: boolean;
-  onChangeCropTransform: (transform: PostMediaCropTransform) => void;
-  onCycleAspectRatio: () => void;
   onLoadMore: () => void;
-  onFocusSelectedPhoto: (photoId: string) => void;
+  onOpenSettings: () => void;
+  onRequestPermission: () => void;
   onRetryAlbums: () => void;
   onSelectAlbum: (albumId: string | null) => void;
-  onOpenSettings: () => void;
-  onSwitchToVideo: () => void;
-  onRequestPermission: () => void;
-  onSelectPhoto: (photo: PostLibraryPhoto) => void;
-  onToggleMultiSelect: () => void;
+  onSelectVideo: (video: PostLibraryVideo) => void;
+  onSwitchToPhotos: () => void;
   permissionState: PostLibraryPermissionState;
-  photos: PostLibraryPhoto[];
-  previewPhoto: PostLibraryPhoto | null;
-  previewCropTransform: PostMediaCropTransform;
+  playbackUri: string | null;
   selectedAlbumId: string | null;
   selectedAlbumKey: string;
   selectedAlbumTitle: string;
-  selectedIndexes: ReadonlyMap<string, number>;
-  selectedPhotos: PostLibraryPhoto[];
+  selectedVideo: PostLibraryVideo | null;
+  videos: PostLibraryVideo[];
 };
 
-export function PostMediaPickerBody({
+export function PostVideoPickerBody({
   albumErrorMessage,
   albumOptions,
   aspectRatio,
@@ -74,28 +68,21 @@ export function PostMediaPickerBody({
   isLoading,
   isLoadingAlbums,
   isLoadingMore,
-  isMultiSelect,
-  onChangeCropTransform,
-  onCycleAspectRatio,
-  onFocusSelectedPhoto,
   onLoadMore,
   onOpenSettings,
-  onSwitchToVideo,
   onRequestPermission,
   onRetryAlbums,
   onSelectAlbum,
-  onSelectPhoto,
-  onToggleMultiSelect,
+  onSelectVideo,
+  onSwitchToPhotos,
   permissionState,
-  photos,
-  previewPhoto,
-  previewCropTransform,
+  playbackUri,
   selectedAlbumId,
   selectedAlbumKey,
   selectedAlbumTitle,
-  selectedIndexes,
-  selectedPhotos,
-}: PostMediaPickerBodyProps) {
+  selectedVideo,
+  videos,
+}: PostVideoPickerBodyProps) {
   const styles = useThemedStyles(makeStyles);
   const [isAlbumPickerOpen, setIsAlbumPickerOpen] = useState(false);
   const { width } = useWindowDimensions();
@@ -113,33 +100,29 @@ export function PostMediaPickerBody({
     width,
   });
   const pickerState = resolvePostMediaPickerState({
+    assetCount: videos.length,
     canRequestPermission,
     errorMessage,
     isLoading,
+    mediaType: "video",
     onOpenSettings,
     onRequestPermission,
     permissionState,
-    assetCount: photos.length,
   });
 
-  const handleSelectPhoto = useCallback(
-    (photo: PostLibraryPhoto) => {
-      onSelectPhoto(photo);
-
-      if (!isMultiSelect) {
-        collapse();
-      }
+  const handleSelectVideo = useCallback(
+    (video: PostLibraryVideo) => {
+      onSelectVideo(video);
+      collapse();
     },
-    [collapse, isMultiSelect, onSelectPhoto],
+    [collapse, onSelectVideo],
   );
 
   const preview = (
-    <PostMediaPreview
+    <PostVideoPickerPreview
       aspectRatio={aspectRatio}
-      cropTransform={previewCropTransform}
-      onChangeCropTransform={onChangeCropTransform}
-      onCycleAspectRatio={onCycleAspectRatio}
-      photo={previewPhoto}
+      playbackUri={playbackUri}
+      video={selectedVideo}
     />
   );
 
@@ -160,14 +143,14 @@ export function PostMediaPickerBody({
         <PostMediaPickerSheetHandleProvider
           albumTitle={selectedAlbumTitle}
           disabled={disabled}
-          isMultiSelect={isMultiSelect}
-          mediaType="photo"
-          onFocusSelectedPhoto={onFocusSelectedPhoto}
+          isMultiSelect={false}
+          mediaType="video"
+          onFocusSelectedPhoto={NOOP}
           onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
-          onSwitchMediaType={onSwitchToVideo}
-          onToggleMultiSelect={onToggleMultiSelect}
-          previewPhotoId={previewPhoto?.id ?? null}
-          selectedPhotos={selectedPhotos}
+          onSwitchMediaType={onSwitchToPhotos}
+          onToggleMultiSelect={NOOP}
+          previewPhotoId={null}
+          selectedPhotos={EMPTY_PHOTOS}
         >
           <BottomSheet
             animateOnMount={false}
@@ -181,7 +164,7 @@ export function PostMediaPickerBody({
             snapPoints={snapPoints}
             style={styles.sheet}
           >
-            <PostMediaGalleryList
+            <PostVideoGalleryList
               key={selectedAlbumKey}
               disabled={disabled}
               errorMessage={errorMessage}
@@ -189,9 +172,9 @@ export function PostMediaPickerBody({
               isLoadingMore={isLoadingMore}
               itemSize={itemSize}
               onLoadMore={onLoadMore}
-              onSelectPhoto={handleSelectPhoto}
-              photos={photos}
-              selectedIndexes={selectedIndexes}
+              onSelectVideo={handleSelectVideo}
+              selectedVideoId={selectedVideo?.id ?? null}
+              videos={videos}
             />
           </BottomSheet>
         </PostMediaPickerSheetHandleProvider>
@@ -201,7 +184,7 @@ export function PostMediaPickerBody({
         albums={albumOptions}
         errorMessage={albumErrorMessage}
         isLoading={isLoadingAlbums}
-        mediaType="photo"
+        mediaType="video"
         onClose={() => setIsAlbumPickerOpen(false)}
         onRetry={onRetryAlbums}
         onSelect={onSelectAlbum}

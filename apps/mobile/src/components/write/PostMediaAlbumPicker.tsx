@@ -10,7 +10,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import type { PostLibraryAlbumOption } from "../../features/feed/postMediaLibrary";
+import type {
+  PostLibraryAlbumOption,
+  PostLibraryMediaType,
+} from "../../features/feed/postMediaLibrary";
 import {
   fontSize,
   fontWeight,
@@ -27,6 +30,7 @@ type PostMediaAlbumPickerProps = {
   albums: PostLibraryAlbumOption[];
   errorMessage: string;
   isLoading: boolean;
+  mediaType: PostLibraryMediaType;
   onClose: () => void;
   onRetry: () => void;
   onSelect: (albumId: string | null) => void;
@@ -38,6 +42,7 @@ export function PostMediaAlbumPicker({
   albums,
   errorMessage,
   isLoading,
+  mediaType,
   onClose,
   onRetry,
   onSelect,
@@ -100,7 +105,11 @@ export function PostMediaAlbumPicker({
 
             <View style={styles.headerTitleRow}>
               <Text numberOfLines={1} style={styles.headerTitle}>
-                {mode === "all" ? "사진첩" : "사진첩 선택"}
+                {mode === "all"
+                  ? mediaType === "video"
+                    ? "영상 앨범"
+                    : "사진첩"
+                  : "앨범 선택"}
               </Text>
               {isLoading ? (
                 <ActivityIndicator color={colors.accent} size="small" />
@@ -149,6 +158,7 @@ export function PostMediaAlbumPicker({
           ) : (
             <PostMediaAlbumOverview
               albums={albums}
+              mediaType={mediaType}
               onSelect={handleSelect}
               onShowAll={() => setMode("all")}
               selectedAlbumId={selectedAlbumId}

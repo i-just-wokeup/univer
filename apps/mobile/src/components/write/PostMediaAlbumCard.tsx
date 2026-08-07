@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import { Check } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -10,6 +9,7 @@ import {
   useThemedStyles,
 } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { PostLibraryAssetThumbnail } from "./PostLibraryAssetThumbnail";
 
 type PostMediaAlbumCardProps = {
   album: PostLibraryAlbumOption;
@@ -29,7 +29,7 @@ export function PostMediaAlbumCard({
 
   return (
     <Pressable
-      accessibilityLabel={`${album.title} 앨범, 사진 ${album.assetCount}장`}
+      accessibilityLabel={`${album.title} 앨범, ${album.coverAsset.mediaType === "video" ? "영상" : "사진"} ${album.assetCount}개`}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
       onPress={() => onPress(album.id)}
@@ -40,13 +40,9 @@ export function PostMediaAlbumCard({
       ]}
     >
       <View style={[styles.cover, { height: width }]}>
-        <Image
-          cachePolicy="memory-disk"
-          contentFit="cover"
-          recyclingKey={album.coverPhoto.id}
-          source={{ uri: album.coverPhoto.uri }}
+        <PostLibraryAssetThumbnail
+          asset={album.coverAsset}
           style={styles.image}
-          transition={80}
         />
         {isSelected ? (
           <View style={styles.selectedBadge}>

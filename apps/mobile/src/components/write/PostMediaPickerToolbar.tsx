@@ -1,6 +1,7 @@
-import { ChevronDown, Film, Images } from "lucide-react-native";
+import { ChevronDown, Film, ImageIcon, Images } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import type { PostLibraryMediaType } from "../../features/feed/postMediaLibrary";
 import {
   fontSize,
   fontWeight,
@@ -15,8 +16,9 @@ type PostMediaPickerToolbarProps = {
   albumTitle: string;
   disabled: boolean;
   isMultiSelect: boolean;
+  mediaType: PostLibraryMediaType;
   onOpenAlbumPicker: () => void;
-  onPickVideo: () => void;
+  onSwitchMediaType: () => void;
   onToggleMultiSelect: () => void;
 };
 
@@ -24,8 +26,9 @@ export function PostMediaPickerToolbar({
   albumTitle,
   disabled,
   isMultiSelect,
+  mediaType,
   onOpenAlbumPicker,
-  onPickVideo,
+  onSwitchMediaType,
   onToggleMultiSelect,
 }: PostMediaPickerToolbarProps) {
   const { colors } = useTheme();
@@ -50,45 +53,55 @@ export function PostMediaPickerToolbar({
       </Pressable>
       <View style={styles.actions}>
         <Pressable
-          accessibilityLabel="영상 선택"
-          accessibilityRole="button"
-          disabled={disabled}
-          onPress={onPickVideo}
-          style={({ pressed }) => [
-            styles.actionButton,
-            pressed ? styles.pressed : null,
-          ]}
-        >
-          <Film color={colors.text} size={18} strokeWidth={2.2} />
-          <Text style={styles.actionText}>영상</Text>
-        </Pressable>
-        <Pressable
           accessibilityLabel={
-            isMultiSelect ? "여러 사진 선택 끄기" : "여러 사진 선택"
+            mediaType === "video" ? "사진 보관함 보기" : "영상 보관함 보기"
           }
           accessibilityRole="button"
           disabled={disabled}
-          onPress={onToggleMultiSelect}
+          onPress={onSwitchMediaType}
           style={({ pressed }) => [
             styles.actionButton,
-            isMultiSelect ? styles.multiSelectButtonActive : null,
             pressed ? styles.pressed : null,
           ]}
         >
-          <Images
-            color={isMultiSelect ? colors.onAccent : colors.text}
-            size={18}
-            strokeWidth={2.2}
-          />
-          <Text
-            style={[
-              styles.actionText,
-              isMultiSelect ? styles.multiSelectTextActive : null,
-            ]}
-          >
-            선택
+          {mediaType === "video" ? (
+            <ImageIcon color={colors.text} size={18} strokeWidth={2.2} />
+          ) : (
+            <Film color={colors.text} size={18} strokeWidth={2.2} />
+          )}
+          <Text style={styles.actionText}>
+            {mediaType === "video" ? "사진" : "영상"}
           </Text>
         </Pressable>
+        {mediaType === "photo" ? (
+          <Pressable
+            accessibilityLabel={
+              isMultiSelect ? "여러 사진 선택 끄기" : "여러 사진 선택"
+            }
+            accessibilityRole="button"
+            disabled={disabled}
+            onPress={onToggleMultiSelect}
+            style={({ pressed }) => [
+              styles.actionButton,
+              isMultiSelect ? styles.multiSelectButtonActive : null,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <Images
+              color={isMultiSelect ? colors.onAccent : colors.text}
+              size={18}
+              strokeWidth={2.2}
+            />
+            <Text
+              style={[
+                styles.actionText,
+                isMultiSelect ? styles.multiSelectTextActive : null,
+              ]}
+            >
+              선택
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );

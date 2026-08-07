@@ -2,7 +2,10 @@ import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { View } from "react-native";
 
-import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
+import type {
+  PostLibraryMediaType,
+  PostLibraryPhoto,
+} from "../../features/feed/postMediaLibrary";
 import { PostMediaCropThumbnailStrip } from "./PostMediaCropThumbnailStrip";
 import { PostMediaPickerToolbar } from "./PostMediaPickerToolbar";
 
@@ -10,9 +13,10 @@ type PostMediaPickerSheetHandleContextValue = {
   albumTitle: string;
   disabled: boolean;
   isMultiSelect: boolean;
+  mediaType: PostLibraryMediaType;
   onFocusSelectedPhoto: (photoId: string) => void;
   onOpenAlbumPicker: () => void;
-  onPickVideo: () => void;
+  onSwitchMediaType: () => void;
   onToggleMultiSelect: () => void;
   previewPhotoId: string | null;
   selectedPhotos: PostLibraryPhoto[];
@@ -31,9 +35,10 @@ export function PostMediaPickerSheetHandleProvider({
   children,
   disabled,
   isMultiSelect,
+  mediaType,
   onFocusSelectedPhoto,
   onOpenAlbumPicker,
-  onPickVideo,
+  onSwitchMediaType,
   onToggleMultiSelect,
   previewPhotoId,
   selectedPhotos,
@@ -44,9 +49,10 @@ export function PostMediaPickerSheetHandleProvider({
         albumTitle,
         disabled,
         isMultiSelect,
+        mediaType,
         onFocusSelectedPhoto,
         onOpenAlbumPicker,
-        onPickVideo,
+        onSwitchMediaType,
         onToggleMultiSelect,
         previewPhotoId,
         selectedPhotos,
@@ -67,7 +73,9 @@ export function PostMediaPickerSheetHandle() {
     <View>
       <PostMediaCropThumbnailStrip
         isVisible={
-          context.isMultiSelect && context.selectedPhotos.length >= 2
+          context.mediaType === "photo" &&
+          context.isMultiSelect &&
+          context.selectedPhotos.length >= 2
         }
         onFocusPhoto={context.onFocusSelectedPhoto}
         photos={context.selectedPhotos}
@@ -77,8 +85,9 @@ export function PostMediaPickerSheetHandle() {
         albumTitle={context.albumTitle}
         disabled={context.disabled}
         isMultiSelect={context.isMultiSelect}
+        mediaType={context.mediaType}
         onOpenAlbumPicker={context.onOpenAlbumPicker}
-        onPickVideo={context.onPickVideo}
+        onSwitchMediaType={context.onSwitchMediaType}
         onToggleMultiSelect={context.onToggleMultiSelect}
       />
     </View>

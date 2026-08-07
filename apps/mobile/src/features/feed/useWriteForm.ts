@@ -1,16 +1,12 @@
-import * as FileSystem from "expo-file-system/legacy";
-import * as ImagePicker from "expo-image-picker";
 import { getThumbnailAsync } from "expo-video-thumbnails";
 import { useState } from "react";
 
 import { createPost, uploadPostImages, uploadPostVideo } from "./api";
+import type { PreparedPostLibraryVideo } from "./postMediaLibrary";
 import type { PostAspectRatio, PostVisibility } from "./types";
 
 export const MAX_IMAGES = 10;
 // 릴스/피드 영상 업로드 제한. 길이는 비용/인코딩을, 용량은 업로드 안정성을 위해 사전 차단.
-const MAX_VIDEO_DURATION_SECONDS = 60;
-const MAX_VIDEO_SIZE_BYTES = 250 * 1024 * 1024;
-
 type SelectedVideo = {
   durationSeconds: number | null;
   uri: string;
@@ -62,64 +58,6 @@ export function useWriteForm() {
     setErrorMessage("");
   }
 
-  async function pickVideo(): Promise<boolean> {
-    setErrorMessage("");
-
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      setErrorMessage("영상 접근 권한이 필요합니다.");
-      return false;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsMultipleSelection: false,
-      mediaTypes: ["videos"],
-      quality: 1,
-    });
-
-    if (result.canceled) {
-      return false;
-    }
-
-    const [asset] = result.assets;
-
-    if (!asset) {
-      return false;
-    }
-
-    // 길이 제한: 60초 초과면 업로드 전에 차단.
-    if (
-      typeof asset.duration === "number" &&
-      asset.duration > MAX_VIDEO_DURATION_SECONDS * 1000
-    ) {
-      setErrorMessage(
-        `${MAX_VIDEO_DURATION_SECONDS}초 이하 영상만 올릴 수 있어요.`,
-      );
-      return false;
-    }
-
-    // 용량 제한: 250MB 초과면 차단(파일 크기 확인 실패 시엔 통과시켜 업로드 시도).
-    try {
-      const info = await FileSystem.getInfoAsync(asset.uri);
-      if (info.exists && info.size > MAX_VIDEO_SIZE_BYTES) {
-        setErrorMessage("영상 용량이 너무 커요. (250MB 이하)");
-        return false;
-      }
-    } catch {
-      // 크기 확인 실패는 무시하고 업로드 진행(서버/타임아웃이 최종 방어).
-    }
-
-    setImageUris([]);
-    setSelectedVideo({
-      durationSeconds:
-        typeof asset.duration === "number" ? Math.round(asset.duration / 1000) : null,
-      uri: asset.uri,
-    });
-    setAspectRatio(detectAspectRatio(asset.width, asset.height));
-    return true;
-  }
-
   function removeImage(index: number) {
     setImageUris((currentUris) =>
       currentUris.filter((_, currentIndex) => currentIndex !== index),
@@ -134,6 +72,16 @@ export function useWriteForm() {
     setErrorMessage("");
     setSelectedVideo(null);
     setImageUris(nextImageUris.slice(0, MAX_IMAGES));
+  }
+
+  function replaceVideo(nextVideo: PreparedPostLibraryVideo) {
+    setErrorMessage("");
+    setImageUris([]);
+    setSelectedVideo({
+      durationSeconds: Math.round(nextVideo.durationSeconds),
+      uri: nextVideo.uri,
+    });
+    setAspectRatio(detectAspectRatio(nextVideo.width, nextVideo.height));
   }
 
   // 작성 성공 시 true 반환(화면 이동은 호출부). 실패 시 false.
@@ -203,8 +151,8 @@ export function useWriteForm() {
     hasDraft,
     imageUris,
     isSubmitting,
-    pickVideo,
     replaceImages,
+    replaceVideo,
     removeImage,
     removeVideo,
     resetForm,

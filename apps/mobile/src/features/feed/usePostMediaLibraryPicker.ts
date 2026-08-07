@@ -38,7 +38,14 @@ export function usePostMediaLibraryPicker({
   aspectRatio,
   setAspectRatio,
 }: UsePostMediaLibraryPickerParams) {
-  const source = usePostMediaLibrarySource();
+  const source = usePostMediaLibrarySource("photo");
+  const photos = useMemo(
+    () =>
+      source.assets.filter(
+        (asset): asset is PostLibraryPhoto => asset.mediaType === "photo",
+      ),
+    [source.assets],
+  );
   const [selectedPhotos, setSelectedPhotos] = useState<PostLibraryPhoto[]>([]);
   const [previewPhoto, setPreviewPhoto] = useState<PostLibraryPhoto | null>(null);
   const [cropTransforms, setCropTransforms] =
@@ -50,7 +57,7 @@ export function usePostMediaLibraryPicker({
   const selectionEditSnapshotRef = useRef<SelectionEditSnapshot | null>(null);
 
   useEffect(() => {
-    const firstPhoto = source.photos[0];
+    const firstPhoto = photos[0];
     if (hasInitializedSelectionRef.current || !firstPhoto) {
       return;
     }
@@ -59,7 +66,7 @@ export function usePostMediaLibraryPicker({
     setSelectedPhotos([firstPhoto]);
     setPreviewPhoto(firstPhoto);
     setAspectRatio(detectAspectRatio(firstPhoto.width, firstPhoto.height));
-  }, [setAspectRatio, source.photos]);
+  }, [photos, setAspectRatio]);
 
   const selectedIndexes = useMemo(
     () =>
@@ -192,7 +199,7 @@ export function usePostMediaLibraryPicker({
 
     setSelectedPhotos(nextSelectedPhotos);
     if (removedPhoto?.id === previewPhoto?.id) {
-      setPreviewPhoto(nextFirstPhoto ?? source.photos[0] ?? null);
+      setPreviewPhoto(nextFirstPhoto ?? photos[0] ?? null);
     }
     if (index === 0 && nextFirstPhoto) {
       setAspectRatio(
@@ -257,6 +264,7 @@ export function usePostMediaLibraryPicker({
     focusSelectedPhoto,
     isMultiSelect,
     isPreparing,
+    photos,
     previewCropTransform,
     previewPhoto,
     removeSelectedPhoto,

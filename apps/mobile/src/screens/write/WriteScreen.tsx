@@ -15,8 +15,10 @@ import { WriteHeader } from "../../components/write/WriteHeader";
 import { WriteMediaSection } from "../../components/write/WriteMediaSection";
 import { PostMediaPickerBody } from "../../components/write/PostMediaPickerBody";
 import { PostMediaPickerHeader } from "../../components/write/PostMediaPickerHeader";
+import { PostVideoPickerBody } from "../../components/write/PostVideoPickerBody";
 import { WriteSettingsSection } from "../../components/write/WriteSettingsSection";
 import { usePostMediaLibraryPicker } from "../../features/feed/usePostMediaLibraryPicker";
+import { usePostVideoLibraryPicker } from "../../features/feed/usePostVideoLibraryPicker";
 import { useWriteForm } from "../../features/feed/useWriteForm";
 import {
   fontSize,
@@ -32,6 +34,8 @@ export function WriteScreen() {
   const navigation = useNavigation();
   const router = useRouter();
   const [stage, setStage] = useState<"form" | "picker">("picker");
+  const [pickerMediaType, setPickerMediaType] =
+    useState<"photo" | "video">("photo");
   const [pickerExitTarget, setPickerExitTarget] =
     useState<"form" | "route">("route");
   const [isDiscardOpen, setIsDiscardOpen] = useState(false);
@@ -44,8 +48,8 @@ export function WriteScreen() {
     hasDraft,
     imageUris,
     isSubmitting,
-    pickVideo,
     replaceImages,
+    replaceVideo,
     removeImage,
     removeVideo,
     resetForm,
@@ -59,6 +63,9 @@ export function WriteScreen() {
   const mediaPicker = usePostMediaLibraryPicker({
     aspectRatio,
     setAspectRatio,
+  });
+  const videoPicker = usePostVideoLibraryPicker({
+    enabled: pickerMediaType === "video" && stage === "picker",
   });
 
   useEffect(
@@ -111,24 +118,26 @@ export function WriteScreen() {
   }
 
   async function handlePickerNext() {
+    if (pickerMediaType === "video") {
+      const video = await videoPicker.resolveSelectedVideo();
+      if (!video) {
+        return;
+      }
+
+      replaceVideo(video);
+      mediaPicker.resetSelection();
+      mediaPicker.commitSelectionEdit();
+      setPickerExitTarget("route");
+      setStage("form");
+      return;
+    }
+
     const selectedImageUris = await mediaPicker.resolveSelectedImageUris();
     if (!selectedImageUris || selectedImageUris.length === 0) {
       return;
     }
 
     replaceImages(selectedImageUris);
-    mediaPicker.commitSelectionEdit();
-    setPickerExitTarget("route");
-    setStage("form");
-  }
-
-  async function handlePickerVideo() {
-    const didSelectVideo = await pickVideo();
-    if (!didSelectVideo) {
-      return;
-    }
-
-    mediaPicker.resetSelection();
     mediaPicker.commitSelectionEdit();
     setPickerExitTarget("route");
     setStage("form");
@@ -149,6 +158,17 @@ export function WriteScreen() {
     }
 
     mediaPicker.beginSelectionEdit();
+    setPickerMediaType("photo");
+    setPickerExitTarget("form");
+    setStage("picker");
+  }
+
+  function handleAddVideo() {
+    if (isSubmitting) {
+      return;
+    }
+
+    setPickerMediaType("video");
     setPickerExitTarget("form");
     setStage("picker");
   }
@@ -181,6 +201,8 @@ export function WriteScreen() {
   }
 
   if (stage === "picker") {
+    const activePicker = pickerMediaType === "video" ? videoPicker : mediaPicker;
+
     return (
       <ScreenContainer
         contentBackgroundColor={colors.accentSoft}
@@ -189,51 +211,79 @@ export function WriteScreen() {
       >
         <PostMediaPickerHeader
           canContinue={
-            mediaPicker.selectedCount > 0 &&
-            mediaPicker.permissionState === "granted" &&
-            !mediaPicker.isPreparing
+            activePicker.selectedCount > 0 &&
+            (activePicker.permissionState === "granted" ||
+              activePicker.permissionState === "limited") &&
+            !activePicker.isPreparing
           }
-          isPreparing={mediaPicker.isPreparing}
+          isPreparing={activePicker.isPreparing}
           onClose={handlePickerClose}
           onNext={() => {
             void handlePickerNext();
           }}
         />
-        <PostMediaPickerBody
-          albumErrorMessage={mediaPicker.albumErrorMessage}
-          albumOptions={mediaPicker.albumOptions}
-          aspectRatio={aspectRatio}
-          canRequestPermission={mediaPicker.canRequestPermission}
-          disabled={mediaPicker.isPreparing}
-          errorMessage={errorMessage || mediaPicker.errorMessage}
-          hasNextPage={mediaPicker.hasNextPage}
-          isLoading={mediaPicker.isLoading}
-          isLoadingAlbums={mediaPicker.isLoadingAlbums}
-          isLoadingMore={mediaPicker.isLoadingMore}
-          isMultiSelect={mediaPicker.isMultiSelect}
-          onChangeCropTransform={mediaPicker.updatePreviewCropTransform}
-          onCycleAspectRatio={mediaPicker.cycleAspectRatio}
-          onFocusSelectedPhoto={mediaPicker.focusSelectedPhoto}
-          onLoadMore={mediaPicker.loadMore}
-          onOpenSettings={mediaPicker.openSettings}
-          onPickVideo={() => {
-            void handlePickerVideo();
-          }}
-          onRequestPermission={mediaPicker.requestPermission}
-          onRetryAlbums={mediaPicker.retryAlbums}
-          onSelectAlbum={mediaPicker.selectAlbum}
-          onSelectPhoto={mediaPicker.selectPhoto}
-          onToggleMultiSelect={mediaPicker.toggleMultiSelect}
-          permissionState={mediaPicker.permissionState}
-          photos={mediaPicker.photos}
-          previewPhoto={mediaPicker.previewPhoto}
-          previewCropTransform={mediaPicker.previewCropTransform}
-          selectedAlbumId={mediaPicker.selectedAlbumId}
-          selectedAlbumKey={mediaPicker.selectedAlbumKey}
-          selectedAlbumTitle={mediaPicker.selectedAlbumTitle}
-          selectedIndexes={mediaPicker.selectedIndexes}
-          selectedPhotos={mediaPicker.selectedPhotos}
-        />
+        {pickerMediaType === "photo" ? (
+          <PostMediaPickerBody
+            albumErrorMessage={mediaPicker.albumErrorMessage}
+            albumOptions={mediaPicker.albumOptions}
+            aspectRatio={aspectRatio}
+            canRequestPermission={mediaPicker.canRequestPermission}
+            disabled={mediaPicker.isPreparing}
+            errorMessage={errorMessage || mediaPicker.errorMessage}
+            hasNextPage={mediaPicker.hasNextPage}
+            isLoading={mediaPicker.isLoading}
+            isLoadingAlbums={mediaPicker.isLoadingAlbums}
+            isLoadingMore={mediaPicker.isLoadingMore}
+            isMultiSelect={mediaPicker.isMultiSelect}
+            onChangeCropTransform={mediaPicker.updatePreviewCropTransform}
+            onCycleAspectRatio={mediaPicker.cycleAspectRatio}
+            onFocusSelectedPhoto={mediaPicker.focusSelectedPhoto}
+            onLoadMore={mediaPicker.loadMore}
+            onOpenSettings={mediaPicker.openSettings}
+            onRequestPermission={mediaPicker.requestPermission}
+            onRetryAlbums={mediaPicker.retryAlbums}
+            onSelectAlbum={mediaPicker.selectAlbum}
+            onSelectPhoto={mediaPicker.selectPhoto}
+            onSwitchToVideo={() => setPickerMediaType("video")}
+            onToggleMultiSelect={mediaPicker.toggleMultiSelect}
+            permissionState={mediaPicker.permissionState}
+            photos={mediaPicker.photos}
+            previewCropTransform={mediaPicker.previewCropTransform}
+            previewPhoto={mediaPicker.previewPhoto}
+            selectedAlbumId={mediaPicker.selectedAlbumId}
+            selectedAlbumKey={mediaPicker.selectedAlbumKey}
+            selectedAlbumTitle={mediaPicker.selectedAlbumTitle}
+            selectedIndexes={mediaPicker.selectedIndexes}
+            selectedPhotos={mediaPicker.selectedPhotos}
+          />
+        ) : (
+          <PostVideoPickerBody
+            albumErrorMessage={videoPicker.albumErrorMessage}
+            albumOptions={videoPicker.albumOptions}
+            aspectRatio={videoPicker.aspectRatio}
+            canRequestPermission={videoPicker.canRequestPermission}
+            disabled={videoPicker.isPreparing}
+            errorMessage={errorMessage || videoPicker.errorMessage}
+            hasNextPage={videoPicker.hasNextPage}
+            isLoading={videoPicker.isLoading}
+            isLoadingAlbums={videoPicker.isLoadingAlbums}
+            isLoadingMore={videoPicker.isLoadingMore}
+            onLoadMore={videoPicker.loadMore}
+            onOpenSettings={videoPicker.openSettings}
+            onRequestPermission={videoPicker.requestPermission}
+            onRetryAlbums={videoPicker.retryAlbums}
+            onSelectAlbum={videoPicker.selectAlbum}
+            onSelectVideo={videoPicker.selectVideo}
+            onSwitchToPhotos={() => setPickerMediaType("photo")}
+            permissionState={videoPicker.permissionState}
+            playbackUri={videoPicker.selectedVideoPreviewUri}
+            selectedAlbumId={videoPicker.selectedAlbumId}
+            selectedAlbumKey={videoPicker.selectedAlbumKey}
+            selectedAlbumTitle={videoPicker.selectedAlbumTitle}
+            selectedVideo={videoPicker.selectedVideo}
+            videos={videoPicker.videos}
+          />
+        )}
 
         <ConfirmDialog
           cancelLabel="계속 작성"
@@ -277,9 +327,7 @@ export function WriteScreen() {
             imageUris={imageUris}
             isSubmitting={isSubmitting}
             onPickImages={handleAddImages}
-            onPickVideo={() => {
-              void pickVideo();
-            }}
+            onPickVideo={handleAddVideo}
             onRemoveImage={handleRemoveImage}
             onRemoveVideo={removeVideo}
             selectedVideo={selectedVideo}
