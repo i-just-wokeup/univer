@@ -49,7 +49,7 @@ export function RecommendedCrewCarousel({
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
   section: {
-    gap: 10,
+    gap: 8,
   },
   title: {
     color: c.text,
@@ -60,6 +60,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingRight: 4,
   },
   separator: {
-    width: 10,
+    width: 8,
   },
 });

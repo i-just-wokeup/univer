@@ -19,6 +19,7 @@ type ProfileContentProps = {
   counts: ProfileCounts;
   errorMessage: string;
   isActionPending: boolean;
+  isCrewEligible: boolean;
   isMine: boolean;
   onAcceptFriendRequest: () => void;
   onEditProfile: () => void;
@@ -38,6 +39,7 @@ export function ProfileContent({
   counts,
   errorMessage,
   isActionPending,
+  isCrewEligible,
   isMine,
   onAcceptFriendRequest,
   onEditProfile,
@@ -77,6 +79,7 @@ export function ProfileContent({
         <ProfileConnectionActions
           connectionStatus={connectionStatus}
           disabled={isActionPending}
+          isCrewEligible={isCrewEligible}
           onAccept={onAcceptFriendRequest}
           onMessage={onMessage}
           onReject={onRejectFriendRequest}

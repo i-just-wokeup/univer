@@ -54,7 +54,7 @@ export function RecommendedCrewCard({
       <Avatar
         imageUrl={recommendation.avatarUrl}
         label={recommendation.nickname}
-        size={72}
+        size={64}
       />
 
       <View style={styles.nicknameRow}>
@@ -97,33 +97,33 @@ export function RecommendedCrewCard({
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
   card: {
     width: 148,
-    minHeight: 220,
+    minHeight: 188,
     alignItems: "center",
-    borderRadius: 18,
+    borderRadius: 16,
     backgroundColor: c.card,
-    paddingHorizontal: 12,
-    paddingTop: 24,
-    paddingBottom: 12,
+    paddingHorizontal: 10,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
   pressed: {
     opacity: 0.72,
   },
   dismissButton: {
     position: "absolute",
-    top: 7,
-    right: 7,
+    top: 6,
+    right: 6,
     zIndex: 1,
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 14,
+    borderRadius: 13,
     backgroundColor: c.overlayInkFaint,
   },
   nicknameRow: {
     width: "100%",
     minWidth: 0,
-    marginTop: 10,
+    marginTop: 8,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -141,7 +141,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   reasonSlot: {
     width: "100%",
     minHeight: 16,
-    marginTop: 5,
+    marginTop: 3,
     justifyContent: "center",
   },
   reason: {
@@ -152,19 +152,19 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   requestButton: {
     width: "100%",
+    height: 32,
     marginTop: "auto",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: c.accent,
-    paddingVertical: 9,
   },
   requestButtonPressed: {
     opacity: 0.72,
   },
   requestButtonText: {
     color: c.onAccent,
-    fontSize: fontSize.caption,
+    fontSize: fontSize.label,
     fontWeight: fontWeight.heavy,
   },
 });

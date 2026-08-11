@@ -16,6 +16,7 @@ import { useProfile } from "../../features/profile/useProfile";
 import { triggerLightHaptic } from "../../lib/haptics";
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 
 type ProfileScreenProps = {
   nickname?: string;
@@ -23,6 +24,7 @@ type ProfileScreenProps = {
 
 export function ProfileScreen({ nickname }: ProfileScreenProps) {
   const { colors } = useTheme();
+  const { getBadge, isBadgeDataReady } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
@@ -47,6 +49,8 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
     startConversation,
   } = useProfile(nickname);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const profileBadge = profile ? getBadge(profile.id) : null;
+  const isCrewEligible = isBadgeDataReady && profileBadge === null;
 
   async function handleStartMessage() {
     const conversationId = await startConversation();
@@ -137,6 +141,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
           <ProfileContent
             connectionStatus={connectionStatus}
             counts={counts}
+            isCrewEligible={isCrewEligible}
             errorMessage={errorMessage}
             isActionPending={isActionPending}
             isMine={isMine}
@@ -160,6 +165,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
       </ScrollView>
       <ProfileMoreMenu
         connectionStatus={connectionStatus}
+        isCrewEligible={isCrewEligible}
         isFavorite={isFavorite}
         isOpen={isActionSheetOpen}
         onClose={() => {

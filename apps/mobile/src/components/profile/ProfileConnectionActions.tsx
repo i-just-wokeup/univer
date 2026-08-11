@@ -7,6 +7,7 @@ import type { ThemeColors } from "../../lib/theme";
 type ProfileConnectionActionsProps = {
   connectionStatus: ConnectionStatus;
   disabled?: boolean;
+  isCrewEligible: boolean;
   onAccept: () => void;
   onMessage?: () => void;
   onReject: () => void;
@@ -17,6 +18,7 @@ type ProfileConnectionActionsProps = {
 export function ProfileConnectionActions({
   connectionStatus,
   disabled = false,
+  isCrewEligible,
   onAccept,
   onMessage,
   onReject,
@@ -24,6 +26,19 @@ export function ProfileConnectionActions({
   onSend,
 }: ProfileConnectionActionsProps) {
   const styles = useThemedStyles(makeStyles);
+
+  if (!isCrewEligible) {
+    return onMessage ? (
+      <View style={styles.container}>
+        <ActionButton
+          disabled={disabled}
+          label="메시지"
+          onPress={onMessage}
+          variant="primary"
+        />
+      </View>
+    ) : null;
+  }
 
   if (
     connectionStatus.status === "none" ||

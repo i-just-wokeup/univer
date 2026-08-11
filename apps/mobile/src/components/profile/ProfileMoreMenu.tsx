@@ -6,6 +6,7 @@ import type { ConnectionStatus } from "../../features/profile/types";
 
 type ProfileMoreMenuProps = {
   connectionStatus: ConnectionStatus | null;
+  isCrewEligible: boolean;
   isFavorite: boolean;
   isOpen: boolean;
   onClose: () => void;
@@ -15,6 +16,7 @@ type ProfileMoreMenuProps = {
 
 export function ProfileMoreMenu({
   connectionStatus,
+  isCrewEligible,
   isFavorite,
   isOpen,
   onClose,
@@ -26,7 +28,7 @@ export function ProfileMoreMenu({
       label: isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가",
       onPress: onToggleFavorite,
     },
-    ...(connectionStatus?.status === "accepted"
+    ...(isCrewEligible && connectionStatus?.status === "accepted"
       ? [
           {
             danger: true,
