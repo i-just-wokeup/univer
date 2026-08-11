@@ -27,9 +27,7 @@ export function RecommendedCrewCard({
   const badge = getBadge(recommendation.userId);
   const reason = recommendation.mutualCount > 0
     ? `공통 크루 ${recommendation.mutualCount}명`
-    : recommendation.sameDept
-      ? "같은 과"
-      : null;
+    : null;
 
   return (
     <Pressable
