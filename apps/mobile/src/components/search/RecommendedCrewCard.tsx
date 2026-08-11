@@ -27,7 +27,9 @@ export function RecommendedCrewCard({
   const badge = getBadge(recommendation.userId);
   const reason = recommendation.mutualCount > 0
     ? `공통 크루 ${recommendation.mutualCount}명`
-    : "같은 과";
+    : recommendation.sameDept
+      ? "같은 과"
+      : null;
 
   return (
     <Pressable
@@ -66,9 +68,13 @@ export function RecommendedCrewCard({
         ) : null}
       </View>
 
-      <Text numberOfLines={1} style={styles.reason}>
-        {reason}
-      </Text>
+      <View style={styles.reasonSlot}>
+        {reason ? (
+          <Text numberOfLines={1} style={styles.reason}>
+            {reason}
+          </Text>
+        ) : null}
+      </View>
 
       <Pressable
         accessibilityLabel={`${recommendation.nickname}에게 크루 신청`}
@@ -132,9 +138,13 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   badge: {
     marginLeft: 4,
   },
-  reason: {
+  reasonSlot: {
     width: "100%",
+    minHeight: 16,
     marginTop: 5,
+    justifyContent: "center",
+  },
+  reason: {
     color: c.muted,
     fontSize: fontSize.label,
     fontWeight: fontWeight.medium,

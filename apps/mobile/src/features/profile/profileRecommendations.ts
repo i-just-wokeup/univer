@@ -1,10 +1,13 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import type { FriendRecommendation } from "./types";
 
-export async function getFriendRecommendations(): Promise<FriendRecommendation[]> {
+export async function getFriendRecommendations(
+  seed: number,
+): Promise<FriendRecommendation[]> {
   const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase.rpc("get_friend_recommendations", {
     p_limit: 20,
+    p_seed: seed,
   });
 
   if (error || !data) {

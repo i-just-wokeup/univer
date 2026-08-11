@@ -10,6 +10,7 @@ export function useFriendRecommendations() {
   const hiddenIdsRef = useRef(new Set<string>());
   const itemsRef = useRef<FriendRecommendation[]>([]);
   const requestingIdsRef = useRef(new Set<string>());
+  const seedRef = useRef(Math.random());
 
   const replaceRecommendations = useCallback((next: FriendRecommendation[]) => {
     itemsRef.current = next;
@@ -20,7 +21,7 @@ export function useFriendRecommendations() {
     setIsLoading(true);
 
     try {
-      const next = await getFriendRecommendations();
+      const next = await getFriendRecommendations(seedRef.current);
       replaceRecommendations(
         next.filter((item) => !hiddenIdsRef.current.has(item.userId)),
       );

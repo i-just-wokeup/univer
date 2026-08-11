@@ -774,6 +774,7 @@ export type Database = {
       get_friend_recommendations: {
         Args: {
           p_limit?: number
+          p_seed?: number
         }
         Returns: Array<{
           user_id: string
