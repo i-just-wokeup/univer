@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 0,
     backgroundColor: colors.black,
   },
   video: {
