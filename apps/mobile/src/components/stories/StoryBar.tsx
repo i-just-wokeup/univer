@@ -9,6 +9,7 @@ import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme
 import type { ThemeColors } from "../../lib/theme";
 
 type StoryBarProps = {
+  canCreateStory: boolean;
   groups: StoryGroup[];
   onPressCreate: () => void;
   onPressGroup: (group: StoryGroup) => void;
@@ -58,7 +59,12 @@ function StoryCard({
 }
 
 // 홈 상단 스토리 레일. 첫 칸은 내 스토리(없으면 추가, 있으면 미리보기+추가 배지), 이후 타 유저 그룹.
-export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps) {
+export function StoryBar({
+  canCreateStory,
+  groups,
+  onPressCreate,
+  onPressGroup,
+}: StoryBarProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const myGroup = groups.find((group) => group.stories[0]?.isMine);
@@ -90,17 +96,19 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
               thumbnailUrl={myThumbnail}
             />
           </Pressable>
-          <Pressable
-            accessibilityLabel="스토리 추가"
-            accessibilityRole="button"
-            hitSlop={8}
-            onPress={onPressCreate}
-            style={styles.addBadge}
-          >
-            <Plus color={colors.onAccent} size={18} strokeWidth={3} />
-          </Pressable>
+          {canCreateStory ? (
+            <Pressable
+              accessibilityLabel="스토리 추가"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={onPressCreate}
+              style={styles.addBadge}
+            >
+              <Plus color={colors.onAccent} size={18} strokeWidth={3} />
+            </Pressable>
+          ) : null}
         </View>
-      ) : (
+      ) : canCreateStory ? (
         <Pressable
           accessibilityLabel="내 스토리 추가"
           accessibilityRole="button"
@@ -115,7 +123,7 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
           </View>
           <Text style={styles.createLabel}>내 스토리</Text>
         </Pressable>
-      )}
+      ) : null}
 
       {otherGroups.map((group) => (
         <Pressable

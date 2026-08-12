@@ -16,6 +16,7 @@ import { hasFreshFeedPageCache } from "../../features/feed/page-cache";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
 import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { FeedPost } from "../../features/feed/types";
+import { useStoryCreationAccess } from "../../features/stories/useStoryCreationAccess";
 import { subscribeHomeTabReselect } from "../../lib/navigation/homeTabReselect";
 import { useSession } from "../../lib/session";
 import { useThemedStyles } from "../../lib/theme";
@@ -27,6 +28,7 @@ export function HomeScreen() {
   const router = useRouter();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
+  const { canCreateStory } = useStoryCreationAccess();
   const homeFeedListRef = useRef<HomeFeedListHandle | null>(null);
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(null);
   const [sharePost, setSharePost] = useState<FeedPost | null>(null);
@@ -76,7 +78,7 @@ export function HomeScreen() {
     setQuery: setShareQuery,
     sharePostToTarget,
     visibleTargets: shareTargets,
-  } = usePostShare(Boolean(sharePost));
+  } = usePostShare(Boolean(sharePost), canCreateStory);
   // 사진/글 게시 후 홈 도착 시 완료 토스트(영상은 홈 폴링이 별도로 띄움).
   const { posted } = useLocalSearchParams<{ posted?: string }>();
 
@@ -176,6 +178,7 @@ export function HomeScreen() {
     <SafeAreaView style={styles.screen}>
       <HomeFeedList
         bookmarkedPostIds={bookmarkedPostIds}
+        canCreateStory={canCreateStory}
         currentUserId={currentUserId}
         isLoadingMore={isLoadingMore}
         isRefreshing={isRefreshing}

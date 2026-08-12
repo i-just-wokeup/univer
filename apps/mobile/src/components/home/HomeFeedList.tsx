@@ -47,6 +47,7 @@ export type HomeFeedListHandle = {
 
 type HomeFeedListProps = {
   bookmarkedPostIds: Set<string>;
+  canCreateStory: boolean;
   currentUserId: string;
   isLoadingMore: boolean;
   isRefreshing: boolean;
@@ -104,6 +105,7 @@ function getPostIdFromViewToken(token: ViewToken): string | null {
 export const HomeFeedList = forwardRef<HomeFeedListHandle, HomeFeedListProps>(
 function HomeFeedList({
   bookmarkedPostIds,
+  canCreateStory,
   currentUserId,
   isLoadingMore,
   isRefreshing,
@@ -381,6 +383,7 @@ function HomeFeedList({
           unreadCount={unreadCount}
         />
         <StoryBar
+          canCreateStory={canCreateStory}
           groups={storyGroups}
           onPressCreate={handlePressCreateStory}
           onPressGroup={handlePressStoryGroup}
@@ -391,6 +394,7 @@ function HomeFeedList({
       handlePressCreateStory,
       handlePressStoryGroup,
       handleSignOut,
+      canCreateStory,
       onPressMessages,
       onPressNotifications,
       storyGroups,

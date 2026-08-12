@@ -182,6 +182,7 @@ stories (
 
 - `stories_media_or_shared_post_check`: `image_url IS NOT NULL OR shared_post_id IS NOT NULL`. 일반 스토리는 미디어 URL, 리셰어 스토리는 원본 게시물 ID를 반드시 가진다.
 - `validate_story_shared_post_trigger`: 리셰어 생성/변경 시 `auth.uid()`가 작성한 삭제되지 않은 같은 학교 게시물만 허용한다. 현재 MVP는 본인 게시물 리셰어만 지원하며, 클라이언트 UI를 우회한 직접 INSERT도 거부한다.
+- `stories_insert_own` INSERT RLS: `user_id = auth.uid()`이면서 `official_accounts`에 등록됐거나 `users.is_promoted = true`인 기관·승격 계정만 새 스토리를 작성할 수 있다. 일반 학생은 기존 스토리 조회만 가능하며 이미지/영상과 게시물 리셰어 INSERT 모두 같은 정책을 적용받는다.
 - 앱 조회는 `shared_post_id` 원본을 posts RLS 아래에서 배치 조회하고 `deleted_at IS NULL`인 원본만 결합한다. 원본의 작성자·첫 미디어·캡션·`aspect_ratio`를 카드 모델로 조립하며, 원본이 삭제됐거나 접근 불가인 리셰어는 라이브 목록과 보관함에서 숨긴다.
 
 **story_views**
@@ -563,7 +564,7 @@ metric_events (
 | profile_links | 로그인 유저 | 본인만 |
 | posts | 같은 학교 + visibility 체크 (크루공개는 user_connections accepted) | 본인만 |
 | post_media | 같은 학교 유저 | 본인만 |
-| stories | 같은 학교 + visibility 체크 (크루공개는 user_connections accepted) | 본인만 |
+| stories | 같은 학교 + visibility 체크 (크루공개는 user_connections accepted) | 기관·승격 계정의 본인 행만 INSERT, 본인만 UPDATE/DELETE |
 | story_views | 본인만 | 로그인 유저 |
 | post_likes | 공개 | 로그인 유저 |
 | comment_likes | 공개 | 로그인 유저 |

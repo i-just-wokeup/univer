@@ -29,7 +29,7 @@ function mergeTargets(targets: PostShareTarget[]) {
   return Array.from(merged.values());
 }
 
-export function usePostShare(isOpen: boolean) {
+export function usePostShare(isOpen: boolean, canCreateStory = false) {
   const [currentUserId, setCurrentUserId] = useState("");
   const [targets, setTargets] = useState<PostShareTarget[]>([]);
   const [query, setQuery] = useState("");
@@ -150,8 +150,10 @@ export function usePostShare(isOpen: boolean) {
 
   const canAddPostToStory = useCallback(
     (postOwnerId: string) =>
-      Boolean(currentUserId) && postOwnerId === currentUserId,
-    [currentUserId],
+      canCreateStory &&
+      Boolean(currentUserId) &&
+      postOwnerId === currentUserId,
+    [canCreateStory, currentUserId],
   );
 
   async function sharePostToTarget(

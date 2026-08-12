@@ -21,6 +21,7 @@ import { StateView } from "../../components/common/StateView";
 import { usePostShare, type PostShareTarget } from "../../features/chat/usePostShare";
 import { useReels } from "../../features/feed/useReels";
 import type { FeedPost, ReelFeedItem } from "../../features/feed/types";
+import { useStoryCreationAccess } from "../../features/stories/useStoryCreationAccess";
 import { useSession } from "../../lib/session";
 import { SITE_URL } from "../../lib/site";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
@@ -35,6 +36,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   const insets = useSafeAreaInsets();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
+  const { canCreateStory } = useStoryCreationAccess();
   // 아이템 크기는 useWindowDimensions(상태바 뺀 값이라 실제 화면과 28px 어긋남) 대신
   // FlatList 컨테이너의 실제 크기를 onLayout으로 재서 쓴다 → 어떤 폰/비율이든 칸=화면이 딱 맞아
   // "다음 릴스 삐져나옴 / 마지막 릴스 밀림"이 사라진다.
@@ -53,7 +55,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     setQuery: setShareQuery,
     sharePostToTarget,
     visibleTargets: shareTargets,
-  } = usePostShare(Boolean(sharePost));
+  } = usePostShare(Boolean(sharePost), canCreateStory);
   const {
     activeIndex,
     blockAuthor,
