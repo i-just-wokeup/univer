@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HomeFeedbackBanner } from "../../components/home/HomeFeedbackBanner";
+import { HomeCoachMarkController } from "../../components/home/HomeCoachMarkController";
 import {
   HomeFeedList,
   type HomeFeedListHandle,
@@ -207,6 +208,7 @@ export function HomeScreen() {
         unreadChatCount={unreadChatCount}
         unreadCount={unreadCount}
       />
+      <HomeCoachMarkController userId={currentUserId} />
       <HomeFeedbackBanner
         errorMessage={posts.length > 0 ? errorMessage : ""}
         feedback={feedback}

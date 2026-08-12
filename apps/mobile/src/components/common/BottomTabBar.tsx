@@ -5,6 +5,8 @@ import type { ComponentType } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { HOME_COACH_MARK_TARGETS } from "../../lib/coachMarkTargets";
+import { useCoachMarkTarget } from "../../lib/coachMarks";
 import { emitHomeTabReselect } from "../../lib/navigation/homeTabReselect";
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
@@ -27,6 +29,15 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const searchTargetRef = useCoachMarkTarget(
+    HOME_COACH_MARK_TARGETS.searchTab,
+  );
+  const createTargetRef = useCoachMarkTarget(
+    HOME_COACH_MARK_TARGETS.createTab,
+  );
+  const activityTargetRef = useCoachMarkTarget(
+    HOME_COACH_MARK_TARGETS.activityTab,
+  );
 
   return (
     <View
@@ -47,6 +58,14 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
 
         const Icon = meta.icon;
         const isActive = state.index === index;
+        const targetRef =
+          route.name === "search"
+            ? searchTargetRef
+            : route.name === "write"
+              ? createTargetRef
+              : route.name === "activity"
+                ? activityTargetRef
+                : undefined;
         const iconColor = meta.primary
           ? colors.white
           : isActive
@@ -76,6 +95,7 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
             accessibilityState={{ selected: isActive }}
             key={route.key}
             onPress={onPress}
+            ref={targetRef}
             style={meta.primary ? styles.primaryTab : styles.navTab}
           >
             <Icon

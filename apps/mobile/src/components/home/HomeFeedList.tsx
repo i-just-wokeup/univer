@@ -382,14 +382,12 @@ function HomeFeedList({
           unreadChatCount={unreadChatCount}
           unreadCount={unreadCount}
         />
-        {canCreateStory || storyGroups.length > 0 ? (
-          <StoryBar
-            canCreateStory={canCreateStory}
-            groups={storyGroups}
-            onPressCreate={handlePressCreateStory}
-            onPressGroup={handlePressStoryGroup}
-          />
-        ) : null}
+        <StoryBar
+          canCreateStory={canCreateStory}
+          groups={storyGroups}
+          onPressCreate={handlePressCreateStory}
+          onPressGroup={handlePressStoryGroup}
+        />
       </>
     ),
     [

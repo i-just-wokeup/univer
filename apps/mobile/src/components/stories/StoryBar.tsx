@@ -5,6 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { StoryGroup } from "../../features/stories/types";
 import { getStorySharedPostThumbnail } from "../../features/stories/storySharedPosts";
+import { HOME_COACH_MARK_TARGETS } from "../../lib/coachMarkTargets";
+import { useCoachMarkTarget } from "../../lib/coachMarks";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -67,6 +69,7 @@ export function StoryBar({
 }: StoryBarProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const targetRef = useCoachMarkTarget(HOME_COACH_MARK_TARGETS.storyBar);
   const myGroup = groups.find((group) => group.stories[0]?.isMine);
   const otherGroups = groups.filter((group) => !group.stories[0]?.isMine);
   const latestMyStory = myGroup?.stories[myGroup.stories.length - 1] ?? null;
@@ -76,82 +79,93 @@ export function StoryBar({
     latestMyStory?.image_url ??
     null;
 
+  if (!canCreateStory && groups.length === 0) {
+    return (
+      <View collapsable={false} ref={targetRef} style={styles.emptyBar} />
+    );
+  }
+
   return (
-    <ScrollView
-      contentContainerStyle={styles.list}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-    >
-      {myGroup ? (
-        <View style={styles.myStory}>
+    <View collapsable={false} ref={targetRef}>
+      <ScrollView
+        contentContainerStyle={styles.list}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
+        {myGroup ? (
+          <View style={styles.myStory}>
+            <Pressable
+              accessibilityLabel="내 스토리 보기"
+              accessibilityRole="button"
+              onPress={() => onPressGroup(myGroup)}
+              style={({ pressed }) => (pressed ? styles.pressed : null)}
+            >
+              <StoryCard
+                hasUnviewed={false}
+                nickname="내 스토리"
+                thumbnailUrl={myThumbnail}
+              />
+            </Pressable>
+            {canCreateStory ? (
+              <Pressable
+                accessibilityLabel="스토리 추가"
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={onPressCreate}
+                style={styles.addBadge}
+              >
+                <Plus color={colors.onAccent} size={18} strokeWidth={3} />
+              </Pressable>
+            ) : null}
+          </View>
+        ) : canCreateStory ? (
           <Pressable
-            accessibilityLabel="내 스토리 보기"
+            accessibilityLabel="내 스토리 추가"
             accessibilityRole="button"
-            onPress={() => onPressGroup(myGroup)}
+            onPress={onPressCreate}
+            style={({ pressed }) => [
+              styles.createCard,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <View style={styles.createPlus}>
+              <Plus color={colors.onAccent} size={26} strokeWidth={2.6} />
+            </View>
+            <Text style={styles.createLabel}>내 스토리</Text>
+          </Pressable>
+        ) : null}
+
+        {otherGroups.map((group) => (
+          <Pressable
+            accessibilityLabel={`${group.user.nickname} 스토리`}
+            accessibilityRole="button"
+            key={group.user.id}
+            onPress={() => onPressGroup(group)}
             style={({ pressed }) => (pressed ? styles.pressed : null)}
           >
             <StoryCard
-              hasUnviewed={false}
-              nickname="내 스토리"
-              thumbnailUrl={myThumbnail}
+              hasUnviewed={group.hasUnviewed}
+              nickname={group.user.nickname}
+              thumbnailUrl={
+                getStorySharedPostThumbnail(
+                  group.stories[group.stories.length - 1]?.sharedPost ?? null,
+                ) ??
+                group.stories[group.stories.length - 1]?.thumbnail_url ??
+                group.stories[group.stories.length - 1]?.image_url ??
+                null
+              }
             />
           </Pressable>
-          {canCreateStory ? (
-            <Pressable
-              accessibilityLabel="스토리 추가"
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={onPressCreate}
-              style={styles.addBadge}
-            >
-              <Plus color={colors.onAccent} size={18} strokeWidth={3} />
-            </Pressable>
-          ) : null}
-        </View>
-      ) : canCreateStory ? (
-        <Pressable
-          accessibilityLabel="내 스토리 추가"
-          accessibilityRole="button"
-          onPress={onPressCreate}
-          style={({ pressed }) => [
-            styles.createCard,
-            pressed ? styles.pressed : null,
-          ]}
-        >
-          <View style={styles.createPlus}>
-            <Plus color={colors.onAccent} size={26} strokeWidth={2.6} />
-          </View>
-          <Text style={styles.createLabel}>내 스토리</Text>
-        </Pressable>
-      ) : null}
-
-      {otherGroups.map((group) => (
-        <Pressable
-          accessibilityLabel={`${group.user.nickname} 스토리`}
-          accessibilityRole="button"
-          key={group.user.id}
-          onPress={() => onPressGroup(group)}
-          style={({ pressed }) => (pressed ? styles.pressed : null)}
-        >
-          <StoryCard
-            hasUnviewed={group.hasUnviewed}
-            nickname={group.user.nickname}
-            thumbnailUrl={
-              getStorySharedPostThumbnail(
-                group.stories[group.stories.length - 1]?.sharedPost ?? null,
-              ) ??
-              group.stories[group.stories.length - 1]?.thumbnail_url ??
-              group.stories[group.stories.length - 1]?.image_url ??
-              null
-            }
-          />
-        </Pressable>
-      ))}
-    </ScrollView>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
+  emptyBar: {
+    height: 40,
+  },
   list: {
     gap: 12,
     paddingBottom: 14,
