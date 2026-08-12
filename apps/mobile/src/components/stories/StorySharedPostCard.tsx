@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 18,
     backgroundColor: colors.white,
-    padding: 12,
   },
   pressed: {
     opacity: 0.78,
@@ -95,6 +94,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 9,
+    paddingTop: 12,
+    paddingHorizontal: 12,
     paddingBottom: 10,
   },
   avatar: {
@@ -118,12 +119,15 @@ const styles = StyleSheet.create({
   },
   caption: {
     marginTop: 10,
+    paddingHorizontal: 12,
     color: colors.black,
     fontSize: fontSize.caption,
     fontWeight: fontWeight.medium,
   },
   hint: {
     marginTop: 7,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
     color: colors.black,
     opacity: 0.58,
     fontSize: fontSize.label,
@@ -134,6 +138,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
+    padding: 12,
   },
   deletedTitle: {
     color: colors.black,
