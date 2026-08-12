@@ -62,11 +62,13 @@ export function StorySharedPostCard({
         </Text>
       </View>
 
-      <StorySharedPostMedia
-        isActive={isActive}
-        isPaused={isPaused}
-        post={post}
-      />
+      <View style={styles.mediaFrame}>
+        <StorySharedPostMedia
+          isActive={isActive}
+          isPaused={isPaused}
+          post={post}
+        />
+      </View>
 
       {post.content ? (
         <Text numberOfLines={1} style={styles.caption}>
@@ -96,7 +98,9 @@ const styles = StyleSheet.create({
     gap: 9,
     paddingTop: 12,
     paddingHorizontal: 12,
-    paddingBottom: 10,
+  },
+  mediaFrame: {
+    padding: 8,
   },
   avatar: {
     height: 32,
@@ -118,7 +122,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
   caption: {
-    marginTop: 10,
     paddingHorizontal: 12,
     color: colors.black,
     fontSize: fontSize.caption,
