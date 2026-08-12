@@ -1,4 +1,5 @@
 import type { Database } from "../../types/database.types";
+import type { StorySharedPost } from "../stories/types";
 
 export type BookmarkRow = Database["public"]["Tables"]["bookmarks"]["Row"];
 export type PostRow = Database["public"]["Tables"]["posts"]["Row"];
@@ -13,16 +14,20 @@ export type UserRow = Database["public"]["Tables"]["users"]["Row"];
 export type ActivityStory = Pick<
   StoryRow,
   | "created_at"
+  | "background_color"
   | "expires_at"
   | "id"
   | "image_url"
   | "is_archived"
   | "processing_status"
+  | "shared_post_id"
   | "thumbnail_url"
   | "type"
   | "visibility"
   | "views_count"
->;
+> & {
+  sharedPost: StorySharedPost | null;
+};
 
 export type ActivityPostMedia = Pick<
   PostMediaRow,

@@ -217,7 +217,8 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          image_url: string
+          image_url: string | null
+          shared_post_id: string | null
           type: 'image' | 'video'
           thumbnail_url: string | null
           duration: number | null
@@ -236,7 +237,8 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          image_url: string
+          image_url?: string | null
+          shared_post_id?: string | null
           type?: 'image' | 'video'
           thumbnail_url?: string | null
           duration?: number | null
@@ -255,7 +257,8 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          image_url?: string
+          image_url?: string | null
+          shared_post_id?: string | null
           type?: 'image' | 'video'
           thumbnail_url?: string | null
           duration?: number | null

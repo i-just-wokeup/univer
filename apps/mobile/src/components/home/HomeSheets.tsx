@@ -10,6 +10,7 @@ type HomeSheetsProps = {
   isShareSearching: boolean;
   onCloseComments: () => void;
   onCloseShare: () => void;
+  onAddToStory?: () => void;
   onCommentCountChange: (postId: string, nextCount: number) => void;
   onCommentUserPress: (nickname: string) => void;
   onQueryChange: (query: string) => void;
@@ -27,6 +28,7 @@ export function HomeSheets({
   isShareSearching,
   onCloseComments,
   onCloseShare,
+  onAddToStory,
   onCommentCountChange,
   onCommentUserPress,
   onQueryChange,
@@ -57,6 +59,7 @@ export function HomeSheets({
         isOpen={Boolean(sharePost)}
         isSearching={isShareSearching}
         onClose={onCloseShare}
+        onAddToStory={onAddToStory}
         onQueryChange={onQueryChange}
         onSelectTarget={onSelectShareTarget}
         query={query}

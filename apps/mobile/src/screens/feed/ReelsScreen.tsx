@@ -44,6 +44,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
   // 음소거는 릴스 전체 공유 — 한 번 켜면 다음 영상에서도 유지.
   const [isMuted, setIsMuted] = useState(true);
   const {
+    canAddPostToStory,
     errorMessage: shareErrorMessage,
     isLoading: isShareLoading,
     isSearching: isShareSearching,
@@ -97,6 +98,19 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     },
     [sharePost, sharePostToTarget, showFeedback],
   );
+
+  const handleAddSharePostToStory = useCallback(() => {
+    if (!sharePost || !canAddPostToStory(sharePost.user.id)) {
+      return;
+    }
+
+    const sharedPostId = sharePost.id;
+    setSharePost(null);
+    router.push({
+      pathname: "/story/create",
+      params: { sharedPostId },
+    });
+  }, [canAddPostToStory, router, sharePost]);
 
   const flatListRef = useRef<FlatList<ReelFeedItem>>(null);
   const prevPostCountRef = useRef(0);
@@ -347,6 +361,11 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         isOpen={Boolean(sharePost)}
         isSearching={isShareSearching}
         onClose={() => setSharePost(null)}
+        onAddToStory={
+          sharePost && canAddPostToStory(sharePost.user.id)
+            ? handleAddSharePostToStory
+            : undefined
+        }
         onQueryChange={setShareQuery}
         onSelectTarget={(target) => {
           void handleSelectShareTarget(target);

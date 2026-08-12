@@ -1,5 +1,6 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { getCurrentUserContext } from "../shared/userContext";
+import { getStorySharedPosts } from "../stories/storySharedPosts";
 import type {
   ActivityStory,
   ActivityStoryViewer,
@@ -15,7 +16,7 @@ export async function getMyStories(): Promise<ActivityStory[]> {
   const { data, error } = await supabase
     .from("stories")
     .select(
-      "id, image_url, type, thumbnail_url, processing_status, views_count, expires_at, is_archived, visibility, created_at",
+      "id, image_url, shared_post_id, type, thumbnail_url, background_color, processing_status, views_count, expires_at, is_archived, visibility, created_at",
     )
     .eq("user_id", userId)
     .is("deleted_at", null)
@@ -25,7 +26,23 @@ export async function getMyStories(): Promise<ActivityStory[]> {
     throw new Error("스토리 보관함을 불러오지 못했습니다.");
   }
 
-  return data;
+  const sharedPostsById = await getStorySharedPosts(
+    data.flatMap((story) =>
+      story.shared_post_id ? [story.shared_post_id] : [],
+    ),
+  );
+
+  return data
+    .filter(
+      (story) =>
+        !story.shared_post_id || sharedPostsById.has(story.shared_post_id),
+    )
+    .map((story) => ({
+      ...story,
+      sharedPost: story.shared_post_id
+        ? sharedPostsById.get(story.shared_post_id) ?? null
+        : null,
+    }));
 }
 
 // 내 스토리 조회자 목록(최신순) + 각자의 좋아요 여부. 본인 스토리만 조회 가능.

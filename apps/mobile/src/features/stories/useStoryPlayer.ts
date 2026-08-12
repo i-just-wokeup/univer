@@ -146,6 +146,10 @@ export function useStoryPlayer({
     setIsPaused((current) => !current);
   }
 
+  function pause() {
+    setIsPaused(true);
+  }
+
   // 영상 재생 위치(0~100)를 진행바에 반영. StoryVideoView가 호출한다.
   function setVideoProgress(percent: number) {
     progressRef.current = percent;
@@ -296,6 +300,7 @@ export function useStoryPlayer({
     isViewerSheetOpen,
     openMenu,
     openViewerSheet,
+    pause,
     progress,
     requestDelete,
     requestReport,

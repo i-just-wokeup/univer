@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
+import { BookOpen } from "lucide-react-native";
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import type { LayoutChangeEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import type { PostShareTarget } from "../../features/chat/usePostShare";
-import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { SearchInput } from "../search/SearchInput";
 import { ExternalShareSection } from "./ExternalShareSection";
@@ -18,6 +19,7 @@ type PostShareSheetProps = {
   isOpen: boolean;
   isSearching: boolean;
   onClose: () => void;
+  onAddToStory?: () => void;
   onQueryChange: (query: string) => void;
   onSelectTarget: (target: PostShareTarget) => void;
   query: string;
@@ -32,12 +34,14 @@ export function PostShareSheet({
   isOpen,
   isSearching,
   onClose,
+  onAddToStory,
   onQueryChange,
   onSelectTarget,
   query,
   sendingTargetId,
   targets,
 }: PostShareSheetProps) {
+  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [footerHeight, setFooterHeight] = useState(0);
   const {
@@ -93,6 +97,25 @@ export function PostShareSheet({
             <View style={styles.header} {...panHandlers}>
               <Text style={styles.title}>게시물 공유</Text>
             </View>
+
+            {onAddToStory ? (
+              <View style={styles.storyActionWrap}>
+                <Pressable
+                  accessibilityLabel="내 스토리에 추가"
+                  accessibilityRole="button"
+                  onPress={onAddToStory}
+                  style={({ pressed }) => [
+                    styles.storyAction,
+                    pressed ? styles.storyActionPressed : null,
+                  ]}
+                >
+                  <View style={styles.storyActionIcon}>
+                    <BookOpen color={colors.text} size={20} />
+                  </View>
+                  <Text style={styles.storyActionText}>내 스토리에 추가</Text>
+                </Pressable>
+              </View>
+            ) : null}
 
             <View style={styles.searchWrap}>
               <SearchInput
@@ -192,6 +215,35 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   searchWrap: {
     paddingHorizontal: 16,
     paddingBottom: 10,
+  },
+  storyActionWrap: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  storyAction: {
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11,
+    borderRadius: 14,
+    backgroundColor: c.overlayInkFaint,
+    paddingHorizontal: 14,
+  },
+  storyActionPressed: {
+    opacity: 0.72,
+  },
+  storyActionIcon: {
+    height: 32,
+    width: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    backgroundColor: c.overlayInk,
+  },
+  storyActionText: {
+    color: c.text,
+    fontSize: fontSize.bodySmall,
+    fontWeight: fontWeight.bold,
   },
   stateText: {
     paddingHorizontal: 18,

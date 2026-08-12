@@ -4,6 +4,7 @@ import { Plus } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { StoryGroup } from "../../features/stories/types";
+import { getStorySharedPostThumbnail } from "../../features/stories/storySharedPosts";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -64,7 +65,10 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
   const otherGroups = groups.filter((group) => !group.stories[0]?.isMine);
   const latestMyStory = myGroup?.stories[myGroup.stories.length - 1] ?? null;
   const myThumbnail =
-    latestMyStory?.thumbnail_url ?? latestMyStory?.image_url ?? null;
+    getStorySharedPostThumbnail(latestMyStory?.sharedPost ?? null) ??
+    latestMyStory?.thumbnail_url ??
+    latestMyStory?.image_url ??
+    null;
 
   return (
     <ScrollView
@@ -125,6 +129,9 @@ export function StoryBar({ groups, onPressCreate, onPressGroup }: StoryBarProps)
             hasUnviewed={group.hasUnviewed}
             nickname={group.user.nickname}
             thumbnailUrl={
+              getStorySharedPostThumbnail(
+                group.stories[group.stories.length - 1]?.sharedPost ?? null,
+              ) ??
               group.stories[group.stories.length - 1]?.thumbnail_url ??
               group.stories[group.stories.length - 1]?.image_url ??
               null

@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { ActivityStory } from "../../features/activity/api";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { StoryVideoView } from "../stories/StoryVideoView";
+import { StorySharedPostCard } from "../stories/StorySharedPostCard";
 import { formatActivityStoryDateTime } from "./activityDateFormat";
 
 type ActivityStoryPreviewMediaProps = {
@@ -18,16 +19,27 @@ export function ActivityStoryPreviewMedia({
 
   return (
     <View style={styles.preview}>
-      {isVideoReady ? (
+      {story.shared_post_id ? (
+        <View
+          style={[
+            styles.sharedPostPreview,
+            { backgroundColor: story.background_color ?? colors.black },
+          ]}
+        >
+          <StorySharedPostCard post={story.sharedPost} />
+        </View>
+      ) : isVideoReady && story.image_url ? (
         <StoryVideoView loop style={styles.previewMedia} uri={story.image_url} />
       ) : isVideo ? (
         <>
-          <Image
-            cachePolicy="memory-disk"
-            contentFit="contain"
-            source={{ uri: story.thumbnail_url ?? story.image_url }}
-            style={styles.previewImage}
-          />
+          {story.thumbnail_url ?? story.image_url ? (
+            <Image
+              cachePolicy="memory-disk"
+              contentFit="contain"
+              source={{ uri: story.thumbnail_url ?? story.image_url ?? "" }}
+              style={styles.previewImage}
+            />
+          ) : null}
           <View style={styles.processingOverlay}>
             <Text style={styles.processingText}>
               {story.processing_status === "failed"
@@ -36,14 +48,14 @@ export function ActivityStoryPreviewMedia({
             </Text>
           </View>
         </>
-      ) : (
+      ) : story.image_url ? (
         <Image
           cachePolicy="memory-disk"
           contentFit="contain"
           source={{ uri: story.image_url }}
           style={styles.previewImage}
         />
-      )}
+      ) : null}
       <View style={styles.dateBadge}>
         <Text style={styles.dateText}>
           {formatActivityStoryDateTime(story.created_at)}
@@ -67,6 +79,12 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     borderRadius: 0,
+  },
+  sharedPostPreview: {
+    height: "100%",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   processingOverlay: {
     ...StyleSheet.absoluteFillObject,

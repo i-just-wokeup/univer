@@ -3,19 +3,31 @@ import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { ArrowRight, ChevronLeft, Palette } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { BackHandler, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  BackHandler,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { VisibilityPicker } from "../../components/common/VisibilityPicker";
 import { StoryCamera } from "../../components/stories/StoryCamera";
 import { StoryMediaFrame } from "../../components/stories/StoryMediaFrame";
+import { StorySharedPostCard } from "../../components/stories/StorySharedPostCard";
 import { StoryVideoView } from "../../components/stories/StoryVideoView";
 import { STORY_BACKGROUND_COLORS } from "../../features/stories/backgroundColors";
 import { useStoryCreate } from "../../features/stories/useStoryCreate";
 import { useStableInsets } from "../../lib/useStableInsets";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 
-export function StoryCreateScreen() {
+type StoryCreateScreenProps = {
+  sharedPostId?: string;
+};
+
+export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
   const router = useRouter();
   const insets = useStableInsets();
   const [isColorSheetOpen, setIsColorSheetOpen] = useState(false);
@@ -24,13 +36,16 @@ export function StoryCreateScreen() {
     captured,
     errorMessage,
     isSubmitting,
+    isSharedPostLoading,
     retake,
     setBackgroundColor,
     setCaptured,
     setVisibility,
+    sharedPost,
     submit,
     visibility,
-  } = useStoryCreate();
+  } = useStoryCreate(sharedPostId);
+  const isSharedPostMode = Boolean(sharedPostId);
 
   async function handleSubmit() {
     const uploaded = await submit();
@@ -42,7 +57,7 @@ export function StoryCreateScreen() {
   // 미리보기 상태에서 하드웨어 뒤로가기 = 홈으로 나가지 않고 카메라로 복귀(다시 찍기).
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (captured) {
+      if (captured && !isSharedPostMode) {
         retake();
         return true;
       }
@@ -50,10 +65,10 @@ export function StoryCreateScreen() {
     });
 
     return () => subscription.remove();
-  }, [captured, retake]);
+  }, [captured, isSharedPostMode, retake]);
 
   // 카메라 모드: 촬영하거나 고른 미디어를 받으면 미리보기로 전환.
-  if (!captured) {
+  if (!captured && !isSharedPostMode) {
     return (
       <StoryCamera onClose={() => router.back()} onSelected={setCaptured} />
     );
@@ -64,7 +79,20 @@ export function StoryCreateScreen() {
     <View style={styles.previewScreen}>
       <StatusBar style="light" backgroundColor={colors.black} />
 
-      {captured.kind === "video" ? (
+      {isSharedPostMode ? (
+        <View
+          style={[
+            styles.sharedPostFrame,
+            { backgroundColor, marginTop: insets.top + 6 },
+          ]}
+        >
+          {isSharedPostLoading ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <StorySharedPostCard post={sharedPost} />
+          )}
+        </View>
+      ) : captured?.kind === "video" ? (
         <StoryVideoView
           backgroundColor={backgroundColor}
           isActive={!isSubmitting}
@@ -73,13 +101,13 @@ export function StoryCreateScreen() {
           style={{ marginTop: insets.top + 6 }}
           uri={captured.uri}
         />
-      ) : (
+      ) : captured ? (
         <StoryMediaFrame
           backgroundColor={backgroundColor}
           imageUrl={captured.uri}
           style={{ marginTop: insets.top + 6 }}
         />
-      )}
+      ) : null}
 
       <LinearGradient
         colors={[colors.scrimMed, "transparent"]}
@@ -94,10 +122,10 @@ export function StoryCreateScreen() {
 
       <SafeAreaView edges={["top"]} style={styles.topOverlay}>
         <Pressable
-          accessibilityLabel="다시 촬영"
+          accessibilityLabel={isSharedPostMode ? "스토리 작성 닫기" : "다시 촬영"}
           accessibilityRole="button"
           disabled={isSubmitting}
-          onPress={retake}
+          onPress={isSharedPostMode ? () => router.back() : retake}
           style={({ pressed }) => [
             styles.overlayIconButton,
             pressed ? styles.pressed : null,
@@ -131,14 +159,18 @@ export function StoryCreateScreen() {
           <Pressable
             accessibilityLabel="스토리 공유"
             accessibilityRole="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (isSharedPostMode && !sharedPost)}
             onPress={() => {
               void handleSubmit();
             }}
             style={({ pressed }) => [
               styles.shareButton,
-              isSubmitting ? styles.disabledButton : null,
-              pressed && !isSubmitting ? styles.pressed : null,
+              isSubmitting || (isSharedPostMode && !sharedPost)
+                ? styles.disabledButton
+                : null,
+              pressed && !isSubmitting && (!isSharedPostMode || sharedPost)
+                ? styles.pressed
+                : null,
             ]}
           >
             {isSubmitting ? (
@@ -201,6 +233,15 @@ const styles = StyleSheet.create({
   previewScreen: {
     flex: 1,
     backgroundColor: colors.black,
+  },
+  sharedPostFrame: {
+    width: "100%",
+    aspectRatio: 9 / 16,
+    maxHeight: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    borderRadius: 6,
   },
   scrimTop: {
     position: "absolute",

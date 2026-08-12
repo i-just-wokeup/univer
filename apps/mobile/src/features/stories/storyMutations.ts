@@ -8,9 +8,10 @@ import type { StoryVisibility } from "./types";
 
 // 스토리 생성(24시간 후 만료). 같은 학교/작성자/공개범위와 함께 insert한다.
 export async function createStory(
-  imageUrl: string,
+  imageUrl: string | null,
   visibility: StoryVisibility = "public",
   backgroundColor: string | null = null,
+  sharedPostId: string | null = null,
 ): Promise<void> {
   const supabase = getSupabaseMobileClient();
   const { universityId, userId } = await getCurrentUserContext();
@@ -20,6 +21,7 @@ export async function createStory(
     background_color: backgroundColor,
     expires_at: expiresAt,
     image_url: imageUrl,
+    shared_post_id: sharedPostId,
     university_id: universityId,
     user_id: userId,
     visibility,

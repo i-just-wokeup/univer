@@ -67,6 +67,7 @@ export function HomeScreen() {
   } = useHomeFeed();
   const { storyGroups, unreadChatCount, unreadCount } = useHomeMeta();
   const {
+    canAddPostToStory,
     errorMessage: shareErrorMessage,
     isLoading: isShareLoading,
     isSearching: isShareSearching,
@@ -135,6 +136,19 @@ export function HomeScreen() {
     [sharePost, sharePostToTarget, showFeedback],
   );
 
+  const handleAddSharePostToStory = useCallback(() => {
+    if (!sharePost || !canAddPostToStory(sharePost.user.id)) {
+      return;
+    }
+
+    const sharedPostId = sharePost.id;
+    setSharePost(null);
+    router.push({
+      pathname: "/story/create",
+      params: { sharedPostId },
+    });
+  }, [canAddPostToStory, router, sharePost]);
+
   if (isInitialLoading) {
     return (
       <HomeLoadingState
@@ -200,6 +214,11 @@ export function HomeScreen() {
         isShareSearching={isShareSearching}
         onCloseComments={closeComments}
         onCloseShare={() => setSharePost(null)}
+        onAddToStory={
+          sharePost && canAddPostToStory(sharePost.user.id)
+            ? handleAddSharePostToStory
+            : undefined
+        }
         onCommentCountChange={handleCommentCountChange}
         onCommentUserPress={handleCommentUserPress}
         onQueryChange={setShareQuery}

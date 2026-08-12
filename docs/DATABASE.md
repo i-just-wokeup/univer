@@ -161,7 +161,8 @@ post_media (
 stories (
   id            uuid PK default gen_random_uuid(),
   user_id       uuid FK → users,
-  image_url     text not null,                 -- 영상일 때는 영상 파일 URL (컬럼 재사용)
+  image_url     text,                          -- 사진/영상 URL. 게시물 리셰어는 null
+  shared_post_id uuid FK → posts on delete set null, -- 링크식 게시물 리셰어 원본
   type          text not null default 'image', -- 'image' | 'video' (2026-06-26 추가)
   thumbnail_url text,                           -- 영상 미리보기 썸네일
   duration      int,                            -- 영상 길이(초)
@@ -178,6 +179,10 @@ stories (
   created_at    timestamptz default now()
 )
 ```
+
+- `stories_media_or_shared_post_check`: `image_url IS NOT NULL OR shared_post_id IS NOT NULL`. 일반 스토리는 미디어 URL, 리셰어 스토리는 원본 게시물 ID를 반드시 가진다.
+- `validate_story_shared_post_trigger`: 리셰어 생성/변경 시 `auth.uid()`가 작성한 삭제되지 않은 같은 학교 게시물만 허용한다. 현재 MVP는 본인 게시물 리셰어만 지원하며, 클라이언트 UI를 우회한 직접 INSERT도 거부한다.
+- 앱 조회는 `shared_post_id` 원본을 posts RLS 아래에서 배치 조회하고 `deleted_at IS NULL`인 원본만 결합한다. 원본이 삭제됐거나 접근 불가인 리셰어는 라이브 목록과 보관함에서 숨긴다.
 
 **story_views**
 ```sql

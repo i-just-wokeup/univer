@@ -6,6 +6,7 @@ export {
   deleteStory,
 } from "./storyMutations";
 export { getStories } from "./storyQueries";
+export { getStorySharedPostPreview } from "./storySharedPosts";
 export {
   getMyStoryLikedStatus,
   recordStoryView,

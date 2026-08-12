@@ -1,4 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { Eye, Heart } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -6,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StoryHeader } from "./StoryHeader";
 import { StoryMediaFrame } from "./StoryMediaFrame";
 import { StoryProgressBar } from "./StoryProgressBar";
+import { StorySharedPostCard } from "./StorySharedPostCard";
 import { StoryVideoView } from "./StoryVideoView";
 import { StoryViewersSheet } from "./StoryViewersSheet";
 import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
@@ -29,6 +31,7 @@ export function StoryPlayer({
   initialGroups,
   onClose,
 }: StoryPlayerProps) {
+  const router = useRouter();
   const insets = useStableInsets();
   const {
     cancelDelete,
@@ -49,6 +52,7 @@ export function StoryPlayer({
     isViewerSheetOpen,
     openMenu,
     openViewerSheet,
+    pause,
     progress,
     requestDelete,
     requestReport,
@@ -71,16 +75,27 @@ export function StoryPlayer({
     ? [{ danger: true, label: "삭제", onPress: requestDelete }]
     : [{ danger: true, label: "신고", onPress: requestReport }];
   const isVideoReady =
-    currentStory.mediaType === "video" && currentStory.processing_status === "ready";
+    currentStory.mediaType === "video" &&
+    currentStory.processing_status === "ready" &&
+    Boolean(currentStory.image_url);
 
   // preload 창: 현재 ±1 안의 "재생 준비된 영상"만 미리 버퍼링한다(멈칫 완화).
   // key(story.id)로 렌더해 인덱스가 바뀌어도 같은 인스턴스를 유지 → 버퍼가 보존돼 즉시 재생.
   // 릴스와 같은 ±1 창이라 동시 영상 플레이어는 최대 3개로 제한(메모리 안전).
-  const windowVideos: { index: number; story: (typeof currentGroup.stories)[number] }[] = [];
+  const windowVideos: {
+    index: number;
+    story: (typeof currentGroup.stories)[number];
+    uri: string;
+  }[] = [];
   for (let i = storyIndex - 1; i <= storyIndex + 1; i += 1) {
     const story = currentGroup.stories[i];
-    if (story && story.mediaType === "video" && story.processing_status === "ready") {
-      windowVideos.push({ index: i, story });
+    if (
+      story &&
+      story.mediaType === "video" &&
+      story.processing_status === "ready" &&
+      story.image_url
+    ) {
+      windowVideos.push({ index: i, story, uri: story.image_url });
     }
   }
 
@@ -90,7 +105,7 @@ export function StoryPlayer({
         pointerEvents="none"
         style={[styles.mediaContainer, { top: insets.top + 6 }]}
       >
-        {windowVideos.map(({ index, story }) => {
+        {windowVideos.map(({ index, story, uri }) => {
           const isCurrent = index === storyIndex;
           return (
             <View
@@ -104,13 +119,20 @@ export function StoryPlayer({
                 onEnd={isCurrent ? goNext : undefined}
                 onProgress={isCurrent ? setVideoProgress : undefined}
                 posterUrl={story.thumbnail_url}
-                uri={story.image_url}
+                uri={uri}
               />
             </View>
           );
         })}
 
-        {currentStory.mediaType !== "video" ? (
+        {currentStory.shared_post_id ? (
+          <View
+            style={[
+              styles.sharedPostBackground,
+              { backgroundColor: currentStory.backgroundColor ?? colors.black },
+            ]}
+          />
+        ) : currentStory.mediaType !== "video" && currentStory.image_url ? (
           <StoryMediaFrame
             backgroundColor={currentStory.backgroundColor}
             imageUrl={currentStory.image_url}
@@ -162,6 +184,28 @@ export function StoryPlayer({
         onPress={goNext}
         style={[styles.tapZone, styles.tapRight]}
       />
+
+      {currentStory.shared_post_id ? (
+        <View
+          pointerEvents="box-none"
+          style={[styles.sharedPostLayer, { top: insets.top + 6 }]}
+        >
+          <StorySharedPostCard
+            onPress={
+              currentStory.sharedPost
+                ? () => {
+                    pause();
+                    router.push({
+                      pathname: "/post/[id]",
+                      params: { id: currentStory.shared_post_id ?? "" },
+                    });
+                  }
+                : undefined
+            }
+            post={currentStory.sharedPost}
+          />
+        </View>
+      ) : null}
 
       <SafeAreaView edges={["top"]} style={styles.topLayer}>
         <StoryProgressBar
@@ -273,6 +317,21 @@ const styles = StyleSheet.create({
     maxHeight: "100%",
     borderRadius: 6,
     backgroundColor: colors.black,
+  },
+  sharedPostBackground: {
+    width: "100%",
+    aspectRatio: 9 / 16,
+    maxHeight: "100%",
+    borderRadius: 6,
+  },
+  sharedPostLayer: {
+    position: "absolute",
+    right: 0,
+    left: 0,
+    aspectRatio: 9 / 16,
+    maxHeight: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   processingOverlay: {
     ...StyleSheet.absoluteFillObject,

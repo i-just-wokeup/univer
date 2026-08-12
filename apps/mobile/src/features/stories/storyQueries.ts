@@ -5,6 +5,7 @@ import {
 } from "../shared/userContext";
 import { toStory } from "./storyHydration";
 import { toPostgrestInFilter } from "./storyPostgrest";
+import { getStorySharedPosts } from "./storySharedPosts";
 import type { StoryRow } from "./storyTypes";
 import type { StoryGroup } from "./types";
 
@@ -19,7 +20,7 @@ export async function getStories(): Promise<StoryGroup[]> {
   let storiesQuery = supabase
     .from("stories")
     .select(
-      "id, user_id, image_url, type, thumbnail_url, duration, background_color, provider, provider_asset_id, processing_status, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
+      "id, user_id, image_url, shared_post_id, type, thumbnail_url, duration, background_color, provider, provider_asset_id, processing_status, university_id, views_count, expires_at, is_archived, visibility, deleted_at, created_at",
     )
     .eq("university_id", universityId)
     .gt("expires_at", now)
@@ -45,8 +46,24 @@ export async function getStories(): Promise<StoryGroup[]> {
   }
 
   const storyRows = stories as StoryRow[];
-  const userIds = Array.from(new Set(storyRows.map((story) => story.user_id)));
-  const storyIds = storyRows.map((story) => story.id);
+  const sharedPostsById = await getStorySharedPosts(
+    storyRows.flatMap((story) =>
+      story.shared_post_id ? [story.shared_post_id] : [],
+    ),
+  );
+  const visibleStoryRows = storyRows.filter(
+    (story) =>
+      !story.shared_post_id || sharedPostsById.has(story.shared_post_id),
+  );
+
+  if (visibleStoryRows.length === 0) {
+    return [];
+  }
+
+  const userIds = Array.from(
+    new Set(visibleStoryRows.map((story) => story.user_id)),
+  );
+  const storyIds = visibleStoryRows.map((story) => story.id);
 
   const { data: users, error: usersError } = await supabase
     .from("users")
@@ -94,14 +111,21 @@ export async function getStories(): Promise<StoryGroup[]> {
   const viewedStoryIds = new Set((views ?? []).map((view) => view.story_id));
   const groupsByUserId = new Map<string, StoryGroup>();
 
-  storyRows.forEach((story) => {
+  visibleStoryRows.forEach((story) => {
     const storyUser = usersById.get(story.user_id);
 
     if (!storyUser) {
       return;
     }
 
-    const storyItem = toStory(story, storyUser, userId);
+    const storyItem = toStory(
+      story,
+      storyUser,
+      userId,
+      story.shared_post_id
+        ? sharedPostsById.get(story.shared_post_id) ?? null
+        : null,
+    );
     const group = groupsByUserId.get(story.user_id);
 
     if (group) {

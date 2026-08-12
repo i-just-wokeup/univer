@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getFriends } from "../profile/api";
 import { searchUsers } from "../search/api";
@@ -148,6 +148,12 @@ export function usePostShare(isOpen: boolean) {
     [query, searchResults, targets],
   );
 
+  const canAddPostToStory = useCallback(
+    (postOwnerId: string) =>
+      Boolean(currentUserId) && postOwnerId === currentUserId,
+    [currentUserId],
+  );
+
   async function sharePostToTarget(
     postId: string,
     targetUserId: string,
@@ -175,6 +181,7 @@ export function usePostShare(isOpen: boolean) {
   }
 
   return {
+    canAddPostToStory,
     errorMessage,
     isLoading,
     isSearching,

@@ -3,6 +3,7 @@ import { Play } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityStory } from "../../features/activity/api";
+import { getStorySharedPostThumbnail } from "../../features/stories/storySharedPosts";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
@@ -38,6 +39,13 @@ function getVisibilityLabel(visibility: ActivityStory["visibility"]) {
   return visibility === "close_friends" ? "크루공개" : "전체공개";
 }
 
+function getStoryThumbnail(story: ActivityStory): string | null {
+  return (
+    getStorySharedPostThumbnail(story.sharedPost) ??
+    (story.type === "video" ? story.thumbnail_url : story.image_url)
+  );
+}
+
 export function ActivityStoryGrid({
   onSelectStory,
   stories,
@@ -61,48 +69,48 @@ export function ActivityStoryGrid({
     <View style={styles.grid}>
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
-          {row.map((story) => (
-            <Pressable
-              accessibilityRole="button"
-              key={story.id}
-              onPress={() => onSelectStory(story)}
-              style={styles.tile}
-            >
-              <Image
-                cachePolicy="memory-disk"
-                contentFit="cover"
-                recyclingKey={story.id}
-                source={{
-                  // 영상 스토리는 image_url이 영상 URL이라 썸네일(thumbnail_url)을 써야 한다.
-                  uri:
-                    story.type === "video"
-                      ? story.thumbnail_url ?? story.image_url
-                      : story.image_url,
-                }}
-                style={styles.image}
-              />
-              {story.type === "video" ? (
-                <View style={styles.videoBadge}>
-                  <Play color={colors.white} fill={colors.white} size={12} />
-                </View>
-              ) : null}
-              <View style={styles.dateBadge}>
-                <Text style={styles.dateText}>
-                  {formatStoryArchiveDate(story.created_at)}
-                </Text>
-              </View>
-              <View style={styles.bottomMeta}>
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusText}>{getStoryStatus(story)}</Text>
-                </View>
-                <View style={styles.visibilityBadge}>
-                  <Text style={styles.visibilityText}>
-                    {getVisibilityLabel(story.visibility)}
+          {row.map((story) => {
+            const thumbnailUrl = getStoryThumbnail(story);
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                key={story.id}
+                onPress={() => onSelectStory(story)}
+                style={styles.tile}
+              >
+                {thumbnailUrl ? (
+                  <Image
+                    cachePolicy="memory-disk"
+                    contentFit="cover"
+                    recyclingKey={story.id}
+                    source={{ uri: thumbnailUrl }}
+                    style={styles.image}
+                  />
+                ) : null}
+                {story.type === "video" ? (
+                  <View style={styles.videoBadge}>
+                    <Play color={colors.white} fill={colors.white} size={12} />
+                  </View>
+                ) : null}
+                <View style={styles.dateBadge}>
+                  <Text style={styles.dateText}>
+                    {formatStoryArchiveDate(story.created_at)}
                   </Text>
                 </View>
-              </View>
-            </Pressable>
-          ))}
+                <View style={styles.bottomMeta}>
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusText}>{getStoryStatus(story)}</Text>
+                  </View>
+                  <View style={styles.visibilityBadge}>
+                    <Text style={styles.visibilityText}>
+                      {getVisibilityLabel(story.visibility)}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
           {row.length < 3
             ? Array.from({ length: 3 - row.length }).map((_, spacerIndex) => (
                 <View key={`spacer-${spacerIndex}`} style={styles.spacer} />
