@@ -89,3 +89,36 @@ export async function getMetricDaily(
     unique: row.unique_actors ?? 0,
   }));
 }
+
+export type ContentPerformance = {
+  postId: string;
+  createdAt: string;
+  thumbnailUrl: string | null;
+  isVideo: boolean;
+  likes: number;
+  comments: number;
+  saves: number;
+  shares: number;
+};
+
+// 승격(크리에이터) 콘텐츠 성과 — 본인 게시물별 좋아요·댓글·저장·공유.
+// DB get_content_performance RPC(본인 글만, SECURITY DEFINER)를 UI 타입으로 매핑.
+export async function getContentPerformance(): Promise<ContentPerformance[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_content_performance");
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map((row) => ({
+    postId: row.post_id,
+    createdAt: row.created_at,
+    thumbnailUrl: row.thumbnail_url,
+    isVideo: row.is_video,
+    likes: row.likes ?? 0,
+    comments: row.comments ?? 0,
+    saves: row.saves ?? 0,
+    shares: row.shares ?? 0,
+  }));
+}

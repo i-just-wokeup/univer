@@ -787,6 +787,19 @@ export type Database = {
           same_dept: boolean
         }>
       }
+      get_content_performance: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          post_id: string
+          created_at: string
+          thumbnail_url: string
+          is_video: boolean
+          likes: number
+          comments: number
+          saves: number
+          shares: number
+        }>
+      }
       get_feed_post_ids: {
         Args: {
           p_seed: number
@@ -874,7 +887,7 @@ export type Database = {
         Args: {
           p_limit?: number
           p_offset?: number
-          p_recency_hours?: number
+          p_half_life_hours?: number
         }
         Returns: Array<{
           post_id: string
