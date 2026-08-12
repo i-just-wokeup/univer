@@ -793,6 +793,7 @@ export type Database = {
           p_limit: number
           p_after_band: number | null
           p_after_rank: number | null
+          p_half_life_days?: number
         }
         Returns: Array<{
           post_id: string

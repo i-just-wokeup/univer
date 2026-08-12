@@ -391,7 +391,7 @@ get_user_real_name(p_user_id uuid) returns text
 get_account_badges() returns table(user_id uuid, affiliation text, promoted boolean)
 get_friend_recommendations(p_limit int DEFAULT 20, p_seed float8 DEFAULT 0)
   returns table(user_id uuid, nickname text, avatar_url text, mutual_count int, same_dept boolean)
-get_feed_post_ids(p_seed float8, p_limit int, p_after_band int, p_after_rank float8)
+get_feed_post_ids(p_seed float8, p_limit int, p_after_band int, p_after_rank float8, p_half_life_days float8 DEFAULT 5)
   returns table(post_id uuid, band int, rank float8)
 get_reel_post_ids(p_seed float8, p_seen_ids uuid[], p_limit int, p_after_band int, p_after_rank float8)
   returns table(post_id uuid, band int, rank float8)
@@ -410,7 +410,7 @@ take_action_on_report(report_id uuid)
 ```
 - `get_user_real_name`은 본인, 크루 관계 또는 같은 학교 대상 유저의 `real_name_public=true`일 때만 실명을 반환하고, 그 외에는 `null`을 반환한다.
 - `search_users`, `get_blocked_users`, `get_friends`, `get_pending_requests`, `get_sent_requests`는 department를 본인 또는 `department_public=true`일 때만 반환하고, 그 외에는 `null`을 반환한다.
-- `get_feed_post_ids`는 홈피드 **순서(정렬된 post id + band + rank)만** 반환한다. 내용(작성자·미디어)은 앱이 이 순서로 기존 임베딩 쿼리를 돌려 채운다. band 0=크루 안 본 최신 / 1=전교생 안 본 최신 / 2=본 글 랜덤 꼬리(시드 고정). SECURITY INVOKER라 posts RLS(같은 학교+공개범위)가 자동 적용, 차단만 함수에서 제외. `(band, rank)` 커서로 무한스크롤. 승격/인기 재삽입은 v2(미구현).
+- `get_feed_post_ids`는 홈피드 **순서(정렬된 post id + band + rank)만** 반환한다. 내용(작성자·미디어)은 앱이 이 순서로 기존 임베딩 쿼리를 돌려 채운다. band 0=크루 안 본 최신 / 1=전교생 안 본 핫스코어 / 2=본 글 랜덤 꼬리(시드 고정). band 1 점수는 `(likes_count + comments_count*2) × 0.5^(경과일 / half_life_days, 기본 5일)`이며, SECURITY INVOKER라 posts RLS(같은 학교+공개범위)가 자동 적용되고 함수에서는 차단을 제외한다. `(band, rank)` 커서로 무한스크롤하며 seed는 band 2에만 사용한다. 현재 참여 카운트는 같은 학교 반응만 반영하며 다학교·크로스스쿨 확장 시 학교 내부 카운트 분리가 필요하다. 승격 계정 재삽입은 미구현이다.
 - `get_reel_post_ids`는 릴스(영상 전용) **순서만** 반환한다. 크루 구분 없이 다 섞기 — band 0=세션에서 안 본 영상(시드 셔플) / 1=세션에서 본 영상(시드 셔플, 무한 루프용). "본 것"은 세션 개념이라 DB 저장 없이 앱이 `p_seen_ids`(이번 세션 본 릴스 id)로 넘긴다. 영상(`post_media.type='video'`)만, SECURITY INVOKER(공개범위 자동), 차단 제외, `(band, rank)` 커서. 완주율/가중치 추천은 나중.
 - `get_popular_post_ids`(2026-08-06)는 탐색 그리드/검색 인기 차트용 **인기순 post id + score**를 반환한다. 점수 = `(likes_count + comments_count*2) × 0.5^(경과h / half_life_hours, 기본 120h)`. SECURITY INVOKER(posts RLS=같은 학교+공개범위 자동), 함수에서 내 글·차단·미디어 없는 글 제외. `explore/api.ts`가 이 순서로 그리드 조립. ⚠️ 설계상 창작자 유저당 2개 캡(마이그레이션 `20260806160000`)이 있으나 라이브 DB는 테스트로 캡 제거 상태(2026-08-07), 최종 캡 값 확정 시 정리 예정.
 - `recount_*` RPC는 출처 테이블(`post_likes`, `comments`, `comment_likes`, `story_views`)에서 카운트를 재계산해 `posts/comments/stories` 카운터 컬럼을 갱신한다.
