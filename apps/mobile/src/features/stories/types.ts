@@ -1,3 +1,5 @@
+import type { PostAspectRatio } from "../feed/types";
+
 export type StoryVisibility = "public" | "close_friends";
 
 export type StoryUser = {
@@ -7,6 +9,7 @@ export type StoryUser = {
 };
 
 export type StorySharedPost = {
+  aspectRatio: PostAspectRatio;
   content: string | null;
   id: string;
   media: {

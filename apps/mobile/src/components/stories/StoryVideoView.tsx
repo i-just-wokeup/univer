@@ -8,6 +8,7 @@ import { DEFAULT_STORY_BACKGROUND_COLOR } from "../../features/stories/backgroun
 type StoryVideoViewProps = {
   backgroundColor?: string | null;
   contentFit?: VideoContentFit;
+  fillFrame?: boolean;
   // 0~100. 영상 재생 위치를 진행바에 반영하고 싶을 때.
   onProgress?: (percent: number) => void;
   // 영상이 끝까지 재생됐을 때(뷰어가 다음 스토리로 넘어가게).
@@ -32,6 +33,7 @@ type StoryVideoViewProps = {
 export function StoryVideoView({
   backgroundColor = DEFAULT_STORY_BACKGROUND_COLOR,
   contentFit = "contain",
+  fillFrame = false,
   isActive = true,
   isCurrent = true,
   isPaused = false,
@@ -206,6 +208,7 @@ export function StoryVideoView({
     <View
       style={[
         styles.frame,
+        fillFrame ? styles.fillFrame : styles.defaultFrame,
         { backgroundColor: backgroundColor ?? DEFAULT_STORY_BACKGROUND_COLOR },
         style,
       ]}
@@ -235,11 +238,17 @@ export function StoryVideoView({
 
 const styles = StyleSheet.create({
   frame: {
+    overflow: "hidden",
+    borderRadius: 6,
+  },
+  defaultFrame: {
     width: "100%",
     aspectRatio: 9 / 16,
     maxHeight: "100%",
-    overflow: "hidden",
-    borderRadius: 6,
+  },
+  fillFrame: {
+    height: "100%",
+    width: "100%",
   },
   fill: {
     ...StyleSheet.absoluteFillObject,

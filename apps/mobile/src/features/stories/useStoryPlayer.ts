@@ -11,6 +11,7 @@ import {
 import type { StoryGroup, StoryViewer } from "./types";
 
 const STORY_DURATION_MS = 5000;
+const SHARED_VIDEO_DURATION_MS = 15000;
 const PROGRESS_TICK_MS = 50;
 
 type UseStoryPlayerParams = {
@@ -115,15 +116,21 @@ export function useStoryPlayer({
     }
   }, [currentStory]);
 
-  // 사진은 5초 타이머로 진행바를 채운다. 영상은 StoryVideoView가 재생 위치로 진행/종료를 구동하므로 제외.
+  // 사진은 5초, 리셰어 영상 카드는 15초 세그먼트로 진행한다.
+  // 일반 영상 스토리는 StoryVideoView가 실제 재생 위치로 진행/종료를 구동하므로 제외한다.
   useEffect(() => {
     if (!currentStory || isPaused || currentStory.mediaType === "video") {
       return;
     }
 
+    const durationMs =
+      currentStory.sharedPost?.media?.type === "video"
+        ? SHARED_VIDEO_DURATION_MS
+        : STORY_DURATION_MS;
+
     const timer = setInterval(() => {
       const next =
-        progressRef.current + (PROGRESS_TICK_MS / STORY_DURATION_MS) * 100;
+        progressRef.current + (PROGRESS_TICK_MS / durationMs) * 100;
 
       if (next < 100) {
         progressRef.current = next;

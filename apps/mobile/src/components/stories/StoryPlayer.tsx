@@ -191,6 +191,8 @@ export function StoryPlayer({
           style={[styles.sharedPostLayer, { top: insets.top + 6 }]}
         >
           <StorySharedPostCard
+            isActive
+            isPaused={isPaused}
             onPress={
               currentStory.sharedPost
                 ? () => {

@@ -1,7 +1,9 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import type { PostAspectRatio } from "../feed/types";
 import type { StorySharedPost } from "./types";
 
 type SharedPostRow = {
+  aspect_ratio: PostAspectRatio;
   content: string | null;
   id: string;
   post_media: Array<{
@@ -18,7 +20,7 @@ type SharedPostRow = {
 };
 
 const SHARED_POST_SELECT_FIELDS =
-  "id, content, user:users!posts_user_id_fkey(id, nickname, avatar_url), post_media(type, url, thumbnail_url, order_index)" as const;
+  "id, aspect_ratio, content, user:users!posts_user_id_fkey(id, nickname, avatar_url), post_media(type, url, thumbnail_url, order_index)" as const;
 
 function toSharedPostRows(rows: unknown): SharedPostRow[] {
   return rows as SharedPostRow[];
@@ -34,6 +36,7 @@ function mapSharedPost(row: SharedPostRow): StorySharedPost | null {
   )[0];
 
   return {
+    aspectRatio: row.aspect_ratio,
     content: row.content,
     id: row.id,
     media: firstMedia

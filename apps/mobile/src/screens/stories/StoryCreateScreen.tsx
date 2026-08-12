@@ -89,7 +89,11 @@ export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
           {isSharedPostLoading ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <StorySharedPostCard post={sharedPost} />
+            <StorySharedPostCard
+              isActive={Boolean(sharedPost)}
+              isPaused={isSubmitting}
+              post={sharedPost}
+            />
           )}
         </View>
       ) : captured?.kind === "video" ? (
