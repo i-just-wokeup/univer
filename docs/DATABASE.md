@@ -550,8 +550,11 @@ metric_events (
   - `record_metric(p_metric_type, p_target_id, p_owner_id)` — actor=`auth.uid()`, 비로그인/본인(actor=owner) 제외, `insert ... on conflict do nothing`(link_click 하루 중복만 무시).
   - `get_metric_counts(p_metric_type, p_target_id?, p_start?, p_end?)` → `(total, unique_actors)`, `owner_id = auth.uid()` 본인만.
   - `get_metric_daily(...)` → `(day, total, unique_actors)` 일별.
-  - `get_content_performance()`(2026-08-12) → 본인 게시물별 `(post_id, created_at, thumbnail_url, is_video, likes, comments, saves, shares)`. 승격(크리에이터) 인사이트 A "콘텐츠 성과"용. likes/comments는 posts 카운터 컬럼, saves는 `bookmarks` count, shares는 DM 리셰어(`messages.shared_post_id`)+스토리 리셰어(`stories.shared_post_id`) 합산(둘 다 `deleted_at is null`). `where user_id = auth.uid() and deleted_at is null`로 본인 글만, `created_at desc` 정렬. metric_events가 아니라 기존 참여 테이블 집계라 데이터가 이미 쌓여 있음. ⚠️ 현재는 UI·게이트 없이 백엔드+api 래퍼(`getContentPerformance`)만 존재하며, 승격 계정 전용 노출은 `canViewInsights` 게이트로 후속 처리.
-- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC).
+  - `get_content_performance()`(2026-08-12) → 본인 게시물별 `(post_id, created_at, thumbnail_url, is_video, likes, comments, saves, shares)`. 승격(크리에이터) 인사이트 A "콘텐츠 성과"용. likes/comments는 posts 카운터 컬럼, saves는 `bookmarks` count, shares는 DM 리셰어(`messages.shared_post_id`)+스토리 리셰어(`stories.shared_post_id`) 합산(둘 다 `deleted_at is null`). `where user_id = auth.uid() and deleted_at is null`로 본인 글만, `created_at desc` 정렬. metric_events가 아니라 기존 참여 테이블 집계라 데이터가 이미 쌓여 있으며, 앱 콘텐츠 탭은 기관·승격 계정에만 노출한다.
+  - `get_engagement_daily(p_start, p_end)`(2026-08-13) → `(day, total)`. 삭제되지 않은 내 게시물에 발생한 좋아요·댓글·저장·DM 공유·스토리 공유를 각 원본 테이블 `created_at`의 KST 날짜로 일별 합산한다. 삭제된 메시지/스토리 공유는 제외한다.
+  - `get_views_by_type(p_start, p_end)`(2026-08-13) → `(reel, post, story)`. 릴스·게시물은 본인 소유 `metric_events`의 `event_date`, 스토리는 내 스토리의 `story_views.created_at` KST 날짜를 집계한다.
+- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외).
+- 2026-08-13 신규 인사이트 집계 RPC 2개는 SECURITY DEFINER이며 `auth.uid()` 소유자 범위로 제한한다. `public`/`anon` 실행 권한은 회수하고 `authenticated`에만 실행 권한을 부여한다.
 - 표시: 설정 > 계정 > 인사이트(본인만). 상세 설계는 노션 `📊 인사이트(지표) 시스템 설계`.
 
 ---
