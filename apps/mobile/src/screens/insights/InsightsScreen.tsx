@@ -109,7 +109,10 @@ export function InsightsScreen() {
           <InsightsContentTab
             items={content.items}
             onOpenPost={(postId) => {
-              router.push({ pathname: "/post/[id]", params: { id: postId } });
+              router.push({
+                pathname: "/insights/post/[id]",
+                params: { id: postId },
+              });
             }}
             onSortChange={content.setSort}
             sort={content.sort}

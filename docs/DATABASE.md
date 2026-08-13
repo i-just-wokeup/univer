@@ -553,8 +553,10 @@ metric_events (
   - `get_content_performance()`(2026-08-12) → 본인 게시물별 `(post_id, created_at, thumbnail_url, is_video, likes, comments, saves, shares)`. 승격(크리에이터) 인사이트 A "콘텐츠 성과"용. likes/comments는 posts 카운터 컬럼, saves는 `bookmarks` count, shares는 DM 리셰어(`messages.shared_post_id`)+스토리 리셰어(`stories.shared_post_id`) 합산(둘 다 `deleted_at is null`). `where user_id = auth.uid() and deleted_at is null`로 본인 글만, `created_at desc` 정렬. metric_events가 아니라 기존 참여 테이블 집계라 데이터가 이미 쌓여 있으며, 앱 콘텐츠 탭은 기관·승격 계정에만 노출한다.
   - `get_engagement_daily(p_start, p_end)`(2026-08-13) → `(day, total)`. 삭제되지 않은 내 게시물에 발생한 좋아요·댓글·저장·DM 공유·스토리 공유를 각 원본 테이블 `created_at`의 KST 날짜로 일별 합산한다. 삭제된 메시지/스토리 공유는 제외한다.
   - `get_views_by_type(p_start, p_end)`(2026-08-13) → `(reel, post, story)`. 릴스·게시물은 본인 소유 `metric_events`의 `event_date`, 스토리는 내 스토리의 `story_views.created_at` KST 날짜를 집계한다.
-- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외).
-- 2026-08-13 신규 인사이트 집계 RPC 2개는 SECURITY DEFINER이며 `auth.uid()` 소유자 범위로 제한한다. `public`/`anon` 실행 권한은 회수하고 `authenticated`에만 실행 권한을 부여한다.
+  - `get_post_insight(p_post_id)`(2026-08-13) → 삭제되지 않은 본인 게시물 단건의 `(created_at, thumbnail_url, is_video, views, reach, likes, comments, saves, shares, video_duration_ms, completion_rate, avg_depth, avg_loops)`. 조회·도달은 `post_view`+`reel_view`, 상호작용은 posts 카운터·저장·삭제되지 않은 DM/스토리 리셰어를 합산한다. 영상 길이는 해당 게시물 시청 세션의 중앙값이며 세션이 없거나 사진이면 영상 필드는 null이다.
+  - `get_post_retention(p_post_id)`(2026-08-13) → 영상 시청 세션이 있는 삭제되지 않은 본인 영상에 대해 `(bucket_pct, retention)`을 0~100%, 5% 간격으로 반환한다. `retention = max_pct >= bucket` 세션 비율이므로 수동 스크럽 없는 v1 플레이어의 순차 시청 유지율로 사용한다. 세션이 없거나 사진·타인 글이면 0행이다.
+- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외), `20260813090242_post_insight_detail`(단건 인사이트·유지율 RPC).
+- 2026-08-13 신규 인사이트 집계 RPC들은 SECURITY DEFINER이며 `auth.uid()` 소유자 범위로 제한한다. `public`/`anon` 실행 권한은 회수하고 `authenticated`에만 실행 권한을 부여한다.
 - 표시: 설정 > 계정 > 인사이트(본인만). 상세 설계는 노션 `📊 인사이트(지표) 시스템 설계`.
 
 **reel_watch_events** (릴스 활성 시청 구간별 완주·깊이·반복·이탈 원시 이벤트)
@@ -573,13 +575,15 @@ reel_watch_events (
   created_at        timestamptz not null default now()
 )
 -- unique(event_id), index reel_watch_events_owner_date_idx(owner_id, event_date)
+-- index reel_watch_events_owner_post_idx(owner_id, post_id) — 게시물 상세 영상 집계
 ```
 - **세션 기준**: 릴스가 활성 상태에서 실제 재생을 시작하면 생성하고, 비활성 전환·컴포넌트 해제·앱 백그라운드에서 확정한다. 누적 실제 재생 위치 증가량이 1초 미만이면 저장하지 않는다. 스크롤백은 새 `event_id` 세션이다.
 - **깊이/완주/반복**: 첫 재생의 최대 진행률을 `max_pct`로 저장한다. `이전 진행률 > 85%`에서 `현재 < 15%`로 이동하면 루프로 판정해 `loops`를 올리고 첫 재생 깊이를 고정한다. `max_pct >= 95` 또는 루프 1회 이상이면 완주다.
 - **RPC** (SECURITY DEFINER, `authenticated`만 GRANT, `public`/`anon` REVOKE):
   - `record_reel_watch(p_event_id, p_post_id, p_owner_id, p_video_duration_ms, p_max_pct, p_completed, p_loops)` — actor=`auth.uid()`, 비로그인·본인 시청 제외. 실제 삭제되지 않은 영상 게시물의 owner를 서버에서 재검증하고 `on conflict(event_id) do nothing`으로 멱등 기록한다.
   - `get_video_watch_summary(p_start, p_end)` → `(sessions, completion_rate, avg_depth, avg_loops, avg_exit_pct)`. `owner_id=auth.uid()`이며 삭제되지 않은 본인 영상 세션만 KST `event_date` 범위로 집계하고, 평균 이탈 지점은 미완주 세션의 `max_pct` 평균이다.
-- RLS 활성·정책 없음 + `public`/`anon`/`authenticated` 테이블 권한 회수로 원시 행 직접 조회·수정을 차단한다. 앱은 기록 RPC만 호출하며 요약 UI 연결은 후속 작업이다.
+  - 게시물 단건 영상 지표와 유지율은 위 `get_post_insight`/`get_post_retention`이 같은 원시 이벤트를 `post_id`로 집계한다.
+- RLS 활성·정책 없음 + `public`/`anon`/`authenticated` 테이블 권한 회수로 원시 행 직접 조회·수정을 차단한다. 앱은 기록 RPC로 원시 이벤트를 저장하고 게시물 인사이트 상세에서는 집계 RPC 결과만 조회한다.
 - 마이그레이션: `20260813073806_reel_watch_metrics`.
 
 ---

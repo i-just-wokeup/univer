@@ -222,6 +222,28 @@ export type ContentPerformance = {
   shares: number;
 };
 
+export type PostInsight = {
+  avgDepth: number | null;
+  avgLoops: number | null;
+  comments: number;
+  completionRate: number | null;
+  createdAt: string;
+  isVideo: boolean;
+  likes: number;
+  postId: string;
+  reach: number;
+  saves: number;
+  shares: number;
+  thumbnailUrl: string | null;
+  videoDurationMs: number | null;
+  views: number;
+};
+
+export type PostRetentionPoint = {
+  bucketPct: number;
+  retention: number;
+};
+
 // 승격(크리에이터) 콘텐츠 성과 — 본인 게시물별 좋아요·댓글·저장·공유.
 // DB get_content_performance RPC(본인 글만, SECURITY DEFINER)를 UI 타입으로 매핑.
 export async function getContentPerformance(): Promise<ContentPerformance[]> {
@@ -245,5 +267,59 @@ export async function getContentPerformance(): Promise<ContentPerformance[]> {
     comments: row.comments ?? 0,
     saves: row.saves ?? 0,
     shares: row.shares ?? 0,
+  }));
+}
+
+export async function getPostInsight(
+  postId: string,
+): Promise<PostInsight | null> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_post_insight", {
+    p_post_id: postId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = data?.[0];
+  if (!row) {
+    return null;
+  }
+
+  return {
+    avgDepth: row.avg_depth === null ? null : Number(row.avg_depth),
+    avgLoops: row.avg_loops === null ? null : Number(row.avg_loops),
+    comments: row.comments ?? 0,
+    completionRate:
+      row.completion_rate === null ? null : Number(row.completion_rate),
+    createdAt: row.created_at,
+    isVideo: row.is_video,
+    likes: row.likes ?? 0,
+    postId: row.post_id,
+    reach: row.reach ?? 0,
+    saves: row.saves ?? 0,
+    shares: row.shares ?? 0,
+    thumbnailUrl: row.thumbnail_url,
+    videoDurationMs: row.video_duration_ms,
+    views: row.views ?? 0,
+  };
+}
+
+export async function getPostRetention(
+  postId: string,
+): Promise<PostRetentionPoint[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_post_retention", {
+    p_post_id: postId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => ({
+    bucketPct: row.bucket_pct,
+    retention: Number(row.retention),
   }));
 }

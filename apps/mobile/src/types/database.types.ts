@@ -766,6 +766,36 @@ export type Database = {
           avg_exit_pct: number
         }[]
       }
+      get_post_insight: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: {
+          post_id: string
+          created_at: string
+          thumbnail_url: string | null
+          is_video: boolean
+          views: number
+          reach: number
+          likes: number
+          comments: number
+          saves: number
+          shares: number
+          video_duration_ms: number | null
+          completion_rate: number | null
+          avg_depth: number | null
+          avg_loops: number | null
+        }[]
+      }
+      get_post_retention: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: {
+          bucket_pct: number
+          retention: number
+        }[]
+      }
       get_metric_counts: {
         Args: {
           p_metric_type: string
