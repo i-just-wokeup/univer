@@ -32,7 +32,7 @@ export function InsightsContentSummary({ totals }: { totals: ContentTotals }) {
         </View>
         <View style={styles.headlineItem}>
           <Text style={styles.total}>{totals.total.toLocaleString("ko-KR")}</Text>
-          <Text style={styles.totalLabel}>참여</Text>
+          <Text style={styles.totalLabel}>상호작용</Text>
         </View>
       </View>
       <View style={styles.divider} />

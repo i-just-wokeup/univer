@@ -192,7 +192,7 @@ export function useInsights(includeEngagement: boolean) {
                 previousEngagement,
               ),
               key: "engagement" as const,
-              label: "참여",
+              label: "상호작용",
               value: currentEngagement,
             }]
           : []),
