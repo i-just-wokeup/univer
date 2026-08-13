@@ -49,7 +49,7 @@ export function InsightsContentRow({
       <View style={styles.details}>
         <View style={styles.titleRow}>
           <Text style={styles.total}>
-            총반응 {totalEngagement(item).toLocaleString("ko-KR")}
+            참여 {totalEngagement(item).toLocaleString("ko-KR")}
           </Text>
           <Text style={styles.date}>
             {new Date(item.createdAt).toLocaleDateString("ko-KR", {

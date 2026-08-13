@@ -12,7 +12,7 @@ import {
   type InsightsDashboardTab,
 } from "../../components/insights/InsightsDashboardTabs";
 import { InsightsOverview } from "../../components/insights/InsightsOverview";
-import { InsightsPeriodToggle } from "../../components/insights/InsightsPeriodToggle";
+import { InsightsPeriodPicker } from "../../components/insights/InsightsPeriodPicker";
 import { useContentPerformance } from "../../features/metrics/useContentPerformance";
 import {
   useInsights,
@@ -83,7 +83,7 @@ export function InsightsScreen() {
       >
         {!isContentTab ? (
           <>
-            <InsightsPeriodToggle
+            <InsightsPeriodPicker
               onChange={insights.setPeriod}
               period={insights.period}
             />
