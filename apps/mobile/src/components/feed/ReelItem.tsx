@@ -13,6 +13,7 @@ import { ReelActions } from "./ReelActions";
 import { ReelFooter } from "./ReelFooter";
 import { ReelMoreMenu } from "./ReelMoreMenu";
 import { ReelProgressBar } from "./ReelProgressBar";
+import { ReelWatchTracker } from "./ReelWatchTracker";
 import { useReelVideoPlayer } from "./useReelVideoPlayer";
 
 type ReelItemProps = {
@@ -140,6 +141,14 @@ function ReelItemComponent({
 
   return (
     <View style={[styles.page, { height, width }]}>
+      {isReady ? (
+        <ReelWatchTracker
+          isActive={isActive && !isOwnPost}
+          ownerId={post.user.id}
+          player={player}
+          postId={post.id}
+        />
+      ) : null}
       {shouldMountVideo ? (
         <VideoView
           contentFit="contain"

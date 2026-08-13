@@ -12,6 +12,24 @@ export type MetricCounts = {
   unique: number;
 };
 
+export type ReelWatchEvent = {
+  completed: boolean;
+  eventId: string;
+  loops: number;
+  maxPct: number;
+  ownerId: string;
+  postId: string;
+  videoDurationMs: number;
+};
+
+export type VideoWatchSummary = {
+  avgDepth: number;
+  avgExitPct: number;
+  avgLoops: number;
+  completionRate: number;
+  sessions: number;
+};
+
 // 인사이트 화면 진입은 전체 계정에 허용한다. 콘텐츠 탭은 화면에서 기관·승격 배지로 별도 게이트한다.
 // 수집(record)은 계정 종류와 무관하게 유지해 승격 전 데이터도 보존한다.
 export function canViewInsights(): boolean {
@@ -35,6 +53,49 @@ export async function recordMetric(
   } catch {
     // 지표 기록 실패는 사용자 흐름에 영향 주지 않는다.
   }
+}
+
+// 릴스 활성 구간 1회를 기록한다. 서버가 실제 게시물 owner와 본인 시청 여부를 재검증한다.
+// 지표 기록 실패는 재생 흐름을 막지 않도록 조용히 무시한다.
+export async function recordReelWatch(event: ReelWatchEvent): Promise<void> {
+  try {
+    const supabase = getSupabaseMobileClient();
+    await supabase.rpc("record_reel_watch", {
+      p_completed: event.completed,
+      p_event_id: event.eventId,
+      p_loops: event.loops,
+      p_max_pct: event.maxPct,
+      p_owner_id: event.ownerId,
+      p_post_id: event.postId,
+      p_video_duration_ms: event.videoDurationMs,
+    });
+  } catch {
+    // 지표 기록 실패는 사용자 흐름에 영향 주지 않는다.
+  }
+}
+
+export async function getVideoWatchSummary(options: {
+  start: string;
+  end: string;
+}): Promise<VideoWatchSummary> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_video_watch_summary", {
+    p_start: options.start,
+    p_end: options.end,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = data?.[0];
+  return {
+    avgDepth: Number(row?.avg_depth ?? 0),
+    avgExitPct: Number(row?.avg_exit_pct ?? 0),
+    avgLoops: Number(row?.avg_loops ?? 0),
+    completionRate: Number(row?.completion_rate ?? 0),
+    sessions: row?.sessions ?? 0,
+  };
 }
 
 // 본인 지표 총합+고유 조회. 기간(YYYY-MM-DD)·대상 옵션.

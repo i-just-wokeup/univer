@@ -688,6 +688,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reel_watch_events: {
+        Row: {
+          id: string
+          event_id: string
+          actor_id: string
+          owner_id: string
+          post_id: string | null
+          video_duration_ms: number
+          max_pct: number
+          completed: boolean
+          loops: number
+          event_date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          actor_id: string
+          owner_id: string
+          post_id?: string | null
+          video_duration_ms: number
+          max_pct: number
+          completed: boolean
+          loops: number
+          event_date?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          actor_id?: string
+          owner_id?: string
+          post_id?: string | null
+          video_duration_ms?: number
+          max_pct?: number
+          completed?: boolean
+          loops?: number
+          event_date?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -698,6 +740,31 @@ export type Database = {
           p_owner_id: string
         }
         Returns: undefined
+      }
+      record_reel_watch: {
+        Args: {
+          p_event_id: string
+          p_post_id: string
+          p_owner_id: string
+          p_video_duration_ms: number
+          p_max_pct: number
+          p_completed: boolean
+          p_loops: number
+        }
+        Returns: undefined
+      }
+      get_video_watch_summary: {
+        Args: {
+          p_start: string
+          p_end: string
+        }
+        Returns: {
+          sessions: number
+          completion_rate: number
+          avg_depth: number
+          avg_loops: number
+          avg_exit_pct: number
+        }[]
       }
       get_metric_counts: {
         Args: {

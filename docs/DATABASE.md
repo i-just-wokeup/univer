@@ -526,7 +526,7 @@ community_comments (
 
 ---
 
-### 지표(인사이트) — 1개
+### 지표(인사이트) — 2개
 
 **metric_events** (사용자에게 보여줄 지표. 평범한 학생을 크리에이터로 전환시키는 "거울" 전략)
 ```sql
@@ -557,6 +557,31 @@ metric_events (
 - 2026-08-13 신규 인사이트 집계 RPC 2개는 SECURITY DEFINER이며 `auth.uid()` 소유자 범위로 제한한다. `public`/`anon` 실행 권한은 회수하고 `authenticated`에만 실행 권한을 부여한다.
 - 표시: 설정 > 계정 > 인사이트(본인만). 상세 설계는 노션 `📊 인사이트(지표) 시스템 설계`.
 
+**reel_watch_events** (릴스 활성 시청 구간별 완주·깊이·반복·이탈 원시 이벤트)
+```sql
+reel_watch_events (
+  id                uuid PK default gen_random_uuid(),
+  event_id          uuid not null unique,  -- 클라이언트 세션 ID, 재전송 멱등 키
+  actor_id          uuid FK → auth.users on delete cascade,
+  owner_id          uuid FK → auth.users on delete cascade,
+  post_id           uuid FK → posts on delete set null,
+  video_duration_ms int not null check (> 0),
+  max_pct           smallint not null check (0..100),
+  completed         boolean not null,
+  loops             smallint not null check (>= 0),
+  event_date        date not null default (now() at time zone 'Asia/Seoul')::date,
+  created_at        timestamptz not null default now()
+)
+-- unique(event_id), index reel_watch_events_owner_date_idx(owner_id, event_date)
+```
+- **세션 기준**: 릴스가 활성 상태에서 실제 재생을 시작하면 생성하고, 비활성 전환·컴포넌트 해제·앱 백그라운드에서 확정한다. 누적 실제 재생 위치 증가량이 1초 미만이면 저장하지 않는다. 스크롤백은 새 `event_id` 세션이다.
+- **깊이/완주/반복**: 첫 재생의 최대 진행률을 `max_pct`로 저장한다. `이전 진행률 > 85%`에서 `현재 < 15%`로 이동하면 루프로 판정해 `loops`를 올리고 첫 재생 깊이를 고정한다. `max_pct >= 95` 또는 루프 1회 이상이면 완주다.
+- **RPC** (SECURITY DEFINER, `authenticated`만 GRANT, `public`/`anon` REVOKE):
+  - `record_reel_watch(p_event_id, p_post_id, p_owner_id, p_video_duration_ms, p_max_pct, p_completed, p_loops)` — actor=`auth.uid()`, 비로그인·본인 시청 제외. 실제 삭제되지 않은 영상 게시물의 owner를 서버에서 재검증하고 `on conflict(event_id) do nothing`으로 멱등 기록한다.
+  - `get_video_watch_summary(p_start, p_end)` → `(sessions, completion_rate, avg_depth, avg_loops, avg_exit_pct)`. `owner_id=auth.uid()`이며 삭제되지 않은 본인 영상 세션만 KST `event_date` 범위로 집계하고, 평균 이탈 지점은 미완주 세션의 `max_pct` 평균이다.
+- RLS 활성·정책 없음 + `public`/`anon`/`authenticated` 테이블 권한 회수로 원시 행 직접 조회·수정을 차단한다. 앱은 기록 RPC만 호출하며 요약 UI 연결은 후속 작업이다.
+- 마이그레이션: `20260813073806_reel_watch_metrics`.
+
 ---
 
 ## RLS 정책 요약
@@ -585,6 +610,7 @@ metric_events (
 | community_posts | 같은 학교 유저 | 본인만 |
 | community_comments | 같은 학교 유저 | 본인만 |
 | metric_events | RLS 활성·정책 없음(직접 조회 불가) | SECURITY DEFINER RPC(record_metric)만 |
+| reel_watch_events | RLS 활성·정책 없음 + 테이블 권한 회수(직접 조회 불가) | SECURITY DEFINER RPC(record_reel_watch)만 |
 
 ---
 
