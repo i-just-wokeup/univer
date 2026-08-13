@@ -15,6 +15,7 @@ import { ProfileInfoPanel } from "./ProfileInfoPanel";
 import { ProfilePostGridSection } from "./ProfilePostGridSection";
 
 type ProfileContentProps = {
+  canViewInsights: boolean;
   connectionStatus: ConnectionStatus | null;
   counts: ProfileCounts;
   errorMessage: string;
@@ -23,6 +24,7 @@ type ProfileContentProps = {
   isMine: boolean;
   onAcceptFriendRequest: () => void;
   onEditProfile: () => void;
+  onPressInsights: () => void;
   onLinkPress?: (link: ProfileLink) => void;
   onMessage: () => void;
   onPressCrew?: () => void;
@@ -35,6 +37,7 @@ type ProfileContentProps = {
 };
 
 export function ProfileContent({
+  canViewInsights,
   connectionStatus,
   counts,
   errorMessage,
@@ -43,6 +46,7 @@ export function ProfileContent({
   isMine,
   onAcceptFriendRequest,
   onEditProfile,
+  onPressInsights,
   onLinkPress,
   onMessage,
   onPressCrew,
@@ -64,16 +68,30 @@ export function ProfileContent({
         profile={profile}
       />
       {isMine ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onEditProfile}
-          style={({ pressed }) => [
-            styles.editButton,
-            pressed ? styles.editButtonPressed : null,
-          ]}
-        >
-          <Text style={styles.editButtonText}>프로필 편집</Text>
-        </Pressable>
+        <View style={styles.profileActions}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onEditProfile}
+            style={({ pressed }) => [
+              styles.profileActionButton,
+              pressed ? styles.profileActionButtonPressed : null,
+            ]}
+          >
+            <Text style={styles.profileActionButtonText}>프로필 편집</Text>
+          </Pressable>
+          {canViewInsights ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onPressInsights}
+              style={({ pressed }) => [
+                styles.profileActionButton,
+                pressed ? styles.profileActionButtonPressed : null,
+              ]}
+            >
+              <Text style={styles.profileActionButtonText}>인사이트</Text>
+            </Pressable>
+          ) : null}
+        </View>
       ) : null}
       {!isMine && connectionStatus ? (
         <ProfileConnectionActions
@@ -103,22 +121,28 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderWidth: 0,
     backgroundColor: c.feedCard,
   },
-  editButton: {
+  profileActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  profileActionButton: {
+    minWidth: 0,
+    flex: 1,
     height: 42,
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 16,
-    marginBottom: 16,
     borderRadius: 14,
     backgroundColor: c.chipFill,
   },
-  editButtonPressed: {
+  profileActionButtonPressed: {
     opacity: 0.75,
   },
-  editButtonText: {
+  profileActionButtonText: {
     color: c.text,
     fontSize: fontSize.bodySmall,
-    fontWeight: fontWeight.heavy,
+    fontWeight: fontWeight.medium,
   },
   inlineError: {
     marginHorizontal: 16,

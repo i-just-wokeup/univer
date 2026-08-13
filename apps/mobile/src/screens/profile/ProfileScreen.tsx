@@ -51,6 +51,12 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const profileBadge = profile ? getBadge(profile.id) : null;
   const isCrewEligible = isBadgeDataReady && profileBadge === null;
+  const canViewInsights = Boolean(
+    isMine &&
+      isBadgeDataReady &&
+      profileBadge &&
+      (profileBadge.promoted || profileBadge.affiliation !== null),
+  );
 
   async function handleStartMessage() {
     const conversationId = await startConversation();
@@ -75,6 +81,10 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   const handlePressEdit = useCallback(() => {
     router.push("/profile/edit");
+  }, [router]);
+
+  const handlePressInsights = useCallback(() => {
+    router.push("/insights");
   }, [router]);
 
   const handlePullRefresh = useCallback(() => {
@@ -139,6 +149,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
       >
         {profile ? (
           <ProfileContent
+            canViewInsights={canViewInsights}
             connectionStatus={connectionStatus}
             counts={counts}
             isCrewEligible={isCrewEligible}
@@ -147,6 +158,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
             isMine={isMine}
             onAcceptFriendRequest={handleAcceptFriendRequest}
             onEditProfile={handlePressEdit}
+            onPressInsights={handlePressInsights}
             onLinkPress={handleLinkPress}
             onMessage={() => {
               void handleStartMessage();
