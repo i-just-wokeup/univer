@@ -12,9 +12,8 @@ export type MetricCounts = {
   unique: number;
 };
 
-// 인사이트 조회 권한 게이트. 지금은 전체 공개(true).
-// 나중에 승격/프리미엄만 보게 하려면 여기 조건만 교체하면 된다(예: user.isPromoted).
-// 수집(record)은 항상 전체로 하므로, 나중에 게이트만 바꿔도 데이터는 그대로 보존된다.
+// 인사이트 화면 진입은 전체 계정에 허용한다. 콘텐츠 탭은 화면에서 기관·승격 배지로 별도 게이트한다.
+// 수집(record)은 계정 종류와 무관하게 유지해 승격 전 데이터도 보존한다.
 export function canViewInsights(): boolean {
   return true;
 }
@@ -90,6 +89,67 @@ export async function getMetricDaily(
   }));
 }
 
+export type EngagementDailyPoint = {
+  day: string;
+  total: number;
+};
+
+export async function getEngagementDaily(options: {
+  start: string;
+  end: string;
+}): Promise<EngagementDailyPoint[]> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_engagement_daily", {
+    p_start: options.start,
+    p_end: options.end,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return [];
+  }
+
+  return data.map((row) => ({
+    day: row.day,
+    total: row.total ?? 0,
+  }));
+}
+
+export type ViewsByType = {
+  post: number;
+  reel: number;
+  story: number;
+};
+
+export async function getViewsByType(options: {
+  start: string;
+  end: string;
+}): Promise<ViewsByType> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_views_by_type", {
+    p_start: options.start,
+    p_end: options.end,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return { post: 0, reel: 0, story: 0 };
+  }
+
+  const row = data[0];
+  return {
+    post: row.post ?? 0,
+    reel: row.reel ?? 0,
+    story: row.story ?? 0,
+  };
+}
+
 export type ContentPerformance = {
   postId: string;
   createdAt: string;
@@ -107,7 +167,11 @@ export async function getContentPerformance(): Promise<ContentPerformance[]> {
   const supabase = getSupabaseMobileClient();
   const { data, error } = await supabase.rpc("get_content_performance");
 
-  if (error || !data) {
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
     return [];
   }
 

@@ -1,24 +1,69 @@
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
+import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
-import { InsightsMetricCard } from "../../components/insights/InsightsMetricCard";
+import { InsightsContentTab } from "../../components/insights/InsightsContentTab";
+import {
+  InsightsDashboardTabs,
+  type InsightsDashboardTab,
+} from "../../components/insights/InsightsDashboardTabs";
+import { InsightsOverview } from "../../components/insights/InsightsOverview";
 import { InsightsPeriodToggle } from "../../components/insights/InsightsPeriodToggle";
-import { useInsights } from "../../features/metrics/useInsights";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useContentPerformance } from "../../features/metrics/useContentPerformance";
+import {
+  useInsights,
+  type InsightMetricKey,
+} from "../../features/metrics/useInsights";
+import { useSession } from "../../lib/session";
+import {
+  fontSize,
+  fontWeight,
+  useTheme,
+  useThemedStyles,
+} from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { useVerifiedUsers } from "../../lib/verifiedUsers";
 
 export function InsightsScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { period, setPeriod, metrics, isLoading, errorMessage } = useInsights();
-  // 일간은 하루뿐이라 추이 차트가 의미 없어 숨긴다.
-  const showChart = period !== "day";
+  const { session } = useSession();
+  const { getBadge, isBadgeDataReady } = useVerifiedUsers();
+  const userId = session?.user.id ?? "";
+  const badge = userId ? getBadge(userId) : null;
+  const hasFullInsights =
+    isBadgeDataReady &&
+    badge !== null &&
+    (badge.promoted || badge.affiliation !== null);
+  const [tab, setTab] = useState<InsightsDashboardTab>("overview");
+  const [selectedMetricKey, setSelectedMetricKey] =
+    useState<InsightMetricKey>("views");
+  const insights = useInsights(hasFullInsights);
+  const content = useContentPerformance(hasFullInsights && tab === "content");
+
+  useEffect(() => {
+    if (!hasFullInsights && tab !== "overview") {
+      setTab("overview");
+    }
+  }, [hasFullInsights, tab]);
+
+  useEffect(() => {
+    if (!insights.metrics.some((metric) => metric.key === selectedMetricKey)) {
+      setSelectedMetricKey(insights.metrics[0]?.key ?? "views");
+    }
+  }, [insights.metrics, selectedMetricKey]);
+
+  const isContentTab = hasFullInsights && tab === "content";
+  const isLoading = isContentTab ? content.isLoading : insights.isLoading;
+  const errorMessage = isContentTab
+    ? content.errorMessage
+    : insights.errorMessage;
 
   return (
     <ScreenContainer
@@ -26,6 +71,9 @@ export function InsightsScreen() {
       style={styles.screen}
     >
       <ScreenHeader onBack={() => router.back()} themed title="인사이트" />
+      {hasFullInsights ? (
+        <InsightsDashboardTabs onChange={setTab} value={tab} />
+      ) : null}
 
       <ScrollView
         contentContainerStyle={[
@@ -33,7 +81,15 @@ export function InsightsScreen() {
           { paddingBottom: styles.content.paddingBottom + insets.bottom },
         ]}
       >
-        <InsightsPeriodToggle period={period} onChange={setPeriod} />
+        {!isContentTab ? (
+          <>
+            <InsightsPeriodToggle
+              onChange={insights.setPeriod}
+              period={insights.period}
+            />
+            <Text style={styles.range}>{insights.dateRangeLabel}</Text>
+          </>
+        ) : null}
 
         {isLoading ? (
           <StateView
@@ -43,20 +99,29 @@ export function InsightsScreen() {
           />
         ) : errorMessage ? (
           <StateView
+            actionLabel="다시 시도"
             message={errorMessage}
+            onAction={isContentTab ? content.reload : insights.reload}
             title="불러오지 못했습니다"
             type="error"
           />
+        ) : isContentTab ? (
+          <InsightsContentTab
+            items={content.items}
+            onOpenPost={(postId) => {
+              router.push({ pathname: "/post/[id]", params: { id: postId } });
+            }}
+            onSortChange={content.setSort}
+            sort={content.sort}
+            totals={content.totals}
+          />
         ) : (
-          <View style={styles.cards}>
-            {metrics.map((metric) => (
-              <InsightsMetricCard
-                key={metric.type}
-                metric={metric}
-                showChart={showChart}
-              />
-            ))}
-          </View>
+          <InsightsOverview
+            metrics={insights.metrics}
+            onSelectMetric={setSelectedMetricKey}
+            selectedMetricKey={selectedMetricKey}
+            viewsByType={insights.viewsByType}
+          />
         )}
 
         <Text style={styles.note}>나만 볼 수 있어요.</Text>
@@ -72,18 +137,21 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 14,
     paddingBottom: 40,
-    gap: 16,
+    gap: 14,
   },
-  cards: {
-    gap: 12,
-  },
-  note: {
-    marginTop: 4,
-    textAlign: "center",
+  range: {
     color: c.textFaint,
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
+    textAlign: "center",
+  },
+  note: {
+    marginTop: 2,
+    color: c.textFaint,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    textAlign: "center",
   },
 });

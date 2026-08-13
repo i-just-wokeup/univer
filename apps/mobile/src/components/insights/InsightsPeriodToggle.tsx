@@ -47,8 +47,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     flexDirection: "row",
     gap: 4,
     padding: 4,
-    borderRadius: 16,
-    backgroundColor: c.accentSoft,
+    borderRadius: 14,
+    backgroundColor: c.navBackground,
   },
   tab: {
     flex: 1,
@@ -58,7 +58,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 12,
   },
   tabActive: {
-    backgroundColor: c.navBackground,
+    backgroundColor: c.accentSoft,
   },
   tabText: {
     color: c.muted,
@@ -66,7 +66,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
   tabTextActive: {
-    color: c.accent,
+    color: c.text,
     fontWeight: fontWeight.heavy,
   },
 });

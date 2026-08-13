@@ -34,20 +34,21 @@ export function InsightsTrendChart({ bars }: { bars: InsightBar[] }) {
           <LineChart
             adjustToWidth
             areaChart
-            color={colors.accent}
+            color={colors.brand}
             curved
             curvature={0.15}
             data={data}
             disableScroll
-            endFillColor={colors.accent}
+            endFillColor={colors.brand}
             endOpacity={0.02}
             endSpacing={4}
             height={56}
             hideAxesAndRules
-            hideDataPoints
+            dataPointsColor={colors.brand}
+            dataPointsRadius={2.5}
             initialSpacing={4}
             maxValue={maxValue}
-            startFillColor={colors.accent}
+            startFillColor={colors.brand}
             startOpacity={0.22}
             thickness={2}
             width={width}

@@ -724,6 +724,27 @@ export type Database = {
           unique_actors: number
         }[]
       }
+      get_engagement_daily: {
+        Args: {
+          p_start: string
+          p_end: string
+        }
+        Returns: {
+          day: string
+          total: number
+        }[]
+      }
+      get_views_by_type: {
+        Args: {
+          p_start: string
+          p_end: string
+        }
+        Returns: {
+          reel: number
+          post: number
+          story: number
+        }[]
+      }
       claim_push_token: {
         Args: {
           p_token: string

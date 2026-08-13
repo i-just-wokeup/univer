@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 
-import type { MetricType } from "./api";
-import { getMetricCounts, getMetricDaily } from "./api";
+import {
+  getEngagementDaily,
+  getMetricCounts,
+  getMetricDaily,
+  getViewsByType,
+  type MetricCounts,
+  type MetricDailyPoint,
+  type MetricType,
+  type ViewsByType,
+} from "./api";
 
 export type InsightPeriod = "day" | "week" | "month";
+export type InsightMetricKey = "views" | "engagement" | "reach" | "profile";
 
 export type InsightBar = {
   day: string;
@@ -11,56 +20,18 @@ export type InsightBar = {
 };
 
 export type InsightMetric = {
-  type: MetricType;
-  label: string;
-  hint: string;
-  value: number;
-  // 도달(고유 계정 수). reachLabel 있는 지표만 화면에 표시.
-  reach: number;
-  reachLabel: string | null;
-  // 직전 동일 기간 대비 증감률(%). 비교 불가(직전 0)면 null.
-  changePercent: number | null;
-  // 일별 추이용. 이벤트 없는 날도 0으로 채워진 연속 배열.
   bars: InsightBar[];
+  changePercent: number;
+  key: InsightMetricKey;
+  label: string;
+  value: number;
 };
 
-// 인사이트에 보여줄 지표 정의. use=큰 숫자로 쓸 값. reachLabel=밑에 작게 보여줄 도달 라벨(없으면 미표시).
-const METRIC_DEFS: {
-  type: MetricType;
-  label: string;
-  hint: string;
-  use: "total" | "unique";
-  reachLabel: string | null;
-}[] = [
-  {
-    type: "reel_view",
-    label: "릴스 조회수",
-    hint: "릴스가 재생된 총 횟수",
-    use: "total",
-    reachLabel: "도달",
-  },
-  {
-    type: "post_view",
-    label: "게시물 조회",
-    hint: "게시물 상세를 연 횟수",
-    use: "total",
-    reachLabel: "도달",
-  },
-  {
-    type: "profile_visit",
-    label: "프로필 방문",
-    hint: "내 프로필을 열어본 횟수",
-    use: "total",
-    reachLabel: "고유 방문자",
-  },
-  {
-    type: "link_click",
-    label: "링크 클릭",
-    hint: "프로필 링크를 누른 횟수",
-    use: "total",
-    reachLabel: null,
-  },
-];
+type MetricBundle = {
+  current: MetricCounts;
+  daily: MetricDailyPoint[];
+  previous: MetricCounts;
+};
 
 const RANGE_DAYS: Record<InsightPeriod, number> = {
   day: 1,
@@ -68,52 +39,89 @@ const RANGE_DAYS: Record<InsightPeriod, number> = {
   month: 30,
 };
 
-// KST 기준 오늘(YYYY-MM-DD). 지표는 event_date를 KST로 저장하므로 조회도 KST로 맞춘다.
 function seoulToday(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
 }
 
-// KST 오늘에서 days일 전(YYYY-MM-DD).
 function seoulDateBefore(days: number): string {
   const base = new Date(`${seoulToday()}T00:00:00Z`);
   base.setUTCDate(base.getUTCDate() - days);
   return base.toISOString().slice(0, 10);
 }
 
-// 조회 기간(양끝 포함).
 function rangeFor(period: InsightPeriod): { start: string; end: string } {
   const days = RANGE_DAYS[period];
   return { start: seoulDateBefore(days - 1), end: seoulToday() };
 }
 
-// 직전 동일 길이 기간(증감률 비교용).
 function prevRangeFor(period: InsightPeriod): { start: string; end: string } {
   const days = RANGE_DAYS[period];
   return { start: seoulDateBefore(days * 2 - 1), end: seoulDateBefore(days) };
 }
 
-// start~end(포함) 사이 날짜 문자열 배열.
 function dayList(start: string, end: string): string[] {
-  const out: string[] = [];
+  const days: string[] = [];
   const cursor = new Date(`${start}T00:00:00Z`);
   const last = new Date(`${end}T00:00:00Z`);
+
   while (cursor <= last) {
-    out.push(cursor.toISOString().slice(0, 10));
+    days.push(cursor.toISOString().slice(0, 10));
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
-  return out;
+
+  return days;
 }
 
-function changePercent(current: number, previous: number): number | null {
-  if (previous <= 0) {
-    return null;
+function changePercent(current: number, previous: number): number {
+  if (previous === 0) {
+    return current === 0 ? 0 : 100;
   }
   return Math.round(((current - previous) / previous) * 100);
 }
 
-export function useInsights() {
+function barsFrom(
+  days: string[],
+  points: MetricDailyPoint[],
+  field: "total" | "unique",
+): InsightBar[] {
+  const values = new Map(points.map((point) => [point.day, point[field]]));
+  return days.map((day) => ({ day, value: values.get(day) ?? 0 }));
+}
+
+function combineBars(days: string[], ...series: InsightBar[][]): InsightBar[] {
+  return days.map((day, index) => ({
+    day,
+    value: series.reduce((sum, bars) => sum + (bars[index]?.value ?? 0), 0),
+  }));
+}
+
+async function loadMetric(
+  type: MetricType,
+  currentRange: { start: string; end: string },
+  previousRange: { start: string; end: string },
+): Promise<MetricBundle> {
+  const [current, previous, daily] = await Promise.all([
+    getMetricCounts(type, currentRange),
+    getMetricCounts(type, previousRange),
+    getMetricDaily(type, currentRange),
+  ]);
+  return { current, daily, previous };
+}
+
+function formatRangeDate(value: string): string {
+  const [, month, day] = value.split("-");
+  return `${Number(month)}월 ${Number(day)}일`;
+}
+
+export function useInsights(includeEngagement: boolean) {
   const [period, setPeriod] = useState<InsightPeriod>("week");
   const [metrics, setMetrics] = useState<InsightMetric[]>([]);
+  const [viewsByType, setViewsByType] = useState<ViewsByType>({
+    post: 0,
+    reel: 0,
+    story: 0,
+  });
+  const [dateRangeLabel, setDateRangeLabel] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -121,61 +129,117 @@ export function useInsights() {
     setIsLoading(true);
     setErrorMessage("");
 
-    const { start, end } = rangeFor(period);
-    const prev = prevRangeFor(period);
-    const days = dayList(start, end);
+    const currentRange = rangeFor(period);
+    const previousRange = prevRangeFor(period);
+    const days = dayList(currentRange.start, currentRange.end);
+    setDateRangeLabel(
+      currentRange.start === currentRange.end
+        ? formatRangeDate(currentRange.start)
+        : `${formatRangeDate(currentRange.start)} ~ ${formatRangeDate(currentRange.end)}`,
+    );
 
     try {
-      const results = await Promise.all(
-        METRIC_DEFS.map(async (def) => {
-          const [current, previous, daily] = await Promise.all([
-            getMetricCounts(def.type, { start, end }),
-            getMetricCounts(def.type, { start: prev.start, end: prev.end }),
-            getMetricDaily(def.type, { start, end }),
-          ]);
+      const engagementPromise = includeEngagement
+        ? Promise.all([
+            getEngagementDaily(currentRange),
+            getEngagementDaily(previousRange),
+          ])
+        : Promise.resolve([[], []] as const);
+      const [reel, post, profile, engagement, typeViews] = await Promise.all([
+        loadMetric("reel_view", currentRange, previousRange),
+        loadMetric("post_view", currentRange, previousRange),
+        loadMetric("profile_visit", currentRange, previousRange),
+        engagementPromise,
+        getViewsByType(currentRange),
+      ]);
 
-          const dailyMap = new Map(
-            daily.map((point) => [
-              point.day,
-              def.use === "unique" ? point.unique : point.total,
-            ]),
-          );
-
-          const value = def.use === "unique" ? current.unique : current.total;
-          const prevValue =
-            def.use === "unique" ? previous.unique : previous.total;
-
-          return {
-            type: def.type,
-            label: def.label,
-            hint: def.hint,
-            value,
-            reach: current.unique,
-            reachLabel: def.reachLabel,
-            changePercent: changePercent(value, prevValue),
-            bars: days.map((day) => ({ day, value: dailyMap.get(day) ?? 0 })),
-          } satisfies InsightMetric;
-        }),
+      const reelTotalBars = barsFrom(days, reel.daily, "total");
+      const postTotalBars = barsFrom(days, post.daily, "total");
+      const reelReachBars = barsFrom(days, reel.daily, "unique");
+      const postReachBars = barsFrom(days, post.daily, "unique");
+      const profileBars = barsFrom(days, profile.daily, "total");
+      const currentEngagement = engagement[0].reduce(
+        (sum, point) => sum + point.total,
+        0,
+      );
+      const previousEngagement = engagement[1].reduce(
+        (sum, point) => sum + point.total,
+        0,
+      );
+      const engagementMap = new Map(
+        engagement[0].map((point) => [point.day, point.total]),
       );
 
-      setMetrics(results);
+      const nextMetrics: InsightMetric[] = [
+        {
+          bars: combineBars(days, reelTotalBars, postTotalBars),
+          changePercent: changePercent(
+            reel.current.total + post.current.total,
+            reel.previous.total + post.previous.total,
+          ),
+          key: "views",
+          label: "조회",
+          value: reel.current.total + post.current.total,
+        },
+        ...(includeEngagement
+          ? [{
+              bars: days.map((day) => ({
+                day,
+                value: engagementMap.get(day) ?? 0,
+              })),
+              changePercent: changePercent(
+                currentEngagement,
+                previousEngagement,
+              ),
+              key: "engagement" as const,
+              label: "반응",
+              value: currentEngagement,
+            }]
+          : []),
+        ...(includeEngagement
+          ? [{
+              bars: combineBars(days, reelReachBars, postReachBars),
+              changePercent: changePercent(
+                reel.current.unique + post.current.unique,
+                reel.previous.unique + post.previous.unique,
+              ),
+              key: "reach" as const,
+              label: "도달",
+              value: reel.current.unique + post.current.unique,
+            }]
+          : [{
+              bars: profileBars,
+              changePercent: changePercent(
+                profile.current.total,
+                profile.previous.total,
+              ),
+              key: "profile" as const,
+              label: "프로필 방문",
+              value: profile.current.total,
+            }]),
+      ];
+
+      setMetrics(nextMetrics);
+      setViewsByType(typeViews);
     } catch {
       setErrorMessage("지표를 불러오지 못했습니다.");
     } finally {
       setIsLoading(false);
     }
-  }, [period]);
+  }, [includeEngagement, period]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   return {
-    period,
-    setPeriod,
-    metrics,
-    isLoading,
+    dateRangeLabel,
     errorMessage,
+    isLoading,
+    metrics,
+    period,
     reload: load,
+    setPeriod,
+    viewsByType,
   };
 }
