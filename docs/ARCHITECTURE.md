@@ -76,6 +76,7 @@ features/     ← 로직/훅/API → 앱 전환 시 재사용
 /admin                     관리자 대시보드
 /admin/reports             신고 관리
 /admin/users               유저 관리
+/admin/promotions          승격 신청 목록·심사
 /auth/login                로그인
 /auth/signup               회원가입
 /onboarding                온보딩
@@ -112,7 +113,7 @@ src/
     admin/                     ← 관리자 (별도 레이아웃)
     onboarding/
   components/
-    admin/                     ← AdminSidebar
+    admin/                     ← AdminSidebar, 승격 신청 카드·심사 패널·미디어 라이트박스
     chat/                      ← ConversationItem, MessageBubble, MessageInput
     common/                    ← Avatar, ActionSheet, ConfirmDialog, Toast, UserInfo
     feed/                      ← FeedList, PostCard, PostDetail, PostImageUploader 등

@@ -1,5 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import type { Json } from "@/types/database.types";
+import type { Database, Json } from "@/types/database.types";
 
 export type AdminPeriod = "day" | "month" | "year" | "all";
 export type AdminReportAction = "delete" | "dismiss" | "restore";
@@ -40,6 +40,56 @@ export type AdminUser = {
   reportedCount: number;
   role: AdminRole;
 };
+
+export type AdminPromotionRequest = {
+  avgCompletion: number;
+  createdAt: string;
+  department: string | null;
+  engagement: number;
+  engagementRate: number;
+  nickname: string;
+  posts30d: number;
+  postsCount: number;
+  reach: number;
+  requestId: string;
+  userCreatedAt: string;
+  userId: string;
+  videoCount: number;
+  views: number;
+};
+
+export type AdminApplicantMedia = {
+  id: string;
+  orderIndex: number;
+  provider: "cloudflare_stream" | null;
+  providerAssetId: string | null;
+  thumbnailUrl: string | null;
+  type: "image" | "video";
+  url: string;
+};
+
+export type AdminApplicantPost = {
+  content: string | null;
+  createdAt: string;
+  id: string;
+  media: AdminApplicantMedia[];
+};
+
+type PostRow = Pick<
+  Database["public"]["Tables"]["posts"]["Row"],
+  "content" | "created_at" | "id"
+>;
+type PostMediaRow = Pick<
+  Database["public"]["Tables"]["post_media"]["Row"],
+  | "id"
+  | "order_index"
+  | "post_id"
+  | "provider"
+  | "provider_asset_id"
+  | "thumbnail_url"
+  | "type"
+  | "url"
+>;
 
 type JsonRecord = Record<string, Json | null | undefined>;
 
@@ -234,6 +284,26 @@ function normalizeAdminUser(record: JsonRecord): AdminUser {
   };
 }
 
+function normalizePromotionRequest(record: JsonRecord): AdminPromotionRequest {
+  return {
+    avgCompletion: readNumber(record, ["avg_completion"]),
+    createdAt: readString(record, ["created_at"]) ?? new Date(0).toISOString(),
+    department: readString(record, ["department"]),
+    engagement: readNumber(record, ["engagement"]),
+    engagementRate: readNumber(record, ["engagement_rate"]),
+    nickname: readString(record, ["nickname"]) ?? "알 수 없음",
+    posts30d: readNumber(record, ["posts_30d"]),
+    postsCount: readNumber(record, ["posts_count"]),
+    reach: readNumber(record, ["reach"]),
+    requestId: readString(record, ["request_id"]) ?? "",
+    userCreatedAt:
+      readString(record, ["user_created_at"]) ?? new Date(0).toISOString(),
+    userId: readString(record, ["user_id"]) ?? "",
+    videoCount: readNumber(record, ["video_count"]),
+    views: readNumber(record, ["views"]),
+  };
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = requireSupabaseClient();
   const { data, error } = await supabase.rpc("get_admin_dashboard_stats");
@@ -288,4 +358,88 @@ export async function handleReport(
   await callRpcWithVariants<Json | null>("handle_admin_report", [
     { report_id: reportId, action_type: action },
   ]);
+}
+
+export async function getPromotionRequests(): Promise<AdminPromotionRequest[]> {
+  const data = await callRpcWithVariants<Json[] | null>(
+    "get_promotion_requests_for_admin",
+    [{}],
+  );
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data
+    .filter(isRecord)
+    .map(normalizePromotionRequest)
+    .filter((request) => Boolean(request.requestId && request.userId));
+}
+
+export async function approvePromotion(requestId: string): Promise<void> {
+  await callRpcWithVariants<Json | null>("approve_promotion", [
+    { p_request_id: requestId },
+  ]);
+}
+
+export async function rejectPromotion(requestId: string): Promise<void> {
+  await callRpcWithVariants<Json | null>("reject_promotion", [
+    { p_request_id: requestId },
+  ]);
+}
+
+export async function getApplicantPosts(
+  userId: string,
+): Promise<AdminApplicantPost[]> {
+  const supabase = requireSupabaseClient();
+  const { data: postsData, error: postsError } = await supabase
+    .from("posts")
+    .select("id, content, created_at")
+    .eq("user_id", userId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
+  if (postsError || !postsData) {
+    throw new Error("신청자 게시물을 불러오지 못했습니다.");
+  }
+
+  if (postsData.length === 0) {
+    return [];
+  }
+
+  const postIds = postsData.map((post) => post.id);
+  const { data: mediaData, error: mediaError } = await supabase
+    .from("post_media")
+    .select(
+      "id, post_id, type, url, thumbnail_url, order_index, provider, provider_asset_id",
+    )
+    .in("post_id", postIds)
+    .order("order_index", { ascending: true });
+
+  if (mediaError || !mediaData) {
+    throw new Error("신청자 게시물 미디어를 불러오지 못했습니다.");
+  }
+
+  const mediaByPostId = new Map<string, AdminApplicantMedia[]>();
+
+  (mediaData as PostMediaRow[]).forEach((media) => {
+    const postMedia = mediaByPostId.get(media.post_id) ?? [];
+    postMedia.push({
+      id: media.id,
+      orderIndex: media.order_index,
+      provider: media.provider,
+      providerAssetId: media.provider_asset_id,
+      thumbnailUrl: media.thumbnail_url,
+      type: media.type,
+      url: media.url,
+    });
+    mediaByPostId.set(media.post_id, postMedia);
+  });
+
+  return (postsData as PostRow[]).map((post) => ({
+    content: post.content,
+    createdAt: post.created_at,
+    id: post.id,
+    media: mediaByPostId.get(post.id) ?? [],
+  }));
 }

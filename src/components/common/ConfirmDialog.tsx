@@ -2,6 +2,7 @@
 
 type ConfirmDialogProps = {
   confirmLabel: string;
+  confirmTone?: "danger" | "primary";
   description: string;
   isOpen: boolean;
   onCancel: () => void;
@@ -11,6 +12,7 @@ type ConfirmDialogProps = {
 
 export function ConfirmDialog({
   confirmLabel,
+  confirmTone = "danger",
   description,
   isOpen,
   onCancel,
@@ -45,7 +47,9 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-2xl bg-red-500 px-4 py-3 text-sm font-bold text-white"
+            className={`rounded-2xl px-4 py-3 text-sm font-bold text-white ${
+              confirmTone === "primary" ? "bg-zinc-950" : "bg-red-500"
+            }`}
           >
             {confirmLabel}
           </button>

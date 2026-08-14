@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Flag, ShieldCheck, Users } from "lucide-react";
+import { BadgeCheck, BarChart3, Flag, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -19,6 +19,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/users",
     icon: Users,
     label: "유저 관리",
+  },
+  {
+    href: "/admin/promotions",
+    icon: BadgeCheck,
+    label: "승격 신청",
   },
 ] as const;
 
