@@ -737,7 +737,6 @@ export type Database = {
         Args: {
           p_metric_type: string
           p_target_id: string
-          p_owner_id: string
         }
         Returns: undefined
       }
@@ -745,7 +744,6 @@ export type Database = {
         Args: {
           p_event_id: string
           p_post_id: string
-          p_owner_id: string
           p_video_duration_ms: number
           p_max_pct: number
           p_completed: boolean

@@ -144,7 +144,6 @@ function ReelItemComponent({
       {isReady ? (
         <ReelWatchTracker
           isActive={isActive && !isOwnPost}
-          ownerId={post.user.id}
           player={player}
           postId={post.id}
         />

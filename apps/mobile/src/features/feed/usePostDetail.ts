@@ -57,7 +57,7 @@ export function usePostDetail(postId: string) {
       // 게시물 조회 기록(본인 것은 서버가 제외).
       if (!viewRecordedRef.current) {
         viewRecordedRef.current = true;
-        void recordMetric("post_view", loadedPost.id, loadedPost.user.id);
+        void recordMetric("post_view", loadedPost.id);
       }
     } catch (error) {
       setErrorMessage(

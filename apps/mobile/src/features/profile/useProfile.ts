@@ -69,7 +69,7 @@ export function useProfile(nickname?: string) {
       // 캐시 히트로 네트워크 로드를 건너뛰어도 방문 지표는 기존 규칙대로 기록한다.
       if (!loadedIsMine && !visitRecordedRef.current) {
         visitRecordedRef.current = true;
-        void recordMetric("profile_visit", loadedProfile.id, loadedProfile.id);
+        void recordMetric("profile_visit", loadedProfile.id);
       }
     },
     [],
@@ -340,7 +340,7 @@ export function useProfile(nickname?: string) {
   // 프로필 링크 탭: 클릭 지표 기록(본인 제외·중복제거는 서버가 처리) 후 링크를 연다.
   function handleLinkPress(link: ProfileLink) {
     if (profile) {
-      void recordMetric("link_click", link.url, profile.id);
+      void recordMetric("link_click", link.id);
     }
     const safeUrl = normalizeProfileUrl(link.url);
     if (safeUrl) {

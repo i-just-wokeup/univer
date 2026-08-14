@@ -17,7 +17,6 @@ export type ReelWatchEvent = {
   eventId: string;
   loops: number;
   maxPct: number;
-  ownerId: string;
   postId: string;
   videoDurationMs: number;
 };
@@ -41,14 +40,12 @@ export function canViewInsights(): boolean {
 export async function recordMetric(
   metricType: MetricType,
   targetId: string,
-  ownerId: string,
 ): Promise<void> {
   try {
     const supabase = getSupabaseMobileClient();
     await supabase.rpc("record_metric", {
       p_metric_type: metricType,
       p_target_id: targetId,
-      p_owner_id: ownerId,
     });
   } catch {
     // 지표 기록 실패는 사용자 흐름에 영향 주지 않는다.
@@ -65,7 +62,6 @@ export async function recordReelWatch(event: ReelWatchEvent): Promise<void> {
       p_event_id: event.eventId,
       p_loops: event.loops,
       p_max_pct: event.maxPct,
-      p_owner_id: event.ownerId,
       p_post_id: event.postId,
       p_video_duration_ms: event.videoDurationMs,
     });

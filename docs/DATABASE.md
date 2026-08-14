@@ -242,6 +242,9 @@ user_connections (
   created_at   timestamptz default now(),
   UNIQUE(requester_id, receiver_id)
 )
+-- 무방향 유니크 인덱스 user_connections_unordered_pair_key
+--   ON (LEAST(requester_id, receiver_id), GREATEST(requester_id, receiver_id))
+--   → A→B/B→A 중 한 행만 허용
 ```
 
 **close_friends** (레거시 — 미사용)
@@ -417,7 +420,7 @@ take_action_on_report(report_id uuid)
 - 앱 클라이언트는 좋아요/댓글/조회 row 생성·삭제 후 직접 카운터 UPDATE를 하지 않고 이 RPC만 호출한다.
 - `get_account_badges`(2026-08-06)는 배지 있는 유저마다 소속(`official_accounts.type` official→`council`·club→`club`)과 승격(`users.is_promoted`)을 한 행으로 반환. 계정 배지(학생회/동아리 pill + 승격 심볼)용. SECURITY DEFINER, `authenticated`/`anon` GRANT. ⚠️ `official`이 운영자/공식 계정까지 포함 → "학생회 vs 운영자" 구분(type `council` 추가)은 실 학생회 계정 받을 때 결정.
 - `get_friend_recommendations`(2026-08-07, fallback·기관/승격 제외 2026-08-11)는 같은 학교의 아직 크루가 아닌 유저를 `공통 크루 있음(tier 1, mutual_count DESC) → 같은 학과(tier 2) → 그 외 같은 학교 seed 셔플(tier 3)` 순서로 반환한다. 신호 후보를 먼저 모두 배치한 뒤 `p_limit`의 남는 자리만 fallback으로 채우며, tier 3은 `md5(user_id || p_seed)` 순서라 같은 화면 세션에서는 고정되고 새 진입 seed에서는 바뀐다. 본인·accepted/pending 양방향 연결·양방향 차단·다른 학교·비활성/탈퇴 유저와 `official_accounts`에 등록된 기관 계정 및 `users.is_promoted=true` 승격 계정을 제외하며, 개인정보 보호를 위해 학과명/실명 대신 `mutual_count`와 `same_dept`만 반환한다. 연결 전체 계산을 위해 SECURITY DEFINER를 사용하되 함수 내부 `auth.uid()` 확인, 같은 학교 범위, `PUBLIC`/`anon` 실행 권한 회수 후 `authenticated`만 허용한다. 보조 인덱스 `idx_users_university_active`, `idx_blocks_blocked_id`를 사용한다.
-- `send_friend_request`와 `accept_friend_request`(2026-08-11)는 호출자·상대방/요청자 중 한 명이라도 기관 계정 또는 승격 계정이면 예외로 중단한다. 두 SECURITY DEFINER 함수 모두 `PUBLIC`/`anon` 실행 권한을 회수하고 `authenticated`만 허용한다. 마이그레이션 당시 해당 계정이 포함된 기존 accepted 연결 1건은 자동 삭제하지 않았으며, 소유자 확인 후 별도 정리한다.
+- `send_friend_request`와 `accept_friend_request`(2026-08-11, 보안 보강 2026-08-14)는 호출자와 상대가 모두 활성·미탈퇴 상태이고 같은 학교이며 양방향 차단 관계가 없을 때만 동작한다. 기존 기관/승격 계정 차단도 유지한다. `send_friend_request`는 반대 방향 pending이 있으면 새 행을 만들지 않고 기존 행을 accepted로 자동 전환하며, 무방향 유니크 인덱스로 A→B/B→A 중복을 DB에서도 차단한다. 두 SECURITY DEFINER 함수는 `search_path=''`를 사용하고 `PUBLIC`/`anon` 실행 권한을 회수해 `authenticated`만 허용한다. 마이그레이션 당시 해당 계정이 포함된 기존 accepted 연결 1건은 자동 삭제하지 않았으며, 소유자 확인 후 별도 정리한다.
 
 **푸시 (한 기기 = 한 계정 + 서버 트리거 발송)**
 - 발송: `push_on_message`(messages insert), `push_on_notification`(notifications insert; `post_comment`·`comment_reply`만) 트리거가 `net.http_post`로 Expo Push(`exp.host/--/api/v2/push/send`) 호출. payload `priority:'high'` + `channelId:'alerts'`(2026-08-06 `default`→`alerts`, 낮게 굳은 채널 회피). 제목은 발신자 닉네임 or `unip`.
@@ -546,8 +549,8 @@ metric_events (
 ```
 - **개념(인스타 공식 정의 정합)**: 조회수(Views)=재생/열람 총 횟수(반복 포함)=`count(*)`, 도달(Reach)=고유 계정=`count(distinct actor_id)`. dedupe 안 하므로 한 지표에서 total(조회)·unique(도달) 둘 다 나옴.
 - **기록 트리거(클라)**: 릴스=활성 1초 이상 머물면(스크롤백=새 조회), 게시물=상세 열림, 프로필=남 프로필 로드, 링크=프로필 링크 탭.
-- **RPC** (전부 SECURITY DEFINER, `authenticated`만 GRANT, `public` REVOKE):
-  - `record_metric(p_metric_type, p_target_id, p_owner_id)` — actor=`auth.uid()`, 비로그인/본인(actor=owner) 제외, `insert ... on conflict do nothing`(link_click 하루 중복만 무시).
+- **RPC**:
+  - `record_metric(p_metric_type, p_target_id)` — SECURITY DEFINER, `authenticated`만 GRANT, `public`/`anon` REVOKE. actor는 `auth.uid()`로 고정하고 owner를 클라이언트에서 받지 않는다. `post_view`/`reel_view`는 삭제되지 않은 `posts.id`, `profile_visit`은 활성·미탈퇴 `users.id`, `link_click`은 실제 `profile_links.id`에서 owner를 서버가 계산한다. 링크는 검증 후 기존 집계 호환을 위해 URL을 `metric_events.target_id`에 저장한다. 비로그인·본인 이벤트와 유효하지 않은 target은 기록하지 않고, 조회형은 원시 이벤트를 유지하며 link_click만 하루 중복을 무시한다.
   - `get_metric_counts(p_metric_type, p_target_id?, p_start?, p_end?)` → `(total, unique_actors)`, `owner_id = auth.uid()` 본인만.
   - `get_metric_daily(...)` → `(day, total, unique_actors)` 일별.
   - `get_content_performance()`(2026-08-12) → 본인 게시물별 `(post_id, created_at, thumbnail_url, is_video, likes, comments, saves, shares)`. 승격(크리에이터) 인사이트 A "콘텐츠 성과"용. likes/comments는 posts 카운터 컬럼, saves는 `bookmarks` count, shares는 DM 리셰어(`messages.shared_post_id`)+스토리 리셰어(`stories.shared_post_id`) 합산(둘 다 `deleted_at is null`). `where user_id = auth.uid() and deleted_at is null`로 본인 글만, `created_at desc` 정렬. metric_events가 아니라 기존 참여 테이블 집계라 데이터가 이미 쌓여 있으며, 앱 콘텐츠 탭은 기관·승격 계정에만 노출한다.
@@ -555,7 +558,7 @@ metric_events (
   - `get_views_by_type(p_start, p_end)`(2026-08-13) → `(reel, post, story)`. 릴스·게시물은 본인 소유 `metric_events`의 `event_date`, 스토리는 내 스토리의 `story_views.created_at` KST 날짜를 집계한다.
   - `get_post_insight(p_post_id)`(2026-08-13) → 삭제되지 않은 본인 게시물 단건의 `(created_at, thumbnail_url, is_video, views, reach, likes, comments, saves, shares, video_duration_ms, completion_rate, avg_depth, avg_loops)`. 조회·도달은 `post_view`+`reel_view`, 상호작용은 posts 카운터·저장·삭제되지 않은 DM/스토리 리셰어를 합산한다. 영상 길이는 해당 게시물 시청 세션의 중앙값이며 세션이 없거나 사진이면 영상 필드는 null이다.
   - `get_post_retention(p_post_id)`(2026-08-13) → 영상 시청 세션이 있는 삭제되지 않은 본인 영상에 대해 `(bucket_pct, retention)`을 0~100%, 5% 간격으로 반환한다. `retention = max_pct >= bucket` 세션 비율이므로 수동 스크럽 없는 v1 플레이어의 순차 시청 유지율로 사용한다. 세션이 없거나 사진·타인 글이면 0행이다.
-- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외), `20260813090242_post_insight_detail`(단건 인사이트·유지율 RPC).
+- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외), `20260813090242_post_insight_detail`(단건 인사이트·유지율 RPC), `20260814024836_secure_high_risk_rpcs_batch_1`(기록 owner 서버 계산·크루 관계 검증·무방향 유니크).
 - 2026-08-13 신규 인사이트 집계 RPC들은 SECURITY DEFINER이며 `auth.uid()` 소유자 범위로 제한한다. `public`/`anon` 실행 권한은 회수하고 `authenticated`에만 실행 권한을 부여한다.
 - 표시: 설정 > 계정 > 인사이트(본인만). 상세 설계는 노션 `📊 인사이트(지표) 시스템 설계`.
 
@@ -580,11 +583,11 @@ reel_watch_events (
 - **세션 기준**: 릴스가 활성 상태에서 실제 재생을 시작하면 생성하고, 비활성 전환·컴포넌트 해제·앱 백그라운드에서 확정한다. 누적 실제 재생 위치 증가량이 1초 미만이면 저장하지 않는다. 스크롤백은 새 `event_id` 세션이다.
 - **깊이/완주/반복**: 첫 재생의 최대 진행률을 `max_pct`로 저장한다. `이전 진행률 > 85%`에서 `현재 < 15%`로 이동하면 루프로 판정해 `loops`를 올리고 첫 재생 깊이를 고정한다. `max_pct >= 95` 또는 루프 1회 이상이면 완주다.
 - **RPC** (SECURITY DEFINER, `authenticated`만 GRANT, `public`/`anon` REVOKE):
-  - `record_reel_watch(p_event_id, p_post_id, p_owner_id, p_video_duration_ms, p_max_pct, p_completed, p_loops)` — actor=`auth.uid()`, 비로그인·본인 시청 제외. 실제 삭제되지 않은 영상 게시물의 owner를 서버에서 재검증하고 `on conflict(event_id) do nothing`으로 멱등 기록한다.
+  - `record_reel_watch(p_event_id, p_post_id, p_video_duration_ms, p_max_pct, p_completed, p_loops)` — actor=`auth.uid()`, 비로그인·본인 시청 제외. 클라이언트 owner 인자를 받지 않고 실제 삭제되지 않은 영상 게시물의 owner를 `p_post_id`에서 서버가 계산하며, `on conflict(event_id) do nothing`으로 멱등 기록한다.
   - `get_video_watch_summary(p_start, p_end)` → `(sessions, completion_rate, avg_depth, avg_loops, avg_exit_pct)`. `owner_id=auth.uid()`이며 삭제되지 않은 본인 영상 세션만 KST `event_date` 범위로 집계하고, 평균 이탈 지점은 미완주 세션의 `max_pct` 평균이다.
   - 게시물 단건 영상 지표와 유지율은 위 `get_post_insight`/`get_post_retention`이 같은 원시 이벤트를 `post_id`로 집계한다.
 - RLS 활성·정책 없음 + `public`/`anon`/`authenticated` 테이블 권한 회수로 원시 행 직접 조회·수정을 차단한다. 앱은 기록 RPC로 원시 이벤트를 저장하고 게시물 인사이트 상세에서는 집계 RPC 결과만 조회한다.
-- 마이그레이션: `20260813073806_reel_watch_metrics`.
+- 마이그레이션: `20260813073806_reel_watch_metrics`, `20260814024836_secure_high_risk_rpcs_batch_1`(owner 인자 제거·서버 계산).
 
 ---
 

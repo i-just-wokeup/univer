@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-08-14
+
+### 완료
+- **고위험 RPC 보안 감사 배치 1** — `record_metric`과 `record_reel_watch`에서 클라이언트가 넘기던 owner 인자를 제거하고, 게시물·프로필·프로필 링크의 실제 소유자를 서버가 target에서 계산하도록 변경해 타인 지표 위조 경로를 차단했다. 링크 클릭은 `profile_links.id`로 소유권을 검증한 뒤 기존 집계와 일일 중복 방지를 유지하도록 canonical URL을 저장한다. `send_friend_request`/`accept_friend_request`는 기존 기관·승격 차단에 더해 양쪽 사용자의 활성·미탈퇴, 같은 학교, 양방향 차단 없음 조건을 SECURITY DEFINER 내부에서 검증한다. `user_connections`에는 무방향 유니크 인덱스를 추가하고 역방향 pending 신청은 새 행 대신 accepted로 자동 전환한다. 원격 적용 후 롤백 트랜잭션으로 정상 지표 기록, 무효 target 미기록, owner 서버 계산, 링크 ID→URL 정규화, 릴스 시청 멱등 기록, 역방향 자동 수락, 일반 신청·수락, 차단 관계 거부, 이전 시그니처 제거와 RPC ACL·인덱스를 검증했으며 앱 tsc를 통과했다.
+
+---
+
 ## 2026-08-13
 
 ### 완료

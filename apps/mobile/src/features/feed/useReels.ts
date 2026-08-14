@@ -102,17 +102,16 @@ export function useReels(startPostId?: string) {
   // 스크롤로 나갔다 다시 오면 새 조회로 카운트(dedupe 없음 → total=조회수, unique=도달).
   const activePost = reelItems[activeIndex]?.post;
   const activePostId = activePost?.id;
-  const activeOwnerId = activePost?.user.id;
   useEffect(() => {
-    if (!activePostId || !activeOwnerId) {
+    if (!activePostId) {
       return;
     }
     const timer = setTimeout(() => {
       seenIdsRef.current.add(activePostId);
-      void recordMetric("reel_view", activePostId, activeOwnerId);
+      void recordMetric("reel_view", activePostId);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [activePostId, activeOwnerId]);
+  }, [activePostId]);
 
   const loadFirstPage = useCallback(async () => {
     try {

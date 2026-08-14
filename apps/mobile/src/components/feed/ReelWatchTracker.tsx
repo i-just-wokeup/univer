@@ -4,7 +4,6 @@ import { useReelWatch } from "../../features/metrics/useReelWatch";
 
 type ReelWatchTrackerProps = {
   isActive: boolean;
-  ownerId: string;
   player: VideoPlayer;
   postId: string;
 };

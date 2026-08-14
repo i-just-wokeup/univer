@@ -16,7 +16,6 @@ type ReelWatchSession = {
   firstPlayMaxPct: number;
   looped: boolean;
   loops: number;
-  ownerId: string;
   postId: string;
   previousPct: number | null;
   previousTime: number | null;
@@ -25,7 +24,6 @@ type ReelWatchSession = {
 
 type UseReelWatchParams = {
   isActive: boolean;
-  ownerId: string;
   player: VideoPlayer;
   postId: string;
 };
@@ -58,7 +56,6 @@ function readPlayerPosition(player: VideoPlayer): {
 
 export function useReelWatch({
   isActive,
-  ownerId,
   player,
   postId,
 }: UseReelWatchParams): void {
@@ -88,7 +85,6 @@ export function useReelWatch({
       eventId: session.eventId,
       loops: Math.min(32767, session.loops),
       maxPct,
-      ownerId: session.ownerId,
       postId: session.postId,
       videoDurationMs: Math.round(session.durationSeconds * 1000),
     });
@@ -107,13 +103,12 @@ export function useReelWatch({
       firstPlayMaxPct: initialPct,
       looped: false,
       loops: 0,
-      ownerId,
       postId,
       previousPct: duration > 0 ? initialPct : null,
       previousTime: duration > 0 ? currentTime : null,
       watchedSeconds: 0,
     };
-  }, [ownerId, player, postId]);
+  }, [player, postId]);
 
   useEventListener(player, "playingChange", ({ isPlaying }) => {
     playingRef.current = isPlaying;
@@ -202,5 +197,5 @@ export function useReelWatch({
   }, [finishSession, player, startSession]);
 
   // FlatList가 셀을 다른 게시물로 재사용하는 경우에도 이전 게시물 세션을 먼저 확정한다.
-  useEffect(() => finishSession, [finishSession, ownerId, postId]);
+  useEffect(() => finishSession, [finishSession, postId]);
 }
