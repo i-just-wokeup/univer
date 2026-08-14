@@ -1,9 +1,10 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenContainer } from "../../components/common/ScreenContainer";
+import { FeedbackToast } from "../../components/common/FeedbackToast";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { StateView } from "../../components/common/StateView";
 import { InsightsContentTab } from "../../components/insights/InsightsContentTab";
@@ -13,11 +14,13 @@ import {
 } from "../../components/insights/InsightsDashboardTabs";
 import { InsightsOverview } from "../../components/insights/InsightsOverview";
 import { InsightsPeriodPicker } from "../../components/insights/InsightsPeriodPicker";
+import { PromotionCard } from "../../components/insights/PromotionCard";
 import { useContentPerformance } from "../../features/metrics/useContentPerformance";
 import {
   useInsights,
   type InsightMetricKey,
 } from "../../features/metrics/useInsights";
+import { usePromotionRequest } from "../../features/promotion/usePromotionRequest";
 import { useSession } from "../../lib/session";
 import {
   fontSize,
@@ -41,25 +44,20 @@ export function InsightsScreen() {
     isBadgeDataReady &&
     badge !== null &&
     (badge.promoted || badge.affiliation !== null);
+  const showPromotionCard = isBadgeDataReady && !hasFullInsights;
   const [tab, setTab] = useState<InsightsDashboardTab>("overview");
   const [selectedMetricKey, setSelectedMetricKey] =
     useState<InsightMetricKey>("views");
   const insights = useInsights(hasFullInsights);
   const content = useContentPerformance(hasFullInsights && tab === "content");
-
-  useEffect(() => {
-    if (!hasFullInsights && tab !== "overview") {
-      setTab("overview");
-    }
-  }, [hasFullInsights, tab]);
-
-  useEffect(() => {
-    if (!insights.metrics.some((metric) => metric.key === selectedMetricKey)) {
-      setSelectedMetricKey(insights.metrics[0]?.key ?? "views");
-    }
-  }, [insights.metrics, selectedMetricKey]);
+  const promotion = usePromotionRequest(showPromotionCard);
 
   const isContentTab = hasFullInsights && tab === "content";
+  const activeMetricKey = insights.metrics.some(
+    (metric) => metric.key === selectedMetricKey,
+  )
+    ? selectedMetricKey
+    : (insights.metrics[0]?.key ?? "views");
   const isLoading = isContentTab ? content.isLoading : insights.isLoading;
   const errorMessage = isContentTab
     ? content.errorMessage
@@ -122,13 +120,31 @@ export function InsightsScreen() {
           <InsightsOverview
             metrics={insights.metrics}
             onSelectMetric={setSelectedMetricKey}
-            selectedMetricKey={selectedMetricKey}
+            selectedMetricKey={activeMetricKey}
             viewsByType={insights.viewsByType}
           />
         )}
 
+        {!isContentTab && showPromotionCard ? (
+          <PromotionCard
+            cooldownDaysRemaining={promotion.cooldownDaysRemaining}
+            isLoading={promotion.isLoading}
+            isSubmitting={promotion.isSubmitting}
+            onRequest={() => {
+              void promotion.submit();
+            }}
+            status={promotion.requestState?.status ?? null}
+          />
+        ) : null}
+
         <Text style={styles.note}>나만 볼 수 있어요.</Text>
       </ScrollView>
+
+      <FeedbackToast
+        bottom={insets.bottom + 24}
+        message={promotion.errorMessage}
+        onDismiss={promotion.clearError}
+      />
     </ScreenContainer>
   );
 }

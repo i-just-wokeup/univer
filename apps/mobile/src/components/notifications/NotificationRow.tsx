@@ -61,6 +61,10 @@ function getNotificationText(notification: NotificationItem) {
       return `${nickname}님이 친구 신청을 수락했습니다`;
     case "report_received":
       return "새로운 신고가 접수됐습니다";
+    case "promotion_approved":
+      return "프로 계정 신청이 승인됐어요. 전체 인사이트와 콘텐츠 기능을 사용할 수 있어요";
+    case "promotion_rejected":
+      return "프로 계정 신청이 승인되지 않았어요. 7일 뒤 다시 신청할 수 있어요";
     default:
       return notification.message ?? "새 알림이 있습니다";
   }
@@ -125,6 +129,7 @@ export function NotificationRow({ notification, onPress }: NotificationRowProps)
 
       {notification.thumbnail_url ? (
         <Image
+          alt="알림 관련 게시물 미리보기"
           cachePolicy="memory-disk"
           contentFit="cover"
           recyclingKey={notification.id}

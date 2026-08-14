@@ -35,6 +35,8 @@ export function routeToNotificationTarget(
       pathname: "/messages/[conversationId]",
       params: { conversationId: target.conversationId },
     });
+  } else if (target.type === "insights") {
+    router.push("/insights");
   }
 }
 
@@ -58,6 +60,10 @@ export function getNotificationTargetFromPushData(
     const userId =
       typeof data.targetUserId === "string" ? data.targetUserId : targetId;
     return userId ? { type: "story", userId } : null;
+  }
+
+  if (targetType === "insights" || targetType === "promotion") {
+    return { type: "insights" };
   }
 
   if (targetType === "user" || targetType === "profile") {

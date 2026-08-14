@@ -17,6 +17,7 @@ export type NotificationTarget =
   | { type: "post"; id: string }
   | { type: "story"; userId: string }
   | { type: "profile"; nickname: string }
+  | { type: "insights" }
   | null;
 
 export type NotificationItem = {

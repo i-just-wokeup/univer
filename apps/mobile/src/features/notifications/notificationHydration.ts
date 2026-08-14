@@ -35,6 +35,11 @@ export function toNotificationItems(
     let target: NotificationTarget = null;
 
     if (
+      notification.type === "promotion_approved" ||
+      notification.type === "promotion_rejected"
+    ) {
+      target = { type: "insights" };
+    } else if (
       (notification.type === "friend_request" ||
         notification.type === "friend_accepted") &&
       actorUser
