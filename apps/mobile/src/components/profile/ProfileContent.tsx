@@ -15,7 +15,7 @@ import { ProfileInfoPanel } from "./ProfileInfoPanel";
 import { ProfilePostGridSection } from "./ProfilePostGridSection";
 
 type ProfileContentProps = {
-  canViewInsights: boolean;
+  showInsightsButton: boolean;
   connectionStatus: ConnectionStatus | null;
   counts: ProfileCounts;
   errorMessage: string;
@@ -37,7 +37,7 @@ type ProfileContentProps = {
 };
 
 export function ProfileContent({
-  canViewInsights,
+  showInsightsButton,
   connectionStatus,
   counts,
   errorMessage,
@@ -79,7 +79,7 @@ export function ProfileContent({
           >
             <Text style={styles.profileActionButtonText}>프로필 편집</Text>
           </Pressable>
-          {canViewInsights ? (
+          {showInsightsButton ? (
             <Pressable
               accessibilityRole="button"
               onPress={onPressInsights}

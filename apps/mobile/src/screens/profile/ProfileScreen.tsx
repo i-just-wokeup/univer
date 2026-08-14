@@ -51,7 +51,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const profileBadge = profile ? getBadge(profile.id) : null;
   const isCrewEligible = isBadgeDataReady && profileBadge === null;
-  const canViewInsights = Boolean(
+  const showInsightsButton = Boolean(
     isMine &&
       isBadgeDataReady &&
       profileBadge &&
@@ -149,7 +149,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
       >
         {profile ? (
           <ProfileContent
-            canViewInsights={canViewInsights}
+            showInsightsButton={showInsightsButton}
             connectionStatus={connectionStatus}
             counts={counts}
             isCrewEligible={isCrewEligible}

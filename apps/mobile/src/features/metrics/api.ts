@@ -1,5 +1,12 @@
 import { getSupabaseMobileClient } from "../../lib/supabase";
 
+// ── 인사이트 지표 용어 ──
+// 조회(views) = 열람/재생 총 횟수 (post_view 상세 열림 + reel_view 재생)
+// 도달(reach) = 피드에서 본 고유 계정 수 (post_impressions distinct)
+// 상호작용 = 좋아요 + 댓글 + 저장 + 공유 합
+// 영상 시청 = 완주율·평균 시청깊이·평균 반복·유지율 곡선 (영상 게시물만)
+// 위치: 개요 탭=계정 전체 기간별 / 콘텐츠 탭=전체 누적+게시물별 / 게시물 상세=그 글 지표
+
 // 지표 종류. DB metric_events.metric_type CHECK와 일치.
 export type MetricType =
   | "reel_view"
@@ -56,7 +63,8 @@ export async function recordReelWatch(event: ReelWatchEvent): Promise<void> {
   }
 }
 
-// 본인 지표 총합+고유 조회. 기간(YYYY-MM-DD)·대상 옵션.
+// 조회·프로필 방문·링크 클릭 이벤트의 총 횟수와 이벤트 내 고유 행동 계정을 센다.
+// 인사이트의 도달은 이 함수의 unique가 아니라 getPostImpressionReach를 사용한다.
 export async function getMetricCounts(
   metricType: MetricType,
   options?: { targetId?: string; start?: string; end?: string },
@@ -87,7 +95,8 @@ export type MetricDailyPoint = {
   unique: number;
 };
 
-// 본인 지표를 날짜(KST)별로 조회. 일별 막대그래프용. 이벤트 없는 날은 빠져서 오므로
+// 조회·프로필 방문·링크 클릭 이벤트를 KST 날짜별 total/unique로 센다.
+// 이벤트 없는 날은 빠져서 오므로
 // 화면 쪽에서 날짜 축을 채운다.
 export async function getMetricDaily(
   metricType: MetricType,
@@ -126,6 +135,7 @@ export type PostImpressionReach = {
   total: number;
 };
 
+// 도달=피드 노출 고유 계정(post_impressions), "연 사람"인 조회와 다르다.
 export async function getPostImpressionReach(options: {
   start: string;
   end: string;
@@ -149,6 +159,7 @@ export async function getPostImpressionReach(options: {
   };
 }
 
+// 상호작용=내 게시물의 좋아요+댓글+저장+공유 합을 KST 날짜별로 센다.
 export async function getEngagementDaily(options: {
   start: string;
   end: string;
@@ -179,6 +190,7 @@ export type ViewsByType = {
   story: number;
 };
 
+// 조회를 릴스·일반 게시물·스토리 유형별 총 횟수로 나눈다.
 export async function getViewsByType(options: {
   start: string;
   end: string;
@@ -238,7 +250,7 @@ export type PostRetentionPoint = {
   retention: number;
 };
 
-// 승격(크리에이터) 콘텐츠 성과 — 본인 게시물별 좋아요·댓글·저장·공유.
+// 승격(크리에이터) 콘텐츠 성과 — 본인 게시물별 상호작용(좋아요·댓글·저장·공유).
 // DB get_content_performance RPC(본인 글만, SECURITY DEFINER)를 UI 타입으로 매핑.
 export async function getContentPerformance(): Promise<ContentPerformance[]> {
   const supabase = getSupabaseMobileClient();
@@ -264,6 +276,7 @@ export async function getContentPerformance(): Promise<ContentPerformance[]> {
   }));
 }
 
+// 한 게시물의 조회·피드 도달·상호작용과 영상 시청 지표를 함께 조회한다.
 export async function getPostInsight(
   postId: string,
 ): Promise<PostInsight | null> {
