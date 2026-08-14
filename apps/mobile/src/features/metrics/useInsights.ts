@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   getEngagementDaily,
   getMetricCounts,
   getMetricDaily,
+  getPostImpressionReach,
   getViewsByType,
   type MetricCounts,
   type MetricDailyPoint,
@@ -114,6 +115,7 @@ function formatRangeDate(value: string): string {
 }
 
 export function useInsights(includeEngagement: boolean) {
+  const requestIdRef = useRef(0);
   const [period, setPeriod] = useState<InsightPeriod>("week");
   const [metrics, setMetrics] = useState<InsightMetric[]>([]);
   const [viewsByType, setViewsByType] = useState<ViewsByType>({
@@ -126,6 +128,8 @@ export function useInsights(includeEngagement: boolean) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const load = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
     setIsLoading(true);
     setErrorMessage("");
 
@@ -145,18 +149,27 @@ export function useInsights(includeEngagement: boolean) {
             getEngagementDaily(previousRange),
           ])
         : Promise.resolve([[], []] as const);
-      const [reel, post, profile, engagement, typeViews] = await Promise.all([
+      const reachPromise = includeEngagement
+        ? Promise.all([
+            getPostImpressionReach(currentRange),
+            getPostImpressionReach(previousRange),
+          ])
+        : Promise.resolve(null);
+      const [reel, post, profile, engagement, reach, typeViews] = await Promise.all([
         loadMetric("reel_view", currentRange, previousRange),
         loadMetric("post_view", currentRange, previousRange),
         loadMetric("profile_visit", currentRange, previousRange),
         engagementPromise,
+        reachPromise,
         getViewsByType(currentRange),
       ]);
 
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
       const reelTotalBars = barsFrom(days, reel.daily, "total");
       const postTotalBars = barsFrom(days, post.daily, "total");
-      const reelReachBars = barsFrom(days, reel.daily, "unique");
-      const postReachBars = barsFrom(days, post.daily, "unique");
       const profileBars = barsFrom(days, profile.daily, "total");
       const currentEngagement = engagement[0].reduce(
         (sum, point) => sum + point.total,
@@ -168,6 +181,9 @@ export function useInsights(includeEngagement: boolean) {
       );
       const engagementMap = new Map(
         engagement[0].map((point) => [point.day, point.total]),
+      );
+      const reachMap = new Map(
+        (reach?.[0].daily ?? []).map((point) => [point.day, point.unique]),
       );
 
       const nextMetrics: InsightMetric[] = [
@@ -198,14 +214,17 @@ export function useInsights(includeEngagement: boolean) {
           : []),
         ...(includeEngagement
           ? [{
-              bars: combineBars(days, reelReachBars, postReachBars),
+              bars: days.map((day) => ({
+                day,
+                value: reachMap.get(day) ?? 0,
+              })),
               changePercent: changePercent(
-                reel.current.unique + post.current.unique,
-                reel.previous.unique + post.previous.unique,
+                reach?.[0].total ?? 0,
+                reach?.[1].total ?? 0,
               ),
               key: "reach" as const,
               label: "도달",
-              value: reel.current.unique + post.current.unique,
+              value: reach?.[0].total ?? 0,
             }]
           : [{
               bars: profileBars,
@@ -222,14 +241,21 @@ export function useInsights(includeEngagement: boolean) {
       setMetrics(nextMetrics);
       setViewsByType(typeViews);
     } catch {
-      setErrorMessage("지표를 불러오지 못했습니다.");
+      if (requestId === requestIdRef.current) {
+        setErrorMessage("지표를 불러오지 못했습니다.");
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [includeEngagement, period]);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [load]);
 
   return {

@@ -97,7 +97,7 @@ official_accounts (          -- 기관 계정: 공식(학생회·단과대) / �
 -- RLS: SELECT 전체 authenticated(뱃지/발견 탭), 쓰기 정책 없음 → 관리자(service_role 직접 SQL)만 생성/수정
 -- 승격(is_promoted)/기관 계정 지정은 초기엔 관리자 직접 SQL(auth.uid null → 보호 트리거 우회)
 
-post_impressions (          -- 피드 "본 글" 기록 (중복 노출 방지 / "모두 열람" 판정). 지표(metric_events)와 별개
+post_impressions (          -- 피드 "본 글" 기록 (중복 노출 방지 / "모두 열람" 판정)
   user_id  uuid FK → users,   -- on delete cascade
   post_id  uuid FK → posts,   -- on delete cascade
   seen_at  timestamptz default now(),
@@ -105,6 +105,7 @@ post_impressions (          -- 피드 "본 글" 기록 (중복 노출 방지 / "
 )
 -- RLS: 본인(user_id = auth.uid()) 것만 SELECT/INSERT. 판정 기준(예: 80%·2초 노출)은 앱 클라가 계산 후 insert.
 -- 피드 순서: 크루 안 본 최신 → 전교생 안 본 최신 → "모두 열람" → 랜덤 꼬리 (노션 📺 설계 9-2)
+-- metric_events 원시 조회 이벤트와는 별개지만, 인사이트 도달은 이 테이블의 실제 피드 노출 고유 계정으로 집계.
 -- nickname은 이메일 앞부분을 사용하지 않고 user_랜덤값으로 생성
 -- unique index: users_active_nickname_lower_unique on lower(nickname) where deleted_at is null
 ```
@@ -555,12 +556,13 @@ metric_events (
   - `record_metric(p_metric_type, p_target_id)` — SECURITY DEFINER, `authenticated`만 GRANT, `public`/`anon` REVOKE. actor는 `auth.uid()`로 고정하고 owner를 클라이언트에서 받지 않는다. `post_view`/`reel_view`는 삭제되지 않은 `posts.id`, `profile_visit`은 활성·미탈퇴 `users.id`, `link_click`은 실제 `profile_links.id`에서 owner를 서버가 계산한다. 링크는 검증 후 기존 집계 호환을 위해 URL을 `metric_events.target_id`에 저장한다. 비로그인·본인 이벤트와 유효하지 않은 target은 기록하지 않고, 조회형은 원시 이벤트를 유지하며 link_click만 하루 중복을 무시한다.
   - `get_metric_counts(p_metric_type, p_target_id?, p_start?, p_end?)` → `(total, unique_actors)`, `owner_id = auth.uid()` 본인만. `PUBLIC`/`anon` 실행 권한은 회수하고 `authenticated`만 허용한다.
   - `get_metric_daily(...)` → `(day, total, unique_actors)` 일별. `get_metric_counts`와 동일하게 인증 사용자 전용이다.
+  - `get_post_impression_reach(p_start, p_end)`(2026-08-14) → 홈 피드에서 내 게시물이 실제 노출된 `post_impressions.seen_at`을 KST 날짜로 집계해 `(day, daily_unique, period_unique)`를 반환한다. `daily_unique`는 날짜별 고유 계정이고 `period_unique`는 기간 전체 distinct viewer라 일별 값을 단순 합산하지 않는다. 삭제되지 않은 본인 게시물만 포함하며 본인 노출은 제외한다.
   - `get_content_performance()`(2026-08-12) → 본인 게시물별 `(post_id, created_at, thumbnail_url, is_video, likes, comments, saves, shares)`. 승격(크리에이터) 인사이트 A "콘텐츠 성과"용. likes/comments는 posts 카운터 컬럼, saves는 `bookmarks` count, shares는 DM 리셰어(`messages.shared_post_id`)+스토리 리셰어(`stories.shared_post_id`) 합산(둘 다 `deleted_at is null`). `where user_id = auth.uid() and deleted_at is null`로 본인 글만, `created_at desc` 정렬. metric_events가 아니라 기존 참여 테이블 집계라 데이터가 이미 쌓여 있으며, 앱 콘텐츠 탭은 기관·승격 계정에만 노출한다.
   - `get_engagement_daily(p_start, p_end)`(2026-08-13) → `(day, total)`. 삭제되지 않은 내 게시물에 발생한 좋아요·댓글·저장·DM 공유·스토리 공유를 각 원본 테이블 `created_at`의 KST 날짜로 일별 합산한다. 삭제된 메시지/스토리 공유는 제외한다.
   - `get_views_by_type(p_start, p_end)`(2026-08-13) → `(reel, post, story)`. 릴스·게시물은 본인 소유 `metric_events`의 `event_date`, 스토리는 내 스토리의 `story_views.created_at` KST 날짜를 집계한다.
-  - `get_post_insight(p_post_id)`(2026-08-13) → 삭제되지 않은 본인 게시물 단건의 `(created_at, thumbnail_url, is_video, views, reach, likes, comments, saves, shares, video_duration_ms, completion_rate, avg_depth, avg_loops)`. 조회·도달은 `post_view`+`reel_view`, 상호작용은 posts 카운터·저장·삭제되지 않은 DM/스토리 리셰어를 합산한다. 영상 길이는 해당 게시물 시청 세션의 중앙값이며 세션이 없거나 사진이면 영상 필드는 null이다.
+  - `get_post_insight(p_post_id)`(2026-08-13, 도달 기준 2026-08-14 수정) → 삭제되지 않은 본인 게시물 단건의 `(created_at, thumbnail_url, is_video, views, reach, likes, comments, saves, shares, video_duration_ms, completion_rate, avg_depth, avg_loops)`. 조회는 `post_view`+`reel_view` 원시 이벤트 수를 유지하고, 도달은 해당 글의 `post_impressions` distinct viewer로 계산한다. 상호작용은 posts 카운터·저장·삭제되지 않은 DM/스토리 리셰어를 합산한다. 영상 길이는 해당 게시물 시청 세션의 중앙값이며 세션이 없거나 사진이면 영상 필드는 null이다.
   - `get_post_retention(p_post_id)`(2026-08-13) → 영상 시청 세션이 있는 삭제되지 않은 본인 영상에 대해 `(bucket_pct, retention)`을 0~100%, 5% 간격으로 반환한다. `retention = max_pct >= bucket` 세션 비율이므로 수동 스크럽 없는 v1 플레이어의 순차 시청 유지율로 사용한다. 세션이 없거나 사진·타인 글이면 0행이다.
-- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외), `20260813090242_post_insight_detail`(단건 인사이트·유지율 RPC), `20260814024836_secure_high_risk_rpcs_batch_1`(기록 owner 서버 계산·크루 관계 검증·무방향 유니크), `20260814030746_secure_medium_rpcs_batch_2`(누락 함수 백필·RPC ACL/인자 하드닝).
+- 마이그레이션: `metrics_foundation`(테이블·인덱스·RPC), `metrics_post_view_rename_and_raw_events`(post_reach→post_view 개명 + dedupe를 link_click만으로 축소), `get_content_performance`(2026-08-12, 콘텐츠 성과 RPC), `20260813063146_insights_dashboard_aggregates`(반응 일별·유형별 조회), `20260813064742_exclude_deleted_posts_from_engagement`(삭제 게시물 반응 제외), `20260813090242_post_insight_detail`(단건 인사이트·유지율 RPC), `20260814024836_secure_high_risk_rpcs_batch_1`(기록 owner 서버 계산·크루 관계 검증·무방향 유니크), `20260814030746_secure_medium_rpcs_batch_2`(누락 함수 백필·RPC ACL/인자 하드닝), `20260814053722_insight_reach_from_post_impressions`(개요·게시물 상세 도달을 피드 노출 기반으로 교체).
 - 2026-08-13 신규 인사이트 집계 RPC들은 SECURITY DEFINER이며 `auth.uid()` 소유자 범위로 제한한다. `public`/`anon` 실행 권한은 회수하고 `authenticated`에만 실행 권한을 부여한다.
 - 표시: 설정 > 계정 > 인사이트(본인만). 상세 설계는 노션 `📊 인사이트(지표) 시스템 설계`.
 

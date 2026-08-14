@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getContentPerformance,
@@ -13,6 +13,7 @@ function totalEngagement(item: ContentPerformance): number {
 }
 
 export function useContentPerformance(enabled: boolean) {
+  const requestIdRef = useRef(0);
   const [items, setItems] = useState<ContentPerformance[]>([]);
   const [sort, setSort] = useState<ContentPerformanceSort>("popular");
   const [isLoading, setIsLoading] = useState(enabled);
@@ -20,6 +21,9 @@ export function useContentPerformance(enabled: boolean) {
   const [views, setViews] = useState(0);
 
   const load = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     if (!enabled) {
       setItems([]);
       setViews(0);
@@ -36,17 +40,27 @@ export function useContentPerformance(enabled: boolean) {
         getMetricCounts("reel_view"),
         getMetricCounts("post_view"),
       ]);
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
       setItems(nextItems);
       setViews(reelViews.total + postViews.total);
     } catch {
-      setErrorMessage("콘텐츠 성과를 불러오지 못했습니다.");
+      if (requestId === requestIdRef.current) {
+        setErrorMessage("콘텐츠 성과를 불러오지 못했습니다.");
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [enabled]);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [load]);
 
   const sortedItems = useMemo(() => {

@@ -21,20 +21,6 @@ export type ReelWatchEvent = {
   videoDurationMs: number;
 };
 
-export type VideoWatchSummary = {
-  avgDepth: number;
-  avgExitPct: number;
-  avgLoops: number;
-  completionRate: number;
-  sessions: number;
-};
-
-// 인사이트 화면 진입은 전체 계정에 허용한다. 콘텐츠 탭은 화면에서 기관·승격 배지로 별도 게이트한다.
-// 수집(record)은 계정 종류와 무관하게 유지해 승격 전 데이터도 보존한다.
-export function canViewInsights(): boolean {
-  return true;
-}
-
 // 지표 이벤트 1건 기록. 본인 제외/중복제거는 서버(record_metric)가 처리한다.
 // 화면 흐름을 막지 않도록 실패는 조용히 무시(fire-and-forget).
 export async function recordMetric(
@@ -70,30 +56,6 @@ export async function recordReelWatch(event: ReelWatchEvent): Promise<void> {
   }
 }
 
-export async function getVideoWatchSummary(options: {
-  start: string;
-  end: string;
-}): Promise<VideoWatchSummary> {
-  const supabase = getSupabaseMobileClient();
-  const { data, error } = await supabase.rpc("get_video_watch_summary", {
-    p_start: options.start,
-    p_end: options.end,
-  });
-
-  if (error) {
-    throw error;
-  }
-
-  const row = data?.[0];
-  return {
-    avgDepth: Number(row?.avg_depth ?? 0),
-    avgExitPct: Number(row?.avg_exit_pct ?? 0),
-    avgLoops: Number(row?.avg_loops ?? 0),
-    completionRate: Number(row?.completion_rate ?? 0),
-    sessions: row?.sessions ?? 0,
-  };
-}
-
 // 본인 지표 총합+고유 조회. 기간(YYYY-MM-DD)·대상 옵션.
 export async function getMetricCounts(
   metricType: MetricType,
@@ -107,7 +69,11 @@ export async function getMetricCounts(
     p_end: options?.end,
   });
 
-  if (error || !data || data.length === 0) {
+  if (error) {
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
     return { total: 0, unique: 0 };
   }
 
@@ -135,7 +101,11 @@ export async function getMetricDaily(
     p_end: options.end,
   });
 
-  if (error || !data) {
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
     return [];
   }
 
@@ -150,6 +120,34 @@ export type EngagementDailyPoint = {
   day: string;
   total: number;
 };
+
+export type PostImpressionReach = {
+  daily: { day: string; unique: number }[];
+  total: number;
+};
+
+export async function getPostImpressionReach(options: {
+  start: string;
+  end: string;
+}): Promise<PostImpressionReach> {
+  const supabase = getSupabaseMobileClient();
+  const { data, error } = await supabase.rpc("get_post_impression_reach", {
+    p_start: options.start,
+    p_end: options.end,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    daily: (data ?? []).map((row) => ({
+      day: row.day,
+      unique: row.daily_unique ?? 0,
+    })),
+    total: data?.[0]?.period_unique ?? 0,
+  };
+}
 
 export async function getEngagementDaily(options: {
   start: string;

@@ -785,6 +785,17 @@ export type Database = {
           avg_loops: number | null
         }[]
       }
+      get_post_impression_reach: {
+        Args: {
+          p_start: string
+          p_end: string
+        }
+        Returns: {
+          day: string
+          daily_unique: number
+          period_unique: number
+        }[]
+      }
       get_post_retention: {
         Args: {
           p_post_id: string
