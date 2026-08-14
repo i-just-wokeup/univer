@@ -63,7 +63,7 @@ export function PromotionCard(props: PromotionCardProps) {
         전체 인사이트·콘텐츠 성과가 열려요
       </Text>
       <Text style={styles.requirement}>
-        게시물 10개 이상 · 최근 30일 게시물 3개 이상 필요
+        게시물 10개 이상 · 최근 30일 게시물 5개 이상 필요
       </Text>
 
       {statusMessage ? (

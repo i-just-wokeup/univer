@@ -62,6 +62,9 @@ export type PostMedia = {
   duration: number | null;
   id: string;
   order_index: number;
+  // 영상 재생 분기용: Cloudflare Stream이면 provider_asset_id로 iframe을 만든다.
+  provider: "cloudflare_stream" | null;
+  provider_asset_id: string | null;
   thumbnail_url: string | null;
   type: "image" | "video";
   url: string;
@@ -444,6 +447,8 @@ export async function getPost(postId: string): Promise<PostDetail> {
       duration: media.duration,
       id: media.id,
       order_index: media.order_index,
+      provider: media.provider,
+      provider_asset_id: media.provider_asset_id,
       thumbnail_url: media.thumbnail_url,
       type: media.type,
       url: media.url,
@@ -792,6 +797,8 @@ export async function getFeed({
       duration: media.duration,
       id: media.id,
       order_index: media.order_index,
+      provider: media.provider,
+      provider_asset_id: media.provider_asset_id,
       thumbnail_url: media.thumbnail_url,
       type: media.type,
       url: media.url,

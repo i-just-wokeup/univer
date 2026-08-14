@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Toast } from "@/components/common/Toast";
 import { ProfileNicknameLink, UserInfo } from "@/components/common/UserInfo";
 import { getPostAspectRatioClass } from "@/components/feed/postAspectRatio";
-import { deletePost, type FeedPost } from "@/features/feed/api";
+import { deletePost, type FeedPost, type PostMedia } from "@/features/feed/api";
 import { createReport } from "@/features/reports/api";
 
 // 피드 카드가 외부 액션만 위임받도록 이벤트 핸들러를 props로 열어둔다.
@@ -119,6 +119,19 @@ function ChevronRightIcon() {
       />
     </svg>
   );
+}
+
+// 영상 미디어는 이미지가 아니므로 next/image에 넘기면 안 된다(피드 전체 크래시 원인).
+// Cloudflare Stream이면 iframe 플레이어 주소를, 아니면 null(레거시 mp4는 <video>로 처리).
+function getCloudflareIframeSrc(media: PostMedia): string | null {
+  if (
+    media.type === "video" &&
+    media.provider === "cloudflare_stream" &&
+    media.provider_asset_id
+  ) {
+    return `https://iframe.videodelivery.net/${encodeURIComponent(media.provider_asset_id)}`;
+  }
+  return null;
 }
 
 // 서버 UTC 시간을 클라이언트에서 간단한 상대 시간 라벨로 바꾼다.
@@ -401,20 +414,43 @@ export function PostCard({
             onScroll={updateCurrentImageIndexAfterScrollEnd}
             className="flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {post.media.map((image) => (
-              <div
-                key={image.id}
-                className="relative h-full w-full shrink-0 snap-start bg-zinc-200"
-              >
-                <Image
-                  src={image.url}
-                  alt={`${post.user.nickname} 게시물 이미지`}
-                  fill
-                  sizes="(max-width: 640px) 100vw, 470px"
-                  className="object-cover"
-                />
-              </div>
-            ))}
+            {post.media.map((media) => {
+              const cloudflareSrc = getCloudflareIframeSrc(media);
+
+              return (
+                <div
+                  key={media.id}
+                  className="relative h-full w-full shrink-0 snap-start bg-zinc-200"
+                >
+                  {cloudflareSrc ? (
+                    <iframe
+                      src={cloudflareSrc}
+                      title={`${post.user.nickname} 게시물 영상`}
+                      allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 h-full w-full"
+                    />
+                  ) : media.type === "video" ? (
+                    <video
+                      src={media.url}
+                      poster={media.thumbnail_url ?? undefined}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={media.url}
+                      alt={`${post.user.nickname} 게시물 이미지`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 470px"
+                      className="object-cover"
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {hasMultipleImages ? (
