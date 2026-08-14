@@ -72,7 +72,7 @@ users (
   role          text default 'user',          -- 'user' | 'official' | 'admin'
   is_onboarded  bool default false,
   real_name_public bool default false,
-  is_promoted   bool default false,        -- 승격(크리에이터) 뱃지, 관리자(직접 SQL)만 변경
+  is_promoted   bool default false,        -- 승격(크리에이터) 뱃지, 관리자 승인 RPC/직접 SQL만 변경
   is_active     bool default true,
   fcm_token     text,
   visibility    text default 'public',        -- 'public' | 'close_friends'
@@ -95,7 +95,18 @@ official_accounts (          -- 기관 계정: 공식(학생회·단과대) / �
   created_at        timestamptz default now()
 )
 -- RLS: SELECT 전체 authenticated(뱃지/발견 탭), 쓰기 정책 없음 → 관리자(service_role 직접 SQL)만 생성/수정
--- 승격(is_promoted)/기관 계정 지정은 초기엔 관리자 직접 SQL(auth.uid null → 보호 트리거 우회)
+-- 기관 계정 지정은 관리자 직접 SQL. 승격은 관리자 승인 RPC 또는 auth.uid null인 관리 SQL만 허용.
+
+promotion_requests (       -- 개인 크리에이터 승격 신청
+  id          uuid PK default gen_random_uuid(),
+  user_id     uuid FK → users on delete cascade,
+  status      text default 'pending', -- pending | approved | rejected
+  created_at  timestamptz default now(),
+  reviewed_at timestamptz,
+  reviewed_by uuid FK → users on delete set null
+)
+-- index(status), index(user_id), index(reviewed_by), unique(user_id) where status='pending'
+-- RLS: 본인 SELECT만. INSERT/UPDATE/DELETE 테이블 권한 없이 SECURITY DEFINER RPC로만 신청·심사.
 
 post_impressions (          -- 피드 "본 글" 기록 (중복 노출 방지 / "모두 열람" 판정)
   user_id  uuid FK → users,   -- on delete cascade
@@ -424,9 +435,11 @@ take_action_on_report(report_id uuid)
 - `get_friend_recommendations`(2026-08-07, fallback·기관/승격 제외 2026-08-11)는 같은 학교의 아직 크루가 아닌 유저를 `공통 크루 있음(tier 1, mutual_count DESC) → 같은 학과(tier 2) → 그 외 같은 학교 seed 셔플(tier 3)` 순서로 반환한다. 신호 후보를 먼저 모두 배치한 뒤 `p_limit`의 남는 자리만 fallback으로 채우며, tier 3은 `md5(user_id || p_seed)` 순서라 같은 화면 세션에서는 고정되고 새 진입 seed에서는 바뀐다. 본인·accepted/pending 양방향 연결·양방향 차단·다른 학교·비활성/탈퇴 유저와 `official_accounts`에 등록된 기관 계정 및 `users.is_promoted=true` 승격 계정을 제외하며, 개인정보 보호를 위해 학과명/실명 대신 `mutual_count`와 `same_dept`만 반환한다. 연결 전체 계산을 위해 SECURITY DEFINER를 사용하되 함수 내부 `auth.uid()` 확인, 같은 학교 범위, `PUBLIC`/`anon` 실행 권한 회수 후 `authenticated`만 허용한다. 보조 인덱스 `idx_users_university_active`, `idx_blocks_blocked_id`를 사용한다.
 - `send_friend_request`와 `accept_friend_request`(2026-08-11, 보안 보강 2026-08-14)는 호출자와 상대가 모두 활성·미탈퇴 상태이고 같은 학교이며 양방향 차단 관계가 없을 때만 동작한다. 기존 기관/승격 계정 차단도 유지한다. `send_friend_request`는 반대 방향 pending이 있으면 새 행을 만들지 않고 기존 행을 accepted로 자동 전환하며, 무방향 유니크 인덱스로 A→B/B→A 중복을 DB에서도 차단한다. 두 SECURITY DEFINER 함수는 `search_path=''`를 사용하고 `PUBLIC`/`anon` 실행 권한을 회수해 `authenticated`만 허용한다. 마이그레이션 당시 해당 계정이 포함된 기존 accepted 연결 1건은 자동 삭제하지 않았으며, 소유자 확인 후 별도 정리한다.
 - 보안 감사 배치 2 마이그레이션 `20260814030746_secure_medium_rpcs_batch_2`는 원격에만 있던 `record_metric`, `get_metric_counts`, `get_metric_daily`, `recount_*` 4개, `get_verified_user_ids` 총 8개 함수의 최종 정의를 로컬 이력에 백필한다. 수정·백필 함수는 `search_path=''`와 `public.` 완전 수식명을 사용하고, 앱 전용 SECURITY DEFINER RPC는 `PUBLIC`/`anon` 실행 권한을 회수해 `authenticated`만 허용한다.
+- `request_promotion()`(2026-08-14)은 활성·미탈퇴 일반 계정이 삭제되지 않은 게시물 10개 이상과 최근 30일 3개 이상을 충족할 때 pending 승격 신청을 만든다. 이미 승격/기관 계정, pending 중복, 최근 거절 후 7일 이내 재신청은 서버에서 거부한다. `get_promotion_requests_for_admin()`은 활성 관리자만 pending 신청자의 게시물·조회·피드 도달 고유 계정·참여·영상·평균 완주율 성적표를 조회할 수 있다. `approve_promotion`/`reject_promotion`은 pending 행을 잠근 뒤 처리 상태와 담당 관리자를 기록하고 승인 시 `users.is_promoted=true`, 양쪽 모두 신청자 알림을 생성한다. 네 RPC는 SECURITY DEFINER, `search_path=''`, `authenticated` 전용이며 `PUBLIC`/`anon` 실행 권한을 회수한다. 마이그레이션 `20260814070945_promotion_requests`.
+- `prevent_sensitive_user_update`는 `is_promoted` 변경에만 활성·미탈퇴 `role='admin'` 호출자를 허용한다. 일반 사용자의 자가 승격과 관리자에 의한 role·학교·크레딧 등 다른 민감 컬럼 변경은 기존대로 거부한다.
 
 **푸시 (한 기기 = 한 계정 + 서버 트리거 발송)**
-- 발송: `push_on_message`(messages insert), `push_on_notification`(notifications insert; `post_comment`·`comment_reply`만) 트리거가 `net.http_post`로 Expo Push(`exp.host/--/api/v2/push/send`) 호출. payload `priority:'high'` + `channelId:'alerts'`(2026-08-06 `default`→`alerts`, 낮게 굳은 채널 회피). 제목은 발신자 닉네임 or `unip`.
+- 발송: `push_on_message`(messages insert), `push_on_notification`(notifications insert; `post_comment`·`comment_reply`·`promotion_approved`·`promotion_rejected`) 트리거가 `net.http_post`로 Expo Push(`exp.host/--/api/v2/push/send`) 호출. payload `priority:'high'` + `channelId:'alerts'`(2026-08-06 `default`→`alerts`, 낮게 굳은 채널 회피). 제목은 발신자 닉네임 or `unip`.
 - `claim_push_token(p_token text)` — SECURITY DEFINER. 등록 시 `p_token`을 가진 **다른 유저 행에서 `fcm_token`을 NULL로** 떼어내고(`id <> auth.uid()`) 현재 유저에 등록. 클라가 RLS로 남의 행을 못 비우므로 definer로 처리. (2026-06-28 추가)
 - 앱 `registerForPushNotifications`가 `users.fcm_token` 직접 UPDATE 대신 이 RPC 호출. 로그아웃 시에도 본인 토큰 NULL(`signOutMobile`). → 같은 기기로 계정 전환해도 이전 계정으로 푸시 안 감.
 - 멀티기기(한 계정이 여러 기기 동시 수신)는 단일 `fcm_token` 컬럼이라 미지원(마지막 로그인 기기만 수신). 별도 토큰 테이블은 백로그.
@@ -614,6 +627,7 @@ reel_watch_events (
 | bookmarks | 본인만 | 본인만 |
 | user_favorites | 본인만 | 본인만 |
 | notifications | 본인만 | 시스템 |
+| promotion_requests | 본인 신청만 | SECURITY DEFINER RPC(request/approve/reject)만 |
 | blocks | 본인 차단 목록 | 본인 차단 생성/삭제 |
 | reports | 본인만 | 로그인 유저 |
 | conversations | 참여자만 | 로그인 유저 |

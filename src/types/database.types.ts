@@ -578,7 +578,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'friend_request' | 'friend_accepted' | 'report_received' | 'promotion_approved' | 'promotion_rejected'
           reference_type: 'post' | 'user' | 'comment' | 'story' | null
           reference_id: string | null
           message: string | null
@@ -588,7 +588,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
+          type: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'friend_request' | 'friend_accepted' | 'report_received' | 'promotion_approved' | 'promotion_rejected'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
@@ -598,12 +598,39 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'friend_request' | 'friend_accepted' | 'report_received'
+          type?: 'post_like' | 'story_like' | 'comment_like' | 'post_comment' | 'comment_reply' | 'user_like' | 'friend_request' | 'friend_accepted' | 'report_received' | 'promotion_approved' | 'promotion_rejected'
           reference_type?: 'post' | 'user' | 'comment' | 'story' | null
           reference_id?: string | null
           message?: string | null
           is_read?: boolean
           created_at?: string
+        }
+        Relationships: []
+      }
+      promotion_requests: {
+        Row: {
+          id: string
+          user_id: string
+          status: 'pending' | 'approved' | 'rejected'
+          created_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          status?: 'pending' | 'approved' | 'rejected'
+          created_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          status?: 'pending' | 'approved' | 'rejected'
+          created_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
         }
         Relationships: []
       }
@@ -663,6 +690,41 @@ export type Database = {
         Args: {
           requester_user_id: string
         }
+        Returns: Json
+      }
+      approve_promotion: {
+        Args: {
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      get_promotion_requests_for_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          request_id: string
+          user_id: string
+          nickname: string
+          department: string
+          created_at: string
+          user_created_at: string
+          posts_count: number
+          posts_30d: number
+          views: number
+          reach: number
+          engagement: number
+          engagement_rate: number
+          video_count: number
+          avg_completion: number
+        }>
+      }
+      reject_promotion: {
+        Args: {
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      request_promotion: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       accept_chat_request: {
