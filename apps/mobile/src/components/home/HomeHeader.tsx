@@ -6,6 +6,7 @@ import type { ThemeColors } from "../../lib/theme";
 import { Logo } from "../common/Logo";
 
 type HomeHeaderProps = {
+  onLongPressLogo?: () => void;
   onPressMessages: () => void;
   onPressNotifications: () => void;
   onSignOut: () => void;
@@ -14,6 +15,7 @@ type HomeHeaderProps = {
 };
 
 export function HomeHeader({
+  onLongPressLogo,
   onPressMessages,
   onPressNotifications,
   onSignOut,
@@ -26,7 +28,17 @@ export function HomeHeader({
   return (
     <View style={styles.headerArea}>
       <View style={styles.topBar}>
-        <Logo height={28} />
+        {__DEV__ && onLongPressLogo ? (
+          <Pressable
+            accessibilityLabel="홈 코치마크 다시 보기"
+            accessibilityRole="button"
+            onLongPress={onLongPressLogo}
+          >
+            <Logo height={28} />
+          </Pressable>
+        ) : (
+          <Logo height={28} />
+        )}
         <View style={styles.headerActions}>
           <Pressable
             accessibilityLabel="알림"

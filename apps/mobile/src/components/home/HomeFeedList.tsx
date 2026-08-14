@@ -21,6 +21,7 @@ import {
 } from "react-native";
 
 import type { FeedPost, FeedPostRank } from "../../features/feed/types";
+import { resetHomeCoachMarksForDevelopment } from "../../features/onboarding/homeCoachMarkReset";
 import type { StoryGroup } from "../../features/stories/types";
 import {
   FEED_IMPRESSION_BATCH_SIZE,
@@ -286,6 +287,12 @@ function HomeFeedList({
     void onRefresh();
   }, [onRefresh]);
 
+  const handleResetHomeCoachMarks = useCallback(() => {
+    void resetHomeCoachMarksForDevelopment(currentUserId).catch(
+      () => undefined,
+    );
+  }, [currentUserId]);
+
   const handleSignOut = useCallback(() => {
     void onSignOut();
   }, [onSignOut]);
@@ -376,6 +383,7 @@ function HomeFeedList({
     () => (
       <>
         <HomeHeader
+          onLongPressLogo={__DEV__ ? handleResetHomeCoachMarks : undefined}
           onPressMessages={onPressMessages}
           onPressNotifications={onPressNotifications}
           onSignOut={handleSignOut}
@@ -393,6 +401,7 @@ function HomeFeedList({
     [
       handlePressCreateStory,
       handlePressStoryGroup,
+      handleResetHomeCoachMarks,
       handleSignOut,
       canCreateStory,
       onPressMessages,

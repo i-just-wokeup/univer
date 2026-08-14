@@ -86,14 +86,14 @@ export function StoryBar({
   }
 
   return (
-    <View collapsable={false} ref={targetRef}>
+    <View collapsable={false}>
       <ScrollView
         contentContainerStyle={styles.list}
         horizontal
         showsHorizontalScrollIndicator={false}
       >
         {myGroup ? (
-          <View style={styles.myStory}>
+          <View collapsable={false} ref={targetRef} style={styles.myStory}>
             <Pressable
               accessibilityLabel="내 스토리 보기"
               accessibilityRole="button"
@@ -122,7 +122,9 @@ export function StoryBar({
           <Pressable
             accessibilityLabel="내 스토리 추가"
             accessibilityRole="button"
+            collapsable={false}
             onPress={onPressCreate}
+            ref={targetRef}
             style={({ pressed }) => [
               styles.createCard,
               pressed ? styles.pressed : null,
@@ -135,12 +137,18 @@ export function StoryBar({
           </Pressable>
         ) : null}
 
-        {otherGroups.map((group) => (
+        {otherGroups.map((group, index) => (
           <Pressable
             accessibilityLabel={`${group.user.nickname} 스토리`}
             accessibilityRole="button"
+            collapsable={false}
             key={group.user.id}
             onPress={() => onPressGroup(group)}
+            ref={
+              index === 0 && !myGroup && !canCreateStory
+                ? targetRef
+                : undefined
+            }
             style={({ pressed }) => (pressed ? styles.pressed : null)}
           >
             <StoryCard

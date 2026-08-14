@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Modal,
+  BackHandler,
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
   type LayoutChangeEvent,
 } from "react-native";
@@ -43,45 +42,48 @@ export function CoachMarkOverlay({
   totalSteps,
   visible,
 }: CoachMarkOverlayProps) {
-  const { height: screenHeight, width: screenWidth } = useWindowDimensions();
+  const hostRef = useRef<View | null>(null);
+  const [hostRect, setHostRect] = useState<CoachMarkRect | null>(null);
   const [tooltipHeight, setTooltipHeight] = useState(
     TOOLTIP_ESTIMATED_HEIGHT,
   );
 
   const layout = useMemo(() => {
-    if (!targetRect) {
+    if (!targetRect || !hostRect) {
       return null;
     }
 
-    const left = clamp(targetRect.x - HIGHLIGHT_PADDING, 0, screenWidth);
-    const top = clamp(targetRect.y - HIGHLIGHT_PADDING, 0, screenHeight);
+    const localX = targetRect.x - hostRect.x;
+    const localY = targetRect.y - hostRect.y;
+    const left = clamp(localX - HIGHLIGHT_PADDING, 0, hostRect.width);
+    const top = clamp(localY - HIGHLIGHT_PADDING, 0, hostRect.height);
     const right = clamp(
-      targetRect.x + targetRect.width + HIGHLIGHT_PADDING,
+      localX + targetRect.width + HIGHLIGHT_PADDING,
       0,
-      screenWidth,
+      hostRect.width,
     );
     const bottom = clamp(
-      targetRect.y + targetRect.height + HIGHLIGHT_PADDING,
+      localY + targetRect.height + HIGHLIGHT_PADDING,
       0,
-      screenHeight,
+      hostRect.height,
     );
     const tooltipWidth = Math.min(
       TOOLTIP_MAX_WIDTH,
-      screenWidth - EDGE_GAP * 2,
+      hostRect.width - EDGE_GAP * 2,
     );
     const tooltipLeft = clamp(
       (left + right) / 2 - tooltipWidth / 2,
       EDGE_GAP,
-      screenWidth - tooltipWidth - EDGE_GAP,
+      hostRect.width - tooltipWidth - EDGE_GAP,
     );
-    const placeBelow = (top + bottom) / 2 < screenHeight / 2;
+    const placeBelow = (top + bottom) / 2 < hostRect.height / 2;
     const preferredTop = placeBelow
       ? bottom + TOOLTIP_GAP
       : top - tooltipHeight - TOOLTIP_GAP;
     const tooltipTop = clamp(
       preferredTop,
       EDGE_GAP,
-      screenHeight - tooltipHeight - EDGE_GAP,
+      hostRect.height - tooltipHeight - EDGE_GAP,
     );
 
     return {
@@ -95,7 +97,36 @@ export function CoachMarkOverlay({
       tooltipWidth,
       width: right - left,
     };
-  }, [screenHeight, screenWidth, targetRect, tooltipHeight]);
+  }, [hostRect, targetRect, tooltipHeight]);
+
+  const measureHost = useCallback(() => {
+    hostRef.current?.measureInWindow((x, y, width, height) => {
+      if (width > 0 && height > 0) {
+        setHostRect({ height, width, x, y });
+      }
+    });
+  }, []);
+
+  const handleHostLayout = useCallback(() => {
+    requestAnimationFrame(measureHost);
+  }, [measureHost]);
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+
+    measureHost();
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        onSkip();
+        return true;
+      },
+    );
+
+    return () => subscription.remove();
+  }, [measureHost, onSkip, visible]);
 
   const handleTooltipLayout = (event: LayoutChangeEvent) => {
     const nextHeight = event.nativeEvent.layout.height;
@@ -105,17 +136,19 @@ export function CoachMarkOverlay({
     }
   };
 
+  const isVisible = visible && layout !== null;
+
   return (
-    <Modal
-      animationType="fade"
-      onRequestClose={onSkip}
-      presentationStyle="overFullScreen"
-      statusBarTranslucent
-      transparent
-      visible={visible && layout !== null}
+    <View
+      accessibilityViewIsModal={isVisible}
+      collapsable={false}
+      onLayout={handleHostLayout}
+      pointerEvents={isVisible ? "auto" : "none"}
+      ref={hostRef}
+      style={styles.overlay}
     >
-      {layout ? (
-        <View accessibilityViewIsModal style={styles.overlay}>
+      {isVisible && layout ? (
+        <>
           <View
             style={[styles.scrim, styles.topScrim, { height: layout.top }]}
           />
@@ -205,15 +238,16 @@ export function CoachMarkOverlay({
               </Pressable>
             </View>
           </View>
-        </View>
+        </>
       ) : null}
-    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    zIndex: 1000,
   },
   scrim: {
     position: "absolute",

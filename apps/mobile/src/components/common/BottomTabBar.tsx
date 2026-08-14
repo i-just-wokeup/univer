@@ -38,6 +38,9 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
   const activityTargetRef = useCoachMarkTarget(
     HOME_COACH_MARK_TARGETS.activityTab,
   );
+  const profileTargetRef = useCoachMarkTarget(
+    HOME_COACH_MARK_TARGETS.profileTab,
+  );
 
   return (
     <View
@@ -65,7 +68,9 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
               ? createTargetRef
               : route.name === "activity"
                 ? activityTargetRef
-                : undefined;
+                : route.name === "profile"
+                  ? profileTargetRef
+                  : undefined;
         const iconColor = meta.primary
           ? colors.white
           : isActive

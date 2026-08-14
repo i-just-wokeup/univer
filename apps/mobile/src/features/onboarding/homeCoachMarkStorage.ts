@@ -21,3 +21,9 @@ export async function setStoredHomeCoachMarkComplete(
 ): Promise<void> {
   await AsyncStorage.setItem(getHomeCoachMarkCompleteKey(userId), "true");
 }
+
+export async function clearStoredHomeCoachMarkComplete(
+  userId: string,
+): Promise<void> {
+  await AsyncStorage.removeItem(getHomeCoachMarkCompleteKey(userId));
+}

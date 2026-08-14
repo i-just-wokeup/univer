@@ -9,6 +9,7 @@ import {
   getStoredHomeCoachMarkComplete,
   setStoredHomeCoachMarkComplete,
 } from "./homeCoachMarkStorage";
+import { subscribeHomeCoachMarkReset } from "./homeCoachMarkReset";
 
 type HomeCoachMarkStep = {
   message: string;
@@ -31,6 +32,10 @@ const HOME_COACH_MARK_STEPS: HomeCoachMarkStep[] = [
   {
     message: "인기 게시물·콘텐츠를 여기서 발견해요",
     targetId: HOME_COACH_MARK_TARGETS.activityTab,
+  },
+  {
+    message: "내 프로필·활동·설정은 여기예요",
+    targetId: HOME_COACH_MARK_TARGETS.profileTab,
   },
 ];
 
@@ -81,6 +86,20 @@ export function useHomeCoachMarks(userId: string) {
       cancelled = true;
     };
   }, [userId]);
+
+  useEffect(
+    () =>
+      subscribeHomeCoachMarkReset((resetUserId) => {
+        if (resetUserId !== userId) {
+          return;
+        }
+
+        setStepIndex(0);
+        setTargetRects([]);
+        setPhase("measuring");
+      }),
+    [userId],
+  );
 
   useEffect(() => {
     if (phase !== "measuring") {
