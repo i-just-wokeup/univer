@@ -7,6 +7,7 @@
 ## 2026-08-14
 
 ### 완료
+- **RPC 보안 감사 배치 2(중간·하드닝)** — `search_users`는 양방향 차단 사용자를 SQL에서 제외하고, `get_user_real_name`은 차단 관계면 공개 설정·크루 여부보다 먼저 `null`을 반환하며, `get_connection_status`는 차단 관계의 연결 상태와 크루 수를 `none`/0으로 마스킹한다. `recount_post_likes`·`recount_post_comments`·`recount_comment_likes`·`recount_story_views`에는 소유자·상호작용 당사자 검증을 추가했으며, unlike/comment delete 뒤 행이 이미 삭제되는 기존 호출 순서를 위해 게시물 공개범위·같은 학교·accepted 크루·비차단 조건상 실제 상호작용 가능한 사용자도 허용한다. 원격에만 있던 `record_metric`·`get_metric_counts`·`get_metric_daily`·`recount_*` 4개·`get_verified_user_ids`의 최종 정의를 `20260814030746_secure_medium_rpcs_batch_2`로 로컬 백필하고, 지표 집계·배지 RPC는 공개 호출 경로가 없어 `PUBLIC`/`anon` 실행 권한을 회수했다. 홈·릴스·인기 정렬 RPC는 limit을 1~100으로 제한하고 인기 offset을 0~10000, 반감기를 유효 범위로 정규화했으며 수정 함수는 빈 `search_path`와 완전 수식명을 사용한다. 전체 마이그레이션 사전 롤백과 원격 적용 후 별도 롤백 트랜잭션으로 차단 전후 검색·실명·연결 상태, recount 허용/거부, 인자 클램프, 8개 함수 존재, ACL과 `search_path`를 검증했다.
 - **고위험 RPC 보안 감사 배치 1** — `record_metric`과 `record_reel_watch`에서 클라이언트가 넘기던 owner 인자를 제거하고, 게시물·프로필·프로필 링크의 실제 소유자를 서버가 target에서 계산하도록 변경해 타인 지표 위조 경로를 차단했다. 링크 클릭은 `profile_links.id`로 소유권을 검증한 뒤 기존 집계와 일일 중복 방지를 유지하도록 canonical URL을 저장한다. `send_friend_request`/`accept_friend_request`는 기존 기관·승격 차단에 더해 양쪽 사용자의 활성·미탈퇴, 같은 학교, 양방향 차단 없음 조건을 SECURITY DEFINER 내부에서 검증한다. `user_connections`에는 무방향 유니크 인덱스를 추가하고 역방향 pending 신청은 새 행 대신 accepted로 자동 전환한다. 원격 적용 후 롤백 트랜잭션으로 정상 지표 기록, 무효 target 미기록, owner 서버 계산, 링크 ID→URL 정규화, 릴스 시청 멱등 기록, 역방향 자동 수락, 일반 신청·수락, 차단 관계 거부, 이전 시그니처 제거와 RPC ACL·인덱스를 검증했으며 앱 tsc를 통과했다.
 
 ---
