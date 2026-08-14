@@ -75,6 +75,29 @@ export type AdminApplicantPost = {
   media: AdminApplicantMedia[];
 };
 
+export type AdminPostInsight = {
+  avgDepth: number | null;
+  comments: number;
+  completionRate: number | null;
+  isVideo: boolean;
+  likes: number;
+  reach: number;
+  saves: number;
+  shares: number;
+  videoDurationMs: number | null;
+  views: number;
+};
+
+export type AdminPostComment = {
+  avatarUrl: string | null;
+  content: string;
+  createdAt: string;
+  id: string;
+  nickname: string;
+  parentId: string | null;
+  userId: string;
+};
+
 type PostRow = Pick<
   Database["public"]["Tables"]["posts"]["Row"],
   "content" | "created_at" | "id"
@@ -441,5 +464,54 @@ export async function getApplicantPosts(
     createdAt: post.created_at,
     id: post.id,
     media: mediaByPostId.get(post.id) ?? [],
+  }));
+}
+
+export async function getAdminPostInsight(
+  postId: string,
+): Promise<AdminPostInsight> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase
+    .rpc("get_post_insight_for_admin", { p_post_id: postId })
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "게시물 지표를 불러오지 못했습니다.");
+  }
+
+  return {
+    avgDepth: data.avg_depth,
+    comments: data.comments,
+    completionRate: data.completion_rate,
+    isVideo: data.is_video,
+    likes: data.likes,
+    reach: data.reach,
+    saves: data.saves,
+    shares: data.shares,
+    videoDurationMs: data.video_duration_ms,
+    views: data.views,
+  };
+}
+
+export async function getAdminPostComments(
+  postId: string,
+): Promise<AdminPostComment[]> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase.rpc("get_post_comments_for_admin", {
+    p_post_id: postId,
+  });
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "게시물 댓글을 불러오지 못했습니다.");
+  }
+
+  return data.map((comment) => ({
+    avatarUrl: comment.avatar_url,
+    content: comment.content,
+    createdAt: comment.created_at,
+    id: comment.comment_id,
+    nickname: comment.nickname,
+    parentId: comment.parent_id,
+    userId: comment.user_id,
   }));
 }

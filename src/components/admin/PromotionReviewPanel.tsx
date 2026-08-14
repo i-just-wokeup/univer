@@ -4,7 +4,6 @@ import { CalendarDays, ExternalLink, Play, Video } from "lucide-react";
 import Link from "next/link";
 
 import type {
-  AdminApplicantMedia,
   AdminApplicantPost,
   AdminPromotionRequest,
 } from "@/features/admin/api";
@@ -13,7 +12,7 @@ type PromotionReviewPanelProps = {
   isLoadingPosts: boolean;
   isSubmitting: boolean;
   onApprove: () => void;
-  onOpenMedia: (media: AdminApplicantMedia) => void;
+  onOpenPost: (post: AdminApplicantPost) => void;
   onReject: () => void;
   posts: AdminApplicantPost[];
   request: AdminPromotionRequest | null;
@@ -39,7 +38,7 @@ export function PromotionReviewPanel({
   isLoadingPosts,
   isSubmitting,
   onApprove,
-  onOpenMedia,
+  onOpenPost,
   onReject,
   posts,
   request,
@@ -125,13 +124,8 @@ export function PromotionReviewPanel({
                 <button
                   key={post.id}
                   type="button"
-                  disabled={!media}
-                  onClick={() => {
-                    if (media) {
-                      onOpenMedia(media);
-                    }
-                  }}
-                  className="group overflow-hidden rounded-2xl bg-zinc-100 text-left disabled:cursor-default"
+                  onClick={() => onOpenPost(post)}
+                  className="group overflow-hidden rounded-2xl bg-zinc-100 text-left"
                 >
                   <div className="relative aspect-square overflow-hidden bg-zinc-200">
                     {previewUrl ? (

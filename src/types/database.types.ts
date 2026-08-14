@@ -717,6 +717,39 @@ export type Database = {
           avg_completion: number
         }>
       }
+      get_post_comments_for_admin: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: Array<{
+          comment_id: string
+          user_id: string
+          parent_id: string | null
+          nickname: string
+          avatar_url: string | null
+          content: string
+          created_at: string
+        }>
+      }
+      get_post_insight_for_admin: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: Array<{
+          post_id: string
+          created_at: string
+          is_video: boolean
+          views: number
+          reach: number
+          likes: number
+          comments: number
+          saves: number
+          shares: number
+          video_duration_ms: number | null
+          completion_rate: number | null
+          avg_depth: number | null
+        }>
+      }
       reject_promotion: {
         Args: {
           p_request_id: string

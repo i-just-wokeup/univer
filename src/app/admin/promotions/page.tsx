@@ -3,7 +3,7 @@
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { PromotionMediaLightbox } from "@/components/admin/PromotionMediaLightbox";
+import { PromotionPostDetailModal } from "@/components/admin/PromotionPostDetailModal";
 import { PromotionRequestCard } from "@/components/admin/PromotionRequestCard";
 import { PromotionReviewPanel } from "@/components/admin/PromotionReviewPanel";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -13,10 +13,10 @@ import {
   getApplicantPosts,
   getPromotionRequests,
   rejectPromotion,
-  type AdminApplicantMedia,
   type AdminApplicantPost,
   type AdminPromotionRequest,
 } from "@/features/admin/api";
+import { useAdminPostReview } from "@/features/admin/useAdminPostReview";
 
 type ReviewAction = "approve" | "reject";
 
@@ -24,7 +24,6 @@ export default function AdminPromotionsPage() {
   const [requests, setRequests] = useState<AdminPromotionRequest[]>([]);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [posts, setPosts] = useState<AdminApplicantPost[]>([]);
-  const [selectedMedia, setSelectedMedia] = useState<AdminApplicantMedia | null>(null);
   const [pendingAction, setPendingAction] = useState<ReviewAction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -36,6 +35,7 @@ export default function AdminPromotionsPage() {
     message: string;
     type: "success" | "error";
   } | null>(null);
+  const postReview = useAdminPostReview();
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.requestId === selectedRequestId) ?? null,
@@ -134,6 +134,7 @@ export default function AdminPromotionsPage() {
           ? `${selectedRequest.nickname}님의 승격을 승인했습니다.`
           : `${selectedRequest.nickname}님의 승격 신청을 거절했습니다.`;
       setPendingAction(null);
+      postReview.closePost();
       await loadRequests(true);
       setToast({ message: successMessage, type: "success" });
     } catch (actionError) {
@@ -202,7 +203,10 @@ export default function AdminPromotionsPage() {
                 key={request.requestId}
                 request={request}
                 isSelected={request.requestId === selectedRequestId}
-                onSelect={() => setSelectedRequestId(request.requestId)}
+                onSelect={() => {
+                  postReview.closePost();
+                  setSelectedRequestId(request.requestId);
+                }}
               />
             ))}
           </aside>
@@ -212,7 +216,7 @@ export default function AdminPromotionsPage() {
             posts={posts}
             isLoadingPosts={isLoadingPosts}
             isSubmitting={isSubmitting}
-            onOpenMedia={setSelectedMedia}
+            onOpenPost={postReview.openPost}
             onReject={() => setPendingAction("reject")}
             onApprove={() => setPendingAction("approve")}
           />
@@ -235,7 +239,15 @@ export default function AdminPromotionsPage() {
         }}
       />
 
-      <PromotionMediaLightbox media={selectedMedia} onClose={() => setSelectedMedia(null)} />
+      <PromotionPostDetailModal
+        key={postReview.post?.id ?? "closed"}
+        comments={postReview.comments}
+        error={postReview.error}
+        insight={postReview.insight}
+        isLoading={postReview.isLoading}
+        onClose={postReview.closePost}
+        post={postReview.post}
+      />
 
       <Toast
         isVisible={toast !== null}

@@ -113,7 +113,7 @@ src/
     admin/                     ← 관리자 (별도 레이아웃)
     onboarding/
   components/
-    admin/                     ← AdminSidebar, 승격 신청 카드·심사 패널·미디어 라이트박스
+    admin/                     ← AdminSidebar, 승격 신청 카드·심사 패널·게시물 지표/댓글 상세 모달
     chat/                      ← ConversationItem, MessageBubble, MessageInput
     common/                    ← Avatar, ActionSheet, ConfirmDialog, Toast, UserInfo
     feed/                      ← FeedList, PostCard, PostDetail, PostImageUploader 등
