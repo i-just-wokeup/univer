@@ -1,6 +1,10 @@
 import { getThumbnailAsync } from "expo-video-thumbnails";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
+import {
+  BANNED_WORD_GUIDANCE,
+  containsBannedWord,
+} from "../moderation/containsBannedWord";
 import { createPost, uploadPostImages, uploadPostVideo } from "./api";
 import type { PreparedPostLibraryVideo } from "./postMediaLibrary";
 import type { PostAspectRatio, PostVisibility } from "./types";
@@ -42,6 +46,7 @@ export function useWriteForm() {
   const [visibility, setVisibility] = useState<PostVisibility>("public");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   const canSubmit =
     !isSubmitting &&
@@ -56,7 +61,12 @@ export function useWriteForm() {
     setContent("");
     setVisibility("public");
     setErrorMessage("");
+    setFeedbackMessage("");
   }
+
+  const clearFeedbackMessage = useCallback(() => {
+    setFeedbackMessage("");
+  }, []);
 
   function removeImage(index: number) {
     setImageUris((currentUris) =>
@@ -87,6 +97,12 @@ export function useWriteForm() {
   // 작성 성공 시 true 반환(화면 이동은 호출부). 실패 시 false.
   async function submit(): Promise<boolean> {
     if (!canSubmit) {
+      return false;
+    }
+
+    if (containsBannedWord(content)) {
+      setErrorMessage("");
+      setFeedbackMessage(BANNED_WORD_GUIDANCE);
       return false;
     }
 
@@ -147,7 +163,9 @@ export function useWriteForm() {
     aspectRatio,
     canSubmit,
     content,
+    clearFeedbackMessage,
     errorMessage,
+    feedbackMessage,
     hasDraft,
     imageUris,
     isSubmitting,

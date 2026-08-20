@@ -11,6 +11,10 @@ import {
 } from "./api";
 import type { Comment } from "./types";
 import { createReport } from "../reports/api";
+import {
+  BANNED_WORD_GUIDANCE,
+  containsBannedWord,
+} from "../moderation/containsBannedWord";
 
 type ReplyTarget = {
   nickname: string;
@@ -188,10 +192,25 @@ export function useComments({
     };
   }, [isOpen, postId]);
 
+  const showFeedback = useCallback((message: string) => {
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+    }
+
+    setFeedbackMessage(message);
+    feedbackTimerRef.current = setTimeout(() => setFeedbackMessage(""), 1800);
+  }, []);
+
   async function handleSubmit() {
     const trimmed = content.trim();
 
     if (!postId || isSubmitting || trimmed.length === 0) {
+      return;
+    }
+
+    if (containsBannedWord(trimmed)) {
+      setErrorMessage("");
+      showFeedback(BANNED_WORD_GUIDANCE);
       return;
     }
 
@@ -374,17 +393,13 @@ export function useComments({
     try {
       setErrorMessage("");
       await createReport({ targetId: commentId, targetType: "comment" });
-      if (feedbackTimerRef.current) {
-        clearTimeout(feedbackTimerRef.current);
-      }
-      setFeedbackMessage("신고가 접수됐어요");
-      feedbackTimerRef.current = setTimeout(() => setFeedbackMessage(""), 1800);
+      showFeedback("신고가 접수됐어요");
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "신고에 실패했습니다.",
       );
     }
-  }, []);
+  }, [showFeedback]);
 
   return {
     comments,

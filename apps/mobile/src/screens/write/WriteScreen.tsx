@@ -7,8 +7,10 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
+import { FeedbackToast } from "../../components/common/FeedbackToast";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { WriteContentField } from "../../components/write/WriteContentField";
 import { WriteHeader } from "../../components/write/WriteHeader";
@@ -33,6 +35,7 @@ export function WriteScreen() {
   const styles = useThemedStyles(makeStyles);
   const navigation = useNavigation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [stage, setStage] = useState<"form" | "picker">("picker");
   const [pickerMediaType, setPickerMediaType] =
     useState<"photo" | "video">("photo");
@@ -43,8 +46,10 @@ export function WriteScreen() {
   const {
     aspectRatio,
     canSubmit,
+    clearFeedbackMessage,
     content,
     errorMessage,
+    feedbackMessage,
     hasDraft,
     imageUris,
     isSubmitting,
@@ -361,6 +366,12 @@ export function WriteScreen() {
         onCancel={() => setIsDiscardOpen(false)}
         onConfirm={handleConfirmDiscard}
         title="작성을 취소할까요?"
+      />
+
+      <FeedbackToast
+        bottom={insets.bottom + 24}
+        message={feedbackMessage}
+        onDismiss={clearFeedbackMessage}
       />
     </ScreenContainer>
   );
