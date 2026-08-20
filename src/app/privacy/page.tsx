@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "개인정보 처리방침 · UNIVER",
-  description: "UNIVER 개인정보 처리방침",
+  title: "개인정보 처리방침 · unip",
+  description: "unip 개인정보 처리방침",
 };
 
 // 실제 서비스 데이터 처리에 맞춰 작성. 운영주체·연락처·보호책임자·시행일 확정 완료.

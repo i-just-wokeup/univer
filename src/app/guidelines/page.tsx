@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "커뮤니티 가이드라인 · UNIVER",
-  description: "UNIVER 커뮤니티 가이드라인",
+  title: "커뮤니티 가이드라인 · unip",
+  description: "unip 커뮤니티 가이드라인",
 };
 
 // ⚠️ 초안: 신고·제재 운영의 기준 문서. 출시 전 검토 및 문의 연락처 확정 필요.
@@ -35,7 +35,7 @@ export default function GuidelinesPage() {
 
       <h1 className="text-2xl font-black text-zinc-950">커뮤니티 가이드라인</h1>
       <p className="mt-6 text-sm leading-7 text-zinc-700">
-        UNIVER는 대학생이 실명으로 안전하게 소통하는 커뮤니티입니다. 모두가
+        unip는 대학생이 실명으로 안전하게 소통하는 커뮤니티입니다. 모두가
         존중받는 공간을 위해 아래 가이드라인을 지켜주세요. 본 가이드라인은
         이용약관의 일부로서, 위반 시 게시물 삭제·숨김 및 이용 제한의 근거가 됩니다.
       </p>

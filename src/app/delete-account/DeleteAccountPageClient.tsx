@@ -90,7 +90,7 @@ export default function DeleteAccountPageClient({
   if (!isAuthenticated) {
     return (
       <PageShell>
-        <p className="text-sm font-semibold text-zinc-500">UNIVER 계정 관리</p>
+        <p className="text-sm font-semibold text-zinc-500">unip 계정 관리</p>
         <h1 className="mt-2 text-2xl font-bold">계정 삭제 요청</h1>
         <p className="mt-4 text-sm leading-7 text-zinc-700">
           앱을 설치하지 않아도 이 페이지에서 계정 삭제를 요청할 수 있습니다.
@@ -119,7 +119,7 @@ export default function DeleteAccountPageClient({
 
   return (
     <PageShell>
-      <p className="text-sm font-semibold text-zinc-500">UNIVER 계정 관리</p>
+      <p className="text-sm font-semibold text-zinc-500">unip 계정 관리</p>
       <h1 className="mt-2 text-2xl font-bold">계정을 삭제하시겠습니까?</h1>
 
       <div className="mt-7 border-y border-zinc-200 py-4">

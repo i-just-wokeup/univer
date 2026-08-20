@@ -6,8 +6,8 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import DeleteAccountPageClient from "./DeleteAccountPageClient";
 
 export const metadata: Metadata = {
-  title: "계정 삭제 · UNIVER",
-  description: "UNIVER 계정 및 관련 데이터 삭제 요청",
+  title: "계정 삭제 · unip",
+  description: "unip 계정 및 관련 데이터 삭제 요청",
 };
 
 export default async function DeleteAccountPage() {

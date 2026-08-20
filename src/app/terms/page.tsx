@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "이용약관 · UNIVER",
-  description: "UNIVER 이용약관",
+  title: "이용약관 · unip",
+  description: "unip 이용약관",
 };
 
 // 실제 서비스에 맞춰 작성. 운영주체·시행일·관할 확정 완료.
@@ -38,7 +38,7 @@ export default function TermsPage() {
       <Article title="제1조 (목적)">
         <p>
           본 약관은 {OPERATOR}(이하 &ldquo;서비스&rdquo;)가 제공하는 대학생 실명
-          기반 커뮤니티 서비스 &ldquo;UNIVER&rdquo;의 이용과 관련하여 서비스와
+          기반 커뮤니티 서비스 &ldquo;unip&rdquo;의 이용과 관련하여 서비스와
           이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
         </p>
       </Article>
