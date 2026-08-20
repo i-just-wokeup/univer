@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   description: "UNIVER 개인정보 처리방침",
 };
 
-// ⚠️ 초안: 실제 서비스 데이터 처리에 맞춰 작성했으나, 출시 전 법률 전문가 검토 필요.
-//    [ ] 로 표시된 곳(운영주체/연락처/보호책임자/시행일)은 확정 후 채워야 함.
-const UPDATED_AT = "[YYYY-MM-DD]";
-const OPERATOR = "[운영자명]";
+// 실제 서비스 데이터 처리에 맞춰 작성. 운영주체·연락처·보호책임자·시행일 확정 완료.
+// 출시 전 법률 전문가 최종 검토 권장.
+const UPDATED_AT = "2026-08-21";
+const OPERATOR = "심재성";
 const CONTACT_EMAIL = "unip.support@gmail.com";
-const PRIVACY_OFFICER = "[개인정보 보호책임자 성명]";
+const PRIVACY_OFFICER = "심재성";
 
 function Section({
   title,
@@ -33,10 +33,6 @@ function Section({
 export default function PrivacyPolicyPage() {
   return (
     <main className="mx-auto max-w-2xl px-5 py-12">
-      <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
-        ⚠️ 본 문서는 초안입니다. 시행 전 법률 전문가 검토 및 [ ] 항목 확정이 필요합니다.
-      </div>
-
       <h1 className="text-2xl font-black text-zinc-950">개인정보 처리방침</h1>
       <p className="mt-2 text-sm text-zinc-500">최종 수정일: {UPDATED_AT}</p>
 
@@ -58,7 +54,9 @@ export default function PrivacyPolicyPage() {
             텍스트·사진·영상 콘텐츠, 좋아요·저장·팔로우/크루 내역, 신고·차단 내역
           </li>
           <li>
-            <b>자동 수집</b>: 기기 푸시 알림 토큰, 접속 로그·기기/브라우저 정보
+            <b>자동 수집</b>: 기기 푸시 알림 토큰, 접속 로그·기기/브라우저 정보,
+            서비스 이용 기록(게시물·스토리 조회, 동영상 시청 구간·완주율, 피드
+            노출 기록 등)
           </li>
         </ul>
       </Section>
@@ -68,7 +66,10 @@ export default function PrivacyPolicyPage() {
           <li>실명 기반 대학 커뮤니티 서비스 제공 및 본인 확인(학교 계정 인증)</li>
           <li>게시물·댓글·메시지 등 콘텐츠 제공 및 알림 발송</li>
           <li>신고·차단 등 이용자 보호 및 부정 이용 방지</li>
-          <li>서비스 운영·개선 및 문의 응대</li>
+          <li>
+            서비스 이용 통계 분석 및 콘텐츠 성과 인사이트 제공(크리에이터·기관
+            계정), 서비스 운영·개선 및 문의 응대
+          </li>
         </ul>
       </Section>
 
@@ -96,12 +97,17 @@ export default function PrivacyPolicyPage() {
           <li>Cloudflare — 동영상 스트리밍/전송</li>
           <li>Vercel — 웹 서비스 호스팅</li>
           <li>Google — 학교 계정 로그인(OAuth) 인증</li>
-          <li>Firebase Cloud Messaging(Google) — 푸시 알림 발송</li>
+          <li>
+            Expo(EAS) · Firebase Cloud Messaging(Google, Android) · Apple Push
+            Notification service(Apple, iOS) — 푸시 알림 전송
+          </li>
+          <li>Sentry — 오류·진단 로그 수집(앱·웹 안정성 개선)</li>
         </ul>
         <p>
-          <b>개인정보의 국외 이전</b>: 위 수탁사 중 Cloudflare·Vercel·Google은
-          국외에 서버를 두고 있어, 서비스 제공에 필요한 범위에서 개인정보가 국외로
-          이전되어 처리될 수 있습니다. 이전되는 항목·목적·보유기간은 본 방침에
+          <b>개인정보의 국외 이전</b>: 위 수탁사 중
+          Cloudflare·Vercel·Google·Apple·Expo·Sentry는 국외에 서버를 두고 있어,
+          서비스 제공에 필요한 범위에서 개인정보가 국외로 이전되어 처리될 수
+          있습니다. 이전되는 항목·목적·보유기간은 본 방침에
           기재된 바와 같습니다.
         </p>
         <p>

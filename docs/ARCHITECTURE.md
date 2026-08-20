@@ -164,9 +164,10 @@ apps/mobile/
       · common/badge/       ← 계정 배지(AccountBadge·PromotedBadge·AffiliationPill·badgeSpec)
       · common/AppSplash·Logo(unip 워드마크)
       · write/PostMedia*     ← 사진 선택/앨범 picker(인스타식 2단계)
+      · insights/PromotionCard·common/FeedbackToast ← 프로 계정 신청 카드·서버 사유 피드백 토스트(일반 계정 개요 하단)
     features/              ← 로직/훅/API (앱 전환 재사용 핵심)
       feed·notifications·chat·stories·profile·activity·explore·comments·search·
-      blocks·reports·auth·metrics(지표/인사이트)·verified(계정 배지)·session(page-cache)·shared
+      blocks·reports·auth·metrics(지표/인사이트)·promotion(프로 계정 신청)·verified(계정 배지)·session(page-cache)·shared
     lib/                    ← supabase, theme(+theme/ThemeProvider), session, sentry, site,
                               systemBars, secureStorage, haptics, globalFont, verifiedUsers,
                               constants/(storage·pagination·feedViewability), navigation/, utils/

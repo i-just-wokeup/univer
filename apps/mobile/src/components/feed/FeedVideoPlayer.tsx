@@ -55,9 +55,10 @@ export function FeedVideoPlayer({
   const player = useVideoPlayer(isReady ? { uri, useCaching: Platform.OS === "android" } : null, (instance) => {
     instance.loop = true;
     instance.muted = true;
-    // OOM 방지: 무압축 원본 영상을 통째로 버퍼링하지 않게 제한(안드로이드).
+    // 과거 무압축 mp4 OOM 방지용 8MB 캡을 제거 — Cloudflare HLS ABR이 고화질(1080p)을
+    // 고르게 한다(캡이 있으면 5초 버퍼를 8MB에 맞추느라 저화질을 강제해 피드만 흐렸음).
+    // 릴스와 동일. HLS는 조각 스트리밍이라 통째로 RAM에 안 올라가고, 피드도 활성 카드 1개만 재생.
     instance.bufferOptions = {
-      maxBufferBytes: 8 * 1024 * 1024,
       preferredForwardBufferDuration: 5,
       minBufferForPlayback: 1,
     };
