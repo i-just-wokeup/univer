@@ -6,11 +6,11 @@ export const metadata: Metadata = {
   description: "UNIVER 이용약관",
 };
 
-// ⚠️ 초안: 실제 서비스에 맞춰 작성했으나, 출시 전 법률 전문가 검토 필요.
-//    [ ] 로 표시된 곳(운영주체/시행일/관할)은 확정 후 채워야 함.
-const EFFECTIVE_AT = "[YYYY-MM-DD]";
-const OPERATOR = "[운영자명]";
-const GOVERNING_COURT = "[관할 법원]";
+// 실제 서비스에 맞춰 작성. 운영주체·시행일·관할 확정 완료.
+// 출시 전 법률 전문가 최종 검토 권장.
+const EFFECTIVE_AT = "2026-08-21";
+const OPERATOR = "심재성";
+const GOVERNING_COURT = "서울중앙지방법원";
 
 function Article({
   title,
@@ -32,10 +32,6 @@ function Article({
 export default function TermsPage() {
   return (
     <main className="mx-auto max-w-2xl px-5 py-12">
-      <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
-        ⚠️ 본 문서는 초안입니다. 시행 전 법률 전문가 검토 및 [ ] 항목 확정이 필요합니다.
-      </div>
-
       <h1 className="text-2xl font-black text-zinc-950">이용약관</h1>
       <p className="mt-2 text-sm text-zinc-500">시행일: {EFFECTIVE_AT}</p>
 
