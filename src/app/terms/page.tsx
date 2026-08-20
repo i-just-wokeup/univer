@@ -90,7 +90,32 @@ export default function TermsPage() {
         </p>
       </Article>
 
-      <Article title="제6조 (서비스의 제공 및 변경·중단)">
+      <Article title="제6조 (콘텐츠 정책 및 이용자 행동 규범)">
+        <p>
+          이용자는 타인을 위협·괴롭히거나 음란물·불법 촬영물 등 부적절하거나
+          불쾌감을 주는 콘텐츠를 게시할 수 없습니다. 서비스는 이러한 콘텐츠와
+          행위에 무관용 원칙을 적용합니다.
+        </p>
+        <p>
+          위반 콘텐츠 및 이용자는 앱 내 신고 기능으로 신고할 수 있으며, 서비스는
+          신고 접수 후 24시간 이내에 검토하고 필요한 조치를 진행합니다.
+        </p>
+        <p>
+          위반이 확인되면 해당 콘텐츠 삭제, 이용자 차단 또는 서비스 이용 정지 등의
+          조치가 이루어질 수 있습니다.
+        </p>
+        <p>
+          콘텐츠 관련 문의·신고:{" "}
+          <a
+            href="mailto:unip.support@gmail.com"
+            className="font-semibold underline underline-offset-2"
+          >
+            unip.support@gmail.com
+          </a>
+        </p>
+      </Article>
+
+      <Article title="제7조 (서비스의 제공 및 변경·중단)">
         <p>
           서비스는 연중무휴 제공을 원칙으로 하나, 시스템 점검·장애·불가항력 등의
           사유로 일시 중단될 수 있습니다. 서비스는 내용의 전부 또는 일부를 변경하거나
@@ -98,7 +123,7 @@ export default function TermsPage() {
         </p>
       </Article>
 
-      <Article title="제7조 (회원 탈퇴 및 이용 제한)">
+      <Article title="제8조 (회원 탈퇴 및 이용 제한)">
         <p>
           이용자는 언제든지 앱 내 <b>설정 &gt; 회원 탈퇴</b>를 통해 이용계약을 해지할
           수 있습니다. 탈퇴 시 즉시 서비스 이용이 중단되며, <b>30일이 경과한 후 계정 및
@@ -107,7 +132,7 @@ export default function TermsPage() {
         </p>
       </Article>
 
-      <Article title="제8조 (면책조항)">
+      <Article title="제9조 (면책조항)">
         <p>
           서비스는 이용자가 게시한 게시물의 신뢰성·정확성에 대해 책임을 지지 않으며,
           이용자 간 또는 이용자와 제3자 간에 발생한 분쟁에 대해 개입할 의무가 없고
@@ -116,7 +141,7 @@ export default function TermsPage() {
         </p>
       </Article>
 
-      <Article title="제9조 (준거법 및 관할)">
+      <Article title="제10조 (준거법 및 관할)">
         <p>
           본 약관은 대한민국 법령에 따라 규율되며, 서비스와 이용자 간 분쟁에 관한
           소송은 {GOVERNING_COURT}을 관할 법원으로 합니다.
