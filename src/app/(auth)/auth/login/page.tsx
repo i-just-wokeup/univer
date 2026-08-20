@@ -4,8 +4,17 @@ import LoginForm from "./LoginForm";
 type LoginPageProps = {
   searchParams: Promise<{
     error?: string;
+    redirectTo?: string;
   }>;
 };
+
+function getSafeRedirectPath(value: string | undefined) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/";
+  }
+
+  return value;
+}
 
 // Server Component에서 searchParams를 해석하고 실제 UI는 클라이언트 폼에 맡긴다.
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -14,6 +23,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <LoginForm
       initialError={typeof params.error === "string" ? params.error : null}
+      redirectTo={getSafeRedirectPath(params.redirectTo)}
     />
   );
 }

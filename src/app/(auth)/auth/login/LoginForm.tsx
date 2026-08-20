@@ -17,10 +17,11 @@ import { signInWithGoogle, signInWithPassword } from "@/features/auth/api";
 // 서버 페이지가 searchParams에서 읽은 초기 에러를 그대로 내려준다.
 type LoginFormProps = {
   initialError: string | null;
+  redirectTo: string;
 };
 
 // 이메일+비밀번호 로그인 폼. 실제 인증 호출은 features/auth/api로 위임한다.
-export default function LoginForm({ initialError }: LoginFormProps) {
+export default function LoginForm({ initialError, redirectTo }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +41,7 @@ export default function LoginForm({ initialError }: LoginFormProps) {
         password,
       });
 
-      router.replace("/");
+      router.replace(redirectTo);
       router.refresh();
     } catch (submitError) {
       setError(
@@ -58,7 +59,7 @@ export default function LoginForm({ initialError }: LoginFormProps) {
     setIsGoogleSubmitting(true);
 
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(redirectTo);
     } catch (submitError) {
       setError(
         submitError instanceof Error

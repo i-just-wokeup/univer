@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 //    [ ] 로 표시된 곳(운영주체/연락처/보호책임자/시행일)은 확정 후 채워야 함.
 const UPDATED_AT = "[YYYY-MM-DD]";
 const OPERATOR = "[운영자명]";
-const CONTACT_EMAIL = "[문의 이메일]";
+const CONTACT_EMAIL = "unip.support@gmail.com";
 const PRIVACY_OFFICER = "[개인정보 보호책임자 성명]";
 
 function Section({

@@ -101,8 +101,14 @@ export async function signInWithPassword(params: SignInWithPasswordParams) {
   }
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(redirectPath = "/") {
   const supabase = requireSupabaseClient();
+  const safeRedirectPath =
+    redirectPath.startsWith("/") && !redirectPath.startsWith("//")
+      ? redirectPath
+      : "/";
+  const callbackUrl = new URL("/auth/callback", window.location.origin);
+  callbackUrl.searchParams.set("next", safeRedirectPath);
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
@@ -110,7 +116,7 @@ export async function signInWithGoogle() {
         hd: "kookmin.ac.kr",
         prompt: "select_account",
       },
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 
@@ -216,6 +222,24 @@ export async function getUserOnboardingStatus(
   }
 
   return data?.is_onboarded ?? false;
+}
+
+// 계정 확인 화면에서 현재 사용자를 식별할 최소 프로필 정보를 가져온다.
+export async function getUserNickname(
+  supabase: AuthSupabaseClient,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from("users")
+    .select("nickname")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("사용자 정보를 불러오지 못했습니다.");
+  }
+
+  return data?.nickname ?? null;
 }
 
 // 로그인된 사용자의 public.users 프로필을 온보딩 값으로 업데이트한다.
