@@ -41,14 +41,17 @@ export function useHomeFeedSync({
         ]);
       const countsById = new Map(counts.map((count) => [count.id, count]));
       const blockedUserIds = new Set(blockRelatedUserIds);
+      const queriedIds = new Set(ids);
       setLikedPostIds(new Set(likedIds));
       setBookmarkedPostIds(new Set(bookmarkedIds));
       setPosts((current) =>
         current
-          // 다른 화면에서 삭제된 글(카운트 조회에 없음)·차단한 유저 글을 목록에서 제거.
+          // 이번 동기화 조회 대상이 아닌 글(업로드 직후 새로 얹은 내 글 등)은 그대로 유지한다.
+          // 조회 대상이었던 글만 삭제(카운트 없음)·차단 유저 글을 목록에서 제거한다.
           .filter(
             (post) =>
-              countsById.has(post.id) && !blockedUserIds.has(post.user.id),
+              !queriedIds.has(post.id) ||
+              (countsById.has(post.id) && !blockedUserIds.has(post.user.id)),
           )
           .map((post) => {
             const count = countsById.get(post.id);

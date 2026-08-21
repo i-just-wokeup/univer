@@ -14,10 +14,7 @@ import {
   setFeedPageCache,
   type FeedPageCacheSnapshot,
 } from "./page-cache";
-import {
-  consumePendingUploadedPost,
-  subscribePendingUploadedPost,
-} from "./pendingUploadedPost";
+import { consumePendingUploadedPost } from "./pendingUploadedPost";
 import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 
 type LoadFirstPageOptions = {
@@ -129,14 +126,6 @@ export function useHomeFeedPagination() {
       // 임시 홈 표시 실패는 이미 성공한 게시물 작성을 실패로 바꾸지 않는다.
     }
   }, [currentUserId]);
-
-  useEffect(
-    () =>
-      subscribePendingUploadedPost(() => {
-        void prependPendingUploadedPost();
-      }),
-    [prependPendingUploadedPost],
-  );
 
   useFocusEffect(
     useCallback(() => {
