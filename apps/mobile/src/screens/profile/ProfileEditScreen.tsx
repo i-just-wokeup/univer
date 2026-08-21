@@ -19,11 +19,13 @@ import { ProfileEditPrivacyToggles } from "../../components/profile/ProfileEditP
 import { ProfileEditReadonlyField } from "../../components/profile/ProfileEditReadonlyField";
 import { ProfileEditSaveButton } from "../../components/profile/ProfileEditSaveButton";
 import { useProfileEdit } from "../../features/profile/useProfileEdit";
+import { useSession } from "../../lib/session";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export function ProfileEditScreen() {
   const { colors } = useTheme();
+  const { refreshOnboardingStatus } = useSession();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const {
@@ -56,6 +58,7 @@ export function ProfileEditScreen() {
   async function handleSave() {
     const saved = await save();
     if (saved) {
+      await refreshOnboardingStatus().catch(() => undefined);
       router.back();
     }
   }

@@ -25,6 +25,8 @@ import { clearUserContextCaches } from "../features/shared/userContext";
 import { getSupabaseMobileClient, isSupabaseConfigured } from "./supabase";
 
 type SessionState = {
+  currentAvatarUrl: string | null;
+  currentNickname: string | null;
   isConfigured: boolean;
   isLoading: boolean;
   isOnboardingLoading: boolean;
@@ -34,6 +36,8 @@ type SessionState = {
 };
 
 const SessionContext = createContext<SessionState>({
+  currentAvatarUrl: null,
+  currentNickname: null,
   isConfigured: false,
   isLoading: true,
   isOnboardingLoading: false,
@@ -52,6 +56,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [],
   );
   const [session, setSession] = useState<Session | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<{
+    avatarUrl: string | null;
+    nickname: string | null;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(Boolean(supabase));
   const [isOnboardingLoading, setIsOnboardingLoading] = useState(false);
   const [requiresOnboarding, setRequiresOnboarding] = useState(false);
@@ -59,21 +67,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const refreshOnboardingStatus = useCallback(async () => {
     if (!supabase) {
+      setCurrentUserProfile(null);
       setRequiresOnboarding(false);
       return;
     }
 
     const profile = await getCurrentUserProfile();
     if (!profile) {
+      setCurrentUserProfile(null);
       setRequiresOnboarding(false);
       return;
     }
 
     if (profile.deleted_at) {
+      setCurrentUserProfile(null);
       await clearStoredOnboardingComplete(profile.id).catch(() => undefined);
       await signOutMobile();
       return;
     }
+
+    setCurrentUserProfile({
+      avatarUrl: profile.avatar_url,
+      nickname: profile.nickname,
+    });
 
     const required = shouldRequireOnboarding(profile);
     if (required) {
@@ -131,6 +147,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       lastAuthUserIdRef.current = nextUserId;
 
       if (event === "SIGNED_OUT" || hasUserChanged) {
+        setCurrentUserProfile(null);
         clearAllPageCaches();
         clearUserContextCaches();
       }
@@ -162,8 +179,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!session) {
-      setRequiresOnboarding(false);
-      setIsOnboardingLoading(false);
       return;
     }
 
@@ -193,12 +208,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
       // 탈퇴(soft delete)된 계정은 재로그인 차단 → 즉시 로그아웃.
       if (profile.deleted_at) {
+        setCurrentUserProfile(null);
         await clearStoredOnboardingComplete(sessionUserId).catch(
           () => undefined,
         );
         await signOutMobile();
         return;
       }
+
+      setCurrentUserProfile({
+        avatarUrl: profile.avatar_url,
+        nickname: profile.nickname,
+      });
 
       const required = shouldRequireOnboarding(profile);
       if (required) {
@@ -233,6 +254,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<SessionState>(
     () => ({
+      currentAvatarUrl: currentUserProfile?.avatarUrl ?? null,
+      currentNickname: currentUserProfile?.nickname ?? null,
       isConfigured: Boolean(supabase),
       isLoading,
       isOnboardingLoading,
@@ -242,6 +265,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }),
     [
       supabase,
+      currentUserProfile,
       isLoading,
       isOnboardingLoading,
       refreshOnboardingStatus,

@@ -1,5 +1,5 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Home, Plus, Search, SquarePlay, UserCircle } from "lucide-react-native";
+import { Home, Plus, Search, SquarePlay } from "lucide-react-native";
 import type { LucideProps } from "lucide-react-native";
 import type { ComponentType } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -8,11 +8,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HOME_COACH_MARK_TARGETS } from "../../lib/coachMarkTargets";
 import { useCoachMarkTarget } from "../../lib/coachMarks";
 import { emitHomeTabReselect } from "../../lib/navigation/homeTabReselect";
+import { useSession } from "../../lib/session";
 import { useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
+import { Avatar } from "./Avatar";
 
 type TabMeta = {
-  icon: ComponentType<LucideProps>;
+  icon?: ComponentType<LucideProps>;
   label: string;
   primary?: boolean;
 };
@@ -22,11 +24,12 @@ const TAB_META: Record<string, TabMeta> = {
   search: { icon: Search, label: "검색" },
   write: { icon: Plus, label: "작성", primary: true },
   activity: { icon: SquarePlay, label: "탐색" },
-  profile: { icon: UserCircle, label: "프로필" },
+  profile: { label: "프로필" },
 };
 
 export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { currentAvatarUrl, currentNickname } = useSession();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const searchTargetRef = useCoachMarkTarget(
@@ -103,11 +106,26 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
             ref={targetRef}
             style={meta.primary ? styles.primaryTab : styles.navTab}
           >
-            <Icon
-              color={iconColor}
-              size={meta.primary ? 27 : 25}
-              strokeWidth={meta.primary ? 2.4 : 2}
-            />
+            {route.name === "profile" ? (
+              <View
+                style={[
+                  styles.profileAvatarRing,
+                  isActive ? styles.profileAvatarRingActive : null,
+                ]}
+              >
+                <Avatar
+                  imageUrl={currentAvatarUrl}
+                  label={currentNickname ?? "프로필"}
+                  size={26}
+                />
+              </View>
+            ) : Icon ? (
+              <Icon
+                color={iconColor}
+                size={meta.primary ? 27 : 25}
+                strokeWidth={meta.primary ? 2.4 : 2}
+              />
+            ) : null}
           </Pressable>
         );
       })}
@@ -140,5 +158,16 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     justifyContent: "center",
     borderRadius: 14,
     backgroundColor: c.brand,
+  },
+  profileAvatarRing: {
+    height: 30,
+    width: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+  },
+  profileAvatarRingActive: {
+    borderWidth: 2,
+    borderColor: c.accent,
   },
 });
