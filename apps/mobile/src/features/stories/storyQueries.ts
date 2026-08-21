@@ -53,7 +53,8 @@ export async function getStories(): Promise<StoryGroup[]> {
   );
   const visibleStoryRows = storyRows.filter(
     (story) =>
-      !story.shared_post_id || sharedPostsById.has(story.shared_post_id),
+      (story.processing_status === "ready" || story.user_id === userId) &&
+      (!story.shared_post_id || sharedPostsById.has(story.shared_post_id)),
   );
 
   if (visibleStoryRows.length === 0) {

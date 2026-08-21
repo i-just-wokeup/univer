@@ -39,21 +39,29 @@ export async function hydrateFeedPosts(
     return [];
   }
 
-  return postRows.map((post) => {
-    if (!post.user) {
-      throw new Error("게시물 작성자 정보를 찾을 수 없습니다.");
-    }
+  return postRows
+    .filter((post) => {
+      const hasUnreadyMedia = post.post_media?.some(
+        (media) => media.processing_status !== "ready",
+      );
 
-    return {
-      aspect_ratio: post.aspect_ratio ?? "portrait",
-      comments_count: post.comments_count,
-      content: post.content,
-      created_at: post.created_at,
-      id: post.id,
-      likes_count: post.likes_count,
-      media: post.post_media?.map(mapPostMedia) ?? [],
-      user: mapFeedUser(post.user, viewerUserId),
-      visibility: post.visibility,
-    };
-  });
+      return !hasUnreadyMedia || post.user_id === viewerUserId;
+    })
+    .map((post) => {
+      if (!post.user) {
+        throw new Error("게시물 작성자 정보를 찾을 수 없습니다.");
+      }
+
+      return {
+        aspect_ratio: post.aspect_ratio ?? "portrait",
+        comments_count: post.comments_count,
+        content: post.content,
+        created_at: post.created_at,
+        id: post.id,
+        likes_count: post.likes_count,
+        media: post.post_media?.map(mapPostMedia) ?? [],
+        user: mapFeedUser(post.user, viewerUserId),
+        visibility: post.visibility,
+      };
+    });
 }
