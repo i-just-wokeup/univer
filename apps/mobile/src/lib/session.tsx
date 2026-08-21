@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 
 import {
   getCurrentUserProfile,
@@ -64,6 +65,31 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isOnboardingLoading, setIsOnboardingLoading] = useState(false);
   const [requiresOnboarding, setRequiresOnboarding] = useState(false);
   const lastAuthUserIdRef = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
+    const updateAutoRefresh = (state: AppStateStatus) => {
+      if (state === "active") {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    };
+
+    updateAutoRefresh(AppState.currentState);
+    const subscription = AppState.addEventListener(
+      "change",
+      updateAutoRefresh,
+    );
+
+    return () => {
+      subscription.remove();
+      supabase.auth.stopAutoRefresh();
+    };
+  }, [supabase]);
 
   const refreshOnboardingStatus = useCallback(async () => {
     if (!supabase) {
