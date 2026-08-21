@@ -1,6 +1,13 @@
 "use client";
 
-import { BadgeCheck, BarChart3, Flag, ShieldCheck, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  BarChart3,
+  Building2,
+  Flag,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -24,6 +31,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/promotions",
     icon: BadgeCheck,
     label: "승격 신청",
+  },
+  {
+    href: "/admin/officials",
+    icon: Building2,
+    label: "공식 계정",
   },
 ] as const;
 
