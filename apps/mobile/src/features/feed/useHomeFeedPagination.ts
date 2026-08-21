@@ -1,3 +1,4 @@
+import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useSession } from "../../lib/session";
@@ -6,12 +7,17 @@ import {
   getBookmarkedPostIds,
   getFeedRanked,
   getLikedPostIds,
+  getPost,
 } from "./api";
 import {
   getFeedPageCache,
   setFeedPageCache,
   type FeedPageCacheSnapshot,
 } from "./page-cache";
+import {
+  consumePendingUploadedPost,
+  subscribePendingUploadedPost,
+} from "./pendingUploadedPost";
 import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 
 type LoadFirstPageOptions = {
@@ -64,6 +70,7 @@ export function useHomeFeedPagination() {
   const [posts, setPosts] = useState<FeedPost[]>(
     () => initialCache?.posts ?? [],
   );
+  const firstPageGenerationRef = useRef(0);
   const postsRef = useRef<FeedPost[]>(initialCache?.posts ?? []);
   const seedRef = useRef(initialCache?.seed ?? Math.random());
 
@@ -88,6 +95,55 @@ export function useHomeFeedPagination() {
     seedRef.current = nextCache?.seed ?? Math.random();
   }, [currentUserId, feedOwnerUserId]);
 
+  const prependPendingUploadedPost = useCallback(async () => {
+    if (!currentUserId || !hasLoadedFeedRef.current) {
+      return;
+    }
+
+    const postId = consumePendingUploadedPost();
+
+    if (!postId) {
+      return;
+    }
+
+    const requestGeneration = firstPageGenerationRef.current;
+
+    try {
+      const post = await getPost(postId);
+
+      if (
+        firstPageGenerationRef.current !== requestGeneration ||
+        post.user.id !== currentUserId
+      ) {
+        return;
+      }
+
+      setPosts((currentPosts) => {
+        if (currentPosts.some((currentPost) => currentPost.id === post.id)) {
+          return currentPosts;
+        }
+
+        return [post, ...currentPosts];
+      });
+    } catch {
+      // 임시 홈 표시 실패는 이미 성공한 게시물 작성을 실패로 바꾸지 않는다.
+    }
+  }, [currentUserId]);
+
+  useEffect(
+    () =>
+      subscribePendingUploadedPost(() => {
+        void prependPendingUploadedPost();
+      }),
+    [prependPendingUploadedPost],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void prependPendingUploadedPost();
+    }, [prependPendingUploadedPost]),
+  );
+
   const loadFirstPage = useCallback(async (options?: LoadFirstPageOptions) => {
     const requestSeed = options?.seed ?? seedRef.current;
 
@@ -106,9 +162,12 @@ export function useHomeFeedPagination() {
         setPostRanks(new Map(cachedPage.postRanks));
         setPosts(cachedPage.posts);
         seedRef.current = cachedPage.seed;
+        void prependPendingUploadedPost();
         return;
       }
     }
+
+    firstPageGenerationRef.current += 1;
 
     try {
       setErrorMessage("");
@@ -128,6 +187,7 @@ export function useHomeFeedPagination() {
       seedRef.current = requestSeed;
       setLikedPostIds(new Set(likedIds));
       setBookmarkedPostIds(new Set(bookmarkedIds));
+      void prependPendingUploadedPost();
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "피드를 불러오지 못했습니다.",
@@ -136,7 +196,7 @@ export function useHomeFeedPagination() {
       setIsInitialLoading(false);
       setIsRefreshing(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, prependPendingUploadedPost]);
 
   useEffect(() => {
     void loadFirstPage();

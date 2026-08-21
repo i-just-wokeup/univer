@@ -6,6 +6,7 @@ import {
   containsBannedWord,
 } from "../moderation/containsBannedWord";
 import { createPost, uploadPostImages, uploadPostVideo } from "./api";
+import { setPendingUploadedPost } from "./pendingUploadedPost";
 import type { PreparedPostLibraryVideo } from "./postMediaLibrary";
 import type { PostAspectRatio, PostVisibility } from "./types";
 
@@ -109,6 +110,7 @@ export function useWriteForm() {
     try {
       setIsSubmitting(true);
       setErrorMessage("");
+      let createdPostId: string;
 
       if (selectedVideo) {
         let thumbnailUrl: string | null = null;
@@ -122,7 +124,7 @@ export function useWriteForm() {
         }
 
         const videoUpload = await uploadPostVideo(selectedVideo.uri);
-        await createPost({
+        createdPostId = await createPost({
           aspectRatio,
           content,
           imageUrls: [],
@@ -139,7 +141,7 @@ export function useWriteForm() {
       } else {
         const imageUrls =
           imageUris.length > 0 ? await uploadPostImages(imageUris) : [];
-        await createPost({
+        createdPostId = await createPost({
           aspectRatio,
           content,
           imageUrls,
@@ -147,6 +149,7 @@ export function useWriteForm() {
         });
       }
 
+      setPendingUploadedPost(createdPostId);
       resetForm();
       return true;
     } catch (error) {
