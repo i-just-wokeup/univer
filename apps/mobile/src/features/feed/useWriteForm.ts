@@ -6,7 +6,7 @@ import {
   containsBannedWord,
 } from "../moderation/containsBannedWord";
 import { createPost, uploadPostImages, uploadPostVideo } from "./api";
-import { setPendingUploadedPost } from "./pendingUploadedPost";
+import { addRecentUpload } from "./pendingUploadedPost";
 import type { PreparedPostLibraryVideo } from "./postMediaLibrary";
 import type { PostAspectRatio, PostVisibility } from "./types";
 
@@ -149,7 +149,7 @@ export function useWriteForm() {
         });
       }
 
-      setPendingUploadedPost(createdPostId);
+      addRecentUpload(createdPostId);
       resetForm();
       return true;
     } catch (error) {

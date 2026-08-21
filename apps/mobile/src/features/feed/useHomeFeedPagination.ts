@@ -14,7 +14,10 @@ import {
   setFeedPageCache,
   type FeedPageCacheSnapshot,
 } from "./page-cache";
-import { consumePendingUploadedPost } from "./pendingUploadedPost";
+import {
+  getRecentUploadIds,
+  RECENT_UPLOAD_WINDOW_MS,
+} from "./pendingUploadedPost";
 import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 
 type LoadFirstPageOptions = {
@@ -92,45 +95,88 @@ export function useHomeFeedPagination() {
     seedRef.current = nextCache?.seed ?? Math.random();
   }, [currentUserId, feedOwnerUserId]);
 
-  const prependPendingUploadedPost = useCallback(async () => {
+  const prependRecentUploads = useCallback(async (basePosts?: FeedPost[]) => {
     if (!currentUserId || !hasLoadedFeedRef.current) {
       return;
     }
 
-    const postId = consumePendingUploadedPost();
+    const recentUploadIds = getRecentUploadIds(RECENT_UPLOAD_WINDOW_MS);
+    const recentUploadIdSet = new Set(recentUploadIds);
+    const sourcePosts = basePosts ?? postsRef.current;
+    const recentPostsById = new Map<string, FeedPost>();
 
-    if (!postId) {
-      return;
-    }
+    postsRef.current.forEach((post) => {
+      if (recentUploadIdSet.has(post.id)) {
+        recentPostsById.set(post.id, post);
+      }
+    });
+    sourcePosts.forEach((post) => {
+      if (recentUploadIdSet.has(post.id)) {
+        recentPostsById.set(post.id, post);
+      }
+    });
 
     const requestGeneration = firstPageGenerationRef.current;
+    const missingPostIds = recentUploadIds.filter(
+      (postId) => !recentPostsById.has(postId),
+    );
 
-    try {
-      const post = await getPost(postId);
+    if (missingPostIds.length > 0) {
+      const loadedPosts = await Promise.all(
+        missingPostIds.map(async (postId) => {
+          try {
+            return await getPost(postId);
+          } catch {
+            return null;
+          }
+        }),
+      );
 
-      if (
-        firstPageGenerationRef.current !== requestGeneration ||
-        post.user.id !== currentUserId
-      ) {
+      if (firstPageGenerationRef.current !== requestGeneration) {
         return;
       }
 
-      setPosts((currentPosts) => {
-        if (currentPosts.some((currentPost) => currentPost.id === post.id)) {
-          return currentPosts;
+      loadedPosts.forEach((post) => {
+        if (post?.user.id === currentUserId) {
+          recentPostsById.set(post.id, post);
         }
-
-        return [post, ...currentPosts];
       });
-    } catch {
-      // 임시 홈 표시 실패는 이미 성공한 게시물 작성을 실패로 바꾸지 않는다.
     }
+
+    setPosts((currentPosts) => {
+      currentPosts.forEach((post) => {
+        if (recentUploadIdSet.has(post.id)) {
+          recentPostsById.set(post.id, post);
+        }
+      });
+
+      const recentPosts = recentUploadIds.reduce<FeedPost[]>(
+        (result, postId) => {
+          const post = recentPostsById.get(postId);
+
+          if (post?.user.id === currentUserId) {
+            result.push(post);
+          }
+
+          return result;
+        },
+        [],
+      );
+
+      const rankedPosts = (basePosts ?? currentPosts).filter(
+        (post) =>
+          post.user.id !== currentUserId &&
+          !recentUploadIdSet.has(post.id),
+      );
+
+      return [...recentPosts, ...rankedPosts];
+    });
   }, [currentUserId]);
 
   useFocusEffect(
     useCallback(() => {
-      void prependPendingUploadedPost();
-    }, [prependPendingUploadedPost]),
+      void prependRecentUploads();
+    }, [prependRecentUploads]),
   );
 
   const loadFirstPage = useCallback(async (options?: LoadFirstPageOptions) => {
@@ -151,7 +197,7 @@ export function useHomeFeedPagination() {
         setPostRanks(new Map(cachedPage.postRanks));
         setPosts(cachedPage.posts);
         seedRef.current = cachedPage.seed;
-        void prependPendingUploadedPost();
+        void prependRecentUploads(cachedPage.posts);
         return;
       }
     }
@@ -176,7 +222,7 @@ export function useHomeFeedPagination() {
       seedRef.current = requestSeed;
       setLikedPostIds(new Set(likedIds));
       setBookmarkedPostIds(new Set(bookmarkedIds));
-      void prependPendingUploadedPost();
+      void prependRecentUploads(result.posts);
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "피드를 불러오지 못했습니다.",
@@ -185,7 +231,7 @@ export function useHomeFeedPagination() {
       setIsInitialLoading(false);
       setIsRefreshing(false);
     }
-  }, [currentUserId, prependPendingUploadedPost]);
+  }, [currentUserId, prependRecentUploads]);
 
   useEffect(() => {
     void loadFirstPage();
@@ -206,7 +252,7 @@ export function useHomeFeedPagination() {
       likedPostIds,
       nextCursor,
       postRanks,
-      posts,
+      posts: posts.filter((post) => post.user.id !== currentUserId),
       seed: seedRef.current,
       userId: currentUserId,
     });

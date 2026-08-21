@@ -1,25 +1,25 @@
-type PendingUploadedPostListener = () => void;
+type RecentUpload = {
+  id: string;
+  uploadedAt: number;
+};
 
-const listeners = new Set<PendingUploadedPostListener>();
-let pendingUploadedPostId: string | null = null;
+export const RECENT_UPLOAD_WINDOW_MS = 10 * 60 * 1000;
 
-export function setPendingUploadedPost(postId: string): void {
-  pendingUploadedPostId = postId;
-  listeners.forEach((listener) => listener());
+let recentUploads: RecentUpload[] = [];
+
+export function addRecentUpload(id: string): void {
+  recentUploads = [
+    { id, uploadedAt: Date.now() },
+    ...recentUploads.filter((upload) => upload.id !== id),
+  ];
 }
 
-export function consumePendingUploadedPost(): string | null {
-  const postId = pendingUploadedPostId;
-  pendingUploadedPostId = null;
-  return postId;
-}
+export function getRecentUploadIds(windowMs: number): string[] {
+  const cutoff = Date.now() - windowMs;
 
-export function subscribePendingUploadedPost(
-  listener: PendingUploadedPostListener,
-): () => void {
-  listeners.add(listener);
+  recentUploads = recentUploads.filter(
+    (upload) => upload.uploadedAt > cutoff,
+  );
 
-  return () => {
-    listeners.delete(listener);
-  };
+  return recentUploads.map((upload) => upload.id);
 }
