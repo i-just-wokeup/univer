@@ -40,6 +40,13 @@ export async function updateCurrentUserPassword(
   });
 
   if (error) {
+    // 유출/약한 비밀번호(HaveIBeenPwned) 차단 시 Supabase가 영어로 반환 → 한글 안내로 변환
+    if (error.code === "weak_password" || /weak|pwned|leaked/i.test(error.message)) {
+      throw new Error(
+        "너무 흔하거나 유출된 적 있는 비밀번호예요. 다른 비밀번호를 사용해 주세요.",
+      );
+    }
+
     throw new Error(error.message || "비밀번호를 변경하지 못했습니다.");
   }
 }
