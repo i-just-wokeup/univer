@@ -2,6 +2,7 @@
 // 댓글 수는 원댓글만 recount_post_comments RPC로 반영(대댓글 제외).
 import type { Database } from "../../types/database.types";
 import { getSupabaseMobileClient } from "../../lib/supabase";
+import { getBlockRelatedUserIds } from "../shared/userContext";
 import type { Comment, CommentUser } from "./types";
 
 type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
@@ -107,17 +108,26 @@ export async function getCurrentCommentUserId() {
 export async function getComments(postId: string): Promise<Comment[]> {
   const supabase = getSupabaseMobileClient();
 
-  const { data, error } = await supabase
-    .from("comments")
-    .select("id, user_id, post_id, parent_id, content, likes_count, created_at")
-    .eq("post_id", postId)
-    .order("created_at", { ascending: false });
+  const [{ data, error }, blockRelatedUserIds] = await Promise.all([
+    supabase
+      .from("comments")
+      .select("id, user_id, post_id, parent_id, content, likes_count, created_at")
+      .eq("post_id", postId)
+      .order("created_at", { ascending: false }),
+    getBlockRelatedUserIds(),
+  ]);
 
   if (error || !data) {
     throw new Error("댓글을 불러오지 못했습니다.");
   }
 
-  const comments = data as CommentRow[];
+  // 차단 관계(내가 차단 + 나를 차단) 유저의 댓글·대댓글은 목록에서 제외한다.
+  // 원댓글이 빠지면 buildCommentTree에서 그 하위 대댓글도 자연히 사라진다.
+  const blockedUserIds = new Set(blockRelatedUserIds);
+  const comments = (data as CommentRow[]).filter(
+    (comment) => !blockedUserIds.has(comment.user_id),
+  );
+
   const usersById = await getUsersById(comments.map((comment) => comment.user_id));
 
   return buildCommentTree(
