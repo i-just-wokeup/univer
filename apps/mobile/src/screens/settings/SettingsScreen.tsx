@@ -9,6 +9,8 @@ import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { signOutMobile } from "../../features/auth/api";
+import { isEmailPasswordUser } from "../../features/auth/password";
+import { useSession } from "../../lib/session";
 import { LEGAL_URLS } from "../../lib/site";
 import { getSupabaseMobileClient } from "../../lib/supabase";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
@@ -62,6 +64,7 @@ function Row({
 export function SettingsScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const { session } = useSession();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
@@ -117,6 +120,12 @@ export function SettingsScreen() {
             label="프로필 편집"
             onPress={() => router.push("/profile/edit")}
           />
+          {isEmailPasswordUser(session?.user) ? (
+            <Row
+              label="비밀번호 변경"
+              onPress={() => router.push("/change-password")}
+            />
+          ) : null}
           <Row label="내 활동" onPress={() => router.push("/activity")} />
           <Row label="차단한 계정" onPress={() => router.push("/blocked")} />
           <Row label="인사이트" onPress={() => router.push("/insights")} />
