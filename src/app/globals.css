@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eee9fb;
+  --background: #f2f2f7;
   --foreground: #15161b;
   --krew-accent: #7c3aed;
-  --krew-accent-soft: #f0edff;
-  --krew-accent-ring: #d8ccff;
+  --krew-accent-soft: #f2f2f7;
+  --krew-accent-ring: rgba(20, 22, 30, 0.1);
   --krew-muted: #6b6e7b;
   --krew-faint: #9a9da8;
-  --krew-line: rgba(124, 58, 237, 0.08);
-  --krew-border: #e4e2eb;
+  --krew-line: rgba(20, 22, 30, 0.08);
+  --krew-border: #e5e5ea;
   --krew-like: #ff3b4e;
-  --krew-card-shadow: 0 22px 54px rgba(66, 43, 102, 0.11);
+  --krew-card-shadow: 0 16px 40px rgba(20, 22, 30, 0.08);
   --krew-accent-glow: 0 12px 26px rgba(124, 58, 237, 0.2);
 }
 
@@ -19,12 +19,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-krew-accent: #7c3aed;
-  --color-krew-accent-soft: #f0edff;
-  --color-krew-accent-ring: #d8ccff;
+  --color-krew-accent-soft: #f2f2f7;
+  --color-krew-accent-ring: rgba(20, 22, 30, 0.1);
   --color-krew-muted: #6b6e7b;
   --color-krew-faint: #9a9da8;
-  --color-krew-line: rgba(124, 58, 237, 0.08);
-  --color-krew-border: #e4e2eb;
+  --color-krew-line: rgba(20, 22, 30, 0.08);
+  --color-krew-border: #e5e5ea;
   --color-krew-like: #ff3b4e;
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Noto Sans KR", sans-serif;
   --font-mono: var(--font-geist-mono);

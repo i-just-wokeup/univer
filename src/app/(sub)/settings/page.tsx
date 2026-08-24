@@ -6,8 +6,9 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { KREW_SURFACE_CLASS } from "@/components/common/KrewLayout";
 import { deleteAccount, signOut } from "@/features/auth/api";
+
+const SETTINGS_SURFACE_CLASS = "rounded-[22px] bg-white";
 
 function Section({
   children,
@@ -17,11 +18,11 @@ function Section({
   label: string;
 }) {
   return (
-    <section className="px-4 py-3">
+    <section className="px-4 py-3 lg:px-0">
       <h2 className="mb-2 px-1 text-xs font-extrabold text-krew-muted">
         {label}
       </h2>
-      <div className={`${KREW_SURFACE_CLASS} p-2`}>
+      <div className={`${SETTINGS_SURFACE_CLASS} p-2`}>
         {children}
       </div>
     </section>
@@ -97,25 +98,25 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 text-foreground">
-      <header className="sticky top-0 z-20 border-b border-krew-line bg-background/95 backdrop-blur">
-        <div className="grid h-14 grid-cols-3 items-center px-4">
+    <div className="min-h-screen bg-background pb-24 text-foreground lg:pb-12">
+      <header className="sticky top-0 z-20 border-b border-krew-line bg-background/95 backdrop-blur lg:static lg:border-b-0 lg:bg-transparent lg:backdrop-blur-none">
+        <div className="mx-auto grid h-14 w-full max-w-[620px] grid-cols-3 items-center px-4 lg:block lg:h-auto lg:px-0 lg:pb-2 lg:pt-8">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center justify-self-start rounded-2xl bg-white text-foreground shadow-sm transition hover:text-krew-accent"
+            className="flex h-10 w-10 items-center justify-center justify-self-start rounded-2xl bg-white text-foreground shadow-sm transition hover:text-krew-accent lg:hidden"
             aria-label="뒤로가기"
           >
             <ChevronLeft className="h-6 w-6" aria-hidden="true" />
           </button>
-          <h1 className="justify-self-center text-base font-black tracking-[-0.02em]">
+          <h1 className="justify-self-center text-base font-black tracking-[-0.02em] lg:text-xl lg:font-extrabold">
             설정
           </h1>
-          <div aria-hidden="true" />
+          <div className="lg:hidden" aria-hidden="true" />
         </div>
       </header>
 
-      <main className="py-2">
+      <main className="mx-auto w-full max-w-[620px] py-2 lg:py-4">
         <Section label="계정">
           <Row label="프로필 편집" onClick={() => router.push("/profile/edit")} />
           <Row label="내 활동" onClick={() => router.push("/settings/activity")} />
@@ -127,8 +128,8 @@ export default function SettingsPage() {
           <Row label="문의하기" disabled />
         </Section>
 
-        <section className="px-4 py-3">
-          <div className={`${KREW_SURFACE_CLASS} p-2`}>
+        <section className="px-4 py-3 lg:px-0">
+          <div className={`${SETTINGS_SURFACE_CLASS} p-2`}>
             <button
               type="button"
               onClick={() => setIsLogoutDialogOpen(true)}

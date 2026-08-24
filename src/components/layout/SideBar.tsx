@@ -40,8 +40,8 @@ export function SideBar({ logo, items, postAction, secondaryAction }: SideBarPro
           {items.map((item) => {
             const className = `flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left text-base transition ${
               item.isActive
-                ? "bg-krew-accent text-white shadow-[0_8px_18px_rgba(124,58,237,0.22)]"
-                : "text-zinc-700 hover:bg-white hover:text-krew-accent"
+                ? "bg-zinc-100 text-zinc-950"
+                : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
             }`;
 
             if (item.onClick) {
@@ -79,8 +79,8 @@ export function SideBar({ logo, items, postAction, secondaryAction }: SideBarPro
             href={secondaryAction.href}
             className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-base font-semibold transition ${
               secondaryAction.isActive
-                ? "border-krew-accent bg-krew-accent text-white"
-                : "border-krew-border bg-white text-zinc-700 hover:text-krew-accent"
+                ? "border-zinc-950 bg-zinc-950 text-white"
+                : "border-krew-border bg-white text-zinc-700 hover:text-zinc-950"
             }`}
           >
             <span>{secondaryAction.icon}</span>

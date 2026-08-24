@@ -6,6 +6,7 @@ import {
   MessageCircleMore,
   Plus,
   Search,
+  Settings,
   ShieldCheck,
   SquarePlay,
 } from "lucide-react";
@@ -125,6 +126,12 @@ export function NavItems(props: NavItemsProps) {
       icon: notificationIcon,
       isActive: pathname.startsWith("/notifications"),
       onClick: handleNotificationsClick,
+    },
+    {
+      href: "/settings",
+      label: "설정",
+      icon: <Settings className="h-6 w-6" strokeWidth={1.9} />,
+      isActive: pathname.startsWith("/settings"),
     },
   ];
 

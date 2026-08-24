@@ -12,7 +12,7 @@ export default function SubLayout({ children }: SubLayoutProps) {
 
   return (
     <AppSessionProvider>
-      <div className="min-h-screen bg-white text-zinc-950">
+      <div className="min-h-screen bg-background text-zinc-950">
         <div className="mx-auto flex min-h-screen max-w-[1440px]">
           <NavItems logo={logo} variant="sidebar" />
 
@@ -26,7 +26,7 @@ export default function SubLayout({ children }: SubLayoutProps) {
 
             <aside className="hidden w-80 shrink-0 lg:block">
               <div className="sticky top-0 flex min-h-screen items-start pt-8">
-                <div className="h-[420px] w-full bg-white" />
+                <div className="h-[420px] w-full" />
               </div>
             </aside>
           </div>
