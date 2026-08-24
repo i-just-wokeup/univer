@@ -1,15 +1,17 @@
 import { useState } from "react";
 import {
   Animated,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
+import {
+  KeyboardStickyView,
+  useKeyboardState,
+} from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CommentActionMenus } from "./CommentActionMenus";
@@ -30,6 +32,8 @@ type CommentsSheetProps = {
   postId: string | null;
 };
 
+const COMMENT_INPUT_OFFSET = { closed: 0, opened: 0 } as const;
+
 export function CommentsSheet({
   isOpen,
   onClose,
@@ -39,6 +43,7 @@ export function CommentsSheet({
 }: CommentsSheetProps) {
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
+  const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
   const { height } = useWindowDimensions();
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
   // 댓글 길게 누르면 뜨는 액션시트 대상(삭제/신고).
@@ -75,10 +80,7 @@ export function CommentsSheet({
       transparent
       visible={isOpen && Boolean(postId)}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={[styles.overlay, { paddingTop: insets.top }]}
-      >
+      <View style={[styles.overlay, { paddingTop: insets.top }]}>
         <Pressable onPress={closeWithAnimation} style={styles.backdrop} />
         <Animated.View
           style={[
@@ -105,27 +107,32 @@ export function CommentsSheet({
             <Text style={styles.errorText}>{errorMessage}</Text>
           ) : null}
 
-          {feedbackMessage ? (
-            <View
-              pointerEvents="none"
-              style={[styles.feedbackToast, { bottom: insets.bottom + 78 }]}
-            >
-              <Text style={styles.feedbackToastText}>{feedbackMessage}</Text>
-            </View>
-          ) : null}
+          <KeyboardStickyView enabled={isOpen} offset={COMMENT_INPUT_OFFSET}>
+            {feedbackMessage ? (
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.feedbackToast,
+                  { bottom: (isKeyboardVisible ? 0 : insets.bottom) + 78 },
+                ]}
+              >
+                <Text style={styles.feedbackToastText}>{feedbackMessage}</Text>
+              </View>
+            ) : null}
 
-          <CommentInputBar
-            bottomInset={insets.bottom}
-            content={content}
-            inputRef={inputRef}
-            isSubmitting={isSubmitting}
-            onCancelReply={handleCancelReply}
-            onChangeContent={setContent}
-            onSubmit={() => {
-              void handleSubmit();
-            }}
-            replyTarget={replyTarget}
-          />
+            <CommentInputBar
+              bottomInset={isKeyboardVisible ? 0 : insets.bottom}
+              content={content}
+              inputRef={inputRef}
+              isSubmitting={isSubmitting}
+              onCancelReply={handleCancelReply}
+              onChangeContent={setContent}
+              onSubmit={() => {
+                void handleSubmit();
+              }}
+              replyTarget={replyTarget}
+            />
+          </KeyboardStickyView>
         </Animated.View>
 
         <CommentActionMenus
@@ -143,7 +150,7 @@ export function CommentsSheet({
           onOpenReport={setReportCommentId}
           reportCommentId={reportCommentId}
         />
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
