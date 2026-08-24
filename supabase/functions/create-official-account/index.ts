@@ -163,10 +163,11 @@ Deno.serve(async (request) => {
       await cleanupAllowlist();
     };
 
-    // 6. 닉네임 지정 + 온보딩 완료 처리 (공식 계정은 admin이 정보를 다 넣으므로 온보딩 스킵)
+    // 6. 닉네임 지정 + 온보딩 완료 처리 + 이름(단체명) 공개
+    //    공식 계정은 admin이 정보를 다 넣으므로 온보딩 스킵, 단체명은 기관이라 항상 공개.
     const { error: nicknameError } = await admin
       .from("users")
-      .update({ nickname, is_onboarded: true })
+      .update({ nickname, is_onboarded: true, real_name_public: true })
       .eq("id", newUserId);
 
     if (nicknameError) {
