@@ -18,6 +18,7 @@ import { ProfileEditNicknameField } from "../../components/profile/ProfileEditNi
 import { ProfileEditPrivacyToggles } from "../../components/profile/ProfileEditPrivacyToggles";
 import { ProfileEditReadonlyField } from "../../components/profile/ProfileEditReadonlyField";
 import { ProfileEditSaveButton } from "../../components/profile/ProfileEditSaveButton";
+import { isEmailPasswordUser } from "../../features/auth/password";
 import { useProfileEdit } from "../../features/profile/useProfileEdit";
 import { useSession } from "../../lib/session";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
@@ -25,9 +26,10 @@ import type { ThemeColors } from "../../lib/theme";
 
 export function ProfileEditScreen() {
   const { colors } = useTheme();
-  const { refreshOnboardingStatus } = useSession();
+  const { refreshOnboardingStatus, session } = useSession();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
+  const isOfficialAccount = isEmailPasswordUser(session?.user);
   const {
     avatarUrl,
     bio,
@@ -139,16 +141,20 @@ export function ProfileEditScreen() {
               onChangeNickname={handleChangeNickname}
               status={nicknameStatus}
             />
-            <ProfileEditReadonlyField
-              label="학과"
-              value={department ?? "학과 없음"}
-            />
-            <ProfileEditPrivacyToggles
-              departmentPublic={departmentPublic}
-              onChangeDepartmentPublic={setDepartmentPublic}
-              onChangeRealNamePublic={setRealNamePublic}
-              realNamePublic={realNamePublic}
-            />
+            {!isOfficialAccount ? (
+              <>
+                <ProfileEditReadonlyField
+                  label="학과"
+                  value={department ?? "학과 없음"}
+                />
+                <ProfileEditPrivacyToggles
+                  departmentPublic={departmentPublic}
+                  onChangeDepartmentPublic={setDepartmentPublic}
+                  onChangeRealNamePublic={setRealNamePublic}
+                  realNamePublic={realNamePublic}
+                />
+              </>
+            ) : null}
             <ProfileEditBioField bio={bio} onChangeBio={setBio} />
             <ProfileEditLinksEditor
               hasInvalidLink={hasInvalidLink}

@@ -7,6 +7,7 @@
 ## 2026-08-24
 
 ### 완료
+- **앱 온보딩 키보드 회피·공식 계정 프로필 편집 정리** — 온보딩의 기본 `KeyboardAvoidingView`·`ScrollView` 조합을 설치된 `react-native-keyboard-controller`의 `KeyboardAwareScrollView`로 교체해 닉네임·학과 포커스 입력과 하단 약관·완료 버튼을 키보드 위에서 스크롤할 수 있게 했다. 이메일·비밀번호 공식 계정은 기존 세션 provider 판별을 재사용해 프로필 편집의 학과 행과 이름·학과 공개 토글을 숨기고, 일반 학생 계정의 편집 UI는 유지했다.
 - **앱 이메일 계정 비밀번호 변경** — 설정에서 Supabase 세션의 `app_metadata.provider`와 email identity를 확인해 이메일·비밀번호 계정에만 비밀번호 변경 진입점을 노출했다. 전용 화면에서 현재 비밀번호를 `signInWithPassword`로 재확인한 뒤 새 비밀번호 일치, 8자 이상, 영문·숫자 조합, 기존 비밀번호와 다름을 검증하고 `updateUser`로 변경한다. 구글 계정은 설정 행을 숨기고 직접 경로 접근도 차단하며, 인증 호출·폼 상태·UI를 feature 훅과 컴포넌트로 분리했다.
 
 ## 2026-08-21
