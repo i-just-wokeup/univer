@@ -60,7 +60,7 @@ export function SearchScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.title}>검색</Text>
-        <Text style={styles.description}>닉네임과 해시태그를 찾아보세요</Text>
+        <Text style={styles.description}>닉네임으로 찾아보세요</Text>
       </View>
 
       <View style={styles.inputWrap}>

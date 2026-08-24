@@ -15,7 +15,7 @@ export function SearchInput({ onChange, value }: SearchInputProps) {
         autoFocus
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="닉네임, 해시태그 검색"
+        placeholder="닉네임 검색"
         className="h-14 w-full rounded-[20px] border border-white/75 bg-white/90 pl-11 pr-11 text-sm font-semibold text-foreground shadow-[0_10px_24px_rgba(66,43,102,0.08)] outline-none transition placeholder:font-medium placeholder:text-krew-faint focus:border-krew-accent-ring focus:bg-white"
       />
       {value ? (

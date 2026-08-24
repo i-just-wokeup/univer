@@ -16,7 +16,7 @@ export function SearchInput({
   autoFocus = true,
   onChange,
   outlined = true,
-  placeholder = "닉네임, 해시태그 검색",
+  placeholder = "닉네임 검색",
   value,
 }: SearchInputProps) {
   const { colors } = useTheme();

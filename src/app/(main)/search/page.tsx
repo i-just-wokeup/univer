@@ -60,7 +60,7 @@ export default function SearchPage() {
     <KrewPage>
       <KrewPageHeader
         title="검색"
-        description="닉네임과 해시태그를 찾아보세요"
+        description="닉네임으로 찾아보세요"
       />
       <SearchInput value={query} onChange={setQuery} />
       <div className="mt-5">
