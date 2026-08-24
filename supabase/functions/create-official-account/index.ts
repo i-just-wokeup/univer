@@ -163,10 +163,10 @@ Deno.serve(async (request) => {
       await cleanupAllowlist();
     };
 
-    // 6. 닉네임 지정 (trigger가 만든 기본 닉네임 대체)
+    // 6. 닉네임 지정 + 온보딩 완료 처리 (공식 계정은 admin이 정보를 다 넣으므로 온보딩 스킵)
     const { error: nicknameError } = await admin
       .from("users")
-      .update({ nickname })
+      .update({ nickname, is_onboarded: true })
       .eq("id", newUserId);
 
     if (nicknameError) {
