@@ -218,5 +218,6 @@ export function usePostDetail(postId: string) {
     post,
     reportPost,
     retry,
+    showFeedback,
   };
 }

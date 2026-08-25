@@ -7,8 +7,15 @@ import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { StateView } from "../../components/common/StateView";
 import { FeedPostCard } from "../../components/feed/FeedPostCard";
+import { PostShareSheet } from "../../components/feed/PostShareSheet";
+import {
+  usePostShare,
+  type PostShareTarget,
+} from "../../features/chat/usePostShare";
 import { usePostDetail } from "../../features/feed/usePostDetail";
+import { useStoryCreationAccess } from "../../features/stories/useStoryCreationAccess";
 import { useSession } from "../../lib/session";
+import { SITE_URL } from "../../lib/site";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -22,7 +29,9 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
   const router = useRouter();
   const { session } = useSession();
   const currentUserId = session?.user.id ?? "";
+  const { canCreateStory } = useStoryCreationAccess();
   const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const {
     blockPostUser,
     deletePostById,
@@ -37,7 +46,19 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
     post,
     reportPost,
     retry,
+    showFeedback,
   } = usePostDetail(postId);
+  const {
+    canAddPostToStory,
+    errorMessage: shareErrorMessage,
+    isLoading: isShareLoading,
+    isSearching: isShareSearching,
+    query: shareQuery,
+    sendingTargetId,
+    setQuery: setShareQuery,
+    sharePostToTarget,
+    visibleTargets: shareTargets,
+  } = usePostShare(isShareOpen, canCreateStory);
 
   const handleBlockUser = useCallback(
     async (userId: string) => {
@@ -75,6 +96,37 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
     },
     [handleUserPress],
   );
+
+  const handleSelectShareTarget = useCallback(
+    async (target: PostShareTarget) => {
+      if (!post) {
+        return;
+      }
+
+      const conversationId = await sharePostToTarget(post.id, target.id);
+
+      if (!conversationId) {
+        return;
+      }
+
+      setIsShareOpen(false);
+      showFeedback("게시물을 보냈어요");
+    },
+    [post, sharePostToTarget, showFeedback],
+  );
+
+  const handleAddSharePostToStory = useCallback(() => {
+    if (!post || !canAddPostToStory(post.user.id)) {
+      return;
+    }
+
+    const sharedPostId = post.id;
+    setIsShareOpen(false);
+    router.push({
+      pathname: "/story/create",
+      params: { sharedPostId },
+    });
+  }, [canAddPostToStory, post, router]);
 
   return (
     <ScreenContainer
@@ -120,6 +172,7 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
             onReport={(reportedPostId) => {
               void reportPost(reportedPostId);
             }}
+            onShare={() => setIsShareOpen(true)}
             onUserPress={handleUserPress}
             post={post}
           />
@@ -138,6 +191,28 @@ export function PostDetailScreen({ postId }: PostDetailScreenProps) {
         onCommentCountChange={handleCommentCountChange}
         onUserPress={handleCommentUserPress}
         postId={post ? post.id : null}
+      />
+      <PostShareSheet
+        errorMessage={shareErrorMessage}
+        externalShareUrl={
+          post?.visibility === "public" ? `${SITE_URL}/p/${post.id}` : null
+        }
+        isLoading={isShareLoading}
+        isOpen={isShareOpen}
+        isSearching={isShareSearching}
+        onAddToStory={
+          post && canAddPostToStory(post.user.id)
+            ? handleAddSharePostToStory
+            : undefined
+        }
+        onClose={() => setIsShareOpen(false)}
+        onQueryChange={setShareQuery}
+        onSelectTarget={(target) => {
+          void handleSelectShareTarget(target);
+        }}
+        query={shareQuery}
+        sendingTargetId={sendingTargetId}
+        targets={shareTargets}
       />
     </ScreenContainer>
   );
