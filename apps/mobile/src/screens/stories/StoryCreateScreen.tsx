@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { ArrowRight, ChevronLeft, Palette } from "lucide-react-native";
+import { ChevronLeft, Palette } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { VisibilityPicker } from "../../components/common/VisibilityPicker";
 import { StoryCamera } from "../../components/stories/StoryCamera";
 import { StoryMediaFrame } from "../../components/stories/StoryMediaFrame";
 import { StorySharedPostCard } from "../../components/stories/StorySharedPostCard";
@@ -40,10 +39,8 @@ export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
     retake,
     setBackgroundColor,
     setCaptured,
-    setVisibility,
     sharedPost,
     submit,
-    visibility,
   } = useStoryCreate(sharedPostId);
   const isSharedPostMode = Boolean(sharedPostId);
 
@@ -157,11 +154,8 @@ export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
       <SafeAreaView edges={["bottom"]} style={styles.bottomOverlay}>
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
         <View style={styles.bottomControls}>
-          <View style={styles.visibilityWrap}>
-            <VisibilityPicker onChange={setVisibility} value={visibility} />
-          </View>
           <Pressable
-            accessibilityLabel="스토리 공유"
+            accessibilityLabel="스토리 게시"
             accessibilityRole="button"
             disabled={isSubmitting || (isSharedPostMode && !sharedPost)}
             onPress={() => {
@@ -178,9 +172,9 @@ export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
             ]}
           >
             {isSubmitting ? (
-              <Text style={styles.shareText}>공유 중</Text>
+              <Text style={styles.shareText}>게시 중</Text>
             ) : (
-              <ArrowRight color={colors.white} size={26} strokeWidth={2.8} />
+              <Text style={styles.shareText}>게시하기</Text>
             )}
           </Pressable>
         </View>
@@ -296,10 +290,8 @@ const styles = StyleSheet.create({
   bottomControls: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-end",
     gap: 12,
-  },
-  visibilityWrap: {
-    flex: 1,
   },
   shareButton: {
     minWidth: 54,
