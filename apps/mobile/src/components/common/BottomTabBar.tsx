@@ -4,6 +4,7 @@ import type { LucideProps } from "lucide-react-native";
 import type { ComponentType } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Circle } from "react-native-svg";
 
 import { HOME_COACH_MARK_TARGETS } from "../../lib/coachMarkTargets";
 import { useCoachMarkTarget } from "../../lib/coachMarks";
@@ -107,12 +108,24 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
             style={meta.primary ? styles.primaryTab : styles.navTab}
           >
             {route.name === "profile" ? (
-              <View
-                style={[
-                  styles.profileAvatarRing,
-                  isActive ? styles.profileAvatarRingActive : null,
-                ]}
-              >
+              <View style={styles.profileAvatarRing}>
+                {isActive ? (
+                  <Svg
+                    height={30}
+                    pointerEvents="none"
+                    style={StyleSheet.absoluteFill}
+                    width={30}
+                  >
+                    <Circle
+                      cx={15}
+                      cy={15}
+                      fill="none"
+                      r={14}
+                      stroke={colors.accent}
+                      strokeWidth={2}
+                    />
+                  </Svg>
+                ) : null}
                 <Avatar
                   imageUrl={currentAvatarUrl}
                   label={currentNickname ?? "프로필"}
@@ -165,8 +178,5 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 15,
-  },
-  profileAvatarRingActive: {
-    backgroundColor: c.accent,
   },
 });
