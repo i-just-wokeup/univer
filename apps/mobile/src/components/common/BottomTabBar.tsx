@@ -167,7 +167,6 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     borderRadius: 15,
   },
   profileAvatarRingActive: {
-    borderWidth: 2,
-    borderColor: c.accent,
+    backgroundColor: c.accent,
   },
 });
