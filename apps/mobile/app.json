@@ -74,7 +74,13 @@
         }
       ],
       "expo-video",
-      "@sentry/react-native",
+      [
+        "@sentry/react-native",
+        {
+          "organization": "krew-7d",
+          "project": "react-native"
+        }
+      ],
       [
         "expo-font",
         {
