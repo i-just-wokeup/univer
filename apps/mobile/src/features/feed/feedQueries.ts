@@ -33,6 +33,14 @@ function toEmbeddedFeedPostRow(row: unknown): FeedPostRow {
   return row as FeedPostRow;
 }
 
+function filterReadyVideoPosts(posts: FeedPost[]): FeedPost[] {
+  return posts.filter(
+    (post) =>
+      post.media.length > 0 &&
+      post.media.every((media) => media.processing_status === "ready"),
+  );
+}
+
 type RankedFeedPostIdRow = {
   band: number;
   post_id: string;
@@ -236,7 +244,9 @@ export async function getReelsRanked({
   const orderedRows = pageRankedRows
     .map((rankedRow) => rowsById.get(rankedRow.post_id) ?? null)
     .filter((postRow): postRow is FeedPostRow => postRow !== null);
-  const posts = await hydrateFeedPosts(orderedRows, userId);
+  const posts = filterReadyVideoPosts(
+    await hydrateFeedPosts(orderedRows, userId),
+  );
   const lastRankedRow = pageRankedRows[pageRankedRows.length - 1];
   const nextCursor: FeedRankCursor | null =
     hasMore && lastRankedRow
@@ -297,10 +307,13 @@ export async function getVideoFeed({
   const normalizedPosts = toEmbeddedFeedPostRows(postsData);
   const hasMore = normalizedPosts.length > limit;
   const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
-  const posts = await hydrateFeedPosts(slicedPosts, userId);
+  const posts = filterReadyVideoPosts(
+    await hydrateFeedPosts(slicedPosts, userId),
+  );
+  const lastPostRow = slicedPosts[slicedPosts.length - 1];
 
   return {
-    nextCursor: hasMore ? posts[posts.length - 1]?.created_at ?? null : null,
+    nextCursor: hasMore ? lastPostRow?.created_at ?? null : null,
     posts,
   };
 }
