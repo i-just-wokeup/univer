@@ -11,6 +11,7 @@
 ---
 
 ## 완료된 작업
+- [x] 웹 가이드라인에 아동 안전 표준(CSAE) 섹션 추가 + 초안 배너 제거·문의 연락처 확정 — Google Play 소셜 카테고리 필수 공개 문서
 - [x] 앱 하단 프로필 탭 Android 활성 링 SVG 교체 — border·배경 채움 방식의 사각형 렌더링 실패를 정정하고 SVG 원으로 플랫폼 차이 회피
 - [x] 앱 Sentry 소스맵 업로드 설정 연결 — `app.json` 플러그인에 org/project 지정, `eas.json` production에 `environment` 추가, 토큰은 EAS Secret(production)으로만 등록
 - [x] 앱 스토리 카메라 촬영 결과 9:16 정규화 — 촬영 이미지를 세로 방향으로 보정한 뒤 중앙 9:16으로 크롭해 스토리 캔버스 레터박스 방지

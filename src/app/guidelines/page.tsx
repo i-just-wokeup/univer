@@ -6,18 +6,20 @@ export const metadata: Metadata = {
   description: "unip 커뮤니티 가이드라인",
 };
 
-// ⚠️ 초안: 신고·제재 운영의 기준 문서. 출시 전 검토 및 문의 연락처 확정 필요.
-const CONTACT_EMAIL = "[문의 이메일]";
+// 신고·제재 운영의 기준 문서. Google Play 아동 안전 표준(CSAE) 공개 문서를 겸한다.
+const CONTACT_EMAIL = "unip.support@gmail.com";
 
 function Section({
+  id,
   title,
   children,
 }: {
+  id?: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-8">
+    <section className="mt-8" id={id}>
       <h2 className="text-lg font-bold text-zinc-900">{title}</h2>
       <div className="mt-3 space-y-2 text-sm leading-7 text-zinc-700">
         {children}
@@ -29,10 +31,6 @@ function Section({
 export default function GuidelinesPage() {
   return (
     <main className="mx-auto max-w-2xl px-5 py-12">
-      <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
-        ⚠️ 본 문서는 초안입니다. [ ] 항목 확정이 필요합니다.
-      </div>
-
       <h1 className="text-2xl font-black text-zinc-950">커뮤니티 가이드라인</h1>
       <p className="mt-6 text-sm leading-7 text-zinc-700">
         unip는 대학생이 실명으로 안전하게 소통하는 커뮤니티입니다. 모두가
@@ -104,7 +102,42 @@ export default function GuidelinesPage() {
         </p>
       </Section>
 
-      <Section title="4. 문의">
+      <Section id="child-safety" title="4. 아동 안전 표준 (Child Safety Standards)">
+        <p>
+          unip는 아동 성적 학대 및 착취(CSAE)에 무관용 원칙을 적용하며, 관련
+          콘텐츠와 행위를 전면 금지합니다.
+        </p>
+        <ul className="ml-4 list-disc space-y-1">
+          <li>
+            <b>이용 대상</b>: unip는 대학교에서 발급한 학교 계정(@kookmin.ac.kr)으로만
+            가입할 수 있는 대학생 전용 서비스이며, 이용 대상 연령은 만 18세
+            이상입니다. 익명 채팅이나 무작위 상대 매칭은 제공하지 않습니다.
+          </li>
+          <li>
+            <b>전면 금지</b>: 아동·청소년 성착취물(CSAM), 아동을 성적으로 묘사하거나
+            대상화하는 콘텐츠, 아동에 대한 그루밍·유인 행위를 금지합니다.
+          </li>
+          <li>
+            <b>신고 방법</b>: 게시물·댓글·스토리·프로필의 <b>⋯ 메뉴 &gt; 신고</b>를 통해
+            앱 안에서 누구나 즉시 신고할 수 있습니다.
+          </li>
+          <li>
+            <b>조치</b>: 위반을 인지한 즉시 해당 콘텐츠를 삭제하고 계정을 영구
+            정지하며, 접수된 신고는 24시간 이내에 검토합니다.
+          </li>
+          <li>
+            <b>기관 신고</b>: 확인된 아동 성착취물은 관련 법령에 따라 대한민국
+            수사기관(경찰청) 등 관할 기관에 신고하며, 필요한 경우 국제
+            실종학대아동방지센터(NCMEC)를 포함한 기관에 신고하고 조사에 협조합니다.
+          </li>
+          <li>
+            <b>담당 연락처</b>: 아동 안전 관련 문의와 통지는 {CONTACT_EMAIL}로
+            접수하며, 담당자가 신고 처리 및 검토 절차에 대해 응답합니다.
+          </li>
+        </ul>
+      </Section>
+
+      <Section title="5. 문의">
         <p>
           가이드라인·신고 처리에 대한 문의는 {CONTACT_EMAIL}로 연락해 주세요.
         </p>
