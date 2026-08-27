@@ -1,5 +1,9 @@
 import { Pressable, StyleSheet, Text, View, type TextStyle } from "react-native";
 
+import {
+  FOLLOWING_LABEL,
+  FOLLOW_LABEL,
+} from "../../features/follows/constants";
 import type { ConnectionStatus } from "../../features/profile/types";
 import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
@@ -8,36 +12,52 @@ type ProfileConnectionActionsProps = {
   connectionStatus: ConnectionStatus;
   disabled?: boolean;
   isCrewEligible: boolean;
+  isFollowEligible: boolean;
+  isFollowing: boolean;
   onAccept: () => void;
   onMessage?: () => void;
   onReject: () => void;
   onRemove: () => void;
   onSend: () => void;
+  onToggleFollow: () => void;
 };
 
 export function ProfileConnectionActions({
   connectionStatus,
   disabled = false,
   isCrewEligible,
+  isFollowEligible,
+  isFollowing,
   onAccept,
   onMessage,
   onReject,
   onRemove,
   onSend,
+  onToggleFollow,
 }: ProfileConnectionActionsProps) {
   const styles = useThemedStyles(makeStyles);
 
-  if (!isCrewEligible) {
-    return onMessage ? (
+  if (isFollowEligible) {
+    return (
       <View style={styles.container}>
+        <ActionButton
+          disabled={disabled}
+          label={isFollowing ? FOLLOWING_LABEL : FOLLOW_LABEL}
+          onPress={onToggleFollow}
+          variant={isFollowing ? "secondary" : "primary"}
+        />
         <ActionButton
           disabled={disabled}
           label="메시지"
           onPress={onMessage}
-          variant="primary"
+          variant="secondary"
         />
       </View>
-    ) : null;
+    );
+  }
+
+  if (!isCrewEligible) {
+    return null;
   }
 
   if (

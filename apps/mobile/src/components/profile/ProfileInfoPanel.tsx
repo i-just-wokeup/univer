@@ -1,5 +1,6 @@
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { FOLLOWER_COUNT_LABEL } from "../../features/follows/constants";
 import type {
   ProfileCounts,
   ProfileDetail,
@@ -23,17 +24,21 @@ import { SocialIcon } from "../common/SocialIcon";
 
 type ProfileInfoPanelProps = {
   counts: ProfileCounts;
+  followerCount: number;
   onLinkPress?: (link: ProfileLink) => void;
   onPressCrew?: () => void;
   profile: ProfileDetail;
+  showFollowerCount: boolean;
 };
 
 // 프로필 상단 정보 영역(아바타+통계+이름/실명/학과+소개+링크). 순수 UI.
 export function ProfileInfoPanel({
   counts,
+  followerCount,
   onLinkPress,
   onPressCrew,
   profile,
+  showFollowerCount,
 }: ProfileInfoPanelProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -47,7 +52,12 @@ export function ProfileInfoPanel({
             <Text style={styles.statNumber}>{counts.posts}</Text>
             <Text style={styles.statLabel}>게시물</Text>
           </View>
-          {onPressCrew ? (
+          {showFollowerCount ? (
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{followerCount}</Text>
+              <Text style={styles.statLabel}>{FOLLOWER_COUNT_LABEL}</Text>
+            </View>
+          ) : onPressCrew ? (
             <Pressable
               accessibilityLabel="크루 관리 열기"
               accessibilityRole="button"

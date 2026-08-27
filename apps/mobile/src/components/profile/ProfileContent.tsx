@@ -19,9 +19,13 @@ type ProfileContentProps = {
   connectionStatus: ConnectionStatus | null;
   counts: ProfileCounts;
   errorMessage: string;
+  followerCount: number;
   isActionPending: boolean;
   isCrewEligible: boolean;
+  isFollowEligible: boolean;
+  isFollowing: boolean;
   isMine: boolean;
+  isProfileActionsReady: boolean;
   onAcceptFriendRequest: () => void;
   onEditProfile: () => void;
   onPressInsights: () => void;
@@ -32,6 +36,7 @@ type ProfileContentProps = {
   onRejectFriendRequest: () => void;
   onRemoveFriend: () => void;
   onSendFriendRequest: () => void;
+  onToggleFollow: () => void;
   posts: ProfileGridPost[];
   profile: ProfileDetail;
 };
@@ -41,9 +46,13 @@ export function ProfileContent({
   connectionStatus,
   counts,
   errorMessage,
+  followerCount,
   isActionPending,
   isCrewEligible,
+  isFollowEligible,
+  isFollowing,
   isMine,
+  isProfileActionsReady,
   onAcceptFriendRequest,
   onEditProfile,
   onPressInsights,
@@ -54,6 +63,7 @@ export function ProfileContent({
   onRejectFriendRequest,
   onRemoveFriend,
   onSendFriendRequest,
+  onToggleFollow,
   posts,
   profile,
 }: ProfileContentProps) {
@@ -63,9 +73,11 @@ export function ProfileContent({
     <KrewSurface style={styles.panel}>
       <ProfileInfoPanel
         counts={counts}
+        followerCount={followerCount}
         onLinkPress={onLinkPress}
         onPressCrew={isMine ? onPressCrew : undefined}
         profile={profile}
+        showFollowerCount={isFollowEligible}
       />
       {isMine ? (
         <View style={styles.profileActions}>
@@ -93,16 +105,19 @@ export function ProfileContent({
           ) : null}
         </View>
       ) : null}
-      {!isMine && connectionStatus ? (
+      {!isMine && connectionStatus && isProfileActionsReady ? (
         <ProfileConnectionActions
           connectionStatus={connectionStatus}
           disabled={isActionPending}
           isCrewEligible={isCrewEligible}
+          isFollowEligible={isFollowEligible}
+          isFollowing={isFollowing}
           onAccept={onAcceptFriendRequest}
           onMessage={onMessage}
           onReject={onRejectFriendRequest}
           onRemove={onRemoveFriend}
           onSend={onSendFriendRequest}
+          onToggleFollow={onToggleFollow}
         />
       ) : null}
       {errorMessage ? (

@@ -12,6 +12,7 @@ import { ProfileContent } from "../../components/profile/ProfileContent";
 import { ProfileHeaderBar } from "../../components/profile/ProfileHeaderBar";
 import { ProfileMoreMenu } from "../../components/profile/ProfileMoreMenu";
 import { ProfileSkeleton } from "../../components/profile/ProfileSkeleton";
+import { useProfileFollow } from "../../features/follows/useProfileFollow";
 import { useProfile } from "../../features/profile/useProfile";
 import { triggerLightHaptic } from "../../lib/haptics";
 import { useTheme, useThemedStyles } from "../../lib/theme";
@@ -51,6 +52,22 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const profileBadge = profile ? getBadge(profile.id) : null;
   const isCrewEligible = isBadgeDataReady && profileBadge === null;
+  const isFollowEligible = isBadgeDataReady && profileBadge !== null;
+  const {
+    errorMessage: followErrorMessage,
+    followerCount,
+    handleToggleFollow,
+    isActionPending: isFollowActionPending,
+    isFollowing,
+    isReady: isFollowStateReady,
+    refresh: refreshFollow,
+  } = useProfileFollow({
+    canToggle: isFollowEligible && !isMine,
+    enabled: isFollowEligible,
+    targetUserId: profile?.id ?? null,
+  });
+  const isProfileActionsReady =
+    isBadgeDataReady && (!isFollowEligible || isFollowStateReady);
   const showInsightsButton = Boolean(
     isMine &&
       isBadgeDataReady &&
@@ -90,7 +107,8 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
   const handlePullRefresh = useCallback(() => {
     triggerLightHaptic();
     refresh();
-  }, [refresh]);
+    void refreshFollow();
+  }, [refresh, refreshFollow]);
 
   if (isLoading) {
     return (
@@ -153,9 +171,13 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
             connectionStatus={connectionStatus}
             counts={counts}
             isCrewEligible={isCrewEligible}
-            errorMessage={errorMessage}
-            isActionPending={isActionPending}
+            errorMessage={followErrorMessage || errorMessage}
+            followerCount={followerCount}
+            isActionPending={isActionPending || isFollowActionPending}
+            isFollowEligible={isFollowEligible}
+            isFollowing={isFollowing}
             isMine={isMine}
+            isProfileActionsReady={isProfileActionsReady}
             onAcceptFriendRequest={handleAcceptFriendRequest}
             onEditProfile={handlePressEdit}
             onPressInsights={handlePressInsights}
@@ -170,6 +192,7 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
             onRejectFriendRequest={handleRejectFriendRequest}
             onRemoveFriend={handleRemoveFriend}
             onSendFriendRequest={handleSendFriendRequest}
+            onToggleFollow={handleToggleFollow}
             posts={posts}
             profile={profile}
           />
