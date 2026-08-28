@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-08-28
+
+### 완료
+- **프로덕션 빌드 환경변수 누락 사고 수습** — 테스터가 앱 실행 시 "앱 환경변수가 필요합니다" 화면만 보이던 문제. `apps/mobile/.env.local`이 `.gitignore`에 걸려 EAS 빌드 서버로 업로드되지 않아 프로덕션 빌드에 키가 비어 있었다. 개발 빌드는 로컬 Metro에서 값을 읽어 정상 동작했기 때문에 EAS에서 처음 빌드한 이번에야 드러났다. `EXPO_PUBLIC_SUPABASE_URL`/`ANON_KEY`/`GOOGLE_WEB_CLIENT_ID`/`GOOGLE_IOS_CLIENT_ID`/`SITE_URL` 5개를 EAS 환경변수(production, Plain text)로 등록하고 재빌드했다. `EXPO_PUBLIC_*`은 앱 번들에 포함되어 배포되는 값이라 Secret이 아닌 Plain text로 등록했다.
+- **preview 빌드 프로필 재발 방지** — `eas.json`의 preview 프로필에 `environment: "preview"`를 추가했다. 이 필드가 없으면 EAS 환경변수가 빌드에 주입되지 않아 같은 사고가 반복된다. 다만 preview 환경에는 아직 변수가 등록되어 있지 않으므로, preview 빌드를 실제로 사용하기 전에 동일한 5개를 preview 환경에도 등록해야 한다.
+- **전체 설정 점검** — 누락이 환경변수 5개뿐임을 확인했다. `google-services.json`은 git 추적되어 EAS에 업로드되고, iOS는 `GoogleService-Info.plist` 없이 `iosUrlScheme` 방식이라 불필요하며, Sentry DSN은 코드에 하드코딩되어 있다. Supabase는 ACTIVE_HEALTHY이고 Edge Function 5종(stream-upload-url/webhook/status, purge-deleted-accounts, create-official-account) 모두 ACTIVE다. 보안 어드바이저 경고 54건은 설계상 정상으로 확인했다(SECURITY DEFINER 50건은 로그인 사용자용이며 관리자 함수 9종은 모두 내부 admin 검증 보유, RLS 정책 없는 3개 테이블은 RPC 전용 의도된 차단).
+
 ## 2026-08-27
 
 ### 완료

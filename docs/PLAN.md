@@ -11,6 +11,7 @@
 ---
 
 ## 완료된 작업
+- [x] 프로덕션 빌드 환경변수 누락 수습 — `.env.local`이 gitignore되어 EAS에 업로드되지 않던 문제. EXPO_PUBLIC 5개를 EAS 환경변수(production)로 등록, preview 프로필에도 `environment` 추가
 - [x] 앱 릴스 processing·failed 영상 제외 — 홈의 본인 업로드 폴링은 유지하고 릴스는 본인 포함 ready 영상만 노출; 스토리는 기존 작성자 처리 상태/타인 ready 노출 정책 유지
 - [x] 웹 가이드라인에 아동 안전 표준(CSAE) 섹션 추가 + 초안 배너 제거·문의 연락처 확정 — Google Play 소셜 카테고리 필수 공개 문서
 - [x] 앱 하단 프로필 탭 Android 활성 링 SVG 교체 — border·배경 채움 방식의 사각형 렌더링 실패를 정정하고 SVG 원으로 플랫폼 차이 회피
