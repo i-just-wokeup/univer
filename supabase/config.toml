@@ -1,0 +1,11 @@
+project_id = "univer"
+
+# These endpoints authenticate webhook or cron requests inside the function.
+[functions.stream-webhook]
+verify_jwt = false
+
+[functions.purge-deleted-accounts]
+verify_jwt = false
+
+[functions.telegram-ops]
+verify_jwt = false

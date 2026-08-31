@@ -13,6 +13,7 @@
 ## 완료된 작업
 - [x] 앱 게시물 미디어 선택 목록 저장 최신순 정렬 — 사진·영상 및 앨범별 그리드를 촬영 시각 대신 기기 저장·수정 시각 기준으로 정렬해 외부에서 받아 저장한 미디어를 상단에 노출
 - [x] 앱 홈피드 최신 게시물 백그라운드 갱신 — 캐시 생성 시각의 상호작용 변경 연장을 차단하고 캐시 즉시 표시 후 재검증, 홈 재진입·탭 재선택 시 무스피너 첫 페이지 갱신 적용
+- [x] Telegram 운영봇 1차·구조 리팩토링 — 관리자 user/chat allowlist와 webhook secret 검증을 적용한 `telegram-ops` Edge Function을 명령별 모듈로 분리하고 `/status`·`/users`·`/today`·`/reports`·`/uploads` 읽기 전용 명령 배포, 전송 오류 로그의 봇 토큰 노출 방지와 `verify_jwt=false` 배포 설정 고정
 - [x] 프로덕션 빌드 환경변수 누락 수습 — `.env.local`이 gitignore되어 EAS에 업로드되지 않던 문제. EXPO_PUBLIC 5개를 EAS 환경변수(production)로 등록, preview 프로필에도 `environment` 추가
 - [x] 앱 릴스 processing·failed 영상 제외 — 홈의 본인 업로드 폴링은 유지하고 릴스는 본인 포함 ready 영상만 노출; 스토리는 기존 작성자 처리 상태/타인 ready 노출 정책 유지
 - [x] 웹 가이드라인에 아동 안전 표준(CSAE) 섹션 추가 + 초안 배너 제거·문의 연락처 확정 — Google Play 소셜 카테고리 필수 공개 문서

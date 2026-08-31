@@ -14,9 +14,15 @@
 ### 완료
 - **앱 홈피드 최신 게시물 백그라운드 갱신** — 5분 메모리 캐시가 좋아요·카운트 등 로컬 상태 저장 때마다 생성 시각을 갱신해 다른 사용자의 새 게시물이 장시간 반영되지 않을 수 있던 문제를 수정했다. 캐시 시각은 마지막 랭크 피드 네트워크 조회 시각으로만 유지하고, 캐시 화면을 즉시 표시한 뒤 재검증하며 홈 재진입·홈 탭 재선택 때 스피너 없이 첫 페이지를 갱신한다. 동시에 들어온 첫 페이지 응답은 요청 세대로 방어하고 수동 당겨서 새로고침·본인 최근 업로드 표시 정책은 유지했다.
 
+## 2026-08-29
+
+### 완료
+- **Telegram 운영봇 명령 구조 리팩토링·이용자 현황 추가** — 299줄 단일 Edge Function을 요청 검증·환경설정·Telegram 전송·KST 시간·명령 라우터와 명령별 핸들러로 분리해 신규 운영 명령을 독립적으로 확장할 수 있게 했다. `/users`에서 탈퇴 처리되지 않은 전체 이용자, 활성 이용자, 이용 제한 계정, KST 오늘 신규 가입자를 확인하도록 추가하고 `/status`의 계정 수 라벨도 실제 집계 의미인 `활성 이용자`로 정정했다. 관리자 Telegram user/chat allowlist와 webhook secret 검증 순서는 유지하고, 네트워크 오류 로그에 요청 URL의 봇 토큰이 포함되지 않도록 오류를 정제했다. 웹훅 재배포 시 Supabase JWT 검증이 다시 켜지지 않도록 `supabase/config.toml`에 `verify_jwt=false` 계약도 기록했다.
+
 ## 2026-08-28
 
 ### 완료
+- **Telegram 운영봇 1차 배포** — Supabase `telegram-ops` Edge Function에 Telegram webhook을 연결하고 관리자 Telegram user/chat ID와 webhook secret을 모두 검증하도록 했다. `/status`(Edge Function·DB 상태), `/today`(KST 신규 가입·게시물·스토리), `/reports`(미처리 신고), `/uploads`(처리 중·실패 영상) 읽기 전용 명령을 제공하며 실제 Telegram에서 `/status`와 `/today` 응답을 확인했다. 배포 설정에만 사용한 임시 setup secret은 제거했으며, 장애·신고·업로드 실패를 먼저 보내는 자동 알림은 후속 범위다.
 - **프로덕션 빌드 환경변수 누락 사고 수습** — 테스터가 앱 실행 시 "앱 환경변수가 필요합니다" 화면만 보이던 문제. `apps/mobile/.env.local`이 `.gitignore`에 걸려 EAS 빌드 서버로 업로드되지 않아 프로덕션 빌드에 키가 비어 있었다. 개발 빌드는 로컬 Metro에서 값을 읽어 정상 동작했기 때문에 EAS에서 처음 빌드한 이번에야 드러났다. `EXPO_PUBLIC_SUPABASE_URL`/`ANON_KEY`/`GOOGLE_WEB_CLIENT_ID`/`GOOGLE_IOS_CLIENT_ID`/`SITE_URL` 5개를 EAS 환경변수(production, Plain text)로 등록하고 재빌드했다. `EXPO_PUBLIC_*`은 앱 번들에 포함되어 배포되는 값이라 Secret이 아닌 Plain text로 등록했다.
 - **preview 빌드 프로필 재발 방지** — `eas.json`의 preview 프로필에 `environment: "preview"`를 추가했다. 이 필드가 없으면 EAS 환경변수가 빌드에 주입되지 않아 같은 사고가 반복된다. 다만 preview 환경에는 아직 변수가 등록되어 있지 않으므로, preview 빌드를 실제로 사용하기 전에 동일한 5개를 preview 환경에도 등록해야 한다.
 - **전체 설정 점검** — 누락이 환경변수 5개뿐임을 확인했다. `google-services.json`은 git 추적되어 EAS에 업로드되고, iOS는 `GoogleService-Info.plist` 없이 `iosUrlScheme` 방식이라 불필요하며, Sentry DSN은 코드에 하드코딩되어 있다. Supabase는 ACTIVE_HEALTHY이고 Edge Function 5종(stream-upload-url/webhook/status, purge-deleted-accounts, create-official-account) 모두 ACTIVE다. 보안 어드바이저 경고 54건은 설계상 정상으로 확인했다(SECURITY DEFINER 50건은 로그인 사용자용이며 관리자 함수 9종은 모두 내부 admin 검증 보유, RLS 정책 없는 3개 테이블은 RPC 전용 의도된 차단).
