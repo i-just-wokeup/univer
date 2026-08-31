@@ -171,7 +171,7 @@ export async function getPostLibraryAssetPage({
     first,
     mediaType: MediaLibrary.MediaType[mediaType],
     resolveWithFullInfo: false,
-    sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+    sortBy: [[MediaLibrary.SortBy.modificationTime, false]],
   });
 
   return {
