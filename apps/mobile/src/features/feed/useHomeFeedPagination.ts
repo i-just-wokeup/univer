@@ -23,6 +23,7 @@ import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 type LoadFirstPageOptions = {
   ignoreCache?: boolean;
   seed?: number;
+  suppressError?: boolean;
 };
 
 function getFeedPrefetchUrls(posts: FeedPost[]) {
@@ -71,6 +72,7 @@ export function useHomeFeedPagination() {
     () => initialCache?.posts ?? [],
   );
   const firstPageGenerationRef = useRef(0);
+  const lastRankedFetchAtRef = useRef(initialCache?.cachedAt ?? 0);
   const postsRef = useRef<FeedPost[]>(initialCache?.posts ?? []);
   const seedRef = useRef(initialCache?.seed ?? Math.random());
 
@@ -83,7 +85,9 @@ export function useHomeFeedPagination() {
 
     const nextCache = currentUserId ? getFeedPageCache(currentUserId) : null;
 
+    firstPageGenerationRef.current += 1;
     hasLoadedFeedRef.current = Boolean(nextCache);
+    lastRankedFetchAtRef.current = nextCache?.cachedAt ?? 0;
     setBookmarkedPostIds(new Set(nextCache?.bookmarkedPostIds ?? []));
     setErrorMessage("");
     setFeedOwnerUserId(currentUserId);
@@ -187,6 +191,7 @@ export function useHomeFeedPagination() {
 
       if (cachedPage) {
         hasLoadedFeedRef.current = true;
+        lastRankedFetchAtRef.current = cachedPage.cachedAt;
         setBookmarkedPostIds(new Set(cachedPage.bookmarkedPostIds));
         setErrorMessage("");
         setFeedOwnerUserId(currentUserId);
@@ -202,7 +207,8 @@ export function useHomeFeedPagination() {
       }
     }
 
-    firstPageGenerationRef.current += 1;
+    const requestGeneration = firstPageGenerationRef.current + 1;
+    firstPageGenerationRef.current = requestGeneration;
 
     try {
       setErrorMessage("");
@@ -213,8 +219,13 @@ export function useHomeFeedPagination() {
         getBookmarkedPostIds(postIds),
       ]);
 
+      if (firstPageGenerationRef.current !== requestGeneration) {
+        return;
+      }
+
       prefetchImageUrls(getFeedPrefetchUrls(result.posts), 10);
       hasLoadedFeedRef.current = true;
+      lastRankedFetchAtRef.current = Date.now();
       setFeedOwnerUserId(currentUserId);
       setPosts(result.posts);
       setNextCursor(result.nextCursor);
@@ -224,18 +235,35 @@ export function useHomeFeedPagination() {
       setBookmarkedPostIds(new Set(bookmarkedIds));
       void prependRecentUploads(result.posts);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "피드를 불러오지 못했습니다.",
-      );
+      if (
+        firstPageGenerationRef.current === requestGeneration &&
+        !options?.suppressError
+      ) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "피드를 불러오지 못했습니다.",
+        );
+      }
     } finally {
-      setIsInitialLoading(false);
-      setIsRefreshing(false);
+      if (firstPageGenerationRef.current === requestGeneration) {
+        setIsInitialLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [currentUserId, prependRecentUploads]);
 
   useEffect(() => {
-    void loadFirstPage();
-  }, [loadFirstPage]);
+    const shouldRevalidateCache = Boolean(
+      currentUserId && getFeedPageCache(currentUserId),
+    );
+
+    void loadFirstPage().then(() => {
+      if (shouldRevalidateCache) {
+        void loadFirstPage({ ignoreCache: true, suppressError: true });
+      }
+    });
+  }, [currentUserId, loadFirstPage]);
 
   useEffect(() => {
     if (
@@ -249,6 +277,7 @@ export function useHomeFeedPagination() {
 
     setFeedPageCache({
       bookmarkedPostIds,
+      cachedAt: lastRankedFetchAtRef.current,
       likedPostIds,
       nextCursor,
       postRanks,
@@ -278,6 +307,10 @@ export function useHomeFeedPagination() {
   const handleRetryFirstPage = useCallback(() => {
     setIsInitialLoading(true);
     void loadFirstPage({ ignoreCache: true });
+  }, [loadFirstPage]);
+
+  const refreshFeedSilently = useCallback(async () => {
+    await loadFirstPage({ ignoreCache: true, suppressError: true });
   }, [loadFirstPage]);
 
   const handleLoadMore = useCallback(async () => {
@@ -356,6 +389,7 @@ export function useHomeFeedPagination() {
     loadFirstPage,
     postRanks,
     posts,
+    refreshFeedSilently,
     setBookmarkedPostIds,
     setErrorMessage,
     setLikedPostIds,

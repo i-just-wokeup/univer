@@ -1,7 +1,6 @@
 import type { FeedPost, FeedPostRank, FeedRankCursor } from "./types";
 
-// 재진입 즉시표시 유지 시간. 잠깐 다른 앱 보고 와도 즉시 뜨도록 5분.
-// (더 길면 새 글이 늦게 보이고, 짧으면 재진입마다 로딩. 당겨서 새로고침으로 언제든 갱신 가능)
+// 재진입 즉시표시 유지 시간. 캐시는 먼저 보여주고 네트워크에서 최신 피드를 다시 확인한다.
 const FEED_PAGE_CACHE_TTL_MS = 300_000;
 
 export type FeedPageCacheSnapshot = {
@@ -20,6 +19,7 @@ type FeedPageCacheEntry = FeedPageCacheSnapshot & {
 
 type SetFeedPageCacheParams = {
   bookmarkedPostIds: Iterable<string>;
+  cachedAt: number;
   likedPostIds: Iterable<string>;
   nextCursor: FeedRankCursor | null;
   postRanks: Map<string, FeedPostRank>;
@@ -65,14 +65,11 @@ export function getFeedPageCache(
   return toSnapshot(feedPageCache);
 }
 
-export function hasFreshFeedPageCache(userId: string) {
-  return getFeedPageCache(userId) !== null;
-}
-
 export function setFeedPageCache(params: SetFeedPageCacheParams) {
   feedPageCache = {
     bookmarkedPostIds: [...params.bookmarkedPostIds],
-    cachedAt: Date.now(),
+    // 좋아요·카운트 같은 로컬 상태 저장으로 마지막 피드 조회 시각을 연장하지 않는다.
+    cachedAt: params.cachedAt,
     likedPostIds: [...params.likedPostIds],
     nextCursor: params.nextCursor,
     postRanks: new Map(params.postRanks),

@@ -12,7 +12,6 @@ import { HomeErrorState, HomeLoadingState } from "../../components/home/HomeScre
 import { HomeSheets } from "../../components/home/HomeSheets";
 import { signOutMobile } from "../../features/auth/api";
 import { usePostShare, type PostShareTarget } from "../../features/chat/usePostShare";
-import { hasFreshFeedPageCache } from "../../features/feed/page-cache";
 import { useHomeFeed } from "../../features/feed/useHomeFeed";
 import { useHomeMeta } from "../../features/feed/useHomeMeta";
 import type { FeedPost } from "../../features/feed/types";
@@ -64,7 +63,7 @@ export function HomeScreen() {
     likedPostIds,
     postRanks,
     posts,
-    refreshInteractions,
+    refreshFeedSilently,
     showFeedback,
   } = useHomeFeed();
   const { storyGroups, unreadChatCount, unreadCount } = useHomeMeta();
@@ -89,8 +88,8 @@ export function HomeScreen() {
     }
   }, [posted, showFeedback, router]);
 
-  // 릴스/상세/프로필에서 좋아요·저장을 바꾸고 홈으로 돌아오면 목록 상태를 다시 맞춘다.
-  // 첫 진입(마운트)은 loadFirstPage가 이미 처리하므로 건너뛴다.
+  // 첫 진입은 캐시를 즉시 표시한 뒤 백그라운드에서 재검증한다. 이후 홈으로 돌아올 때마다
+  // 스피너 없이 첫 페이지를 다시 받아 다른 사용자의 새 게시물과 상호작용 상태를 맞춘다.
   const hasFocusedRef = useRef(false);
   useFocusEffect(
     useCallback(() => {
@@ -98,22 +97,19 @@ export function HomeScreen() {
         hasFocusedRef.current = true;
         return;
       }
-      if (currentUserId && hasFreshFeedPageCache(currentUserId)) {
-        return;
-      }
-      void refreshInteractions();
-    }, [currentUserId, refreshInteractions]),
+      void refreshFeedSilently();
+    }, [refreshFeedSilently]),
   );
 
-  // 홈 탭 재탭 시 피드 맨 위로. (이미 맨 위여도 스크롤만; iOS에서 프로그램 강제
-  // RefreshControl은 헤더 위에 빈 공간이 쌓이는 글리치가 있어 재탭 자동 새로고침은 빼둠.
-  // 새로고침은 당겨서 하는 것으로 유지. "또 누르면 새로고침"은 후속에 안정적인 방식으로.)
+  // 홈 탭 재탭 시 맨 위로 이동하고 스피너 없이 최신 첫 페이지를 확인한다.
+  // RefreshControl을 직접 구동하지 않아 기존 iOS 상단 여백 글리치는 재발하지 않는다.
   useEffect(
     () =>
       subscribeHomeTabReselect(() => {
         homeFeedListRef.current?.scrollToTop();
+        void refreshFeedSilently();
       }),
-    [],
+    [refreshFeedSilently],
   );
 
   const handleSignOut = useCallback(async () => {

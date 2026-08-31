@@ -23,6 +23,7 @@ export function useHomeFeed() {
     loadFirstPage,
     postRanks,
     posts,
+    refreshFeedSilently,
     setBookmarkedPostIds,
     setErrorMessage,
     setLikedPostIds,
@@ -85,6 +86,7 @@ export function useHomeFeed() {
     loadFirstPage,
     postRanks,
     posts,
+    refreshFeedSilently,
     refreshInteractions,
     showFeedback,
   };
