@@ -32,7 +32,7 @@ export function ProfileMoreMenu({
       ? [
           {
             danger: true,
-            label: "친구 삭제",
+            label: "크루 삭제",
             onPress: onRemoveFriend,
           } satisfies ActionSheetItem,
         ]

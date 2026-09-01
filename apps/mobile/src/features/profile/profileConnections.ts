@@ -14,13 +14,13 @@ export async function getConnectionStatus(
   });
 
   if (error) {
-    throw new Error("친구 연결 상태를 불러오지 못했습니다.");
+    throw new Error("크루 연결 상태를 불러오지 못했습니다.");
   }
 
   const normalizedData = (data ?? null) as Json | null;
 
   if (!isConnectionStatus(normalizedData)) {
-    throw new Error("친구 연결 상태 응답 형식이 올바르지 않습니다.");
+    throw new Error("크루 연결 상태 응답 형식이 올바르지 않습니다.");
   }
 
   return normalizedData;
@@ -33,7 +33,7 @@ export async function sendFriendRequest(userId: string): Promise<void> {
   });
 
   if (error) {
-    throw new Error("친구 신청에 실패했습니다.");
+    throw new Error("크루 신청에 실패했습니다.");
   }
 
   clearProfilePageCache();
@@ -46,7 +46,7 @@ export async function acceptFriendRequest(userId: string): Promise<void> {
   });
 
   if (error) {
-    throw new Error("친구 요청 수락에 실패했습니다.");
+    throw new Error("크루 신청 수락에 실패했습니다.");
   }
 
   clearProfilePageCache();
@@ -59,7 +59,7 @@ export async function rejectFriendRequest(userId: string): Promise<void> {
   });
 
   if (error) {
-    throw new Error("친구 요청 거절에 실패했습니다.");
+    throw new Error("크루 신청 거절에 실패했습니다.");
   }
 
   clearProfilePageCache();
@@ -72,7 +72,7 @@ export async function removeFriend(userId: string): Promise<void> {
   });
 
   if (error) {
-    throw new Error("친구 연결 해제에 실패했습니다.");
+    throw new Error("크루 연결 해제에 실패했습니다.");
   }
 
   clearProfilePageCache();

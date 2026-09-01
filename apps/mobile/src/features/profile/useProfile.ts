@@ -242,7 +242,7 @@ export function useProfile(nickname?: string) {
       setConnectionStatus(previousConnectionStatus);
       setCounts(previousCounts);
       setErrorMessage(
-        error instanceof Error ? error.message : "친구 상태를 변경하지 못했습니다.",
+        error instanceof Error ? error.message : "크루 상태를 변경하지 못했습니다.",
       );
     } finally {
       setIsActionPending(false);

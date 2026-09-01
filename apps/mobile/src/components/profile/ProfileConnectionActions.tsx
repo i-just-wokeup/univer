@@ -74,7 +74,7 @@ export function ProfileConnectionActions({
         />
         <ActionButton
           disabled={disabled}
-          label="친구 신청"
+          label="크루 신청"
           onPress={onSend}
           variant="primary"
         />
@@ -91,7 +91,7 @@ export function ProfileConnectionActions({
           onPress={onMessage}
           variant="secondary"
         />
-        <ActionButton disabled label="요청됨" variant="muted" />
+        <ActionButton disabled label="신청됨" variant="muted" />
         <ActionButton
           disabled={disabled}
           label="취소"
@@ -135,7 +135,7 @@ export function ProfileConnectionActions({
         onPress={onMessage}
         variant="primary"
       />
-      <ActionButton disabled label="친구 ✓" variant="accentSoft" />
+      <ActionButton disabled label="크루 ✓" variant="accentSoft" />
     </View>
   );
 }

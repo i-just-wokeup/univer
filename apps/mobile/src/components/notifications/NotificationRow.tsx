@@ -56,9 +56,9 @@ function getNotificationText(notification: NotificationItem) {
     case "user_like":
       return `${nickname}님이 회원님을 좋아합니다`;
     case "friend_request":
-      return `${nickname}님이 친구 신청을 보냈습니다`;
+      return `${nickname}님이 크루 신청을 보냈습니다`;
     case "friend_accepted":
-      return `${nickname}님이 친구 신청을 수락했습니다`;
+      return `${nickname}님이 크루 신청을 수락했습니다`;
     case "report_received":
       return "새로운 신고가 접수됐습니다";
     case "promotion_approved":

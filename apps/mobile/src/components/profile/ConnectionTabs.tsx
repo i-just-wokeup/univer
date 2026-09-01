@@ -7,8 +7,8 @@ export type ConnectionTab = "friends" | "received" | "sent";
 
 export const CONNECTION_TABS: Array<{ label: string; value: ConnectionTab }> = [
   { label: "내 크루", value: "friends" },
-  { label: "받은 요청", value: "received" },
-  { label: "보낸 요청", value: "sent" },
+  { label: "받은 신청", value: "received" },
+  { label: "보낸 신청", value: "sent" },
 ];
 
 type ConnectionTabsProps = {

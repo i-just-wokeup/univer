@@ -27,8 +27,8 @@ import type { ThemeColors } from "../../lib/theme";
 
 const EMPTY_MESSAGES: Record<ConnectionTab, string> = {
   friends: "아직 연결된 크루가 없습니다.",
-  received: "받은 크루 요청이 없습니다.",
-  sent: "보낸 크루 요청이 없습니다.",
+  received: "받은 크루 신청이 없습니다.",
+  sent: "보낸 크루 신청이 없습니다.",
 };
 
 export function ConnectionsScreen() {
@@ -158,7 +158,7 @@ export function ConnectionsScreen() {
         cancelLabel="취소"
         confirmLabel="삭제"
         danger
-        description="크루에서 삭제하면 다시 추가하려면 크루 요청을 보내야 합니다."
+        description="크루에서 삭제하면 다시 추가하려면 크루 신청을 보내야 합니다."
         isOpen={removeTarget !== null}
         onCancel={() => setRemoveTarget(null)}
         onConfirm={() => {

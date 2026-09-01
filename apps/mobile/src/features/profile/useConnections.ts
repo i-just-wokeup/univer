@@ -130,7 +130,7 @@ export function useConnections() {
         [tab]: previousConnections,
       }));
       setErrorMessage(
-        error instanceof Error ? error.message : "크루 요청 처리에 실패했습니다.",
+        error instanceof Error ? error.message : "크루 신청 처리에 실패했습니다.",
       );
       return false;
     } finally {
