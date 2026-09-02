@@ -18,7 +18,7 @@ export const statusCommand: CommandHandler = async ({ supabase }) => {
     "",
     "Edge Function: 정상",
     `Database: 정상 (${Date.now() - startedAt}ms)`,
-    `활성 이용자: ${count ?? 0}명`,
+    `이용 가능 계정: ${count ?? 0}명`,
     `확인 시각: ${formatKstDate(new Date().toISOString())}`,
   ].join("\n");
 };

@@ -40,7 +40,7 @@ export const usersCommand: CommandHandler = async ({ supabase }) => {
     "이용자 현황",
     "",
     `전체 이용자: ${totalResult.count ?? 0}명`,
-    `활성 이용자: ${activeResult.count ?? 0}명`,
+    `이용 가능 계정: ${activeResult.count ?? 0}명`,
     `이용 제한: ${restrictedResult.count ?? 0}명`,
     `오늘 신규: ${todayResult.count ?? 0}명`,
   ].join("\n");
