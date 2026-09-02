@@ -69,9 +69,12 @@ export function StoryVideoView({
         minBufferForPlayback: 0.5,
       };
     } else {
-      // 로컬 원본(파일): 통째로 버퍼링하면 OOM → 8MB로 제한(안드로이드).
+      // 로컬 원본(파일): 통째로 버퍼링하면 OOM → 상한을 둔다(안드로이드 전용 설정).
+      // 8MB였을 때 편집앱 고비트레이트 영상이 재생 시작 조건을 못 채워
+      // "Playback stuck buffering and not loading"으로 첫 프레임에서 멈췄다.
+      // 실제 메모리는 preferredForwardBufferDuration(5초치)이 함께 제한한다.
       instance.bufferOptions = {
-        maxBufferBytes: 8 * 1024 * 1024,
+        maxBufferBytes: 16 * 1024 * 1024,
         preferredForwardBufferDuration: 5,
         minBufferForPlayback: 1,
       };
