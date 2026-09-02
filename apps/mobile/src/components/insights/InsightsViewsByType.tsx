@@ -5,9 +5,9 @@ import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 const TYPE_ROWS: { key: keyof ViewsByType; label: string }[] = [
-  { key: "reel", label: "릴스" },
-  { key: "post", label: "게시물" },
-  { key: "story", label: "스토리" },
+  { key: "reel", label: "릴스 조회" },
+  { key: "post", label: "게시물 조회" },
+  { key: "story", label: "스토리 조회" },
 ];
 
 export function InsightsViewsByType({ values }: { values: ViewsByType }) {

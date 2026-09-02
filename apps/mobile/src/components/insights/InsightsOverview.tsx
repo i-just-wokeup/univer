@@ -68,6 +68,7 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
   },
   tiles: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   chartCard: {

@@ -13,7 +13,12 @@ import {
 } from "./api";
 
 export type InsightPeriod = "day" | "week" | "month";
-export type InsightMetricKey = "views" | "engagement" | "reach" | "profile";
+export type InsightMetricKey =
+  | "views"
+  | "engagement"
+  | "reach"
+  | "profile"
+  | "link";
 
 export type InsightBar = {
   day: string;
@@ -155,14 +160,16 @@ export function useInsights(includeEngagement: boolean) {
             getPostImpressionReach(previousRange),
           ])
         : Promise.resolve(null);
-      const [reel, post, profile, engagement, reach, typeViews] = await Promise.all([
-        loadMetric("reel_view", currentRange, previousRange),
-        loadMetric("post_view", currentRange, previousRange),
-        loadMetric("profile_visit", currentRange, previousRange),
-        engagementPromise,
-        reachPromise,
-        getViewsByType(currentRange),
-      ]);
+      const [reel, post, profile, link, engagement, reach, typeViews] =
+        await Promise.all([
+          loadMetric("reel_view", currentRange, previousRange),
+          loadMetric("post_view", currentRange, previousRange),
+          loadMetric("profile_visit", currentRange, previousRange),
+          loadMetric("link_click", currentRange, previousRange),
+          engagementPromise,
+          reachPromise,
+          getViewsByType(currentRange),
+        ]);
 
       if (requestId !== requestIdRef.current) {
         return;
@@ -171,6 +178,7 @@ export function useInsights(includeEngagement: boolean) {
       const reelTotalBars = barsFrom(days, reel.daily, "total");
       const postTotalBars = barsFrom(days, post.daily, "total");
       const profileBars = barsFrom(days, profile.daily, "total");
+      const linkBars = barsFrom(days, link.daily, "total");
       const currentEngagement = engagement[0].reduce(
         (sum, point) => sum + point.total,
         0,
@@ -226,16 +234,27 @@ export function useInsights(includeEngagement: boolean) {
               label: "도달",
               value: reach?.[0].total ?? 0,
             }]
-          : [{
-              bars: profileBars,
-              changePercent: changePercent(
-                profile.current.total,
-                profile.previous.total,
-              ),
-              key: "profile" as const,
-              label: "프로필 방문",
-              value: profile.current.total,
-            }]),
+          : []),
+        {
+          bars: profileBars,
+          changePercent: changePercent(
+            profile.current.total,
+            profile.previous.total,
+          ),
+          key: "profile",
+          label: "프로필 방문",
+          value: profile.current.total,
+        },
+        {
+          bars: linkBars,
+          changePercent: changePercent(
+            link.current.total,
+            link.previous.total,
+          ),
+          key: "link",
+          label: "링크 클릭",
+          value: link.current.total,
+        },
       ];
 
       setMetrics(nextMetrics);

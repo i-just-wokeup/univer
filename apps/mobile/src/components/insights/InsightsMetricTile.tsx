@@ -50,7 +50,8 @@ export function InsightsMetricTile({
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
   tile: {
     minWidth: 0,
-    flex: 1,
+    flexBasis: 88,
+    flexGrow: 1,
     minHeight: 112,
     justifyContent: "space-between",
     borderRadius: 16,
