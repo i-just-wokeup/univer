@@ -1,4 +1,5 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import type { ReactElement } from "react";
 import { ActivityIndicator, StyleSheet, Text } from "react-native";
 
 import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
@@ -17,6 +18,7 @@ export function getPostMediaGridItemSize(width: number): number {
 type PostMediaGalleryListProps = {
   disabled: boolean;
   errorMessage: string;
+  footerComponent?: ReactElement;
   hasNextPage: boolean;
   isLoadingMore: boolean;
   itemSize: number;
@@ -29,6 +31,7 @@ type PostMediaGalleryListProps = {
 export function PostMediaGalleryList({
   disabled,
   errorMessage,
+  footerComponent,
   hasNextPage,
   isLoadingMore,
   itemSize,
@@ -43,6 +46,7 @@ export function PostMediaGalleryList({
   return (
     <BottomSheetFlatList
       columnWrapperStyle={styles.row}
+      contentContainerStyle={footerComponent ? styles.contentWithFooter : undefined}
       contentInsetAdjustmentBehavior="never"
       data={photos}
       extraData={selectedIndexes}
@@ -61,12 +65,18 @@ export function PostMediaGalleryList({
         />
       }
       ListFooterComponent={
-        isLoadingMore ? (
-          <ActivityIndicator
-            color={colors.accent}
-            style={styles.footerLoader}
-          />
-        ) : null
+        <>
+          {isLoadingMore ? (
+            <ActivityIndicator
+              color={colors.accent}
+              style={styles.footerLoader}
+            />
+          ) : null}
+          {footerComponent}
+        </>
+      }
+      ListFooterComponentStyle={
+        footerComponent ? styles.footerWithContent : undefined
       }
       numColumns={COLUMN_COUNT}
       onEndReached={hasNextPage ? onLoadMore : undefined}
@@ -87,6 +97,12 @@ export function PostMediaGalleryList({
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
+  contentWithFooter: {
+    flexGrow: 1,
+  },
+  footerWithContent: {
+    flexGrow: 1,
+  },
   list: {
     flex: 1,
   },

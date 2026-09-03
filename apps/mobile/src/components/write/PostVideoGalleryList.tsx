@@ -1,5 +1,5 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactElement } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -19,6 +19,7 @@ const GRID_GAP = 2;
 type PostVideoGalleryListProps = {
   disabled: boolean;
   errorMessage: string;
+  footerComponent?: ReactElement;
   hasNextPage: boolean;
   isLoadingMore: boolean;
   itemSize: number;
@@ -31,6 +32,7 @@ type PostVideoGalleryListProps = {
 export function PostVideoGalleryList({
   disabled,
   errorMessage,
+  footerComponent,
   hasNextPage,
   isLoadingMore,
   itemSize,
@@ -67,6 +69,7 @@ export function PostVideoGalleryList({
   return (
     <BottomSheetFlatList
       columnWrapperStyle={styles.row}
+      contentContainerStyle={footerComponent ? styles.contentWithFooter : undefined}
       contentInsetAdjustmentBehavior="never"
       data={videos}
       extraData={{ selectedVideoId, visibleVideoIds }}
@@ -85,9 +88,18 @@ export function PostVideoGalleryList({
         />
       }
       ListFooterComponent={
-        isLoadingMore ? (
-          <ActivityIndicator color={colors.accent} style={styles.footerLoader} />
-        ) : null
+        <>
+          {isLoadingMore ? (
+            <ActivityIndicator
+              color={colors.accent}
+              style={styles.footerLoader}
+            />
+          ) : null}
+          {footerComponent}
+        </>
+      }
+      ListFooterComponentStyle={
+        footerComponent ? styles.footerWithContent : undefined
       }
       numColumns={COLUMN_COUNT}
       onEndReached={hasNextPage ? onLoadMore : undefined}
@@ -111,6 +123,12 @@ export function PostVideoGalleryList({
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
+  contentWithFooter: {
+    flexGrow: 1,
+  },
+  footerWithContent: {
+    flexGrow: 1,
+  },
   list: {
     flex: 1,
   },

@@ -14,6 +14,7 @@ import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import { PostMediaAlbumPicker } from "./PostMediaAlbumPicker";
 import { getPostMediaGridItemSize } from "./PostMediaGalleryList";
+import { PostMediaPickerLimitedNotice } from "./PostMediaPickerLimitedNotice";
 import {
   PostMediaPickerState,
   resolvePostMediaPickerState,
@@ -168,6 +169,15 @@ export function PostVideoPickerBody({
               key={selectedAlbumKey}
               disabled={disabled}
               errorMessage={errorMessage}
+              footerComponent={
+                permissionState === "limited" ? (
+                  <PostMediaPickerLimitedNotice
+                    disabled={disabled}
+                    mediaType="video"
+                    onPressSelectMore={onRequestPermission}
+                  />
+                ) : undefined
+              }
               hasNextPage={hasNextPage}
               isLoadingMore={isLoadingMore}
               itemSize={itemSize}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Linking } from "react-native";
+import { Linking, Platform } from "react-native";
 
 import {
   getPostLibraryAssetPage,
@@ -179,10 +179,17 @@ export function usePostMediaLibrarySource(
     setErrorMessage("");
 
     try {
-      const permission =
-        permissionState === "limited"
-          ? await updatePostLibraryPermissionSelection(mediaType)
-          : await requestPostLibraryPermission(mediaType);
+      if (permissionState === "limited" && Platform.OS === "ios") {
+        await updatePostLibraryPermissionSelection(mediaType);
+      } else {
+        // Android 14 제한 접근은 읽기 권한을 다시 요청해야 전체 허용과
+        // 항목 재선택을 포함한 최초 권한 흐름을 다시 표시할 수 있다.
+        await requestPostLibraryPermission(mediaType);
+      }
+
+      // Android는 접근 가능한 항목 변경을 앱에 알리지 않으므로 권한 창이
+      // 닫힌 직후 상태를 다시 읽고, 목록과 페이지 커서를 처음부터 갱신한다.
+      const permission = await getPostLibraryPermission(mediaType);
       setCanRequestPermission(permission.canAskAgain);
 
       if (!permission.granted) {

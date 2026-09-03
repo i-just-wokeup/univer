@@ -17,6 +17,7 @@ import {
   PostMediaGalleryList,
 } from "./PostMediaGalleryList";
 import { PostMediaAlbumPicker } from "./PostMediaAlbumPicker";
+import { PostMediaPickerLimitedNotice } from "./PostMediaPickerLimitedNotice";
 import {
   PostMediaPickerState,
   resolvePostMediaPickerState,
@@ -185,6 +186,15 @@ export function PostMediaPickerBody({
               key={selectedAlbumKey}
               disabled={disabled}
               errorMessage={errorMessage}
+              footerComponent={
+                permissionState === "limited" ? (
+                  <PostMediaPickerLimitedNotice
+                    disabled={disabled}
+                    mediaType="photo"
+                    onPressSelectMore={onRequestPermission}
+                  />
+                ) : undefined
+              }
               hasNextPage={hasNextPage}
               isLoadingMore={isLoadingMore}
               itemSize={itemSize}
