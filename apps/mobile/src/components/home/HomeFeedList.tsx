@@ -255,13 +255,20 @@ function HomeFeedList({
     const items: HomeFeedListItem[] = [];
     let didInsertReadMarker = false;
 
-    posts.forEach((post) => {
+    posts.forEach((post, index) => {
       // get_feed_post_ids의 밴드는 낮을수록 안 본 글이다.
       // 0 크루 / 1 신규 / 2 안 본 최근 글 / 3 본 글 재노출 / 4 그 외.
-      // "여기부터 이미 본 글"이므로 첫 재노출 밴드(3) 이상에서 마커를 넣는다.
+      // "여기까지가 새 글"이라는 구분선이므로 첫 재노출 밴드(3) 이상에서 넣는다.
       // 특정 숫자로 못박으면 밴드가 늘어날 때 조용히 어긋난다(2026-09-04에 겪음).
-      if (!didInsertReadMarker && (postRanks.get(post.id)?.band ?? 0) >= 3) {
-        items.push({ id: "all-read-marker", type: "read-marker" });
+      //
+      // 단 첫 글부터 본 글이면 구분할 새 글이 없다. 그때 맨 위에 마커를 붙이면
+      // 구분선이 아니라 "볼 게 없다"는 통보가 되므로 아예 넣지 않는다.
+      const isReadBand = (postRanks.get(post.id)?.band ?? 0) >= 3;
+
+      if (!didInsertReadMarker && isReadBand) {
+        if (index > 0) {
+          items.push({ id: "all-read-marker", type: "read-marker" });
+        }
         didInsertReadMarker = true;
       }
 
