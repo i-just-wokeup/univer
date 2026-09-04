@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppState, Linking, Platform } from "react-native";
+import { Linking, Platform } from "react-native";
 
 import {
   getPostLibraryAssetPage,
@@ -55,7 +55,6 @@ export function usePostMediaLibrarySource(
   const requestGenerationRef = useRef(0);
   const selectedAlbumIdRef = useRef<string | null>(null);
   const hasInitializedRef = useRef(false);
-  const refreshAfterSettingsRef = useRef(false);
   const mediaLabel = mediaType === "video" ? "영상" : "사진";
 
   const loadPage = useCallback(
@@ -194,15 +193,7 @@ export function usePostMediaLibrarySource(
     setErrorMessage("");
 
     try {
-      if (permissionState === "limited" && Platform.OS === "android") {
-        // Android의 제한 권한 재요청 UI는 기기와 앱 권한 이력에 따라 달라진다.
-        // 전체 허용은 앱 설정에서 사용자가 직접 선택하게 하고 복귀 시 재조회한다.
-        refreshAfterSettingsRef.current = true;
-        await Linking.openSettings();
-        return;
-      }
-
-      if (permissionState === "limited") {
+      if (permissionState === "limited" && Platform.OS === "ios") {
         await updatePostLibraryPermissionSelection(mediaType);
       } else {
         await requestPostLibraryPermission(mediaType);
@@ -210,7 +201,6 @@ export function usePostMediaLibrarySource(
 
       await refreshPermissionAndLibrary();
     } catch (error) {
-      refreshAfterSettingsRef.current = false;
       setPermissionState(
         permissionState === "limited" ? "limited" : "denied",
       );
@@ -222,31 +212,6 @@ export function usePostMediaLibrarySource(
       );
     }
   }, [mediaLabel, mediaType, permissionState, refreshPermissionAndLibrary]);
-
-  useEffect(() => {
-    if (!enabled || Platform.OS !== "android") {
-      return;
-    }
-
-    const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState !== "active" || !refreshAfterSettingsRef.current) {
-        return;
-      }
-
-      refreshAfterSettingsRef.current = false;
-      void refreshPermissionAndLibrary().catch((error: unknown) => {
-        setPermissionState("limited");
-        setIsLoading(false);
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : `${mediaLabel} 접근 권한을 다시 확인하지 못했습니다.`,
-        );
-      });
-    });
-
-    return () => subscription.remove();
-  }, [enabled, mediaLabel, refreshPermissionAndLibrary]);
 
   useEffect(() => {
     if (!enabled || hasInitializedRef.current) {

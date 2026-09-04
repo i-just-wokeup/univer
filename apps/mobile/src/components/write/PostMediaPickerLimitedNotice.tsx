@@ -1,4 +1,4 @@
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   fontSize,
@@ -22,8 +22,7 @@ export function PostMediaPickerLimitedNotice({
 }: PostMediaPickerLimitedNoticeProps) {
   const styles = useThemedStyles(makeStyles);
   const mediaLabel = mediaType === "video" ? "영상" : "사진";
-  const isAndroid = Platform.OS === "android";
-  const actionLabel = isAndroid ? "권한 설정 열기" : `${mediaLabel} 더 선택`;
+  const actionLabel = "권한 다시 선택";
 
   return (
     <View style={styles.container}>
@@ -32,9 +31,7 @@ export function PostMediaPickerLimitedNotice({
       </Text>
       <Text style={styles.message}>
         허용한 {mediaLabel}만 표시됩니다.{"\n"}
-        {isAndroid
-          ? `앱 설정에서 모든 ${mediaLabel}을 허용할 수 있습니다.`
-          : `기기 보관함에서 사용할 ${mediaLabel}을 추가할 수 있습니다.`}
+        모든 {mediaLabel}을 허용하거나 항목을 추가할 수 있습니다.
       </Text>
       <Pressable
         accessibilityLabel={actionLabel}

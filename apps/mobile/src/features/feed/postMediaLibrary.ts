@@ -1,5 +1,6 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as MediaLibrary from "expo-media-library";
+import { PermissionsAndroid, Platform } from "react-native";
 
 export const MAX_POST_VIDEO_DURATION_SECONDS = 60;
 export const MAX_POST_VIDEO_SIZE_BYTES = 250 * 1024 * 1024;
@@ -192,9 +193,25 @@ export function isPostLibraryAvailable(): Promise<boolean> {
   return MediaLibrary.isAvailableAsync();
 }
 
-export function requestPostLibraryPermission(
+export async function requestPostLibraryPermission(
   mediaType: PostLibraryMediaType,
 ): Promise<PostLibraryPermission> {
+  if (Platform.OS === "android" && Platform.Version >= 34) {
+    const readPermission =
+      mediaType === "video"
+        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO
+        : PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES;
+
+    // Android 14 공식 권장 방식: 읽기 권한과 선택 항목 권한을 한 번에
+    // 요청해야 전체 허용/선택 허용을 포함한 시스템 권한 흐름을 사용한다.
+    await PermissionsAndroid.requestMultiple([
+      readPermission,
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_VISUAL_USER_SELECTED,
+    ]);
+
+    return getPostLibraryPermission(mediaType);
+  }
+
   return MediaLibrary.requestPermissionsAsync(false, [mediaType]);
 }
 
