@@ -256,7 +256,11 @@ function HomeFeedList({
     let didInsertReadMarker = false;
 
     posts.forEach((post) => {
-      if (!didInsertReadMarker && postRanks.get(post.id)?.band === 2) {
+      // get_feed_post_ids의 밴드는 낮을수록 안 본 글이다.
+      // 0 크루 / 1 신규 / 2 안 본 최근 글 / 3 본 글 재노출 / 4 그 외.
+      // "여기부터 이미 본 글"이므로 첫 재노출 밴드(3) 이상에서 마커를 넣는다.
+      // 특정 숫자로 못박으면 밴드가 늘어날 때 조용히 어긋난다(2026-09-04에 겪음).
+      if (!didInsertReadMarker && (postRanks.get(post.id)?.band ?? 0) >= 3) {
         items.push({ id: "all-read-marker", type: "read-marker" });
         didInsertReadMarker = true;
       }
