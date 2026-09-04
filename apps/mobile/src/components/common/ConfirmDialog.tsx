@@ -4,6 +4,7 @@ import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type ConfirmDialogProps = {
+  canCancel?: boolean;
   cancelLabel?: string;
   confirmLabel?: string;
   danger?: boolean;
@@ -16,6 +17,7 @@ type ConfirmDialogProps = {
 
 // 삭제/탈퇴/discard 등 확인이 필요한 모든 곳에서 재사용하는 공용 확인 다이얼로그.
 export function ConfirmDialog({
+  canCancel = true,
   cancelLabel = "취소",
   confirmLabel = "확인",
   danger = false,
@@ -30,17 +32,19 @@ export function ConfirmDialog({
   return (
     <Modal
       animationType="fade"
-      onRequestClose={onCancel}
+      onRequestClose={canCancel ? onCancel : () => undefined}
       transparent
       visible={isOpen}
     >
       <View style={styles.overlay}>
-        <Pressable
-          accessibilityLabel="닫기"
-          accessibilityRole="button"
-          onPress={onCancel}
-          style={StyleSheet.absoluteFill}
-        />
+        {canCancel ? (
+          <Pressable
+            accessibilityLabel="닫기"
+            accessibilityRole="button"
+            onPress={onCancel}
+            style={StyleSheet.absoluteFill}
+          />
+        ) : null}
         <View style={styles.dialog}>
           <Text style={styles.title}>{title}</Text>
           {description ? (
@@ -48,17 +52,19 @@ export function ConfirmDialog({
           ) : null}
 
           <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onCancel}
-              style={({ pressed }) => [
-                styles.button,
-                styles.cancelButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text style={styles.cancelText}>{cancelLabel}</Text>
-            </Pressable>
+            {canCancel ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onCancel}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.cancelButton,
+                  pressed ? styles.pressed : null,
+                ]}
+              >
+                <Text style={styles.cancelText}>{cancelLabel}</Text>
+              </Pressable>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               onPress={onConfirm}

@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_release: {
+        Row: {
+          platform: 'android' | 'ios'
+          latest_version: string
+          min_version: string | null
+          store_url: string
+          message: string | null
+          updated_at: string
+        }
+        Insert: {
+          platform: 'android' | 'ios'
+          latest_version: string
+          min_version?: string | null
+          store_url: string
+          message?: string | null
+          updated_at?: string
+        }
+        Update: {
+          platform?: 'android' | 'ios'
+          latest_version?: string
+          min_version?: string | null
+          store_url?: string
+          message?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       universities: {
         Row: {
           id: string

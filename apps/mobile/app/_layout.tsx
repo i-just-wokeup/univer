@@ -20,7 +20,9 @@ import {
 } from "react-native-safe-area-context";
 
 import { AppSplash } from "../src/components/common/AppSplash";
+import { ConfirmDialog } from "../src/components/common/ConfirmDialog";
 import { Logo } from "../src/components/common/Logo";
+import { useAppReleaseNotice } from "../src/features/appRelease/useAppReleaseNotice";
 import { usePushNotifications } from "../src/features/notifications/usePushNotifications";
 import { SessionProvider, useSession } from "../src/lib/session";
 import { Sentry } from "../src/lib/sentry";
@@ -45,6 +47,7 @@ function RootLayout() {
                 <VerifiedUsersProvider>
                   <RootNavigator />
                   <PushNotificationsController />
+                  <AppReleaseNoticeController />
                   <SystemBarsController />
                   <StatusBar style="auto" />
                   <AppSplash />
@@ -64,6 +67,22 @@ export default Sentry.wrap(RootLayout);
 function PushNotificationsController() {
   usePushNotifications();
   return null;
+}
+
+function AppReleaseNoticeController() {
+  const notice = useAppReleaseNotice();
+
+  return (
+    <ConfirmDialog
+      canCancel={notice.canCancel}
+      cancelLabel="나중에"
+      confirmLabel="업데이트"
+      isOpen={notice.isOpen}
+      onCancel={notice.onCancel}
+      onConfirm={notice.onConfirm}
+      title="새 버전이 나왔어요"
+    />
+  );
 }
 
 function RootNavigator() {
