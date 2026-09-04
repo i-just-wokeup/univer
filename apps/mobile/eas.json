@@ -18,6 +18,7 @@
       "channel": "preview",
       "environment": "preview",
       "env": {
+        "APP_VARIANT": "preview",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "android": {
@@ -27,7 +28,10 @@
     "production": {
       "autoIncrement": true,
       "channel": "production",
-      "environment": "production"
+      "environment": "production",
+      "env": {
+        "APP_VARIANT": "production"
+      }
     }
   },
   "submit": {
