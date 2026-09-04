@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-09-04
+
+### 완료
+- **사진·영상 선택 목록을 보관함 추가 순서로 정렬** — 정렬 기준을 `modificationTime`에서 `default`로 바꿨다. expo-media-library의 안드로이드 네이티브 소스를 읽어 각 옵션이 무엇에 매핑되는지 확인했다(`MediaLibraryEnums.kt`): `creationTime`=`DATE_TAKEN`(촬영 시각), `modificationTime`=`DATE_MODIFIED`(파일 수정 시각), `default`=`_ID`(등록 번호). 갤러리·인스타가 쓰는 `DATE_ADDED`는 정렬 옵션으로 열려 있지 않은데, expo가 그 용도로 `default`를 둔 것이 PR #4221 설명에 명시돼 있다 — *"Sorting by insertion order is likely desired behavior and is already handled by 'default'"*. `id` 옵션은 iOS 크래시로 제거됐고 `default`가 그 자리를 대신한다. SDK 54에 포함된 새 `next` 쿼리 API에도 `DATE_ADDED`는 없어 라이브러리 교체·패치로 얻을 이득이 없음을 확인했다. 순수 JS 한 줄, 실기기 검증 남음.
+
 ## 2026-09-03
 
 ### 완료

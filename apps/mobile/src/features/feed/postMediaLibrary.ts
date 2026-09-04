@@ -172,7 +172,13 @@ export async function getPostLibraryAssetPage({
     first,
     mediaType: MediaLibrary.MediaType[mediaType],
     resolveWithFullInfo: false,
-    sortBy: [[MediaLibrary.SortBy.modificationTime, false]],
+    // 보관함에 "추가된 순서"로 내림차순 정렬한다.
+    // creationTime은 DATE_TAKEN(촬영 시각)이라 카톡 등으로 받아 저장한 사진이
+    // 원본 촬영일 위치로 밀리고, modificationTime은 DATE_MODIFIED(파일 수정 시각)라
+    // 복사·편집에 따라 흔들린다. 우리가 원하는 DATE_ADDED는 정렬 옵션에 없는데,
+    // expo가 그 용도로 default를 두었다(PR #4221: "Sorting by insertion order
+    // is likely desired behavior and is already handled by 'default'").
+    sortBy: [[MediaLibrary.SortBy.default, false]],
   });
 
   return {
