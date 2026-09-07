@@ -122,6 +122,7 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
   return (
     <CameraCaptureView
       bottomLeftSlot={galleryButton}
+      enableZoom
       errorMessage={errorMessage}
       onCaptured={handleCapturedPhoto}
       onClose={onClose}

@@ -74,11 +74,13 @@ export function CameraCaptureView({
         animateShutter={false}
         facing={facing}
         flash={flash}
+        mirror
         mode="picture"
         onCameraReady={() => setIsCameraReady(true)}
         onMountError={(event) => {
           setErrorMessage(event.message || "카메라를 시작하지 못했습니다.");
         }}
+        ratio="16:9"
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         zoom={enableZoom ? zoom : 0}
