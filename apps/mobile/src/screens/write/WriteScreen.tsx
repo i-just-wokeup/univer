@@ -248,6 +248,7 @@ export function WriteScreen() {
             onRequestPermission={mediaPicker.requestPermission}
             onRetryAlbums={mediaPicker.retryAlbums}
             onSelectAlbum={mediaPicker.selectAlbum}
+            onSelectCapturedPhoto={mediaPicker.selectCapturedPhoto}
             onSelectPhoto={mediaPicker.selectPhoto}
             onSwitchToVideo={() => setPickerMediaType("video")}
             onToggleMultiSelect={mediaPicker.toggleMultiSelect}

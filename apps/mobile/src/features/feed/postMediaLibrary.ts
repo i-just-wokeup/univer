@@ -4,6 +4,7 @@ import { PermissionsAndroid, Platform } from "react-native";
 
 export const MAX_POST_VIDEO_DURATION_SECONDS = 60;
 export const MAX_POST_VIDEO_SIZE_BYTES = 250 * 1024 * 1024;
+export const POST_CAMERA_ASSET_ID_PREFIX = "camera:";
 
 export type PostLibraryMediaType = "photo" | "video";
 
@@ -17,6 +18,11 @@ type PostLibraryAssetBase = {
 export type PostLibraryPhoto = PostLibraryAssetBase & {
   mediaType: "photo";
 };
+
+export type PostCapturedPhoto = Pick<
+  PostLibraryPhoto,
+  "height" | "uri" | "width"
+>;
 
 export type PostLibraryVideo = PostLibraryAssetBase & {
   durationSeconds: number;
@@ -231,6 +237,11 @@ export async function updatePostLibraryPermissionSelection(
 async function resolvePostLibraryAssetUriUncached(
   asset: PostLibraryAsset,
 ): Promise<string> {
+  // 촬영 결과는 보관함 자산이 아니므로 iOS의 MediaLibrary 조회를 거치지 않는다.
+  if (asset.id.startsWith(POST_CAMERA_ASSET_ID_PREFIX)) {
+    return asset.uri;
+  }
+
   // Android Asset URI는 이미 로컬 file:// 경로다. 전체 메타데이터 조회는
   // ACCESS_MEDIA_LOCATION을 요구할 수 있으므로 iOS의 ph:// 해석에만 사용한다.
   if (process.env.EXPO_OS === "android") {

@@ -9,8 +9,14 @@ import type {
   PostMediaCropTransform,
   PostMediaCropTransforms,
 } from "./postMediaCrop";
-import type { PostLibraryPhoto } from "./postMediaLibrary";
-import { resolvePostLibraryPhotoUris } from "./postMediaLibrary";
+import type {
+  PostCapturedPhoto,
+  PostLibraryPhoto,
+} from "./postMediaLibrary";
+import {
+  POST_CAMERA_ASSET_ID_PREFIX,
+  resolvePostLibraryPhotoUris,
+} from "./postMediaLibrary";
 import type { PostAspectRatio } from "./types";
 import { usePostMediaLibrarySource } from "./usePostMediaLibrarySource";
 import { detectAspectRatio, MAX_IMAGES } from "./useWriteForm";
@@ -162,6 +168,14 @@ export function usePostMediaLibraryPicker({
     }
   }
 
+  function selectCapturedPhoto(captured: PostCapturedPhoto) {
+    selectPhoto({
+      ...captured,
+      id: `${POST_CAMERA_ASSET_ID_PREFIX}${Date.now()}`,
+      mediaType: "photo",
+    });
+  }
+
   function focusSelectedPhoto(photoId: string) {
     const selectedPhoto = selectedPhotos.find((photo) => photo.id === photoId);
     if (!selectedPhoto) {
@@ -270,6 +284,7 @@ export function usePostMediaLibraryPicker({
     removeSelectedPhoto,
     resetSelection,
     resolveSelectedImageUris,
+    selectCapturedPhoto,
     selectPhoto,
     selectedCount: selectedPhotos.length,
     selectedIndexes,

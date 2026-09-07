@@ -5,6 +5,7 @@ import { StyleSheet, View, useWindowDimensions } from "react-native";
 import type { PostMediaCropTransform } from "../../features/feed/postMediaCrop";
 import type { PostAspectRatio } from "../../features/feed/types";
 import type {
+  PostCapturedPhoto,
   PostLibraryAlbumOption,
   PostLibraryPhoto,
 } from "../../features/feed/postMediaLibrary";
@@ -16,6 +17,7 @@ import {
   getPostMediaGridItemSize,
   PostMediaGalleryList,
 } from "./PostMediaGalleryList";
+import { PostCamera } from "./PostCamera";
 import { PostMediaAlbumPicker } from "./PostMediaAlbumPicker";
 import { PostMediaPickerLimitedNotice } from "./PostMediaPickerLimitedNotice";
 import {
@@ -51,6 +53,7 @@ type PostMediaPickerBodyProps = {
   onOpenSettings: () => void;
   onSwitchToVideo: () => void;
   onRequestPermission: () => void;
+  onSelectCapturedPhoto: (photo: PostCapturedPhoto) => void;
   onSelectPhoto: (photo: PostLibraryPhoto) => void;
   onToggleMultiSelect: () => void;
   permissionState: PostLibraryPermissionState;
@@ -85,6 +88,7 @@ export function PostMediaPickerBody({
   onRequestPermission,
   onRetryAlbums,
   onSelectAlbum,
+  onSelectCapturedPhoto,
   onSelectPhoto,
   onToggleMultiSelect,
   permissionState,
@@ -99,6 +103,7 @@ export function PostMediaPickerBody({
 }: PostMediaPickerBodyProps) {
   const styles = useThemedStyles(makeStyles);
   const [isAlbumPickerOpen, setIsAlbumPickerOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const { width } = useWindowDimensions();
   const itemSize = getPostMediaGridItemSize(width);
   const {
@@ -132,6 +137,15 @@ export function PostMediaPickerBody({
       }
     },
     [collapse, isMultiSelect, onSelectPhoto],
+  );
+
+  const handleCapturedPhoto = useCallback(
+    (photo: PostCapturedPhoto) => {
+      onSelectCapturedPhoto(photo);
+      collapse();
+      setIsCameraOpen(false);
+    },
+    [collapse, onSelectCapturedPhoto],
   );
 
   const preview = (
@@ -199,6 +213,7 @@ export function PostMediaPickerBody({
               isLoadingMore={isLoadingMore}
               itemSize={itemSize}
               onLoadMore={onLoadMore}
+              onPressCamera={() => setIsCameraOpen(true)}
               onSelectPhoto={handleSelectPhoto}
               photos={photos}
               selectedIndexes={selectedIndexes}
@@ -218,6 +233,13 @@ export function PostMediaPickerBody({
         selectedAlbumId={selectedAlbumId}
         visible={isAlbumPickerOpen}
       />
+
+      {isCameraOpen ? (
+        <PostCamera
+          onCaptured={handleCapturedPhoto}
+          onClose={() => setIsCameraOpen(false)}
+        />
+      ) : null}
     </View>
   );
 }
