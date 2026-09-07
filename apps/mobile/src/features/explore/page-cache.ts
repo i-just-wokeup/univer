@@ -20,24 +20,40 @@ type SetExplorePageCacheParams = {
   userId: string;
 };
 
+type GetExplorePageCacheOptions = {
+  allowStale?: boolean;
+};
+
 let explorePageCache: ExplorePageCacheEntry | null = null;
 
 function isFreshCache(entry: ExplorePageCacheEntry, userId: string) {
   return entry.userId === userId && Date.now() - entry.cachedAt < EXPLORE_PAGE_CACHE_TTL_MS;
 }
 
-export function getExplorePageCache(userId: string): ExplorePageCacheSnapshot | null {
+export function getExplorePageCache(
+  userId: string,
+  options?: GetExplorePageCacheOptions,
+): ExplorePageCacheSnapshot | null {
   if (!explorePageCache) {
     return null;
   }
 
-  if (!isFreshCache(explorePageCache, userId)) {
+  if (explorePageCache.userId !== userId) {
     explorePageCache = null;
     return null;
   }
 
-  const { userId: _userId, ...snapshot } = explorePageCache;
-  return snapshot;
+  if (!options?.allowStale && !isFreshCache(explorePageCache, userId)) {
+    explorePageCache = null;
+    return null;
+  }
+
+  return {
+    cachedAt: explorePageCache.cachedAt,
+    hasMore: explorePageCache.hasMore,
+    offset: explorePageCache.offset,
+    posts: explorePageCache.posts,
+  };
 }
 
 export function setExplorePageCache(params: SetExplorePageCacheParams) {

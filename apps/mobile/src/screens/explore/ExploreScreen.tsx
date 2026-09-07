@@ -54,14 +54,17 @@ export function ExploreScreen() {
     retry,
   } = useExploreFeed();
 
-  // 영상이면 릴스로, 사진이면 게시물 상세로.
+  // 영상은 릴스로, 사진은 탐색에서 누른 지점부터 이어지는 카드 목록으로 연다.
   const handlePressPost = useCallback(
     (post: ExplorePost) => {
       if (post.is_video) {
         router.push({ pathname: "/reels", params: { postId: post.id } });
         return;
       }
-      router.push({ pathname: "/post/[id]", params: { id: post.id } });
+      router.push({
+        pathname: "/posts",
+        params: { postId: post.id, source: "explore" },
+      });
     },
     [router],
   );
@@ -197,6 +200,7 @@ function MasonryColumn({
             style={[styles.tile, { height: tileHeight }]}
           >
             <Image
+              alt=""
               cachePolicy="memory-disk"
               contentFit="cover"
               recyclingKey={post.id}

@@ -87,9 +87,24 @@ export function ProfileScreen({ nickname }: ProfileScreenProps) {
 
   const handlePressPost = useCallback(
     (postId: string) => {
-      router.push({ pathname: "/post/[id]", params: { id: postId } });
+      const selectedPost = posts.find((post) => post.id === postId);
+
+      if (!selectedPost || !profile) {
+        router.push({ pathname: "/post/[id]", params: { id: postId } });
+        return;
+      }
+
+      router.push({
+        pathname: "/posts",
+        params: {
+          nickname: profile.nickname,
+          postId,
+          profileUserId: profile.id,
+          source: "profile",
+        },
+      });
     },
-    [router],
+    [posts, profile, router],
   );
 
   const handlePressSettings = useCallback(() => {

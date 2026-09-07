@@ -27,11 +27,16 @@ import { SITE_URL } from "../../lib/site";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type ReelsScreenProps = {
+  authorUserId?: string;
   startPostId?: string;
 };
 
+const REEL_VIEWABILITY_CONFIG = {
+  itemVisiblePercentThreshold: 60,
+};
+
 // 릴스(영상 전용 세로 풀스크린 피드). 위아래 스와이프로 다음 영상, 보이는 1개만 재생.
-export function ReelsScreen({ startPostId }: ReelsScreenProps) {
+export function ReelsScreen({ authorUserId, startPostId }: ReelsScreenProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { session } = useSession();
@@ -73,7 +78,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     showFeedback,
     toggleBookmarkPost,
     toggleLike,
-  } = useReels(startPostId);
+  } = useReels(startPostId, authorUserId);
   const [visibleIndex, setVisibleIndex] = useState(activeIndex);
 
   const handleUserPress = useCallback(
@@ -125,18 +130,17 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
     toggleBookmarkPost,
     toggleLike,
   });
-  reelActionsRef.current = {
-    blockAuthor,
-    loadMore,
-    removePost,
-    reportPost,
-    toggleBookmarkPost,
-    toggleLike,
-  };
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 60,
-  }).current;
-  const handleViewableItemsChanged = useRef(
+  useEffect(() => {
+    reelActionsRef.current = {
+      blockAuthor,
+      loadMore,
+      removePost,
+      reportPost,
+      toggleBookmarkPost,
+      toggleLike,
+    };
+  });
+  const handleViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       const visibleItem = viewableItems.find(
         (item) => item.isViewable && typeof item.index === "number",
@@ -147,7 +151,8 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
         setVisibleIndex((current) => (current === index ? current : index));
       }
     },
-  ).current;
+    [],
+  );
 
   const handleBlockUser = useCallback((userId: string) => {
     void reelActionsRef.current.blockAuthor(userId);
@@ -327,7 +332,7 @@ export function ReelsScreen({ startPostId }: ReelsScreenProps) {
           removeClippedSubviews
           renderItem={renderReelItem}
           showsVerticalScrollIndicator={false}
-          viewabilityConfig={viewabilityConfig}
+          viewabilityConfig={REEL_VIEWABILITY_CONFIG}
           windowSize={3}
         />
       ) : null}

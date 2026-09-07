@@ -318,6 +318,64 @@ export async function getVideoFeed({
   };
 }
 
+// 프로필 연속 목록에서 연 릴스: 특정 작성자의 ready 영상만 최신순으로 가져온다.
+export async function getAuthorVideoFeed({
+  anchorCreatedAt,
+  cursor,
+  limit = PAGE_SIZE.feed,
+  userId: authorUserId,
+}: {
+  anchorCreatedAt?: string;
+  cursor?: string;
+  limit?: number;
+  userId: string;
+}): Promise<GetFeedResult> {
+  const supabase = getSupabaseMobileClient();
+  const { userId: viewerUserId } = await getCurrentUserContext();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+
+  if (blockRelatedUserIds.includes(authorUserId)) {
+    return { nextCursor: null, posts: [] };
+  }
+
+  const fetchLimit = limit + 1;
+  let postsQuery = supabase
+    .from("posts")
+    .select(POST_WITH_VIDEO_MEDIA_SELECT_FIELDS)
+    .eq("user_id", authorUserId)
+    .eq("post_media.type", "video")
+    .eq("post_media.processing_status", "ready")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .order("order_index", { ascending: true, referencedTable: "post_media" })
+    .limit(fetchLimit);
+
+  if (cursor) {
+    postsQuery = postsQuery.lt("created_at", cursor);
+  } else if (anchorCreatedAt) {
+    postsQuery = postsQuery.lte("created_at", anchorCreatedAt);
+  }
+
+  const { data: postsData, error: postsError } = await postsQuery;
+
+  if (postsError || !postsData) {
+    throw new Error("영상을 불러오지 못했습니다.");
+  }
+
+  const normalizedPosts = toEmbeddedFeedPostRows(postsData);
+  const hasMore = normalizedPosts.length > limit;
+  const slicedPosts = hasMore ? normalizedPosts.slice(0, limit) : normalizedPosts;
+  const posts = filterReadyVideoPosts(
+    await hydrateFeedPosts(slicedPosts, viewerUserId),
+  );
+  const lastPostRow = slicedPosts[slicedPosts.length - 1];
+
+  return {
+    nextCursor: hasMore ? lastPostRow?.created_at ?? null : null,
+    posts,
+  };
+}
+
 // 단일 게시물 상세 조회. FeedPost 형태로 반환해 FeedPostCard가 그대로 렌더할 수 있게 한다.
 export async function getPost(postId: string): Promise<FeedPost> {
   const supabase = getSupabaseMobileClient();
@@ -349,6 +407,41 @@ export async function getPost(postId: string): Promise<FeedPost> {
   }
 
   return hydratedPost;
+}
+
+// 이미 다른 화면에서 순서가 정해진 게시물 ID 목록을 FeedPost로 채운다.
+// PostgREST의 in 결과 순서는 보장되지 않으므로 호출부가 준 ID 순서로 다시 정렬한다.
+export async function getPostsByIds(postIds: string[]): Promise<FeedPost[]> {
+  const uniquePostIds = Array.from(new Set(postIds));
+
+  if (uniquePostIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getSupabaseMobileClient();
+  const { userId } = await getCurrentUserContext();
+  const blockRelatedUserIds = await getBlockRelatedUserIds();
+  const { data: postsData, error: postsError } = await supabase
+    .from("posts")
+    .select(POST_WITH_RELATIONS_SELECT_FIELDS)
+    .in("id", uniquePostIds)
+    .is("deleted_at", null)
+    .order("order_index", { ascending: true, referencedTable: "post_media" });
+
+  if (postsError || !postsData) {
+    throw new Error("게시물을 불러오지 못했습니다.");
+  }
+
+  const rowsById = new Map(
+    toEmbeddedFeedPostRows(postsData)
+      .filter((postRow) => !blockRelatedUserIds.includes(postRow.user_id))
+      .map((postRow) => [postRow.id, postRow]),
+  );
+  const orderedRows = uniquePostIds
+    .map((postId) => rowsById.get(postId) ?? null)
+    .filter((postRow): postRow is FeedPostRow => postRow !== null);
+
+  return hydrateFeedPosts(orderedRows, userId);
 }
 
 // 게시물의 작성 시각만 가볍게 조회. 릴스 앵커처럼 created_at 하나만 필요할 때 쓴다.

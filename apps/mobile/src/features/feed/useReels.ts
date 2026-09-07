@@ -5,6 +5,7 @@ import { recordMetric } from "../metrics/api";
 import { createReport } from "../reports/api";
 import {
   deletePost,
+  getAuthorVideoFeed,
   getBookmarkedPostIds,
   getLikedPostIds,
   getPost,
@@ -15,13 +16,16 @@ import {
 import type { FeedPost, FeedRankCursor, ReelFeedItem } from "./types";
 import { PAGE_SIZE } from "../../lib/constants/pagination";
 
-function hasVideo(post: FeedPost) {
-  return post.media.some((media) => media.type === "video");
+function isReadyVideoPost(post: FeedPost) {
+  return (
+    post.media.some((media) => media.type === "video") &&
+    post.media.every((media) => media.processing_status === "ready")
+  );
 }
 
 // 릴스(영상 전용 세로 피드) 데이터 + 좋아요/저장 + 활성 인덱스(보이는 영상 1개 재생).
 // startPostId가 있으면 그 영상이 목록에 포함되도록 우선 로드한다.
-export function useReels(startPostId?: string) {
+export function useReels(startPostId?: string, authorUserId?: string) {
   const [reelItems, setReelItems] = useState<ReelFeedItem[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(
@@ -33,7 +37,9 @@ export function useReels(startPostId?: string) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [feedback, setFeedback] = useState("");
   const cursorRef = useRef<FeedRankCursor | null>(null);
-  const seedRef = useRef(Math.random());
+  const authorCursorRef = useRef<string | null>(null);
+  const authorHasMoreRef = useRef(true);
+  const [seed] = useState(() => Math.random());
   const seenIdsRef = useRef<Set<string>>(new Set());
   const itemSequenceRef = useRef(0);
   const likedPostIdsRef = useRef(likedPostIds);
@@ -41,7 +47,9 @@ export function useReels(startPostId?: string) {
   const pendingBookmarkRef = useRef<Set<string>>(new Set());
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  likedPostIdsRef.current = likedPostIds;
+  useEffect(() => {
+    likedPostIdsRef.current = likedPostIds;
+  }, [likedPostIds]);
 
   const createReelItems = useCallback((nextPosts: FeedPost[]) => {
     return nextPosts.map((post) => {
@@ -91,16 +99,13 @@ export function useReels(startPostId?: string) {
     };
   }, []);
 
-  // 차단/삭제로 목록이 줄면 활성 인덱스가 범위를 벗어나지 않게 맞춘다.
-  useEffect(() => {
-    setActiveIndex((current) =>
-      Math.min(current, Math.max(0, reelItems.length - 1)),
-    );
-  }, [reelItems.length]);
-
   // 릴스 조회 기록: 활성 릴스가 1초 이상 머물면 1회(빠른 스크롤 스침 제외).
   // 스크롤로 나갔다 다시 오면 새 조회로 카운트(dedupe 없음 → total=조회수, unique=도달).
-  const activePost = reelItems[activeIndex]?.post;
+  const boundedActiveIndex = Math.min(
+    activeIndex,
+    Math.max(0, reelItems.length - 1),
+  );
+  const activePost = reelItems[boundedActiveIndex]?.post;
   const activePostId = activePost?.id;
   useEffect(() => {
     if (!activePostId) {
@@ -115,30 +120,56 @@ export function useReels(startPostId?: string) {
 
   const loadFirstPage = useCallback(async () => {
     try {
+      setIsLoading(true);
       setErrorMessage("");
+      cursorRef.current = null;
+      authorCursorRef.current = null;
+      authorHasMoreRef.current = true;
 
       let anchorPost: FeedPost | null = null;
       if (startPostId) {
         try {
           const post = await getPost(startPostId);
-          anchorPost = hasVideo(post) ? post : null;
+          anchorPost =
+            isReadyVideoPost(post) &&
+            (!authorUserId || post.user.id === authorUserId)
+              ? post
+              : null;
         } catch {
           anchorPost = null;
         }
       }
 
-      const result = await getReelsRanked({
-        limit: PAGE_SIZE.feed,
-        seed: seedRef.current,
-        seenIds: Array.from(seenIdsRef.current),
-      });
-      cursorRef.current = result.nextCursor;
-      const posts = anchorPost
-        ? [
-            anchorPost,
-            ...result.posts.filter((post) => post.id !== anchorPost?.id),
-          ]
-        : result.posts;
+      let posts: FeedPost[];
+
+      if (authorUserId) {
+        const result = await getAuthorVideoFeed({
+          anchorCreatedAt: anchorPost?.created_at,
+          limit: PAGE_SIZE.feed,
+          userId: authorUserId,
+        });
+        authorCursorRef.current = result.nextCursor;
+        authorHasMoreRef.current = result.nextCursor !== null;
+        posts = anchorPost
+          ? [
+              anchorPost,
+              ...result.posts.filter((post) => post.id !== anchorPost.id),
+            ]
+          : result.posts;
+      } else {
+        const result = await getReelsRanked({
+          limit: PAGE_SIZE.feed,
+          seed,
+          seenIds: Array.from(seenIdsRef.current),
+        });
+        cursorRef.current = result.nextCursor;
+        posts = anchorPost
+          ? [
+              anchorPost,
+              ...result.posts.filter((post) => post.id !== anchorPost.id),
+            ]
+          : result.posts;
+      }
 
       itemSequenceRef.current = 0;
       setReelItems(createReelItems(posts));
@@ -151,24 +182,48 @@ export function useReels(startPostId?: string) {
     } finally {
       setIsLoading(false);
     }
-  }, [createReelItems, loadStatuses, startPostId]);
+  }, [authorUserId, createReelItems, loadStatuses, seed, startPostId]);
 
   useEffect(() => {
-    void loadFirstPage();
+    const timer = setTimeout(() => {
+      void loadFirstPage();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [loadFirstPage]);
 
   async function loadMore() {
-    if (isLoadingMore) {
+    if (
+      isLoadingMore ||
+      (authorUserId !== undefined && !authorHasMoreRef.current)
+    ) {
       return;
     }
     try {
       setIsLoadingMore(true);
+
+      if (authorUserId) {
+        const result = await getAuthorVideoFeed({
+          cursor: authorCursorRef.current ?? undefined,
+          limit: PAGE_SIZE.feed,
+          userId: authorUserId,
+        });
+        authorCursorRef.current = result.nextCursor;
+        authorHasMoreRef.current = result.nextCursor !== null;
+        setReelItems((current) => [
+          ...current,
+          ...createReelItems(result.posts),
+        ]);
+        void loadStatuses(result.posts);
+        return;
+      }
+
       const cursor = cursorRef.current;
       const result = await getReelsRanked({
         afterBand: cursor?.band ?? null,
         afterRank: cursor?.rank ?? null,
         limit: PAGE_SIZE.feed,
-        seed: seedRef.current,
+        seed,
         seenIds: Array.from(seenIdsRef.current),
       });
       cursorRef.current = result.nextCursor;
@@ -366,7 +421,7 @@ export function useReels(startPostId?: string) {
   );
 
   return {
-    activeIndex,
+    activeIndex: boundedActiveIndex,
     blockAuthor,
     bookmarkedPostIds,
     errorMessage,

@@ -5,12 +5,18 @@ import { ReelsScreen } from "../src/screens/feed/ReelsScreen";
 
 export default function ReelsRoute() {
   const { session } = useSession();
-  const { postId } = useLocalSearchParams<{ postId?: string | string[] }>();
+  const { postId, userId } = useLocalSearchParams<{
+    postId?: string | string[];
+    userId?: string | string[];
+  }>();
   const startPostId = Array.isArray(postId) ? postId[0] : postId;
+  const authorUserId = Array.isArray(userId) ? userId[0] : userId;
 
   if (!session) {
     return <Redirect href="/login" />;
   }
 
-  return <ReelsScreen startPostId={startPostId} />;
+  return (
+    <ReelsScreen authorUserId={authorUserId} startPostId={startPostId} />
+  );
 }
