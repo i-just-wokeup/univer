@@ -26,6 +26,7 @@ import { useAppReleaseNotice } from "../src/features/appRelease/useAppReleaseNot
 import { usePushNotifications } from "../src/features/notifications/usePushNotifications";
 import { SessionProvider, useSession } from "../src/lib/session";
 import { Sentry } from "../src/lib/sentry";
+import { useAppSessionRecorder } from "../src/features/appSession/useAppSessionRecorder";
 import { SystemBarsController } from "../src/lib/systemBars";
 import { colors, ThemeProvider } from "../src/lib/theme";
 import { VerifiedUsersProvider } from "../src/lib/verifiedUsers";
@@ -47,6 +48,7 @@ function RootLayout() {
                 <VerifiedUsersProvider>
                   <RootNavigator />
                   <PushNotificationsController />
+                  <AppSessionRecorderController />
                   <AppReleaseNoticeController />
                   <SystemBarsController />
                   <StatusBar style="auto" />
@@ -63,6 +65,11 @@ function RootLayout() {
 
 // Sentry가 렌더 에러까지 잡도록 루트를 감싼다.
 export default Sentry.wrap(RootLayout);
+
+function AppSessionRecorderController() {
+  useAppSessionRecorder();
+  return null;
+}
 
 function PushNotificationsController() {
   usePushNotifications();

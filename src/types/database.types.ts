@@ -862,6 +862,10 @@ export type Database = {
         }
         Returns: string | null
       }
+      get_admin_ops_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json

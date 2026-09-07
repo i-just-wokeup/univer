@@ -808,6 +808,13 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      record_app_session: {
+        Args: {
+          p_app_version: string
+          p_app_platform: string
+        }
+        Returns: undefined
+      }
       record_metric: {
         Args: {
           p_metric_type: string

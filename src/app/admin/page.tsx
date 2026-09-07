@@ -4,7 +4,9 @@ import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import {
+  getAdminOpsStats,
   getDashboardStats,
+  type AdminOpsStats,
   type AdminPeriod,
   type DashboardMetricCounts,
   type DashboardStats,
@@ -61,6 +63,14 @@ const EMPTY_STATS: DashboardStats = {
   },
 };
 
+const EMPTY_OPS: AdminOpsStats = {
+  activity: { dormant: 0, today: 0, unknown: 0, week: 0 },
+  appVersions: [],
+  media: { failed: 0, processing: 0, ready: 0 },
+  pendingPromotions: 0,
+  withdrawnUsers: 0,
+};
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat("ko-KR").format(value);
 }
@@ -84,6 +94,7 @@ function DashboardSkeleton() {
 export default function AdminDashboardPage() {
   const [period, setPeriod] = useState<AdminPeriod>("day");
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
+  const [ops, setOps] = useState<AdminOpsStats>(EMPTY_OPS);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,8 +105,12 @@ export default function AdminDashboardPage() {
       setIsLoading(!showRefreshing);
       setIsRefreshing(showRefreshing);
 
-      const nextStats = await getDashboardStats();
+      const [nextStats, nextOps] = await Promise.all([
+        getDashboardStats(),
+        getAdminOpsStats(),
+      ]);
       setStats(nextStats);
+      setOps(nextOps);
     } catch (loadError) {
       setError(
         loadError instanceof Error
@@ -180,6 +195,109 @@ export default function AdminDashboardPage() {
               </p>
             </div>
           ))}
+        </div>
+      )}
+
+      {isLoading ? null : (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold text-zinc-500">접속</p>
+            <p className="mt-4 text-4xl font-bold tracking-tight text-zinc-950">
+              {formatNumber(ops.activity.today)}
+              <span className="ml-2 text-base font-semibold text-zinc-400">
+                오늘
+              </span>
+            </p>
+            <dl className="mt-5 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">최근 7일</dt>
+                <dd className="font-semibold text-zinc-900">
+                  {formatNumber(ops.activity.week)}명
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">7일 이상 안 옴</dt>
+                <dd className="font-semibold text-zinc-900">
+                  {formatNumber(ops.activity.dormant)}명
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">탈퇴</dt>
+                <dd className="font-semibold text-zinc-900">
+                  {formatNumber(ops.withdrawnUsers)}명
+                </dd>
+              </div>
+            </dl>
+            {ops.activity.unknown > 0 ? (
+              <p className="mt-4 text-xs leading-relaxed text-zinc-400">
+                {formatNumber(ops.activity.unknown)}명은 아직 기록이 없습니다.
+                이 기능이 들어간 버전으로 앱을 켜야 잡힙니다.
+              </p>
+            ) : null}
+          </section>
+
+          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold text-zinc-500">앱 버전</p>
+            {ops.appVersions.length === 0 ? (
+              <p className="mt-5 text-sm text-zinc-400">기록이 없습니다.</p>
+            ) : (
+              <ul className="mt-5 space-y-3">
+                {ops.appVersions.map((row) => (
+                  <li
+                    key={`${row.platform}-${row.version}`}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="font-medium text-zinc-900">
+                      {row.version}
+                      <span className="ml-2 text-zinc-400">{row.platform}</span>
+                    </span>
+                    <span className="font-semibold text-zinc-900">
+                      {formatNumber(row.count)}명
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold text-zinc-500">영상 처리</p>
+            <p
+              className={`mt-4 text-4xl font-bold tracking-tight ${
+                ops.media.failed > 0 ? "text-red-600" : "text-zinc-950"
+              }`}
+            >
+              {formatNumber(ops.media.failed)}
+              <span className="ml-2 text-base font-semibold text-zinc-400">
+                실패
+              </span>
+            </p>
+            <dl className="mt-5 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">처리 중</dt>
+                <dd className="font-semibold text-zinc-900">
+                  {formatNumber(ops.media.processing)}건
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">완료</dt>
+                <dd className="font-semibold text-zinc-900">
+                  {formatNumber(ops.media.ready)}건
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">승격 신청 대기</dt>
+                <dd className="font-semibold text-zinc-900">
+                  {formatNumber(ops.pendingPromotions)}건
+                </dd>
+              </div>
+            </dl>
+            {ops.media.failed > 0 ? (
+              <p className="mt-4 text-xs leading-relaxed text-red-500">
+                올린 사람은 올라간 줄 압니다. 확인이 필요합니다.
+              </p>
+            ) : null}
+          </section>
         </div>
       )}
     </div>

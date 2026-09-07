@@ -18,6 +18,30 @@ export type DashboardMetricCounts = {
 
 export type DashboardStats = Record<AdminPeriod, DashboardMetricCounts>;
 
+// 운영 지표. 지금까지 Expo/Play Console을 열어야 볼 수 있던 것들을 여기서 본다.
+export type AdminAppVersionRow = {
+  count: number;
+  platform: string;
+  version: string;
+};
+
+export type AdminOpsStats = {
+  activity: {
+    dormant: number;
+    today: number;
+    unknown: number;
+    week: number;
+  };
+  appVersions: AdminAppVersionRow[];
+  media: {
+    failed: number;
+    processing: number;
+    ready: number;
+  };
+  pendingPromotions: number;
+  withdrawnUsers: number;
+};
+
 export type AdminReport = {
   authorNickname: string | null;
   createdAt: string;
@@ -336,6 +360,45 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   }
 
   return normalizeDashboardStats((data ?? null) as Json | null);
+}
+
+function normalizeOpsStats(value: Json | null): AdminOpsStats {
+  const root = isRecord(value) ? value : {};
+  const activity = isRecord(root.activity) ? root.activity : {};
+  const media = isRecord(root.media) ? root.media : {};
+  const versions = Array.isArray(root.appVersions) ? root.appVersions : [];
+
+  return {
+    activity: {
+      dormant: readNumber(activity, ["dormant"]),
+      today: readNumber(activity, ["today"]),
+      unknown: readNumber(activity, ["unknown"]),
+      week: readNumber(activity, ["week"]),
+    },
+    appVersions: versions.filter(isRecord).map((row) => ({
+      count: readNumber(row, ["count"]),
+      platform: readString(row, ["platform"]) ?? "알 수 없음",
+      version: readString(row, ["version"]) ?? "알 수 없음",
+    })),
+    media: {
+      failed: readNumber(media, ["failed"]),
+      processing: readNumber(media, ["processing"]),
+      ready: readNumber(media, ["ready"]),
+    },
+    pendingPromotions: readNumber(root, ["pendingPromotions"]),
+    withdrawnUsers: readNumber(root, ["withdrawnUsers"]),
+  };
+}
+
+export async function getAdminOpsStats(): Promise<AdminOpsStats> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase.rpc("get_admin_ops_stats");
+
+  if (error) {
+    throw new Error("운영 지표를 불러오지 못했습니다.");
+  }
+
+  return normalizeOpsStats((data ?? null) as Json | null);
 }
 
 export async function getAdminReports(
