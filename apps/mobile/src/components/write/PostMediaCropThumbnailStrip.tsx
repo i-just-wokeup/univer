@@ -15,6 +15,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
+import { triggerLightHaptic } from "../../lib/haptics";
 import { spacing, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -94,14 +95,29 @@ function Thumbnail({
     // 집어 든 썸네일: 손가락을 그대로 따라가고, 커지면서 위로 뜬다.
     if (from === index) {
       return {
-        transform: [{ translateX: dragX.value }, { scale: 1.08 }],
+        // 반투명 + 확대 + 살짝 떠오름. "들고 있는 중"이 한눈에 보이게 한다.
+        opacity: 0.85,
+        transform: [
+          { translateX: dragX.value },
+          { translateY: -6 },
+          { scale: 1.12 },
+        ],
         zIndex: 2,
-        elevation: 6,
+        elevation: 8,
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
       };
     }
 
     if (from < 0) {
-      return { transform: [{ translateX: 0 }], zIndex: 0, elevation: 0 };
+      return {
+        opacity: 1,
+        transform: [{ translateX: 0 }, { translateY: 0 }, { scale: 1 }],
+        zIndex: 0,
+        elevation: 0,
+        shadowOpacity: 0,
+        shadowRadius: 0,
+      };
     }
 
     // 나머지 썸네일: 들어갈 빈자리를 만들어 준다.
@@ -117,9 +133,16 @@ function Thumbnail({
     }
 
     return {
-      transform: [{ translateX: withTiming(shift, { duration: 140 }) }],
+      opacity: withTiming(0.6, { duration: 140 }),
+      transform: [
+        { translateX: withTiming(shift, { duration: 140 }) },
+        { translateY: 0 },
+        { scale: 1 },
+      ],
       zIndex: 0,
       elevation: 0,
+      shadowOpacity: 0,
+      shadowRadius: 0,
     };
   });
 
@@ -180,6 +203,8 @@ export function PostMediaCropThumbnailStrip({
 
   function handleDragStart(photoId: string) {
     setIsDragging(true);
+    // 집었다는 신호. 손가락이 화면을 가리고 있어 진동이 가장 확실하다.
+    triggerLightHaptic();
     // 끌고 있는 사진을 위 미리보기에도 띄워 어떤 사진인지 분명히 한다.
     onFocusPhoto(photoId);
   }
@@ -243,6 +268,8 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     paddingVertical: (STRIP_HEIGHT - THUMBNAIL_SIZE) / 2,
   },
   thumbnailButton: {
+    shadowColor: c.black,
+    shadowOffset: { width: 0, height: 4 },
     height: THUMBNAIL_SIZE,
     width: THUMBNAIL_SIZE,
     overflow: "hidden",
