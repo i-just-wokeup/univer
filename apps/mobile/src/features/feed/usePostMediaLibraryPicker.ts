@@ -204,6 +204,45 @@ export function usePostMediaLibraryPicker({
     setIsMultiSelect(!isMultiSelect);
   }
 
+  // 선택한 사진의 순서를 바꾼다. 첫 사진이 게시물 비율을 정하므로,
+  // 첫 자리가 바뀌면 비율을 다시 계산한다(selectPhoto와 같은 규칙).
+  function reorderSelectedPhotos(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) {
+      return;
+    }
+
+    const lastIndex = selectedPhotos.length - 1;
+    if (
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex > lastIndex ||
+      toIndex > lastIndex
+    ) {
+      return;
+    }
+
+    const movedPhoto = selectedPhotos[fromIndex];
+    if (!movedPhoto) {
+      return;
+    }
+
+    const nextSelectedPhotos = selectedPhotos.filter(
+      (_, index) => index !== fromIndex,
+    );
+    nextSelectedPhotos.splice(toIndex, 0, movedPhoto);
+
+    const previousFirstId = selectedPhotos[0]?.id;
+    const nextFirstPhoto = nextSelectedPhotos[0];
+
+    setSelectedPhotos(nextSelectedPhotos);
+
+    if (nextFirstPhoto && nextFirstPhoto.id !== previousFirstId) {
+      setAspectRatio(
+        detectAspectRatio(nextFirstPhoto.width, nextFirstPhoto.height),
+      );
+    }
+  }
+
   function removeSelectedPhoto(index: number) {
     const removedPhoto = selectedPhotos[index];
     const nextSelectedPhotos = selectedPhotos.filter(
@@ -282,6 +321,7 @@ export function usePostMediaLibraryPicker({
     previewCropTransform,
     previewPhoto,
     removeSelectedPhoto,
+    reorderSelectedPhotos,
     resetSelection,
     resolveSelectedImageUris,
     selectCapturedPhoto,

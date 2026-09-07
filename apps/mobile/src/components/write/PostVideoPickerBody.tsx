@@ -147,6 +147,7 @@ export function PostVideoPickerBody({
           isMultiSelect={false}
           mediaType="video"
           onFocusSelectedPhoto={NOOP}
+          onReorderSelectedPhotos={NOOP}
           onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
           onSwitchMediaType={onSwitchToPhotos}
           onToggleMultiSelect={NOOP}

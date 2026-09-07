@@ -17,6 +17,8 @@ const THUMBNAIL_SIZE = 52;
 type PostMediaCropThumbnailStripProps = {
   isVisible: boolean;
   onFocusPhoto: (photoId: string) => void;
+  // 2단계에서 끌어서 옮기기를 붙일 때 사용한다.
+  onReorder: (fromIndex: number, toIndex: number) => void;
   photos: PostLibraryPhoto[];
   previewPhotoId: string | null;
 };

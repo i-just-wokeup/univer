@@ -15,6 +15,7 @@ type PostMediaPickerSheetHandleContextValue = {
   isMultiSelect: boolean;
   mediaType: PostLibraryMediaType;
   onFocusSelectedPhoto: (photoId: string) => void;
+  onReorderSelectedPhotos: (fromIndex: number, toIndex: number) => void;
   onOpenAlbumPicker: () => void;
   onSwitchMediaType: () => void;
   onToggleMultiSelect: () => void;
@@ -38,6 +39,7 @@ export function PostMediaPickerSheetHandleProvider({
   mediaType,
   onFocusSelectedPhoto,
   onOpenAlbumPicker,
+  onReorderSelectedPhotos,
   onSwitchMediaType,
   onToggleMultiSelect,
   previewPhotoId,
@@ -52,6 +54,7 @@ export function PostMediaPickerSheetHandleProvider({
         mediaType,
         onFocusSelectedPhoto,
         onOpenAlbumPicker,
+        onReorderSelectedPhotos,
         onSwitchMediaType,
         onToggleMultiSelect,
         previewPhotoId,
@@ -78,6 +81,7 @@ export function PostMediaPickerSheetHandle() {
           context.selectedPhotos.length >= 2
         }
         onFocusPhoto={context.onFocusSelectedPhoto}
+        onReorder={context.onReorderSelectedPhotos}
         photos={context.selectedPhotos}
         previewPhotoId={context.previewPhotoId}
       />

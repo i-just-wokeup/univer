@@ -243,6 +243,7 @@ export function WriteScreen() {
             onChangeCropTransform={mediaPicker.updatePreviewCropTransform}
             onCycleAspectRatio={mediaPicker.cycleAspectRatio}
             onFocusSelectedPhoto={mediaPicker.focusSelectedPhoto}
+            onReorderSelectedPhotos={mediaPicker.reorderSelectedPhotos}
             onLoadMore={mediaPicker.loadMore}
             onOpenSettings={mediaPicker.openSettings}
             onRequestPermission={mediaPicker.requestPermission}

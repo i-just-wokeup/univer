@@ -48,6 +48,7 @@ type PostMediaPickerBodyProps = {
   onCycleAspectRatio: () => void;
   onLoadMore: () => void;
   onFocusSelectedPhoto: (photoId: string) => void;
+  onReorderSelectedPhotos: (fromIndex: number, toIndex: number) => void;
   onRetryAlbums: () => void;
   onSelectAlbum: (albumId: string | null) => void;
   onOpenSettings: () => void;
@@ -82,6 +83,7 @@ export function PostMediaPickerBody({
   onChangeCropTransform,
   onCycleAspectRatio,
   onFocusSelectedPhoto,
+  onReorderSelectedPhotos,
   onLoadMore,
   onOpenSettings,
   onSwitchToVideo,
@@ -178,6 +180,7 @@ export function PostMediaPickerBody({
           isMultiSelect={isMultiSelect}
           mediaType="photo"
           onFocusSelectedPhoto={onFocusSelectedPhoto}
+          onReorderSelectedPhotos={onReorderSelectedPhotos}
           onOpenAlbumPicker={() => setIsAlbumPickerOpen(true)}
           onSwitchMediaType={onSwitchToVideo}
           onToggleMultiSelect={onToggleMultiSelect}
