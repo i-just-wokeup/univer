@@ -1,4 +1,5 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
 import { useMemo, useRef, useState } from "react";
 import { Gesture } from "react-native-gesture-handler";
 
@@ -15,6 +16,7 @@ type UseCameraCaptureOptions = {
 };
 
 const CAMERA_ZOOM_SENSITIVITY = 0.25;
+const CAMERA_ALBUM_NAME = "unip";
 
 function clampCameraZoom(value: number): number {
   return Math.min(1, Math.max(0, value));
@@ -25,6 +27,46 @@ function getCaptureErrorMessage(error: unknown): string {
     return error.message;
   }
   return "사진을 촬영하지 못했습니다.";
+}
+
+async function saveCapturedPhotoToAlbum(uri: string): Promise<void> {
+  let album: MediaLibrary.Album | null;
+  try {
+    album = await MediaLibrary.getAlbumAsync(CAMERA_ALBUM_NAME);
+  } catch {
+    await MediaLibrary.createAssetAsync(uri);
+    return;
+  }
+
+  if (album) {
+    await MediaLibrary.createAssetAsync(uri, album);
+    return;
+  }
+
+  try {
+    await MediaLibrary.createAlbumAsync(
+      CAMERA_ALBUM_NAME,
+      undefined,
+      true,
+      uri,
+    );
+  } catch {
+    await MediaLibrary.createAssetAsync(uri);
+  }
+}
+
+async function saveCapturedPhoto(uri: string): Promise<void> {
+  try {
+    let permission = await MediaLibrary.getPermissionsAsync(true, ["photo"]);
+    if (!permission.granted) {
+      permission = await MediaLibrary.requestPermissionsAsync(true, ["photo"]);
+    }
+    if (permission.granted) {
+      await saveCapturedPhotoToAlbum(uri);
+    }
+  } catch {
+    // Gallery saving is best-effort and must not block the captured photo flow.
+  }
 }
 
 export function useCameraCapture({
@@ -87,6 +129,7 @@ export function useCameraCapture({
       if (!photo?.uri || photo.width <= 0 || photo.height <= 0) {
         throw new Error("촬영 결과를 불러오지 못했습니다.");
       }
+      await saveCapturedPhoto(photo.uri);
       await onCaptured({
         height: photo.height,
         uri: photo.uri,
