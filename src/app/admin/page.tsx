@@ -95,6 +95,7 @@ export default function AdminDashboardPage() {
   const [period, setPeriod] = useState<AdminPeriod>("day");
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
   const [ops, setOps] = useState<AdminOpsStats>(EMPTY_OPS);
+  const [hasOps, setHasOps] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,12 +106,30 @@ export default function AdminDashboardPage() {
       setIsLoading(!showRefreshing);
       setIsRefreshing(showRefreshing);
 
-      const [nextStats, nextOps] = await Promise.all([
+      // 한쪽이 실패해도 다른 쪽은 보여준다. 묶어두면 새 지표가 죽을 때
+      // 기존 KPI까지 0으로 보여 실제 값처럼 읽힌다.
+      const [statsResult, opsResult] = await Promise.allSettled([
         getDashboardStats(),
         getAdminOpsStats(),
       ]);
-      setStats(nextStats);
-      setOps(nextOps);
+
+      if (statsResult.status === "fulfilled") {
+        setStats(statsResult.value);
+      } else {
+        setStats(EMPTY_STATS);
+        setError("대시보드 통계를 불러오지 못했습니다.");
+      }
+
+      if (opsResult.status === "fulfilled") {
+        setOps(opsResult.value);
+        setHasOps(true);
+      } else {
+        setOps(EMPTY_OPS);
+        setHasOps(false);
+        setError((current) =>
+          current ? current : "운영 지표를 불러오지 못했습니다.",
+        );
+      }
     } catch (loadError) {
       setError(
         loadError instanceof Error
@@ -198,14 +217,14 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {isLoading ? null : (
+      {isLoading || !hasOps ? null : (
         <div className="grid gap-4 lg:grid-cols-3">
           <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
             <p className="text-sm font-semibold text-zinc-500">접속</p>
             <p className="mt-4 text-4xl font-bold tracking-tight text-zinc-950">
               {formatNumber(ops.activity.today)}
               <span className="ml-2 text-base font-semibold text-zinc-400">
-                오늘
+                최근 24시간
               </span>
             </p>
             <dl className="mt-5 space-y-2 text-sm">
