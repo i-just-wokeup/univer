@@ -68,6 +68,7 @@ const EMPTY_OPS: AdminOpsStats = {
   appVersions: [],
   media: { failed: 0, processing: 0, ready: 0 },
   pendingPromotions: 0,
+  versionUnknown: 0,
   withdrawnUsers: 0,
 };
 
@@ -249,8 +250,8 @@ export default function AdminDashboardPage() {
             </dl>
             {ops.activity.unknown > 0 ? (
               <p className="mt-4 text-xs leading-relaxed text-zinc-400">
-                {formatNumber(ops.activity.unknown)}명은 아직 기록이 없습니다.
-                이 기능이 들어간 버전으로 앱을 켜야 잡힙니다.
+                {formatNumber(ops.activity.unknown)}명은 가입 후 활동 기록이
+                없습니다.
               </p>
             ) : null}
           </section>
@@ -277,6 +278,12 @@ export default function AdminDashboardPage() {
                 ))}
               </ul>
             )}
+            {ops.versionUnknown > 0 ? (
+              <p className="mt-4 text-xs leading-relaxed text-zinc-400">
+                {formatNumber(ops.versionUnknown)}명은 아직 버전을 알 수
+                없습니다. 앱을 완전히 껐다 켜야 보고됩니다.
+              </p>
+            ) : null}
           </section>
 
           <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">

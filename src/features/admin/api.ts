@@ -39,6 +39,8 @@ export type AdminOpsStats = {
     ready: number;
   };
   pendingPromotions: number;
+  // 앱 버전은 앱이 보고해야만 알 수 있다. 아직 보고하지 않은 인원.
+  versionUnknown: number;
   withdrawnUsers: number;
 };
 
@@ -386,6 +388,7 @@ function normalizeOpsStats(value: Json | null): AdminOpsStats {
       ready: readNumber(media, ["ready"]),
     },
     pendingPromotions: readNumber(root, ["pendingPromotions"]),
+    versionUnknown: readNumber(root, ["versionUnknown"]),
     withdrawnUsers: readNumber(root, ["withdrawnUsers"]),
   };
 }
