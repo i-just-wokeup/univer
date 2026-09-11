@@ -42,7 +42,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "스토리를 촬영하려면 카메라 접근 권한이 필요합니다.",
+          "cameraPermission": "사진·영상을 촬영해 게시물이나 스토리에 올리려면 카메라 접근 권한이 필요합니다.",
           "microphonePermission": "영상 촬영 시 마이크 접근 권한이 필요합니다."
         }
       ],
