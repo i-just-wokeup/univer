@@ -119,9 +119,15 @@ export function usePostShare(isOpen: boolean, canCreateStory = false) {
     }
 
     setIsSearching(true);
+    // 타이머만 취소하면 이미 나간 요청은 못 막는다. 늦게 온 예전 응답이
+    // 최신 결과를 덮어쓰지 않도록 정리 시점에 무효로 표시한다.
+    let isStale = false;
     const timer = setTimeout(async () => {
       try {
         const users = await searchUsers(trimmedQuery);
+        if (isStale) {
+          return;
+        }
         setSearchResults(
           users
             .filter((user) => user.id !== currentUserId)
@@ -134,13 +140,22 @@ export function usePostShare(isOpen: boolean, canCreateStory = false) {
             })),
         );
       } catch {
+        if (isStale) {
+          return;
+        }
         setSearchResults([]);
       } finally {
-        setIsSearching(false);
+        // 무효해진 요청은 로딩도 끄지 않는다(더 새 요청이 진행 중이다).
+        if (!isStale) {
+          setIsSearching(false);
+        }
       }
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isStale = true;
+      clearTimeout(timer);
+    };
   }, [currentUserId, query]);
 
   const visibleTargets = useMemo(

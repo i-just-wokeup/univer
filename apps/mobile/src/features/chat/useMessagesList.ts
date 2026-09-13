@@ -35,17 +35,32 @@ export function useMessagesList() {
     }
 
     setIsSearching(true);
+    // 타이머만 취소하면 이미 나간 요청은 못 막는다. 늦게 온 예전 응답이
+    // 최신 결과를 덮어쓰지 않도록 정리 시점에 무효로 표시한다.
+    let isStale = false;
     const timer = setTimeout(async () => {
       try {
-        setSearchResults(await searchUsers(query));
+        const users = await searchUsers(query);
+        if (isStale) {
+          return;
+        }
+        setSearchResults(users);
       } catch {
+        if (isStale) {
+          return;
+        }
         setSearchResults([]);
       } finally {
-        setIsSearching(false);
+        if (!isStale) {
+          setIsSearching(false);
+        }
       }
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isStale = true;
+      clearTimeout(timer);
+    };
   }, [query]);
 
   // 대화방 생성까지만 담당하고 conversationId를 반환한다(화면 이동은 호출부). 실패 시 null.
