@@ -31,9 +31,10 @@ type SetFeedPageCacheParams = {
 let feedPageCache: FeedPageCacheEntry | null = null;
 
 function isFreshCache(entry: FeedPageCacheEntry, userId: string) {
+  // 만료 비교는 탐색·프로필 캐시와 같은 `<` 를 쓴다(TTL과 정확히 같은 시각은 만료로 본다).
   return (
     entry.userId === userId &&
-    Date.now() - entry.cachedAt <= FEED_PAGE_CACHE_TTL_MS
+    Date.now() - entry.cachedAt < FEED_PAGE_CACHE_TTL_MS
   );
 }
 
