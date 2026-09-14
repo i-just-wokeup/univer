@@ -7,6 +7,11 @@
 ## 2026-09-14
 
 ### 완료
+- 바텀시트 7개 공용 껍데기 전환: `components/common/BottomSheet.tsx`를 추가하고 ActionSheet/ConfirmDialog/PostShareSheet/CommentsSheet/StoryViewersSheet/ActivityStoryPreviewSheet/PostMediaAlbumPicker를 연결했다. 덮개·Modal·상단 모서리 28·선택 손잡이·하단 안전영역만 공용화했다.
+  - 기본 animationType은 slide지만 기존 fade 호출은 명시적으로 유지. 댓글·공유는 none, 기존 Animated 값·제스처 훅·종료 후 초기화 금지·키보드 처리·공유 고정 푸터를 보존했다.
+  - 상단 모서리: 댓글/공유 26→28, 활동 스토리 미리보기/확인창 24→28, 앨범 16→28. 액션/스토리 조회자는 28 유지. 활동 미리보기는 실제 코드의 가운데 배치·아래 모서리 24·내부 조회자 패널을 유지했다.
+  - ConfirmDialog만 가운데→하단 이동. 문구·버튼·danger/canCancel·콜백·외부 props는 유지했으며 실제 사용처 11개 파일/17개 호출은 수정하지 않았다. 하단 여백은 확인창 max(insets.bottom,16), 스토리 조회자 max(insets.bottom,28)로 보정한다. 앨범의 58%/92%, 조회자 최대 70%, 활동 최대 94%, 댓글 94%, 공유 55%/92%는 그대로다.
+  - 검증: 앱 tsc --noEmit 및 변경 파일 diff --check 통과. 7개 시트 내용 JSX/외부 props를 변경 전과 대조했고, JS 모의 실행으로 껍데기 기본값·Animated 전달·닫기 경로·고정 푸터·canCancel 차단·확인 버튼을 확인했다. ESLint는 기존 활동 미리보기 훅 오류 5건이 변경 전후 동일하게 남는다. 실기기 검증·커밋·OTA는 하지 않았다.
 - Icon 교체 검증: 앱 `tsc --noEmit` 및 변경 파일 `git diff --check` 통과. ESLint는 변경 전후 기존 지적 19건이 남아 전체 통과는 아니며, 실기기 외형 검증은 미수행.
 - 공용 Icon 호출부 교체: 앱 54개 파일의 89곳을 기존 Icon/토큰으로 전환. 탭바 25, 하트 96/테두리 0, 큰 일러스트, 브랜드 자산과 비테마 헤더는 보존했다. 흰색 32곳은 배경 확인 후 onMedia로 전환. 수치 변경·예외·실기기 점검 목록은 `docs/ICON_MIGRATION_20260914.md` 참고. 커밋·OTA 배포하지 않음.
 - 🍎 **iOS 실기기 첫 검증 — 카메라 결함 3건 수정** (iPhone 12, 개발 빌드). 그동안 iOS는 1.0.0 빌드뿐이고 현재 코드는 1.0.2라 OTA가 닿지 않아 한 번도 확인하지 못했던 영역이다.
