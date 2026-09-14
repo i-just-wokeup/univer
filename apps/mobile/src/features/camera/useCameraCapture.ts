@@ -1,6 +1,7 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { useMemo, useRef, useState } from "react";
+import { Platform } from "react-native";
 import { Gesture } from "react-native-gesture-handler";
 
 export type CapturedPhoto = {
@@ -153,7 +154,15 @@ export function useCameraCapture({
     if (isCapturing) {
       return;
     }
-    setIsCameraReady(false);
+
+    // 의도: 준비 상태 초기화는 Android 에서만 한다.
+    // Android(CameraX)는 전후면을 바꾸면 카메라를 다시 붙이며 onCameraReady 를
+    // 한 번 더 부르지만, iOS 는 뷰가 그대로라 다시 부르지 않는다. iOS 에서도
+    // 초기화하면 로딩 표시가 영원히 남고 촬영 버튼이 잠긴다(2026-09-14 실기기 확인).
+    if (Platform.OS === "android") {
+      setIsCameraReady(false);
+    }
+
     setFlash("off");
     resetZoom();
     setFacing((current) => (current === "back" ? "front" : "back"));
