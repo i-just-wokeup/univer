@@ -1,8 +1,5 @@
 import { useState } from "react";
 import {
-  Animated,
-  Modal,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -15,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CommentActionMenus } from "./CommentActionMenus";
+import { BottomSheet } from "../common/BottomSheet";
 import { CommentInputBar } from "./CommentInputBar";
 import { CommentsList } from "./CommentsList";
 import { CommentsSheetHeader } from "./CommentsSheetHeader";
@@ -74,67 +72,20 @@ export function CommentsSheet({
     useCommentsSheetDrag({ height, isOpen, onClose, postId });
 
   return (
-    <Modal
+    <BottomSheet
+      // 의도: 내부 닫힘 애니메이션만 사용한다. 종료 직후 위치 초기화는 하지 않는다.
       animationType="none"
-      onRequestClose={onClose}
-      transparent
+      onClose={onClose}
       visible={isOpen && Boolean(postId)}
-    >
-      <View style={[styles.overlay, { paddingTop: insets.top }]}>
-        <Pressable onPress={closeWithAnimation} style={styles.backdrop} />
-        <Animated.View
-          style={[
-            styles.sheet,
-            { transform: [{ translateY: sheetTranslateY }] },
-          ]}
-        >
-          <CommentsSheetHeader panHandlers={panHandlers} />
-
-          <CommentsList
-            comments={comments}
-            deletingCommentId={deletingCommentId}
-            expandedReplyIds={expandedReplyIds}
-            isLoading={isLoading}
-            likedCommentIds={likedCommentIds}
-            onLongPress={setMenuComment}
-            onReply={handleReply}
-            onToggleLike={handleToggleLike}
-            onToggleReplies={toggleReplies}
-            onUserPress={onUserPress}
-          />
-
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          ) : null}
-
-          <KeyboardStickyView enabled={isOpen} offset={COMMENT_INPUT_OFFSET}>
-            {feedbackMessage ? (
-              <View
-                pointerEvents="none"
-                style={[
-                  styles.feedbackToast,
-                  { bottom: (isKeyboardVisible ? 0 : insets.bottom) + 78 },
-                ]}
-              >
-                <Text style={styles.feedbackToastText}>{feedbackMessage}</Text>
-              </View>
-            ) : null}
-
-            <CommentInputBar
-              bottomInset={isKeyboardVisible ? 0 : insets.bottom}
-              content={content}
-              inputRef={inputRef}
-              isSubmitting={isSubmitting}
-              onCancelReply={handleCancelReply}
-              onChangeContent={setContent}
-              onSubmit={() => {
-                void handleSubmit();
-              }}
-              replyTarget={replyTarget}
-            />
-          </KeyboardStickyView>
-        </Animated.View>
-
+      onBackdropPress={closeWithAnimation}
+      backdropStyle={styles.backdrop}
+      containerStyle={{ paddingTop: insets.top }}
+      safeAreaBottom={false}
+      sheetStyle={[
+        styles.sheet,
+        { transform: [{ translateY: sheetTranslateY }] },
+      ]}
+      overlayContent={
         <CommentActionMenus
           currentUserId={currentUserId}
           menuComment={menuComment}
@@ -150,26 +101,64 @@ export function CommentsSheet({
           onOpenReport={setReportCommentId}
           reportCommentId={reportCommentId}
         />
-      </View>
-    </Modal>
+      }
+    >
+      <CommentsSheetHeader panHandlers={panHandlers} />
+
+      <CommentsList
+        comments={comments}
+        deletingCommentId={deletingCommentId}
+        expandedReplyIds={expandedReplyIds}
+        isLoading={isLoading}
+        likedCommentIds={likedCommentIds}
+        onLongPress={setMenuComment}
+        onReply={handleReply}
+        onToggleLike={handleToggleLike}
+        onToggleReplies={toggleReplies}
+        onUserPress={onUserPress}
+      />
+
+      {errorMessage ? (
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      ) : null}
+
+      <KeyboardStickyView enabled={isOpen} offset={COMMENT_INPUT_OFFSET}>
+        {feedbackMessage ? (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.feedbackToast,
+              { bottom: (isKeyboardVisible ? 0 : insets.bottom) + 78 },
+            ]}
+          >
+            <Text style={styles.feedbackToastText}>{feedbackMessage}</Text>
+          </View>
+        ) : null}
+
+        <CommentInputBar
+          bottomInset={isKeyboardVisible ? 0 : insets.bottom}
+          content={content}
+          inputRef={inputRef}
+          isSubmitting={isSubmitting}
+          onCancelReply={handleCancelReply}
+          onChangeContent={setContent}
+          onSubmit={() => {
+            void handleSubmit();
+          }}
+          replyTarget={replyTarget}
+        />
+      </KeyboardStickyView>
+    </BottomSheet>
   );
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: c.scrimWeak,
   },
   sheet: {
     height: "94%",
     overflow: "hidden",
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    backgroundColor: c.navBackground,
   },
   errorText: {
     color: c.danger,

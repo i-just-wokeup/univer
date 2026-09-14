@@ -1,6 +1,4 @@
 import {
-  Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -8,6 +6,7 @@ import {
 } from "react-native";
 
 import { Icon } from "../common/Icon";
+import { BottomSheet } from "../common/BottomSheet";
 import { Avatar } from "../common/Avatar";
 import type { StoryViewer } from "../../features/stories/types";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
@@ -25,55 +24,48 @@ export function StoryViewersSheet({
   viewers,
 }: StoryViewersSheetProps) {
   return (
-    <Modal
-      animationType="slide"
-      onRequestClose={onClose}
-      transparent
+    <BottomSheet
+      onClose={onClose}
       visible={isOpen}
+      backdropStyle={styles.sheetOverlay}
+      sheetStyle={styles.sheet}
+      bottomPadding={28}
+      showHandle
+      handleStyle={styles.sheetHandle}
     >
-      <Pressable onPress={onClose} style={styles.sheetOverlay}>
-        <Pressable onPress={() => undefined} style={styles.sheet}>
-          <View style={styles.sheetHandle} />
-          <Text style={styles.sheetTitle}>조회자 {viewers.length}명</Text>
-          <ScrollView style={styles.sheetList}>
-            {viewers.length === 0 ? (
-              <Text style={styles.sheetEmpty}>아직 조회한 사람이 없습니다</Text>
-            ) : (
-              viewers.map((viewer) => (
-                <View key={viewer.id} style={styles.viewerRow}>
-                  <Avatar
-                    imageUrl={viewer.avatar_url}
-                    label={viewer.nickname}
-                    size={40}
-                  />
-                  <Text style={styles.viewerName}>{viewer.nickname}</Text>
-                  {viewer.isLiked ? (
-                    <Icon name="heart" size="sm" stroke="thin" tone="danger" filled />
-                  ) : null}
-                </View>
-              ))
-            )}
-          </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Modal>
+      <Text style={styles.sheetTitle}>조회자 {viewers.length}명</Text>
+      <ScrollView style={styles.sheetList}>
+        {viewers.length === 0 ? (
+          <Text style={styles.sheetEmpty}>아직 조회한 사람이 없습니다</Text>
+        ) : (
+          viewers.map((viewer) => (
+            <View key={viewer.id} style={styles.viewerRow}>
+              <Avatar
+                imageUrl={viewer.avatar_url}
+                label={viewer.nickname}
+                size={40}
+              />
+              <Text style={styles.viewerName}>{viewer.nickname}</Text>
+              {viewer.isLiked ? (
+                <Icon name="heart" size="sm" stroke="thin" tone="danger" filled />
+              ) : null}
+            </View>
+          ))
+        )}
+      </ScrollView>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
   sheetOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
     backgroundColor: colors.scrimStrong,
   },
   sheet: {
     maxHeight: "70%",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
     backgroundColor: colors.white,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 28,
   },
   sheetHandle: {
     alignSelf: "center",

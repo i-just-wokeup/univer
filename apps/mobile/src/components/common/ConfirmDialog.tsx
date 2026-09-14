@@ -1,4 +1,5 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { BottomSheet } from "./BottomSheet";
 
 import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
@@ -30,131 +31,102 @@ export function ConfirmDialog({
   const styles = useThemedStyles(makeStyles);
 
   return (
-    <Modal
+    <BottomSheet
       animationType="fade"
-      onRequestClose={canCancel ? onCancel : () => undefined}
-      transparent
+      onClose={canCancel ? onCancel : () => undefined}
+      dismissOnBackdropPress={canCancel}
       visible={isOpen}
+      sheetStyle={styles.dialog}
     >
-      <View style={styles.overlay}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{title}</Text>
+        {description ? (
+          <Text style={styles.description}>{description}</Text>
+        ) : null}
+      </View>
+
+      <View style={styles.actions}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onConfirm}
+          style={({ pressed }) => [
+            styles.item,
+            canCancel ? null : styles.lastItem,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text style={[styles.itemText, danger ? styles.dangerText : null]}>
+            {confirmLabel}
+          </Text>
+        </Pressable>
         {canCancel ? (
           <Pressable
-            accessibilityLabel="닫기"
             accessibilityRole="button"
             onPress={onCancel}
-            style={StyleSheet.absoluteFill}
-          />
+            style={({ pressed }) => [
+              styles.item,
+              styles.lastItem,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <Text style={styles.itemText}>{cancelLabel}</Text>
+          </Pressable>
         ) : null}
-        <View style={styles.dialog}>
-          <Text style={styles.title}>{title}</Text>
-          {description ? (
-            <Text style={styles.description}>{description}</Text>
-          ) : null}
-
-          <View style={styles.actions}>
-            {canCancel ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={onCancel}
-                style={({ pressed }) => [
-                  styles.button,
-                  styles.cancelButton,
-                  pressed ? styles.pressed : null,
-                ]}
-              >
-                <Text style={styles.cancelText}>{cancelLabel}</Text>
-              </Pressable>
-            ) : null}
-            <Pressable
-              accessibilityRole="button"
-              onPress={onConfirm}
-              style={({ pressed }) => [
-                styles.button,
-                danger ? styles.dangerButton : styles.confirmButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text
-                style={danger ? styles.dangerText : styles.confirmText}
-              >
-                {confirmLabel}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
-  overlay: {
-    flex: 1,
+  // 의도: 더보기 시트(ActionSheet)와 같은 모양이어야 한다. 확인창은 거의 항상
+  // ⋯ 시트 바로 다음에 뜨므로 가로 꽉 참 + 가운데 정렬 + 항목별 구분선으로 맞춘다.
+  // 2026-09-14 에 화면 가운데에서 내려오면서 카드 모양이 남아 어색했다.
+  dialog: {
+    overflow: "hidden",
+  },
+  header: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: c.scrimMed,
-    paddingHorizontal: 32,
-  },
-  dialog: {
-    width: "100%",
-    maxWidth: 360,
-    borderRadius: 24,
-    backgroundColor: c.navBackground,
-    paddingHorizontal: 22,
-    paddingTop: 24,
-    paddingBottom: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: c.border,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
   title: {
     color: c.text,
-    fontSize: fontSize.titleSmall,
+    fontSize: fontSize.body,
     fontWeight: fontWeight.heavy,
     textAlign: "center",
   },
   description: {
-    marginTop: 10,
+    marginTop: 6,
     color: c.muted,
     fontSize: fontSize.bodySmall,
     fontWeight: fontWeight.medium,
     lineHeight: 20,
     textAlign: "center",
   },
-  actions: {
-    marginTop: 22,
-    flexDirection: "row",
-    gap: 10,
-  },
-  button: {
-    flex: 1,
-    height: 48,
+  actions: {},
+  item: {
+    minHeight: 56,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: c.border,
+    paddingHorizontal: 20,
   },
-  cancelButton: {
-    backgroundColor: c.navBackground,
+  lastItem: {
+    borderBottomWidth: 0,
   },
-  cancelText: {
-    color: c.muted,
+  itemText: {
+    color: c.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.bold,
   },
-  confirmButton: {
-    backgroundColor: c.accent,
-  },
-  confirmText: {
-    color: c.onAccent,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.heavy,
-  },
-  dangerButton: {
-    backgroundColor: c.danger,
-  },
   dangerText: {
-    color: c.white,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.heavy,
+    color: c.danger,
   },
   pressed: {
-    opacity: 0.8,
+    backgroundColor: c.overlayInkFaint,
   },
 });

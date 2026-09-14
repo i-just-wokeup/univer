@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
 
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import type { LayoutChangeEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../common/Icon";
+import { BottomSheet } from "../common/BottomSheet";
 import type { PostShareTarget } from "../../features/chat/usePostShare";
 import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
@@ -64,112 +65,109 @@ export function PostShareSheet({
     ? footerHeight + 16
     : insets.bottom + 16;
 
-  return (
-    <Modal
-      animationType="none"
-      onRequestClose={closeWithAnimation}
-      transparent
-      visible={isOpen}
-    >
-      <View style={styles.root}>
-        <Animated.View
-          style={[styles.backdrop, { opacity: backdropOpacity }]}
-        >
-          <Pressable
-            accessibilityLabel="공유 닫기"
-            onPress={closeWithAnimation}
-            style={StyleSheet.absoluteFill}
-          />
-        </Animated.View>
+  // 의도: 푸터는 시트 밖 바닥에 고정하되, 열고 닫는 타이밍은 시트와 맞춘다.
+  // backdropOpacity 는 열릴 때 0→1, 닫힐 때 1→0 이고 끌기와 무관해서,
+  // 이 값으로 푸터를 같이 올리고 내리면 따로 노는 느낌이 사라진다.
+  // 240 은 어떤 푸터 높이보다 커서 닫힐 때 화면 밖으로 완전히 빠진다.
+  const footerTranslateY = backdropOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: [240, 0],
+  });
 
+  return (
+    <BottomSheet
+      // 의도: 55%/92% 스냅과 배경 애니메이션은 공유 전용 훅이 소유한다.
+      animationType="none"
+      onClose={closeWithAnimation}
+      visible={isOpen}
+      backdropLabel="공유 닫기"
+      backdropStyle={[styles.backdrop, { opacity: backdropOpacity }]}
+      safeAreaBottom={false}
+      sheetStyle={[
+        styles.sheet,
+        { height: fullSnapHeight, transform: [{ translateY }] },
+      ]}
+      overlayContent={externalShareUrl ? (
         <Animated.View
+          onLayout={handleFooterLayout}
           style={[
-            styles.sheet,
+            styles.fixedFooter,
             {
-              height: fullSnapHeight,
-              transform: [{ translateY }],
+              opacity: backdropOpacity,
+              transform: [{ translateY: footerTranslateY }],
             },
           ]}
         >
-          <SafeAreaView edges={["bottom"]} style={styles.sheetContent}>
-            <View style={styles.dragArea} {...panHandlers}>
-              <View style={styles.handle} />
-            </View>
-            <View style={styles.header} {...panHandlers}>
-              <Text style={styles.title}>게시물 공유</Text>
-            </View>
-
-            {onAddToStory ? (
-              <View style={styles.storyActionWrap}>
-                <Pressable
-                  accessibilityLabel="내 스토리에 추가"
-                  accessibilityRole="button"
-                  onPress={onAddToStory}
-                  style={({ pressed }) => [
-                    styles.storyAction,
-                    pressed ? styles.storyActionPressed : null,
-                  ]}
-                >
-                  <View style={styles.storyActionIcon}>
-                    <Icon name="book" size="md" stroke="thin" tone="text" />
-                  </View>
-                  <Text style={styles.storyActionText}>내 스토리에 추가</Text>
-                </Pressable>
-              </View>
-            ) : null}
-
-            <View style={styles.searchWrap}>
-              <SearchInput
-                autoFocus={false}
-                onChange={onQueryChange}
-                placeholder="닉네임으로 검색"
-                value={query}
-              />
-            </View>
-
-            {errorMessage ? (
-              <Text style={styles.stateText}>{errorMessage}</Text>
-            ) : isLoading || isSearching ? (
-              <Text style={styles.stateText}>
-                {isLoading ? "공유 대상을 불러오는 중입니다…" : "검색 중입니다…"}
-              </Text>
-            ) : targets.length === 0 ? (
-              <Text style={styles.stateText}>
-                {query.trim()
-                  ? "검색 결과가 없습니다."
-                  : "공유할 대화나 크루가 없습니다."}
-              </Text>
-            ) : (
-              <ShareTargetList
-                contentBottomPadding={listBottomPadding}
-                onSelectTarget={onSelectTarget}
-                sendingTargetId={sendingTargetId}
-                targets={targets}
-              />
-            )}
-          </SafeAreaView>
+          <ExternalShareSection
+            insetsBottom={insets.bottom}
+            url={externalShareUrl}
+          />
         </Animated.View>
+      ) : null}
+    >
+      <SafeAreaView edges={["bottom"]} style={styles.sheetContent}>
+        <View style={styles.dragArea} {...panHandlers}>
+          <View style={styles.handle} />
+        </View>
+        <View style={styles.header} {...panHandlers}>
+          <Text style={styles.title}>게시물 공유</Text>
+        </View>
 
-        {externalShareUrl ? (
-          <View onLayout={handleFooterLayout} style={styles.fixedFooter}>
-            <ExternalShareSection
-              insetsBottom={insets.bottom}
-              url={externalShareUrl}
-            />
+        {onAddToStory ? (
+          <View style={styles.storyActionWrap}>
+            <Pressable
+              accessibilityLabel="내 스토리에 추가"
+              accessibilityRole="button"
+              onPress={onAddToStory}
+              style={({ pressed }) => [
+                styles.storyAction,
+                pressed ? styles.storyActionPressed : null,
+              ]}
+            >
+              <View style={styles.storyActionIcon}>
+                <Icon name="book" size="md" stroke="thin" tone="text" />
+              </View>
+              <Text style={styles.storyActionText}>내 스토리에 추가</Text>
+            </Pressable>
           </View>
         ) : null}
-      </View>
-    </Modal>
+
+        <View style={styles.searchWrap}>
+          <SearchInput
+            autoFocus={false}
+            onChange={onQueryChange}
+            placeholder="닉네임으로 검색"
+            value={query}
+          />
+        </View>
+
+        {errorMessage ? (
+          <Text style={styles.stateText}>{errorMessage}</Text>
+        ) : isLoading || isSearching ? (
+          <Text style={styles.stateText}>
+            {isLoading ? "공유 대상을 불러오는 중입니다…" : "검색 중입니다…"}
+          </Text>
+        ) : targets.length === 0 ? (
+          <Text style={styles.stateText}>
+            {query.trim()
+              ? "검색 결과가 없습니다."
+              : "공유할 대화나 크루가 없습니다."}
+          </Text>
+        ) : (
+          <ShareTargetList
+            contentBottomPadding={listBottomPadding}
+            onSelectTarget={onSelectTarget}
+            sendingTargetId={sendingTargetId}
+            targets={targets}
+          />
+        )}
+      </SafeAreaView>
+    </BottomSheet>
   );
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
-  root: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: c.scrimWeak,
   },
   sheet: {
@@ -177,13 +175,14 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    backgroundColor: c.navBackground,
   },
   sheetContent: {
     flex: 1,
   },
+  // 의도: 시트 "밖" 화면 바닥에 고정한다(2026-08-03 결정).
+  // 시트 안에 넣으면 반열림(55%) 상태에서 외부 공유가 화면 밖으로 밀려 안 보인다.
+  // 링크 공유는 항상 보여야 해서 분리한 것이다. 2026-09-14 에 시트 안으로
+  // 옮겨봤다가 같은 이유로 되돌렸다. 다시 옮기지 말 것.
   fixedFooter: {
     position: "absolute",
     right: 0,

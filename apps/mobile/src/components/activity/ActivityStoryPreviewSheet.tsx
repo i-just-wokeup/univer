@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Modal,
   Pressable,
   StyleSheet,
-  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -13,6 +11,7 @@ import type {
   ActivityStoryViewer,
 } from "../../features/activity/api";
 import { Icon } from "../common/Icon";
+import { BottomSheet } from "../common/BottomSheet";
 import { colors } from "../../lib/theme";
 import { ActivityStoryPreviewMedia } from "./ActivityStoryPreviewMedia";
 import { ActivityStoryPreviewMeta } from "./ActivityStoryPreviewMeta";
@@ -61,8 +60,16 @@ export function ActivityStoryPreviewSheet({
   });
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible>
-      <View style={[styles.overlay, { paddingTop: insets.top + 14 }]}>
+    <BottomSheet
+      animationType="fade"
+      onClose={onClose}
+      visible
+      dismissOnBackdropPress={false}
+      safeAreaBottom={false}
+      containerStyle={[styles.overlay, { paddingTop: insets.top + 14 }]}
+      backdropStyle={styles.backdrop}
+      sheetStyle={styles.sheet}
+      overlayContent={
         <Pressable
           accessibilityLabel="닫기"
           accessibilityRole="button"
@@ -71,50 +78,50 @@ export function ActivityStoryPreviewSheet({
         >
           <Icon name="x" size="md" stroke="regular" tone="onMedia" />
         </Pressable>
-        <View style={styles.sheet}>
-          <ActivityStoryPreviewMedia story={story} />
-          <ActivityStoryPreviewMeta
-            likedCount={likedViewers.length}
-            onOpenViewers={() => setIsViewerListOpen(true)}
-            story={story}
-          />
+      }
+    >
+      <ActivityStoryPreviewMedia story={story} />
+      <ActivityStoryPreviewMeta
+        likedCount={likedViewers.length}
+        onOpenViewers={() => setIsViewerListOpen(true)}
+        story={story}
+      />
 
-          {isViewerListOpen ? (
-            <Pressable
-              accessibilityLabel="조회한 사람 닫기"
-              onPress={() => setIsViewerListOpen(false)}
-              style={styles.viewerBackdrop}
-            />
-          ) : null}
+      {isViewerListOpen ? (
+        <Pressable
+          accessibilityLabel="조회한 사람 닫기"
+          onPress={() => setIsViewerListOpen(false)}
+          style={styles.viewerBackdrop}
+        />
+      ) : null}
 
-          <Animated.View
-            pointerEvents={isViewerListOpen ? "auto" : "none"}
-            style={[
-              styles.viewerPanel,
-              { transform: [{ translateY: panelTranslateY }] },
-            ]}
-          >
-            <ActivityStoryViewerList
-              isLoadingViewers={isLoadingViewers}
-              onClose={() => setIsViewerListOpen(false)}
-              story={story}
-              viewers={viewers}
-            />
-          </Animated.View>
-        </View>
-      </View>
-    </Modal>
+      <Animated.View
+        pointerEvents={isViewerListOpen ? "auto" : "none"}
+        style={[
+          styles.viewerPanel,
+          { transform: [{ translateY: panelTranslateY }] },
+        ]}
+      >
+        <ActivityStoryViewerList
+          isLoadingViewers={isLoadingViewers}
+          onClose={() => setIsViewerListOpen(false)}
+          story={story}
+          viewers={viewers}
+        />
+      </Animated.View>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.mediaSheetGlass,
     paddingHorizontal: 18,
     paddingBottom: 24,
+  },
+  backdrop: {
+    backgroundColor: colors.mediaSheetGlass,
   },
   closeButton: {
     position: "absolute",
@@ -133,7 +140,8 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     maxHeight: "94%",
     overflow: "hidden",
-    borderRadius: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     backgroundColor: colors.mediaSheetElevated,
   },
   viewerBackdrop: {

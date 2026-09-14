@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -20,6 +19,7 @@ import {
   useThemedStyles,
 } from "../../lib/theme";
 import { Icon } from "../common/Icon";
+import { BottomSheet } from "../common/BottomSheet";
 import type { ThemeColors } from "../../lib/theme";
 import { PostMediaAlbumGrid } from "./PostMediaAlbumGrid";
 import { PostMediaAlbumOverview } from "./PostMediaAlbumOverview";
@@ -65,122 +65,99 @@ export function PostMediaAlbumPicker({
   }
 
   return (
-    <Modal
+    <BottomSheet
       animationType="fade"
-      onRequestClose={handleClose}
+      onClose={handleClose}
       statusBarTranslucent
-      transparent
       visible={visible}
+      backdropLabel="앨범 선택 닫기"
+      safeAreaBottom={false}
+      sheetStyle={[
+        mode === "all" ? styles.panelExpanded : styles.panelOverview,
+        { paddingBottom: insets.bottom + 12 },
+      ]}
     >
-      <View style={styles.overlay}>
-        <Pressable
-          accessibilityLabel="앨범 선택 닫기"
-          accessibilityRole="button"
-          onPress={handleClose}
-          style={StyleSheet.absoluteFill}
-        />
-
-        <View
-          accessibilityViewIsModal
-          style={[
-            styles.panel,
-            mode === "all" ? styles.panelExpanded : styles.panelOverview,
-            { paddingBottom: insets.bottom + 12 },
-          ]}
-        >
-          <View style={styles.header}>
-            <View style={styles.headerSide}>
-              {mode === "all" ? (
-                <Pressable
-                  accessibilityLabel="앨범 미리보기로 돌아가기"
-                  accessibilityRole="button"
-                  hitSlop={8}
-                  onPress={() => setMode("overview")}
-                  style={({ pressed }) => (pressed ? styles.pressed : null)}
-                >
-                  <Icon name="arrowLeft" size="lg" stroke="regular" tone="text" />
-                </Pressable>
-              ) : null}
-            </View>
-
-            <View style={styles.headerTitleRow}>
-              <Text numberOfLines={1} style={styles.headerTitle}>
-                {mode === "all"
-                  ? mediaType === "video"
-                    ? "영상 앨범"
-                    : "사진첩"
-                  : "앨범 선택"}
-              </Text>
-              {isLoading ? (
-                <ActivityIndicator color={colors.accent} size="small" />
-              ) : null}
-            </View>
-
-            <View style={[styles.headerSide, styles.headerSideRight]}>
-              <Pressable
-                accessibilityLabel="앨범 선택 닫기"
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={handleClose}
-                style={({ pressed }) => pressed ? styles.pressed : null}
-              >
-                <Icon name="x" size="lg" stroke="regular" tone="text" />
-              </Pressable>
-            </View>
-          </View>
-
-          {errorMessage ? (
-            <View style={styles.errorRow}>
-              <Text numberOfLines={2} style={styles.errorText}>
-                {errorMessage}
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={onRetry}
-                style={({ pressed }) => [
-                  styles.retryButton,
-                  pressed ? styles.pressed : null,
-                ]}
-              >
-                <Text style={styles.retryText}>다시 시도</Text>
-              </Pressable>
-            </View>
+      <View style={styles.header}>
+        <View style={styles.headerSide}>
+          {mode === "all" ? (
+            <Pressable
+              accessibilityLabel="앨범 미리보기로 돌아가기"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => setMode("overview")}
+              style={({ pressed }) => (pressed ? styles.pressed : null)}
+            >
+              <Icon name="arrowLeft" size="lg" stroke="regular" tone="text" />
+            </Pressable>
           ) : null}
+        </View>
 
-          {albums.length === 0 && isLoading ? (
-            <ActivityIndicator color={colors.accent} style={styles.loader} />
-          ) : mode === "all" ? (
-            <PostMediaAlbumGrid
-              albums={albums}
-              onSelect={handleSelect}
-              selectedAlbumId={selectedAlbumId}
-            />
-          ) : (
-            <PostMediaAlbumOverview
-              albums={albums}
-              mediaType={mediaType}
-              onSelect={handleSelect}
-              onShowAll={() => setMode("all")}
-              selectedAlbumId={selectedAlbumId}
-            />
-          )}
+        <View style={styles.headerTitleRow}>
+          <Text numberOfLines={1} style={styles.headerTitle}>
+            {mode === "all"
+              ? mediaType === "video"
+                ? "영상 앨범"
+                : "사진첩"
+              : "앨범 선택"}
+          </Text>
+          {isLoading ? (
+            <ActivityIndicator color={colors.accent} size="small" />
+          ) : null}
+        </View>
+
+        <View style={[styles.headerSide, styles.headerSideRight]}>
+          <Pressable
+            accessibilityLabel="앨범 선택 닫기"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={handleClose}
+            style={({ pressed }) => pressed ? styles.pressed : null}
+          >
+            <Icon name="x" size="lg" stroke="regular" tone="text" />
+          </Pressable>
         </View>
       </View>
-    </Modal>
+
+      {errorMessage ? (
+        <View style={styles.errorRow}>
+          <Text numberOfLines={2} style={styles.errorText}>
+            {errorMessage}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onRetry}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <Text style={styles.retryText}>다시 시도</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {albums.length === 0 && isLoading ? (
+        <ActivityIndicator color={colors.accent} style={styles.loader} />
+      ) : mode === "all" ? (
+        <PostMediaAlbumGrid
+          albums={albums}
+          onSelect={handleSelect}
+          selectedAlbumId={selectedAlbumId}
+        />
+      ) : (
+        <PostMediaAlbumOverview
+          albums={albums}
+          mediaType={mediaType}
+          onSelect={handleSelect}
+          onShowAll={() => setMode("all")}
+          selectedAlbumId={selectedAlbumId}
+        />
+      )}
+    </BottomSheet>
   );
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: c.scrimMed,
-  },
-  panel: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    backgroundColor: c.navBackground,
-  },
   panelOverview: {
     height: "58%",
   },
