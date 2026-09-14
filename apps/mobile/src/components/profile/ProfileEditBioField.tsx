@@ -1,14 +1,4 @@
-import { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { BIO_MAX_LENGTH } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
@@ -26,8 +16,6 @@ export function ProfileEditBioField({
 }: ProfileEditBioFieldProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  const [isEditing, setIsEditing] = useState(false);
-  const displayBio = bio.trim() || "나를 소개해보세요.";
 
   return (
     <View style={styles.field}>
@@ -37,177 +25,54 @@ export function ProfileEditBioField({
           {bio.length}/{BIO_MAX_LENGTH}
         </Text>
       </View>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => setIsEditing(true)}
-        style={({ pressed }) => [
-          styles.bioValueButton,
-          pressed ? styles.pressed : null,
-        ]}
-      >
-        <Text
-          numberOfLines={3}
-          style={[styles.bioValueText, bio.trim() ? null : styles.placeholder]}
-        >
-          {displayBio}
-        </Text>
-      </Pressable>
-
-      {isEditing ? (
-        <Modal
-          animationType="fade"
-          onRequestClose={() => setIsEditing(false)}
-          transparent
-          visible
-        >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            style={styles.modalRoot}
-          >
-            <Pressable
-              accessibilityLabel="한 줄 소개 편집 닫기"
-              accessibilityRole="button"
-              onPress={() => setIsEditing(false)}
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={styles.modalCard}>
-              <View style={styles.modalHeader}>
-                <View>
-                  <Text style={styles.modalTitle}>한 줄 소개</Text>
-                  <Text style={styles.modalCounter}>
-                    {bio.length}/{BIO_MAX_LENGTH}
-                  </Text>
-                </View>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setIsEditing(false)}
-                  style={({ pressed }) => [
-                    styles.doneButton,
-                    pressed ? styles.pressed : null,
-                  ]}
-                >
-                  <Text style={styles.doneText}>완료</Text>
-                </Pressable>
-              </View>
-              <TextInput
-                {...noAutofillTextInputProps}
-                autoFocus
-                keyboardType="visible-password"
-                maxLength={BIO_MAX_LENGTH}
-                multiline
-                onChangeText={onChangeBio}
-                placeholder="나를 소개해보세요."
-                placeholderTextColor={colors.textFaint}
-                style={[styles.input, styles.bioInput]}
-                textAlignVertical="top"
-                value={bio}
-              />
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
-      ) : null}
+      {/* 의도: 그 자리에서 바로 입력한다. 2026-09-14 이전에는 눌러야 Modal 이
+          열리는 구조였는데, 한 단계가 불필요한데다 Modal 안 autoFocus 가 먹지 않아
+          키보드가 올라오지 않았다. 다시 Modal 로 감싸지 말 것. */}
+      <TextInput
+        {...noAutofillTextInputProps}
+        maxLength={BIO_MAX_LENGTH}
+        multiline
+        onChangeText={onChangeBio}
+        placeholder="나를 소개해보세요."
+        placeholderTextColor={colors.textFaint}
+        style={styles.input}
+        textAlignVertical="top"
+        value={bio}
+      />
     </View>
   );
 }
 
 const makeStyles = (c: ThemeColors) => StyleSheet.create({
   field: {
-    marginTop: 20,
+    gap: 8,
   },
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
   },
   label: {
-    marginBottom: 8,
-    color: c.text,
-    fontSize: fontSize.caption,
-    fontWeight: fontWeight.heavy,
+    color: c.muted,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.medium,
   },
   counter: {
-    marginBottom: 8,
     color: c.textFaint,
-    fontSize: fontSize.label,
-    fontWeight: fontWeight.bold,
+    fontSize: fontSize.footnote,
+    fontWeight: fontWeight.medium,
   },
   input: {
-    minHeight: 48,
+    minHeight: 96,
     borderWidth: 1,
     borderColor: c.border,
     borderRadius: 16,
     backgroundColor: c.navBackground,
     paddingHorizontal: 14,
+    paddingVertical: 12,
     color: c.text,
     fontSize: fontSize.bodySmall,
-    fontWeight: fontWeight.bold,
-  },
-  bioValueButton: {
-    minHeight: 92,
-    justifyContent: "flex-start",
-    borderWidth: 1,
-    borderColor: c.border,
-    borderRadius: 16,
-    backgroundColor: c.navBackground,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-  },
-  bioValueText: {
-    color: c.text,
-    fontSize: fontSize.bodySmall,
-    fontWeight: fontWeight.bold,
-    lineHeight: 21,
-  },
-  placeholder: {
-    color: c.textFaint,
-  },
-  bioInput: {
-    minHeight: 92,
-    paddingTop: 13,
-  },
-  pressed: {
-    opacity: 0.72,
-  },
-  modalRoot: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: c.scrimMed,
-    paddingHorizontal: 20,
-  },
-  modalCard: {
-    borderRadius: 24,
-    backgroundColor: c.navBackground,
-    padding: 18,
-  },
-  modalHeader: {
-    marginBottom: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  modalTitle: {
-    color: c.text,
-    fontSize: fontSize.titleSmall,
-    fontWeight: fontWeight.heavy,
-  },
-  modalCounter: {
-    marginTop: 3,
-    color: c.textFaint,
-    fontSize: fontSize.label,
-    fontWeight: fontWeight.bold,
-  },
-  doneButton: {
-    minHeight: 36,
-    justifyContent: "center",
-    borderRadius: 18,
-    backgroundColor: c.accent,
-    paddingHorizontal: 14,
-  },
-  doneText: {
-    color: c.onAccent,
-    fontSize: fontSize.caption,
-    fontWeight: fontWeight.heavy,
+    fontWeight: fontWeight.medium,
+    lineHeight: 20,
   },
 });
