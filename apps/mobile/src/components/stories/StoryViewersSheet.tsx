@@ -1,4 +1,3 @@
-import { Heart } from "lucide-react-native";
 import {
   Modal,
   Pressable,
@@ -8,6 +7,7 @@ import {
   View,
 } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { Avatar } from "../common/Avatar";
 import type { StoryViewer } from "../../features/stories/types";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
@@ -48,7 +48,7 @@ export function StoryViewersSheet({
                   />
                   <Text style={styles.viewerName}>{viewer.nickname}</Text>
                   {viewer.isLiked ? (
-                    <Heart color={colors.danger} fill={colors.danger} size={18} />
+                    <Icon name="heart" size="sm" stroke="thin" tone="danger" filled />
                   ) : null}
                 </View>
               ))

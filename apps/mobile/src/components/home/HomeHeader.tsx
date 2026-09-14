@@ -1,7 +1,7 @@
-import { Bell, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { Icon } from "../common/Icon";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { Logo } from "../common/Logo";
 
@@ -22,7 +22,7 @@ export function HomeHeader({
   unreadChatCount,
   unreadCount,
 }: HomeHeaderProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   // 의도: 알림·메시지 아이콘 strokeWidth 2는 2026-07-03 "인스타식 축소"로 2.6에서 내린 값
@@ -47,7 +47,7 @@ export function HomeHeader({
             onPress={onPressNotifications}
             style={styles.iconButton}
           >
-            <Bell color={colors.text} size={23} strokeWidth={2} />
+            <Icon name="bell" size="md" stroke="thin" tone="text" />
             {unreadCount > 0 ? (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
@@ -63,7 +63,7 @@ export function HomeHeader({
             onPress={onPressMessages}
             style={styles.iconButton}
           >
-            <MessageCircle color={colors.text} size={24} strokeWidth={2} />
+            <Icon name="messageCircle" size="lg" stroke="thin" tone="text" />
             {unreadChatCount > 0 ? (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>

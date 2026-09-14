@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors as lightColors, useTheme, fontSize, fontWeight } from "../../lib/theme";
+import { Icon } from "./Icon";
 
 type ScreenHeaderProps = {
   // 없으면 뒤로가기 버튼 대신 빈 공간을 둬서 title이 가운데 정렬을 유지한다(루트 탭 헤더용).
@@ -32,11 +33,11 @@ export function ScreenHeader({
             themed ? { backgroundColor: colors.navBackground } : null,
           ]}
         >
-          <ChevronLeft
-            color={themed ? colors.text : lightColors.text}
-            size={22}
-            strokeWidth={2.4}
-          />
+          {themed ? (
+            <Icon name="chevronLeft" />
+          ) : (
+            <ChevronLeft color={lightColors.text} size={22} strokeWidth={2.4} />
+          )}
         </Pressable>
       ) : (
         <View style={styles.headerSpacer} />

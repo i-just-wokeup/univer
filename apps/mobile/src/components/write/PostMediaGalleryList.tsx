@@ -1,5 +1,5 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { Camera } from "lucide-react-native";
+
 import { useMemo } from "react";
 import type { ReactElement } from "react";
 import {
@@ -9,6 +9,7 @@ import {
   Text,
 } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
 import { fontSize, fontWeight, useTheme, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
@@ -111,7 +112,7 @@ export function PostMediaGalleryList({
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Camera color={colors.onMediaGlyph} size={30} strokeWidth={2} />
+              <Icon name="camera" size="xl" stroke="thin" tone="onMedia" />
             </Pressable>
           );
         }

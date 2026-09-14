@@ -1,13 +1,8 @@
-import { Check } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostLibraryAlbumOption } from "../../features/feed/postMediaLibrary";
-import {
-  fontSize,
-  fontWeight,
-  useTheme,
-  useThemedStyles,
-} from "../../lib/theme";
+import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { PostLibraryAssetThumbnail } from "./PostLibraryAssetThumbnail";
 
@@ -24,7 +19,7 @@ export function PostMediaAlbumCard({
   onPress,
   width,
 }: PostMediaAlbumCardProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -46,7 +41,7 @@ export function PostMediaAlbumCard({
         />
         {isSelected ? (
           <View style={styles.selectedBadge}>
-            <Check color={colors.onAccent} size={16} strokeWidth={2.8} />
+            <Icon name="check" size="sm" stroke="bold" tone="onAccent" />
           </View>
         ) : null}
       </View>

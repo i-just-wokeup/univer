@@ -1,4 +1,3 @@
-import { Send } from "lucide-react-native";
 import type { RefObject } from "react";
 import {
   Pressable,
@@ -8,6 +7,7 @@ import {
   View,
 } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -74,7 +74,7 @@ export function CommentInputBar({
           onPress={onSubmit}
           style={[styles.sendButton, !canSubmit ? styles.sendButtonDisabled : null]}
         >
-          <Send color={colors.onAccent} size={18} strokeWidth={2.7} />
+          <Icon name="send" size="sm" stroke="regular" tone="onAccent" />
         </Pressable>
       </View>
     </View>

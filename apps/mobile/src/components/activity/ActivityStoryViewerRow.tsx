@@ -1,6 +1,6 @@
-import { Heart } from "lucide-react-native";
 import { StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { ActivityStoryViewer } from "../../features/activity/api";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
@@ -26,7 +26,7 @@ export function ActivityStoryViewerRow({
       </View>
       {viewer.isLiked ? (
         <View style={styles.likeBadge}>
-          <Heart color={colors.danger} fill={colors.danger} size={13} />
+          <Icon name="heart" size="xs" stroke="thin" tone="danger" filled />
           <Text style={styles.likeText}>좋아요</Text>
         </View>
       ) : null}

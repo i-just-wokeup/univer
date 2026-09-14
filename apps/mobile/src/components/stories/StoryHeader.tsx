@@ -1,6 +1,6 @@
-import { MoreHorizontal, Pause, X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { Avatar } from "../common/Avatar";
 import { colors, nicknameTextStyle, fontSize, fontWeight } from "../../lib/theme";
 
@@ -31,7 +31,7 @@ export function StoryHeader({
       </View>
       <View style={styles.headerActions}>
         {isPaused ? (
-          <Pause color={colors.white} fill={colors.white} size={20} />
+          <Icon name="pause" size="md" stroke="thin" tone="onMedia" filled />
         ) : null}
         <Pressable
           accessibilityLabel="스토리 메뉴"
@@ -39,7 +39,7 @@ export function StoryHeader({
           hitSlop={10}
           onPress={onMenu}
         >
-          <MoreHorizontal color={colors.white} size={26} strokeWidth={2.6} />
+          <Icon name="more" size="lg" stroke="regular" tone="onMedia" />
         </Pressable>
         <Pressable
           accessibilityLabel="닫기"
@@ -47,7 +47,7 @@ export function StoryHeader({
           hitSlop={10}
           onPress={onClose}
         >
-          <X color={colors.white} size={26} strokeWidth={2.6} />
+          <Icon name="x" size="lg" stroke="regular" tone="onMedia" />
         </Pressable>
       </View>
     </View>

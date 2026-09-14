@@ -1,14 +1,10 @@
 import { Image } from "expo-image";
-import { Play } from "lucide-react-native";
+
 import { StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostInsight } from "../../features/metrics/api";
-import {
-  fontSize,
-  fontWeight,
-  useTheme,
-  useThemedStyles,
-} from "../../lib/theme";
+import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 function formatCreatedAt(createdAt: string): string {
@@ -21,7 +17,7 @@ function formatCreatedAt(createdAt: string): string {
 }
 
 export function PostInsightPreview({ insight }: { insight: PostInsight }) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -37,7 +33,7 @@ export function PostInsightPreview({ insight }: { insight: PostInsight }) {
         ) : null}
         {insight.isVideo ? (
           <View style={styles.playBadge}>
-            <Play color={colors.white} fill={colors.white} size={16} />
+            <Icon name="play" size="sm" stroke="thin" tone="onMedia" filled />
           </View>
         ) : null}
       </View>

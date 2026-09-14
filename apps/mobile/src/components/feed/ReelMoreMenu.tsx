@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
-import { MoreHorizontal } from "lucide-react-native";
 
+import { Icon } from "../common/Icon";
 import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 import { ConfirmDialog } from "../common/ConfirmDialog";
-import { colors } from "../../lib/theme";
 
 type ReelMoreMenuProps = {
   isOwnPost: boolean;
@@ -61,7 +60,7 @@ export function ReelMoreMenu({
         onPress={() => setIsMenuOpen(true)}
         style={[styles.menuButton, { top }]}
       >
-        <MoreHorizontal color={colors.white} size={24} strokeWidth={2} />
+        <Icon name="more" size="lg" stroke="thin" tone="onMedia" />
       </Pressable>
 
       <ActionSheet

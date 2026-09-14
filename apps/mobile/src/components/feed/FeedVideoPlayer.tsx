@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { Volume2, VolumeX } from "lucide-react-native";
+
 import { useEffect, useState } from "react";
 import {
   Platform,
@@ -11,8 +11,9 @@ import {
   View,
 } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { DoubleTapLike } from "../common/DoubleTapLike";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 import type { PostAspectRatio } from "../../features/feed/types";
@@ -41,7 +42,7 @@ export function FeedVideoPlayer({
   thumbnailUrl,
   uri,
 }: FeedVideoPlayerProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(true);
@@ -173,9 +174,9 @@ export function FeedVideoPlayer({
           style={styles.muteBadge}
         >
           {isMuted ? (
-            <VolumeX color={colors.white} size={16} strokeWidth={2.4} />
+            <Icon name="volumeOff" size="sm" stroke="regular" tone="onMedia" />
           ) : (
-            <Volume2 color={colors.white} size={16} strokeWidth={2.4} />
+            <Icon name="volumeOn" size="sm" stroke="regular" tone="onMedia" />
           )}
         </Pressable>
       ) : null}

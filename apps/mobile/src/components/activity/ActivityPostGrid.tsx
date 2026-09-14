@@ -1,9 +1,10 @@
 import { Image } from "expo-image";
-import { Heart, MessageCircle } from "lucide-react-native";
+
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { ActivityPost } from "../../features/activity/api";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 
@@ -28,7 +29,7 @@ export function ActivityPostGrid({
   onOpenPost,
   posts,
 }: ActivityPostGridProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   if (posts.length === 0) {
@@ -67,15 +68,11 @@ export function ActivityPostGrid({
                 )}
                 <View style={styles.metaBar}>
                   <View style={styles.metaItem}>
-                    <Heart color={colors.white} size={13} strokeWidth={2.4} />
+                    <Icon name="heart" size="xs" stroke="regular" tone="onMedia" />
                     <Text style={styles.metaText}>{post.likes_count}</Text>
                   </View>
                   <View style={styles.metaItem}>
-                    <MessageCircle
-                      color={colors.white}
-                      size={13}
-                      strokeWidth={2.4}
-                    />
+                    <Icon name="messageCircle" size="xs" stroke="regular" tone="onMedia" />
                     <Text style={styles.metaText}>{post.comments_count}</Text>
                   </View>
                 </View>

@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Plus } from "lucide-react-native";
+
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { StoryGroup } from "../../features/stories/types";
 import { getStorySharedPostThumbnail } from "../../features/stories/storySharedPosts";
 import { HOME_COACH_MARK_TARGETS } from "../../lib/coachMarkTargets";
@@ -68,7 +69,6 @@ export function StoryBar({
   onPressCreate,
   onPressGroup,
 }: StoryBarProps) {
-  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const targetRef = useCoachMarkTarget(HOME_COACH_MARK_TARGETS.storyBar);
   const myGroup = groups.find((group) => group.stories[0]?.isMine);
@@ -115,7 +115,7 @@ export function StoryBar({
                 onPress={onPressCreate}
                 style={styles.addBadge}
               >
-                <Plus color={colors.onAccent} size={18} strokeWidth={3} />
+                <Icon name="plus" size="sm" stroke="bold" tone="onAccent" />
               </Pressable>
             ) : null}
           </View>
@@ -132,7 +132,7 @@ export function StoryBar({
             ]}
           >
             <View style={styles.createPlus}>
-              <Plus color={colors.onAccent} size={26} strokeWidth={2.6} />
+              <Icon name="plus" size="lg" stroke="regular" tone="onAccent" />
             </View>
             <Text style={styles.createLabel}>내 스토리</Text>
           </Pressable>

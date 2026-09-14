@@ -1,9 +1,9 @@
-import { MoreHorizontal } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { UserInline } from "../common/UserInline";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
-import { useTheme } from "../../lib/theme";
+
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -18,7 +18,7 @@ export function FeedPostHeader({
   onUserPress,
   post,
 }: FeedPostHeaderProps) {
-  const { colors } = useTheme();
+
   const { getBadge } = useVerifiedUsers();
   const relativeTime = getRelativeTimeLabel(post.created_at);
   const meta = post.user.department
@@ -46,7 +46,7 @@ export function FeedPostHeader({
           pressed ? styles.pressed : null,
         ]}
       >
-        <MoreHorizontal color={colors.textFaint} size={22} strokeWidth={2.2} />
+        <Icon name="more" size="md" stroke="regular" tone="faint" />
       </Pressable>
     </View>
   );

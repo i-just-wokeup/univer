@@ -1,7 +1,8 @@
-import { Film, Volume2, VolumeX } from "lucide-react-native";
+import { Film } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostLibraryVideo } from "../../features/feed/postMediaLibrary";
 import type { PostAspectRatio } from "../../features/feed/types";
 import { useTheme, useThemedStyles } from "../../lib/theme";
@@ -61,9 +62,9 @@ export function PostVideoPickerPreview({
           ]}
         >
           {isMuted ? (
-            <VolumeX color={colors.onMediaGlyph} size={20} strokeWidth={2.3} />
+            <Icon name="volumeOff" size="md" stroke="regular" tone="onMedia" />
           ) : (
-            <Volume2 color={colors.onMediaGlyph} size={20} strokeWidth={2.3} />
+            <Icon name="volumeOn" size="md" stroke="regular" tone="onMedia" />
           )}
         </Pressable>
       ) : null}

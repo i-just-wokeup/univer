@@ -1,4 +1,3 @@
-import { ArrowLeft, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -20,6 +19,7 @@ import {
   useTheme,
   useThemedStyles,
 } from "../../lib/theme";
+import { Icon } from "../common/Icon";
 import type { ThemeColors } from "../../lib/theme";
 import { PostMediaAlbumGrid } from "./PostMediaAlbumGrid";
 import { PostMediaAlbumOverview } from "./PostMediaAlbumOverview";
@@ -98,7 +98,7 @@ export function PostMediaAlbumPicker({
                   onPress={() => setMode("overview")}
                   style={({ pressed }) => (pressed ? styles.pressed : null)}
                 >
-                  <ArrowLeft color={colors.text} size={24} strokeWidth={2.2} />
+                  <Icon name="arrowLeft" size="lg" stroke="regular" tone="text" />
                 </Pressable>
               ) : null}
             </View>
@@ -124,7 +124,7 @@ export function PostMediaAlbumPicker({
                 onPress={handleClose}
                 style={({ pressed }) => pressed ? styles.pressed : null}
               >
-                <X color={colors.text} size={24} strokeWidth={2.2} />
+                <Icon name="x" size="lg" stroke="regular" tone="text" />
               </Pressable>
             </View>
           </View>

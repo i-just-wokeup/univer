@@ -1,6 +1,6 @@
-import { Eye, Heart } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { ActivityStory } from "../../features/activity/api";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { activityStoryDisplay } from "./ActivityStoryGrid";
@@ -26,11 +26,11 @@ export function ActivityStoryPreviewMeta({
           pressed ? styles.metaButtonPressed : null,
         ]}
       >
-        <Eye color={colors.white} size={15} strokeWidth={2.4} />
+        <Icon name="eye" size="xs" stroke="regular" tone="onMedia" />
         <Text style={styles.metaText}>조회 {story.views_count}</Text>
       </Pressable>
       <View style={styles.metaItem}>
-        <Heart color={colors.white} size={15} strokeWidth={2.4} />
+        <Icon name="heart" size="xs" stroke="regular" tone="onMedia" />
         <Text style={styles.metaText}>좋아요 {likedCount}</Text>
       </View>
       <Text style={styles.metaText}>

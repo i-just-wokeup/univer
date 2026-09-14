@@ -1,10 +1,11 @@
 import { Image } from "expo-image";
-import { Play } from "lucide-react-native";
+
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { ActivityStory } from "../../features/activity/api";
 import { getStorySharedPostThumbnail } from "../../features/stories/storySharedPosts";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StateView } from "../common/StateView";
 
@@ -50,7 +51,7 @@ export function ActivityStoryGrid({
   onSelectStory,
   stories,
 }: ActivityStoryGridProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   if (stories.length === 0) {
@@ -90,7 +91,7 @@ export function ActivityStoryGrid({
                 ) : null}
                 {story.type === "video" ? (
                   <View style={styles.videoBadge}>
-                    <Play color={colors.white} fill={colors.white} size={12} />
+                    <Icon name="play" size="xs" stroke="thin" tone="onMedia" filled />
                   </View>
                 ) : null}
                 <View style={styles.dateBadge}>

@@ -1,13 +1,8 @@
-import { Film, Play } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostLibraryVideo } from "../../features/feed/postMediaLibrary";
-import {
-  fontSize,
-  fontWeight,
-  useTheme,
-  useThemedStyles,
-} from "../../lib/theme";
+import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { PostLibraryAssetThumbnail } from "./PostLibraryAssetThumbnail";
 
@@ -35,7 +30,7 @@ export function PostVideoGalleryItem({
   shouldLoadThumbnail,
   video,
 }: PostVideoGalleryItemProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -57,10 +52,10 @@ export function PostVideoGalleryItem({
         style={styles.image}
       />
       <View pointerEvents="none" style={styles.playBadge}>
-        <Play color={colors.onMediaGlyph} fill={colors.onMediaGlyph} size={13} />
+        <Icon name="play" size="xs" stroke="thin" tone="onMedia" filled />
       </View>
       <View pointerEvents="none" style={styles.durationBadge}>
-        <Film color={colors.onMediaGlyph} size={12} strokeWidth={2.2} />
+        <Icon name="film" size="xs" stroke="regular" tone="onMedia" />
         <Text style={styles.durationText}>
           {formatDuration(video.durationSeconds)}
         </Text>

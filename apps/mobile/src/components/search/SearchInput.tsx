@@ -1,6 +1,6 @@
-import { Search, X } from "lucide-react-native";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -24,7 +24,7 @@ export function SearchInput({
 
   return (
     <View style={[styles.wrap, outlined ? styles.outline : null]}>
-      <Search color={colors.textFaint} size={18} strokeWidth={2.4} />
+      <Icon name="search" size="sm" stroke="regular" tone="faint" />
       <TextInput
         autoFocus={autoFocus}
         onChangeText={onChange}
@@ -42,7 +42,7 @@ export function SearchInput({
           onPress={() => onChange("")}
           style={styles.clear}
         >
-          <X color={colors.textFaint} size={16} strokeWidth={2.8} />
+          <Icon name="x" size="sm" stroke="bold" tone="faint" />
         </Pressable>
       ) : null}
     </View>

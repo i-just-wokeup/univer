@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Check, Lock } from "lucide-react-native";
+
 import { useEffect, useState } from "react";
 import {
   Linking,
@@ -12,6 +12,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../../components/common/Icon";
 import { StateView } from "../../components/common/StateView";
 import { Logo } from "../../components/common/Logo";
 import { useOnboarding } from "../../features/auth/useOnboarding";
@@ -91,7 +92,7 @@ export function OnboardingScreen() {
                 {realName || "직접 입력 필요"}
               </Text>
               {isRealNameReadOnly ? (
-                <Lock color={colors.textFaint} size={14} strokeWidth={2.4} />
+                <Icon name="lock" size="xs" stroke="regular" tone="faint" />
               ) : null}
             </View>
           </View>
@@ -103,7 +104,7 @@ export function OnboardingScreen() {
                 {department || "직접 입력 필요"}
               </Text>
               {isDepartmentReadOnly ? (
-                <Lock color={colors.textFaint} size={14} strokeWidth={2.4} />
+                <Icon name="lock" size="xs" stroke="regular" tone="faint" />
               ) : null}
             </View>
           </View>
@@ -193,7 +194,7 @@ export function OnboardingScreen() {
               style={[styles.checkbox, agreed ? styles.checkboxOn : null]}
             >
               {agreed ? (
-                <Check color={colors.onAccent} size={13} strokeWidth={3.2} />
+                <Icon name="check" size="xs" stroke="bold" tone="onAccent" />
               ) : null}
             </Pressable>
             <Text style={styles.agreeText}>

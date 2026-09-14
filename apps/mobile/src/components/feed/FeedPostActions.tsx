@@ -1,7 +1,7 @@
-import { Bookmark, Heart, MessageCircle, Send } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { Icon } from "../common/Icon";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import type { FeedPost } from "../../features/feed/types";
 
@@ -34,7 +34,7 @@ export function FeedPostActions({
   onShare,
   post,
 }: FeedPostActionsProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -43,11 +43,12 @@ export function FeedPostActions({
         <Pressable onPress={() => onLike(post.id)} style={styles.actionButton}>
           {/* 의도: strokeWidth 2는 2026-07-03 "인스타식 축소"로 2.6에서 내린 값이다.
               굵기 통일 작업이 2.4 등으로 되돌리면 안 된다 */}
-          <Heart
-            color={isLiked ? colors.danger : colors.text}
-            fill={isLiked ? colors.danger : "transparent"}
-            size={26}
-            strokeWidth={2}
+          <Icon
+            name="heart"
+            size="lg"
+            stroke="thin"
+            tone={isLiked ? "danger" : "text"}
+            filled={isLiked}
           />
           <Text style={styles.actionText}>{formatCount(post.likes_count)}</Text>
         </Pressable>
@@ -55,7 +56,7 @@ export function FeedPostActions({
           onPress={() => onComment(post.id)}
           style={styles.actionButton}
         >
-          <MessageCircle color={colors.text} size={25} strokeWidth={2} />
+          <Icon name="messageCircle" size="lg" stroke="thin" tone="text" />
           <Text style={styles.actionText}>
             {formatCount(post.comments_count)}
           </Text>
@@ -67,7 +68,7 @@ export function FeedPostActions({
             onPress={() => onShare(post)}
             style={styles.actionButton}
           >
-            <Send color={colors.text} size={23} strokeWidth={2} />
+            <Icon name="send" size="md" stroke="thin" tone="text" />
           </Pressable>
         ) : null}
       </View>
@@ -80,12 +81,7 @@ export function FeedPostActions({
           pressed ? styles.pressed : null,
         ]}
       >
-        <Bookmark
-          color={colors.text}
-          fill={isBookmarked ? colors.text : "transparent"}
-          size={25}
-          strokeWidth={2}
-        />
+        <Icon name="bookmark" size="lg" stroke="thin" tone="text" filled={isBookmarked} />
       </Pressable>
     </View>
   );

@@ -192,7 +192,10 @@ export const iconSize = {
 } as const;
 
 export const iconStroke = {
-  thin: 2, // 피드·헤더·탭바·릴스 — 2026-07-03 결정
+  // 의도: 어두운 영상 위(릴스)는 더 얇아야 한다. 2026-09-14에 thin(2)으로
+  // 흡수했다가 실기기에서 두꺼워 보여 되돌렸다. thin 과 합치지 말 것.
+  hairline: 1.8,
+  thin: 2, // 피드·헤더·탭바·카메라 — 2026-07-03 결정
   regular: 2.4, // 기본
   bold: 2.8, // 닫기 X, 체크 등 강조
 } as const;

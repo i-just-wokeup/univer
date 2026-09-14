@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+
 import { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../../components/common/Icon";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
 import { NotificationRow } from "../../components/notifications/NotificationRow";
 import { StateView } from "../../components/common/StateView";
@@ -45,7 +46,7 @@ export function NotificationsScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
+          <Icon name="chevronLeft" size="md" stroke="regular" tone="text" />
         </Pressable>
         <Text style={styles.title}>알림</Text>
         <Pressable

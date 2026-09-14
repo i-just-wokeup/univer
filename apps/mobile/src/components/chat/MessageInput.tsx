@@ -1,4 +1,3 @@
-import { Send } from "lucide-react-native";
 import { useState } from "react";
 import {
   Pressable,
@@ -8,6 +7,7 @@ import {
   type LayoutChangeEvent,
 } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
@@ -64,11 +64,7 @@ export function MessageInput({
           pressed && canSend ? styles.pressed : null,
         ]}
       >
-        <Send
-          color={canSend ? colors.onAccent : colors.textFaint}
-          size={19}
-          strokeWidth={2.6}
-        />
+        <Icon name="send" size="sm" stroke="regular" tone={canSend ? "onAccent" : "faint"} />
       </Pressable>
     </View>
   );

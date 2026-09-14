@@ -1,10 +1,11 @@
 import { Image } from "expo-image";
-import { Play } from "lucide-react-native";
+
 import { memo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { Message, SharedPostPreview } from "../../features/chat/api";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { formatChatTime } from "../../lib/utils/time";
 
@@ -76,7 +77,7 @@ function PostMessageCard({
   onMetaToggle,
   onPostPress,
 }: PostMessageCardProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const post = message.sharedPost;
 
@@ -126,7 +127,7 @@ function PostMessageCard({
         )}
         {post.mediaType === "video" ? (
           <View style={styles.playBadge}>
-            <Play color={colors.white} fill={colors.white} size={20} />
+            <Icon name="play" size="md" stroke="thin" tone="onMedia" filled />
           </View>
         ) : null}
       </View>

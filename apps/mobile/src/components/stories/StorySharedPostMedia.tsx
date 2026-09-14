@@ -1,7 +1,8 @@
 import { Image } from "expo-image";
-import { Play } from "lucide-react-native";
+
 import { StyleSheet, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { StorySharedPost } from "../../features/stories/types";
 import { colors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
@@ -51,12 +52,7 @@ export function StorySharedPostMedia({
 
       {media?.type === "video" && !isActive ? (
         <View pointerEvents="none" style={styles.playBadge}>
-          <Play
-            color={colors.white}
-            fill={colors.white}
-            size={22}
-            strokeWidth={2}
-          />
+          <Icon name="play" size="md" stroke="thin" tone="onMedia" filled />
         </View>
       ) : null}
     </View>

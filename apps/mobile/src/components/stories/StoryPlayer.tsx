@@ -1,9 +1,10 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Eye, Heart } from "lucide-react-native";
+
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../common/Icon";
 import { StoryHeader } from "./StoryHeader";
 import { StoryMediaFrame } from "./StoryMediaFrame";
 import { StoryProgressBar } from "./StoryProgressBar";
@@ -237,7 +238,7 @@ export function StoryPlayer({
               }}
               style={styles.viewersButton}
             >
-              <Eye color={colors.white} size={18} strokeWidth={2.4} />
+              <Icon name="eye" size="sm" stroke="regular" tone="onMedia" />
               <Text style={styles.viewersText}>
                 {currentStory.views_count}명 봄
               </Text>
@@ -252,11 +253,12 @@ export function StoryPlayer({
               }}
               style={styles.likeButton}
             >
-              <Heart
-                color={isLiked ? colors.danger : colors.white}
-                fill={isLiked ? colors.danger : "transparent"}
-                size={30}
-                strokeWidth={2.4}
+              <Icon
+                name="heart"
+                size="xl"
+                stroke="regular"
+                tone={isLiked ? "danger" : "onMedia"}
+                filled={isLiked}
               />
             </Pressable>
           )}

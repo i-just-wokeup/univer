@@ -1,8 +1,8 @@
-import { ChevronLeft } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { Icon } from "../common/Icon";
+import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { UserInline } from "../common/UserInline";
@@ -25,7 +25,7 @@ export function ChatRoomHeader({
   right,
   userId,
 }: ChatRoomHeaderProps) {
-  const { colors } = useTheme();
+
   const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
 
@@ -37,7 +37,7 @@ export function ChatRoomHeader({
         onPress={onBack}
         style={styles.headerButton}
       >
-        <ChevronLeft color={colors.text} size={22} strokeWidth={2.4} />
+        <Icon name="chevronLeft" size="md" stroke="regular" tone="text" />
       </Pressable>
 
       <UserInline

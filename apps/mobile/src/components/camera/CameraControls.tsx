@@ -1,10 +1,11 @@
 import type { CameraType, FlashMode } from "expo-camera";
-import { SwitchCamera, X, Zap, ZapOff } from "lucide-react-native";
+
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useTheme, useThemedStyles } from "../../lib/theme";
+import { Icon } from "../common/Icon";
+import { useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type CameraControlsProps = {
@@ -30,7 +31,7 @@ export function CameraControls({
   onSwitchCamera,
   onToggleFlash,
 }: CameraControlsProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const shutterDisabled = !isCameraReady || isCapturing;
 
@@ -47,7 +48,7 @@ export function CameraControls({
             pressed ? styles.pressed : null,
           ]}
         >
-          <X color={colors.onMediaGlyph} size={27} strokeWidth={2.5} />
+          <Icon name="x" size="lg" stroke="thin" tone="onMedia" />
         </Pressable>
         {facing === "back" ? (
           <Pressable
@@ -63,17 +64,9 @@ export function CameraControls({
             ]}
           >
             {flash === "on" ? (
-              <Zap
-                color={colors.onMediaGlyph}
-                fill={colors.onMediaGlyph}
-                size={24}
-              />
+              <Icon name="zap" size="lg" stroke="thin" tone="onMedia" filled />
             ) : (
-              <ZapOff
-                color={colors.onMediaGlyph}
-                size={24}
-                strokeWidth={2.4}
-              />
+              <Icon name="zapOff" size="lg" stroke="thin" tone="onMedia" />
             )}
           </Pressable>
         ) : (
@@ -107,11 +100,7 @@ export function CameraControls({
             pressed ? styles.pressed : null,
           ]}
         >
-          <SwitchCamera
-            color={colors.onMediaGlyph}
-            size={28}
-            strokeWidth={2.2}
-          />
+          <Icon name="switchCamera" size="xl" stroke="thin" tone="onMedia" />
         </Pressable>
       </SafeAreaView>
     </>

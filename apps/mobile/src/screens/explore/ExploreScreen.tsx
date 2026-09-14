@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { Heart, Play } from "lucide-react-native";
+
 import { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../../components/common/Icon";
 import { ExploreGridSkeleton } from "../../components/explore/ExploreGridSkeleton";
 import { StateView } from "../../components/common/StateView";
 import { useExploreFeed } from "../../features/explore/useExploreFeed";
@@ -185,7 +186,6 @@ function MasonryColumn({
   posts: ExplorePost[];
   tileWidth: number;
 }) {
-  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -209,11 +209,11 @@ function MasonryColumn({
             />
             {post.is_video ? (
               <View style={styles.videoBadge}>
-                <Play color={colors.white} fill={colors.white} size={14} />
+                <Icon name="play" size="xs" stroke="thin" tone="onMedia" filled />
               </View>
             ) : null}
             <View style={styles.likeBadge}>
-              <Heart color={colors.danger} fill={colors.danger} size={13} />
+              <Icon name="heart" size="xs" stroke="thin" tone="danger" filled />
               <Text style={styles.likeText}>{post.likes_count}</Text>
             </View>
           </Pressable>

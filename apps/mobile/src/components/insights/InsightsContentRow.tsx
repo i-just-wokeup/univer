@@ -1,9 +1,10 @@
 import { Image } from "expo-image";
-import { Play } from "lucide-react-native";
+
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { ContentPerformance } from "../../features/metrics/api";
-import { fontSize, fontWeight, useTheme, useThemedStyles } from "../../lib/theme";
+import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 function totalEngagement(item: ContentPerformance): number {
@@ -17,7 +18,7 @@ export function InsightsContentRow({
   item: ContentPerformance;
   onPress: () => void;
 }) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -41,7 +42,7 @@ export function InsightsContentRow({
         )}
         {item.isVideo ? (
           <View style={styles.videoBadge}>
-            <Play color={colors.white} fill={colors.white} size={12} />
+            <Icon name="play" size="xs" stroke="thin" tone="onMedia" filled />
           </View>
         ) : null}
       </View>

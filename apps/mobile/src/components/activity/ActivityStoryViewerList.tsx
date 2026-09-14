@@ -1,10 +1,10 @@
-import { ChevronDown } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type {
   ActivityStory,
   ActivityStoryViewer,
 } from "../../features/activity/api";
+import { Icon } from "../common/Icon";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { formatActivityStoryDateTime } from "./activityDateFormat";
 import { ActivityStoryViewerRow } from "./ActivityStoryViewerRow";
@@ -35,7 +35,7 @@ export function ActivityStoryViewerList({
             {formatActivityStoryDateTime(story.created_at)}
           </Text>
         </View>
-        <ChevronDown color={colors.white} size={22} strokeWidth={2.6} />
+        <Icon name="chevronDown" size="md" stroke="regular" tone="onMedia" />
       </Pressable>
       <ScrollView style={styles.viewerList}>
         {isLoadingViewers ? (

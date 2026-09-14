@@ -1,9 +1,10 @@
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { Images } from "lucide-react-native";
+
 import { useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { StoryCaptureMedia } from "../../features/stories/useStoryCreate";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 import { CameraCaptureView } from "../camera/CameraCaptureView";
@@ -104,7 +105,7 @@ export function StoryCamera({ onClose, onSelected }: StoryCameraProps) {
       }}
       style={styles.sideButton}
     >
-      <Images color={colors.white} size={28} strokeWidth={2.2} />
+      <Icon name="images" size="xl" stroke="regular" tone="onMedia" />
     </Pressable>
   );
 

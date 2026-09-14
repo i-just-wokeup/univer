@@ -1,7 +1,7 @@
-import { X } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { Icon } from "../common/Icon";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 type RecentSearchListProps = {
@@ -18,7 +18,7 @@ export function RecentSearchList({
   onRemoveRecent,
   recentSearches,
 }: RecentSearchListProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   if (recentSearches.length === 0) {
@@ -56,7 +56,7 @@ export function RecentSearchList({
             onPress={() => onRemoveRecent(item)}
             style={styles.recentRemove}
           >
-            <X color={colors.muted} size={16} strokeWidth={2.6} />
+            <Icon name="x" size="sm" stroke="regular" tone="muted" />
           </Pressable>
         </View>
       ))}

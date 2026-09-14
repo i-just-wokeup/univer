@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { ChevronLeft, Palette } from "lucide-react-native";
+
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../../components/common/Icon";
 import { StoryCamera } from "../../components/stories/StoryCamera";
 import { StoryMediaFrame } from "../../components/stories/StoryMediaFrame";
 import { StorySharedPostCard } from "../../components/stories/StorySharedPostCard";
@@ -132,7 +133,7 @@ export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
             pressed ? styles.pressed : null,
           ]}
         >
-          <ChevronLeft color={colors.white} size={30} strokeWidth={2.8} />
+          <Icon name="chevronLeft" size="xl" stroke="bold" tone="onMedia" />
         </Pressable>
       </SafeAreaView>
 
@@ -147,7 +148,7 @@ export function StoryCreateScreen({ sharedPostId }: StoryCreateScreenProps) {
             pressed ? styles.pressed : null,
           ]}
         >
-          <Palette color={colors.white} size={24} strokeWidth={2.4} />
+          <Icon name="palette" size="lg" stroke="regular" tone="onMedia" />
         </Pressable>
       </SafeAreaView>
 

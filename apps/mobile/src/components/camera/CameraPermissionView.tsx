@@ -1,5 +1,5 @@
 import type { PermissionResponse } from "expo-camera";
-import { X } from "lucide-react-native";
+
 import type { ReactNode } from "react";
 import {
   ActivityIndicator,
@@ -17,6 +17,7 @@ import {
   useTheme,
   useThemedStyles,
 } from "../../lib/theme";
+import { Icon } from "../common/Icon";
 import type { ThemeColors } from "../../lib/theme";
 
 type CameraPermissionViewProps = {
@@ -44,7 +45,7 @@ export function CameraPermissionView({
         onPress={onClose}
         style={styles.closeButton}
       >
-        <X color={colors.onMediaGlyph} size={27} strokeWidth={2.5} />
+        <Icon name="x" size="lg" stroke="regular" tone="onMedia" />
       </Pressable>
       <View style={styles.content}>
         {!permission ? (

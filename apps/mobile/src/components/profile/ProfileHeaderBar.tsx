@@ -1,9 +1,8 @@
-import { MoreHorizontal, Settings } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
 
-import { useTheme } from "../../lib/theme";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
 import { AccountBadge } from "../common/AccountBadge";
+import { Icon } from "../common/Icon";
 import { ScreenHeader } from "../common/ScreenHeader";
 
 type ProfileHeaderBarProps = {
@@ -84,9 +83,6 @@ function HeaderIconButton({
   icon,
   onPress,
 }: HeaderIconButtonProps) {
-  const { colors } = useTheme();
-  const Icon = icon === "settings" ? Settings : MoreHorizontal;
-
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -94,7 +90,7 @@ function HeaderIconButton({
       onPress={onPress}
       style={styles.headerButton}
     >
-      <Icon color={colors.text} size={22} strokeWidth={2.4} />
+      <Icon name={icon} />
     </Pressable>
   );
 }

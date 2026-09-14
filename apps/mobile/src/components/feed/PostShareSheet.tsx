@@ -1,11 +1,12 @@
 import { useCallback, useState } from "react";
-import { BookOpen } from "lucide-react-native";
+
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import type { LayoutChangeEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../common/Icon";
 import type { PostShareTarget } from "../../features/chat/usePostShare";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { SearchInput } from "../search/SearchInput";
 import { ExternalShareSection } from "./ExternalShareSection";
@@ -41,7 +42,7 @@ export function PostShareSheet({
   sendingTargetId,
   targets,
 }: PostShareSheetProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const [footerHeight, setFooterHeight] = useState(0);
   const {
@@ -110,7 +111,7 @@ export function PostShareSheet({
                   ]}
                 >
                   <View style={styles.storyActionIcon}>
-                    <BookOpen color={colors.text} size={20} />
+                    <Icon name="book" size="md" stroke="thin" tone="text" />
                   </View>
                   <Text style={styles.storyActionText}>내 스토리에 추가</Text>
                 </Pressable>

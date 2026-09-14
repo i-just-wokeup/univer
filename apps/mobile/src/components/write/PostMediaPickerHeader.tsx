@@ -1,4 +1,3 @@
-import { X } from "lucide-react-native";
 import {
   ActivityIndicator,
   Pressable,
@@ -13,6 +12,7 @@ import {
   useTheme,
   useThemedStyles,
 } from "../../lib/theme";
+import { Icon } from "../common/Icon";
 import type { ThemeColors } from "../../lib/theme";
 
 type PostMediaPickerHeaderProps = {
@@ -44,7 +44,7 @@ export function PostMediaPickerHeader({
           pressed ? styles.pressed : null,
         ]}
       >
-        <X color={colors.text} size={26} strokeWidth={2.4} />
+        <Icon name="x" size="lg" stroke="regular" tone="text" />
       </Pressable>
 
       <Text numberOfLines={1} style={styles.title}>

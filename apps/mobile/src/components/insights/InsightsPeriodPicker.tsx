@@ -1,14 +1,9 @@
-import { ChevronDown } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { InsightPeriod } from "../../features/metrics/useInsights";
-import {
-  fontSize,
-  fontWeight,
-  useTheme,
-  useThemedStyles,
-} from "../../lib/theme";
+import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { ActionSheet, type ActionSheetItem } from "../common/ActionSheet";
 
@@ -27,7 +22,7 @@ export function InsightsPeriodPicker({
   onChange,
   period,
 }: InsightsPeriodPickerProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const [isOpen, setIsOpen] = useState(false);
   const selectedLabel =
@@ -50,7 +45,7 @@ export function InsightsPeriodPicker({
         ]}
       >
         <Text style={styles.label}>{selectedLabel}</Text>
-        <ChevronDown color={colors.text} size={17} strokeWidth={2.4} />
+        <Icon name="chevronDown" size="sm" stroke="regular" tone="text" />
       </Pressable>
 
       <ActionSheet

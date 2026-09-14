@@ -1,6 +1,6 @@
-import { Plus, Trash2 } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import { MAX_PROFILE_LINKS } from "../../features/profile/useProfileEdit";
 import { noAutofillTextInputProps } from "../../lib/textInput";
 import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
@@ -39,7 +39,7 @@ export function ProfileEditLinksEditor({
             !canAdd ? styles.disabled : null,
           ]}
         >
-          <Plus color={colors.accent} size={16} strokeWidth={2.6} />
+          <Icon name="plus" size="sm" stroke="regular" tone="accent" />
           <Text style={styles.addLinkText}>추가</Text>
         </Pressable>
       </View>
@@ -65,7 +65,7 @@ export function ProfileEditLinksEditor({
               pressed ? styles.pressed : null,
             ]}
           >
-            <Trash2 color={colors.textFaint} size={17} strokeWidth={2.4} />
+            <Icon name="trash" size="sm" stroke="regular" tone="faint" />
           </Pressable>
         </View>
       ))}

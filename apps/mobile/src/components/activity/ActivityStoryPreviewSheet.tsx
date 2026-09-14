@@ -1,4 +1,3 @@
-import { X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -13,6 +12,7 @@ import type {
   ActivityStory,
   ActivityStoryViewer,
 } from "../../features/activity/api";
+import { Icon } from "../common/Icon";
 import { colors } from "../../lib/theme";
 import { ActivityStoryPreviewMedia } from "./ActivityStoryPreviewMedia";
 import { ActivityStoryPreviewMeta } from "./ActivityStoryPreviewMeta";
@@ -69,7 +69,7 @@ export function ActivityStoryPreviewSheet({
           onPress={onClose}
           style={styles.closeButton}
         >
-          <X color={colors.white} size={22} strokeWidth={2.6} />
+          <Icon name="x" size="md" stroke="regular" tone="onMedia" />
         </Pressable>
         <View style={styles.sheet}>
           <ActivityStoryPreviewMedia story={story} />

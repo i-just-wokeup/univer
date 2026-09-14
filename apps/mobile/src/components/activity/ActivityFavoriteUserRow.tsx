@@ -1,14 +1,8 @@
-import { Star } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { ActivityFavoriteUser } from "../../features/activity/api";
-import {
-  nicknameTextStyle,
-  useTheme,
-  useThemedStyles,
-  fontSize,
-  fontWeight,
-} from "../../lib/theme";
+import { nicknameTextStyle, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { Avatar } from "../common/Avatar";
 
@@ -29,7 +23,7 @@ export function ActivityFavoriteUserRow({
   onPress,
   user,
 }: ActivityFavoriteUserRowProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -44,12 +38,7 @@ export function ActivityFavoriteUserRow({
           <Text numberOfLines={1} style={styles.nickname}>
             {user.nickname}
           </Text>
-          <Star
-            color={colors.star}
-            fill={colors.star}
-            size={15}
-            strokeWidth={2.4}
-          />
+          <Icon name="star" size="xs" stroke="regular" tone="star" filled />
         </View>
         {user.department ? (
           <Text numberOfLines={1} style={styles.department}>

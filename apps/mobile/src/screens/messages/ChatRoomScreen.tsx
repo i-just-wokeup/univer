@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from "expo-router";
-import { MoreHorizontal } from "lucide-react-native";
+
 import {
   forwardRef,
   useCallback,
@@ -24,6 +24,7 @@ import {
 import { useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../../components/common/Icon";
 import { ChatMessageList } from "../../components/chat/ChatMessageList";
 import { ChatRequestBanner } from "../../components/chat/ChatRequestBanner";
 import { ChatRoomMoreMenu } from "../../components/chat/ChatRoomMoreMenu";
@@ -226,11 +227,7 @@ export function ChatRoomScreen({ conversationId }: ChatRoomScreenProps) {
                     pressed ? styles.pressed : null,
                   ]}
                 >
-                  <MoreHorizontal
-                    color={colors.muted}
-                    size={22}
-                    strokeWidth={2.5}
-                  />
+                  <Icon name="more" size="md" stroke="regular" tone="muted" />
                 </Pressable>
               ) : null
             }

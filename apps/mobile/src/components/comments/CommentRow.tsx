@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Heart } from "lucide-react-native";
+
 import {
   Platform,
   Pressable,
@@ -9,8 +9,9 @@ import {
   View,
 } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { Comment } from "../../features/comments/types";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getRelativeTimeLabel } from "../../lib/utils/time";
 import { useVerifiedUsers } from "../../lib/verifiedUsers";
@@ -41,7 +42,7 @@ function CommentRowComponent({
   onToggleLike,
   onUserPress,
 }: CommentRowProps) {
-  const { colors } = useTheme();
+
   const { getBadge } = useVerifiedUsers();
   const styles = useThemedStyles(makeStyles);
   const mentionPrefix = isReply && mentionNickname ? `@${mentionNickname}` : "";
@@ -109,11 +110,12 @@ function CommentRowComponent({
           onPress={() => onToggleLike(comment.id)}
           style={styles.likeButton}
         >
-          <Heart
-            color={isLiked ? colors.danger : colors.textFaint}
-            fill={isLiked ? colors.danger : "transparent"}
-            size={16}
-            strokeWidth={2.4}
+          <Icon
+            name="heart"
+            size="sm"
+            stroke="regular"
+            tone={isLiked ? "danger" : "faint"}
+            filled={isLiked}
           />
           <Text style={[styles.likeCount, isLiked ? styles.likeCountOn : null]}>
             {comment.likes_count}

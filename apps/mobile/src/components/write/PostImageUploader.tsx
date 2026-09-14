@@ -1,10 +1,11 @@
 import { Image } from "expo-image";
-import { Plus, X } from "lucide-react-native";
+
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostAspectRatio } from "../../features/feed/types";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { getAspectRatioValue } from "../../lib/utils/aspectRatio";
 
@@ -23,7 +24,7 @@ export function PostImageUploader({
   onAdd,
   onRemove,
 }: PostImageUploaderProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const canAdd = imageUris.length < maxCount;
@@ -75,7 +76,7 @@ export function PostImageUploader({
           ]}
         >
           <View style={styles.emptyIcon}>
-            <Plus color={colors.onAccent} size={28} strokeWidth={2.8} />
+            <Icon name="plus" size="xl" stroke="bold" tone="onAccent" />
           </View>
           <Text style={styles.emptyText}>사진 선택</Text>
         </Pressable>
@@ -112,7 +113,7 @@ export function PostImageUploader({
                 onPress={() => handleRemove(index)}
                 style={styles.removeButton}
               >
-                <X color={colors.white} size={14} strokeWidth={3} />
+                <Icon name="x" size="xs" stroke="bold" tone="onMedia" />
               </Pressable>
             </View>
           ))}
@@ -127,7 +128,7 @@ export function PostImageUploader({
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Plus color={colors.accent} size={26} strokeWidth={2.8} />
+              <Icon name="plus" size="lg" stroke="bold" tone="accent" />
             </Pressable>
           ) : null}
         </ScrollView>

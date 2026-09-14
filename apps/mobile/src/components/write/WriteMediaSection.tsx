@@ -1,9 +1,9 @@
-import { Film } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostAspectRatio } from "../../features/feed/types";
 import { MAX_IMAGES } from "../../features/feed/useWriteForm";
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { PostImageUploader } from "./PostImageUploader";
 import { WriteVideoPreview } from "./WriteVideoPreview";
@@ -34,7 +34,7 @@ export function WriteMediaSection({
   onRemoveVideo,
   selectedVideo,
 }: WriteMediaSectionProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   if (selectedVideo) {
@@ -69,7 +69,7 @@ export function WriteMediaSection({
             pressed ? styles.pressed : null,
           ]}
         >
-          <Film color={colors.accent} size={20} strokeWidth={2.5} />
+          <Icon name="film" size="md" stroke="regular" tone="accent" />
           <Text style={styles.videoPickText}>영상 선택</Text>
         </Pressable>
       ) : null}

@@ -1,13 +1,8 @@
-import { ChevronDown, Film, ImageIcon, Images } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostLibraryMediaType } from "../../features/feed/postMediaLibrary";
-import {
-  fontSize,
-  fontWeight,
-  useTheme,
-  useThemedStyles,
-} from "../../lib/theme";
+import { fontSize, fontWeight, useThemedStyles } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 
 export const POST_MEDIA_PICKER_TOOLBAR_HEIGHT = 50;
@@ -31,7 +26,7 @@ export function PostMediaPickerToolbar({
   onSwitchMediaType,
   onToggleMultiSelect,
 }: PostMediaPickerToolbarProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -49,7 +44,7 @@ export function PostMediaPickerToolbar({
         <Text numberOfLines={1} style={styles.title}>
           {albumTitle}
         </Text>
-        <ChevronDown color={colors.text} size={18} strokeWidth={2.4} />
+        <Icon name="chevronDown" size="sm" stroke="regular" tone="text" />
       </Pressable>
       <View style={styles.actions}>
         <Pressable
@@ -65,9 +60,9 @@ export function PostMediaPickerToolbar({
           ]}
         >
           {mediaType === "video" ? (
-            <ImageIcon color={colors.text} size={18} strokeWidth={2.2} />
+            <Icon name="image" size="sm" stroke="regular" tone="text" />
           ) : (
-            <Film color={colors.text} size={18} strokeWidth={2.2} />
+            <Icon name="film" size="sm" stroke="regular" tone="text" />
           )}
           <Text style={styles.actionText}>
             {mediaType === "video" ? "사진" : "영상"}
@@ -87,10 +82,11 @@ export function PostMediaPickerToolbar({
               pressed ? styles.pressed : null,
             ]}
           >
-            <Images
-              color={isMultiSelect ? colors.onAccent : colors.text}
-              size={18}
-              strokeWidth={2.2}
+            <Icon
+              name="images"
+              size="sm"
+              stroke="regular"
+              tone={isMultiSelect ? "onAccent" : "text"}
             />
             <Text
               style={[

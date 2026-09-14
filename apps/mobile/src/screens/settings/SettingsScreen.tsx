@@ -1,10 +1,11 @@
 import { useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon } from "../../components/common/Icon";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { ScreenHeader } from "../../components/common/ScreenHeader";
 import { ScreenContainer } from "../../components/common/ScreenContainer";
@@ -36,7 +37,6 @@ function Row({
   label: string;
   onPress?: () => void;
 }) {
-  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -52,11 +52,7 @@ function Row({
       <Text style={[styles.rowLabel, disabled ? styles.rowLabelDisabled : null]}>
         {label}
       </Text>
-      <ChevronRight
-        color={disabled ? colors.textFaint : colors.muted}
-        size={18}
-        strokeWidth={2.4}
-      />
+      <Icon name="chevronRight" size="sm" stroke="regular" tone={disabled ? "faint" : "muted"} />
     </Pressable>
   );
 }

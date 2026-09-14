@@ -1,8 +1,8 @@
-import { Volume2, VolumeX, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
+import { Icon } from "../common/Icon";
+import { useThemedStyles, fontSize, fontWeight } from "../../lib/theme";
 import type { ThemeColors } from "../../lib/theme";
 import { StoryVideoView } from "../stories/StoryVideoView";
 
@@ -17,7 +17,7 @@ export function WriteVideoPreview({
   onRemove,
   uri,
 }: WriteVideoPreviewProps) {
-  const { colors } = useTheme();
+
   const styles = useThemedStyles(makeStyles);
   const [unmutedUri, setUnmutedUri] = useState<string | null>(null);
   const isMuted = unmutedUri !== uri;
@@ -47,7 +47,7 @@ export function WriteVideoPreview({
             pressed ? styles.pressed : null,
           ]}
         >
-          <X color={colors.white} size={18} strokeWidth={3} />
+          <Icon name="x" size="sm" stroke="bold" tone="onMedia" />
         </Pressable>
         <Pressable
           accessibilityLabel={isMuted ? "영상 소리 켜기" : "영상 소리 끄기"}
@@ -64,9 +64,9 @@ export function WriteVideoPreview({
           ]}
         >
           {isMuted ? (
-            <VolumeX color={colors.onMediaGlyph} size={19} strokeWidth={2.4} />
+            <Icon name="volumeOff" size="sm" stroke="regular" tone="onMedia" />
           ) : (
-            <Volume2 color={colors.onMediaGlyph} size={19} strokeWidth={2.4} />
+            <Icon name="volumeOn" size="sm" stroke="regular" tone="onMedia" />
           )}
         </Pressable>
       </View>

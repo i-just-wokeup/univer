@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon } from "../../components/common/Icon";
 import { ReelItem } from "../../components/feed/ReelItem";
 import { CommentsSheet } from "../../components/comments/CommentsSheet";
 import { PostShareSheet } from "../../components/feed/PostShareSheet";
@@ -343,7 +344,7 @@ export function ReelsScreen({ authorUserId, startPostId }: ReelsScreenProps) {
         onPress={() => router.back()}
         style={[styles.backButton, { top: insets.top + 8 }]}
       >
-        <ChevronLeft color={colors.white} size={28} strokeWidth={2.6} />
+        <Icon name="chevronLeft" size="xl" stroke="regular" tone="onMedia" />
       </Pressable>
 
       <CommentsSheet

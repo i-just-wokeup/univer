@@ -1,6 +1,7 @@
-import { ImageIcon, Scaling } from "lucide-react-native";
+import { ImageIcon } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { Icon } from "../common/Icon";
 import type { PostMediaCropTransform } from "../../features/feed/postMediaCrop";
 import type { PostAspectRatio } from "../../features/feed/types";
 import type { PostLibraryPhoto } from "../../features/feed/postMediaLibrary";
@@ -58,7 +59,7 @@ export function PostMediaPreview({
           pressed ? styles.pressed : null,
         ]}
       >
-        <Scaling color={colors.onMediaGlyph} size={21} strokeWidth={2.2} />
+        <Icon name="scaling" size="md" stroke="regular" tone="onMedia" />
       </Pressable>
     </View>
   );

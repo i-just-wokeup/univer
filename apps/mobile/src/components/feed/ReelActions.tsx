@@ -1,13 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import {
-  Bookmark,
-  Heart,
-  MessageCircle,
-  Send,
-  Volume2,
-  VolumeX,
-} from "lucide-react-native";
 
+import { Icon } from "../common/Icon";
 import { colors, fontSize, fontWeight } from "../../lib/theme";
 
 type ReelActionsProps = {
@@ -49,20 +42,21 @@ export function ReelActions({
   return (
     <View style={[styles.actions, { bottom }]}>
       <Pressable hitSlop={6} onPress={onLike} style={styles.actionButton}>
-        {/* 의도: 어두운 영상 위라 strokeWidth 1.8로 얇게 둔다. 굵기 통일 대상 아님 */}
+        {/* 의도: 영상 위의 얇은 선을 유지한다. 기존 1.8은 2026-09-14 결정으로 thin(2)에 흡수했다. */}
         <View style={styles.iconBox}>
-          <Heart
-            color={isLiked ? colors.danger : colors.white}
-            fill={isLiked ? colors.danger : "transparent"}
-            size={28}
-            strokeWidth={1.8}
+          <Icon
+            name="heart"
+            size="lg"
+            stroke="hairline"
+            tone={isLiked ? "danger" : "onMedia"}
+            filled={isLiked}
           />
         </View>
         <Text style={styles.actionText}>{formatCount(likesCount)}</Text>
       </Pressable>
       <Pressable hitSlop={6} onPress={onComment} style={styles.actionButton}>
         <View style={styles.iconBox}>
-          <MessageCircle color={colors.white} size={28} strokeWidth={1.8} />
+          <Icon name="messageCircle" size="lg" stroke="hairline" tone="onMedia" />
         </View>
         <Text style={styles.actionText}>{formatCount(commentsCount)}</Text>
       </Pressable>
@@ -74,26 +68,21 @@ export function ReelActions({
         style={styles.actionButton}
       >
         <View style={styles.iconBox}>
-          <Send color={colors.white} size={28} strokeWidth={1.8} />
+          <Icon name="send" size="lg" stroke="hairline" tone="onMedia" />
         </View>
       </Pressable>
       <Pressable hitSlop={6} onPress={onBookmark} style={styles.actionButton}>
         <View style={styles.iconBox}>
-          <Bookmark
-            color={colors.white}
-            fill={isBookmarked ? colors.white : "transparent"}
-            size={28}
-            strokeWidth={1.8}
-          />
+          <Icon name="bookmark" size="lg" stroke="hairline" tone="onMedia" filled={isBookmarked} />
         </View>
       </Pressable>
       {isReady ? (
         <Pressable hitSlop={6} onPress={onToggleMute} style={styles.actionButton}>
           <View style={styles.iconBox}>
             {isMuted ? (
-              <VolumeX color={colors.white} size={28} strokeWidth={1.8} />
+              <Icon name="volumeOff" size="lg" stroke="hairline" tone="onMedia" />
             ) : (
-              <Volume2 color={colors.white} size={28} strokeWidth={1.8} />
+              <Icon name="volumeOn" size="lg" stroke="hairline" tone="onMedia" />
             )}
           </View>
         </Pressable>
@@ -126,7 +115,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     color: colors.white,
     fontSize: fontSize.caption,
-    fontWeight: fontWeight.bold,
+    fontWeight: fontWeight.semibold,
     textShadowColor: colors.scrimMed,
     textShadowRadius: 3,
   },
