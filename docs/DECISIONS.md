@@ -118,6 +118,18 @@ Android 코드 경로는 건드리지 않았고 해상도·버튼 위치 변화 
 | 계정 삭제는 30일 보존, 복구는 **삭제 시각이 일치하는 콘텐츠만** | 개별 삭제한 글까지 되살리지 않음 | |
 | 차단 시 크루·즐겨찾기는 해제하되 **자동 복구 안 함**. 좋아요·저장·댓글은 삭제 않고 숨김 | 관계 제거와 활동 보존을 구분 | |
 
+### 배포 — 로컬에서 EAS 명령을 돌릴 때
+
+| 무엇 | 왜 |
+|---|---|
+| **`eas submit` 앞에 `APP_VARIANT=production` 을 반드시 붙인다** | `app.config.js` 는 값이 없으면 `development` 로 떨어져 `com.univer.app.dev` 를 쓴다. `EAS_BUILD_PROFILE` 은 **EAS 서버에서만** 설정되므로 로컬 명령에는 없다 |
+| `eas.json` 의 `submit.production` 에 `ascAppId`·`bundleIdentifier`·`applicationId` | `ascAppId` 는 문서상 "앱 생성 단계를 건너뛴다" — 사고가 난 바로 그 단계다 |
+
+⚠️ **2026-09-14 실제 사고**: `eas submit --platform ios` 를 그냥 돌렸더니 App Store Connect 에 **`unip (dev)` / `com.univer.app.dev` 앱이 새로 등록**됐다. 프로덕션 빌드를 개발 앱에 올릴 뻔했다.
+🔸 **빌드는 안전하다.** `eas.json` 의 빌드 프로필에 `env: { APP_VARIANT }` 가 있어 2026-09-03 에 이미 해결됐다(그때는 AAB 서명이 개발 키로 나가 Play 업로드가 거부된 사고였다).
+🔸 `bundleIdentifier`·`applicationId` 는 문서상 **"로컬 자격증명을 쓰면 효과 없음"** 이라 보조 장치일 뿐이다. **믿을 것은 `APP_VARIANT=production` 습관이다.**
+🔸 안드로이드는 지금까지 AAB 를 Play Console 에 직접 올려 와서 같은 사고가 난 적이 없다. `eas submit` 을 쓴다면 동일하게 접두사를 붙일 것.
+
 ### 구조
 
 | 무엇 | 왜 |

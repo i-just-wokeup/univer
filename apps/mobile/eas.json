@@ -35,6 +35,14 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "applicationId": "com.univer.app"
+      },
+      "ios": {
+        "ascAppId": "6803396414",
+        "bundleIdentifier": "com.univer.app"
+      }
+    }
   }
 }
