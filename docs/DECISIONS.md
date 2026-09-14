@@ -44,8 +44,14 @@
 | `mirror` | 셀카 좌우 반전 | `CameraCaptureView.tsx:77` ✅ |
 | 앨범 저장에 `initialAssetLocalUri` | DCIM에 만든 뒤 옮기면 **Android 이동 확인창·중복** 발생 | `useCameraCapture.ts:47` ✅ |
 | 앨범명 `unip` | | `useCameraCapture.ts:19` ✅ |
+| **iOS 미리보기를 9:16 박스로 묶음** | `ratio` 가 Android 전용이라 iOS는 화면을 꽉 채웠고, 사진이 미리보기에 맞춰져 화면 비율로 찍혔다(실측 888x1920) | `CameraCaptureView.tsx` ✅ |
+| **iOS `pictureSize="3840x2160"`** | 기본 세션이 1920x1080(207만 화소)이라 너무 낮았다. `"Photo"`(1200만)는 4:3이라 Android와 프레이밍이 달라져 쓰지 않는다 | `CameraCaptureView.tsx` ✅ |
+| **준비 상태 초기화는 Android 에서만** | iOS는 `facing` 만 바뀔 때 `onCameraReady` 를 다시 안 불러, 초기화하면 로딩이 영영 남고 촬영이 잠긴다 | `useCameraCapture.ts` ✅ |
+| **게시물 카메라 Modal 안에 `SafeAreaProvider`** | Modal 은 네이티브 계층이 분리돼 최상위가 잰 여백이 안 넘어온다. X 버튼이 노치에 가려 안 눌렸다 | `PostCamera.tsx` ✅ |
 
-🍎 **iOS는 `ratio` 를 지원하지 않는다.** 미리보기가 `resizeAspectFill` 로 잘려 보일 수 있다(실기기 미검증).
+🍎 **iOS 반영 완료 (2026-09-14, iPhone 12 실기기).** `ratio` 는 여전히 Android 전용이고, 위 네 항목이 그 대응이다.
+결과적으로 **iOS 2160x3840(830만) · Android 2252x4000(900만)** 으로 비율이 같아졌고, 양쪽 모두 미리보기와 찍힌 범위가 일치한다.
+Android 코드 경로는 건드리지 않았고 해상도·버튼 위치 변화 없음을 확인했다.
 
 ### 피드·릴스·열람
 
