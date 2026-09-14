@@ -3,7 +3,7 @@
 **현재 동작만 적는 문서.** 바뀌면 이 파일을 고친다(작업일지처럼 쌓지 않는다).
 날짜별 변경 이력은 `docs/WORKLOG.md`, 결정 배경은 `docs/DECISIONS.md`.
 
-최종 갱신: 2026-09-11 (밴드 1 = 48시간 적용됨)
+최종 갱신: 2026-09-13 — 릴스 전용 함수·열람 기준 정정 (밴드 1 = 48시간)
 
 ---
 
@@ -14,9 +14,13 @@
 | 홈 피드 | `get_feed_post_ids` | 밴드 0~4 + 밴드별 다른 기준 | 없음(본 글 재노출) |
 | 탐색 격자 | `get_popular_post_ids` | 점수 하나(반감기 5일) | 있음 |
 | 탐색 연속 | 격자 목록 재사용 | 격자와 **동일** | 있음 |
-| 릴스 | 격자 목록에서 앱이 영상만 필터 | 격자와 **동일** | 있음 |
+| 릴스 | `get_reel_post_ids` (**전용 함수**) | 밴드 + seed 무작위, **커서 방식** | 없음 |
 
-호출부: 홈 `features/feed/`, 탐색 `features/explore/api.ts`, 연속 `features/feed/usePostSequence.ts`
+호출부: 홈 `features/feed/`, 탐색 `features/explore/api.ts`, 연속 `features/feed/usePostSequence.ts`, 릴스 `features/feed/useReels.ts` → `feedQueries.ts:185 getReelsRanked`
+
+> ⚠️ **릴스는 탐색과 완전히 별개다.** 2026-09-11 초안에는 "격자 목록에서 앱이 영상만 걸러낸다"고 적혔으나 **틀렸다**(09-13 정정).
+> `get_reel_post_ids(p_seed, p_seen_ids, p_limit, p_after_band, p_after_rank)` 가 `post_media.type='video'` 인 글만 골라 밴드+커서로 내려준다.
+> 따라서 탐색의 `offset` 결함도 릴스에는 해당되지 않고, "서버가 영상만 골라주는 옵션"을 새로 만들 필요도 없다.
 
 ---
 
@@ -91,7 +95,8 @@
 
 `post_impressions (user_id, post_id, seen_at)`
 
-- 기록 조건: 화면의 **60% 이상 + 2초** (`HomeFeedList.tsx`, `lib/constants/feedViewability.ts`)
+- 기록 조건: 화면의 **80% 이상 + 2초** (`FEED_IMPRESSION_VIEW_AREA_PERCENT=80`, `..._MINIMUM_VIEW_TIME_MS=2000`)
+  - ⚠️ `HomeFeedList.tsx` 에 설정이 **둘**이다. `itemVisiblePercentThreshold: 60` 은 **영상 자동재생용**(어느 영상을 틀지)이고, 열람 기록은 `viewAreaCoveragePercentThreshold: 80` 을 쓴다. 2026-09-11 초안은 이 둘을 섮어 60%라고 적었다(09-13 정정).
 - 저장: `ignoreDuplicates: true` → **다시 봐도 아무 것도 안 바뀐다.** `seen_at`은 처음 본 시각에 고정
 - 피드 함수는 `seen_at`을 쓰지 않고 `exists()`로 봤나/안 봤나만 본다 → **가진 정보를 버리는 중**
 - 도달(reach) = 이 테이블의 고유 계정 수. 인사이트 화면이 이미 보여준다(`features/metrics/api.ts`)
@@ -230,5 +235,8 @@
 **마이그레이션** (탐색)
 **`20260904140000_explore_base_score_and_creator_boost`(현재)**
 
+**마이그레이션** (릴스 — 탐색과 별개)
+`20260731032501_create_get_reel_post_ids_v1` · `20260813073806_reel_watch_metrics`
+
 **앱**
-`features/feed/useHomeFeed.ts` · `features/feed/postImpressions.ts` · `features/feed/usePostSequence.ts` · `features/explore/api.ts` · `features/explore/page-cache.ts` · `components/home/HomeFeedList.tsx` · `lib/constants/feedViewability.ts` · `lib/constants/pagination.ts`
+`features/feed/useHomeFeed.ts` · `features/feed/useReels.ts` · `features/feed/feedQueries.ts` · `features/feed/postImpressions.ts` · `features/feed/usePostSequence.ts` · `features/explore/api.ts` · `features/explore/page-cache.ts` · `components/home/HomeFeedList.tsx` · `lib/constants/feedViewability.ts` · `lib/constants/pagination.ts`
