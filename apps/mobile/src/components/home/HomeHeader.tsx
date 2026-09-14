@@ -45,7 +45,7 @@ export function HomeHeader({
             accessibilityLabel="알림"
             accessibilityRole="button"
             onPress={onPressNotifications}
-            style={styles.circleButton}
+            style={styles.iconButton}
           >
             <Bell color={colors.text} size={23} strokeWidth={2} />
             {unreadCount > 0 ? (
@@ -61,7 +61,7 @@ export function HomeHeader({
             accessibilityRole="button"
             onLongPress={onSignOut}
             onPress={onPressMessages}
-            style={styles.circleButton}
+            style={styles.iconButton}
           >
             <MessageCircle color={colors.text} size={24} strokeWidth={2} />
             {unreadChatCount > 0 ? (
@@ -94,7 +94,9 @@ const makeStyles = (c: ThemeColors) => StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
-  circleButton: {
+  // 의도: 원형 배경은 예쁘지 않아 일부러 뺐다(2026-07-03 축소 이후).
+  // 44x44는 터치 영역이고 borderRadius·backgroundColor를 다시 넣지 말 것.
+  iconButton: {
     height: 44,
     width: 44,
     alignItems: "center",
