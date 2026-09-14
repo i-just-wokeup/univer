@@ -1,6 +1,12 @@
 import { CameraView } from "expo-camera";
 import type { ReactNode } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 
 import type { CapturedPhoto } from "../../features/camera/useCameraCapture";
@@ -14,6 +20,15 @@ import {
 import type { ThemeColors } from "../../lib/theme";
 import { CameraControls } from "./CameraControls";
 import { CameraPermissionView } from "./CameraPermissionView";
+
+// 의도: iOS 는 ratio 를 지원하지 않아 기본 세션이 1920x1080(207만 화소)으로 잡혔다.
+// 게시물 사진으로 쓰기엔 너무 낮아 pictureSize 로 4K 16:9 를 지정한다.
+// 실측(아이폰 12)에서 쓸 수 있는 값은
+// ["3840x2160","1920x1080","1280x720","640x480","352x288","Photo","High","Medium","Low"].
+// "Photo"(1200만·4:3)가 더 높지만 비율이 Android(16:9)와 달라져 쓰지 않는다.
+// Android 는 ratio="16:9" 로 이미 2252x4000 이 나오므로 지정하지 않는다
+// (pictureSize 를 주면 ratio 가 무시된다).
+const IOS_PICTURE_SIZE = Platform.OS === "ios" ? "3840x2160" : undefined;
 
 export type CameraCaptureViewProps = {
   bottomLeftSlot?: ReactNode;
@@ -78,12 +93,13 @@ export function CameraCaptureView({
         mirror
         mode="picture"
         onCameraReady={() => setIsCameraReady(true)}
+        pictureSize={IOS_PICTURE_SIZE}
         onMountError={(event) => {
           setErrorMessage(event.message || "카메라를 시작하지 못했습니다.");
         }}
         ratio="16:9"
         ref={cameraRef}
-        style={StyleSheet.absoluteFill}
+        style={styles.camera}
         zoom={enableZoom ? zoom : 0}
       />
 
@@ -129,7 +145,17 @@ const makeStyles = (c: ThemeColors) =>
     screen: {
       flex: 1,
       backgroundColor: c.black,
+      justifyContent: "center",
     },
+    // 의도: iOS 는 ratio 를 지원하지 않아 미리보기가 화면을 꽉 채운다.
+    // 그런데 takePictureAsync 는 "scaled to match the preview" 라서
+    // 사진까지 화면 비율(실측 888x1920)로 찍혔다. 미리보기를 9:16 으로
+    // 묶으면 사진도 따라와 Android(ratio="16:9")와 같은 범위가 된다.
+    // Android 는 ratio 로 이미 맞아 있으므로 건드리지 않는다.
+    camera:
+      Platform.OS === "ios"
+        ? { width: "100%", aspectRatio: 9 / 16 }
+        : StyleSheet.absoluteFillObject,
     gestureSurface: {
       ...StyleSheet.absoluteFillObject,
     },
