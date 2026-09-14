@@ -70,6 +70,7 @@ export function CameraCaptureView({
 
   return (
     <View style={styles.screen}>
+      {/* 의도: ratio·mirror·zoom 전달 방식은 전부 사고로 정해진 값이다. DECISIONS 참고 */}
       <CameraView
         animateShutter={false}
         facing={facing}
@@ -86,6 +87,8 @@ export function CameraCaptureView({
         zoom={enableZoom ? zoom : 0}
       />
 
+      {/* 의도: 제스처는 CameraView 형제인 투명 View에서 받는다.
+          카메라 뷰를 직접 감싸면 줌뿐 아니라 촬영까지 죽는다. 되돌리지 말 것 */}
       {enableZoom ? (
         <GestureDetector gesture={pinchGesture}>
           <View style={styles.gestureSurface} />

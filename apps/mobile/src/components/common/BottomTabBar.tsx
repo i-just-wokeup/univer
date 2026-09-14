@@ -51,6 +51,8 @@ export function BottomTabBar({ navigation, state }: BottomTabBarProps) {
       style={[
         styles.bottomNav,
         {
+          // 의도: 높이 54·아이콘 25·+버튼 46은 2026-07-03 "인스타식 축소"로
+          // 78/31/58에서 내린 값이다. 되돌리지 말 것
           height: 54 + insets.bottom,
           paddingBottom: insets.bottom,
         },

@@ -41,6 +41,8 @@ export function FeedPostActions({
     <View style={[styles.actionRow, hasContent ? styles.actionRowTight : null]}>
       <View style={styles.leftActions}>
         <Pressable onPress={() => onLike(post.id)} style={styles.actionButton}>
+          {/* 의도: strokeWidth 2는 2026-07-03 "인스타식 축소"로 2.6에서 내린 값이다.
+              굵기 통일 작업이 2.4 등으로 되돌리면 안 된다 */}
           <Heart
             color={isLiked ? colors.danger : colors.text}
             fill={isLiked ? colors.danger : "transparent"}

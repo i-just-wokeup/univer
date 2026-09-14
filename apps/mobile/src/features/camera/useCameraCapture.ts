@@ -81,6 +81,8 @@ export function useCameraCapture({
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // 의도: 줌은 일반 React state로 전달한다. useAnimatedProps 줌은 Fabric에서
+  // 조용히 무시돼 아무 반응이 없었다. 애니메이션으로 바꾸지 말 것
   const [zoom, setZoom] = useState(0);
   const zoomRef = useRef(0);
   const pinchStartZoomRef = useRef(0);

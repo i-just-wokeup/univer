@@ -17,6 +17,7 @@ type StoryBarProps = {
   onPressGroup: (group: StoryGroup) => void;
 };
 
+// 의도: 100x140은 2026-07-03 "인스타식 축소"로 128x176에서 내린 값
 const CARD_WIDTH = 100;
 const CARD_HEIGHT = 140;
 

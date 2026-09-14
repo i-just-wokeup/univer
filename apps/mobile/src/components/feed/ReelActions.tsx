@@ -49,6 +49,7 @@ export function ReelActions({
   return (
     <View style={[styles.actions, { bottom }]}>
       <Pressable hitSlop={6} onPress={onLike} style={styles.actionButton}>
+        {/* 의도: 어두운 영상 위라 strokeWidth 1.8로 얇게 둔다. 굵기 통일 대상 아님 */}
         <View style={styles.iconBox}>
           <Heart
             color={isLiked ? colors.danger : colors.white}

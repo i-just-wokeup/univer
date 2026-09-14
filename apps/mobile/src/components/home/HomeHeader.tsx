@@ -25,6 +25,7 @@ export function HomeHeader({
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
 
+  // 의도: 알림·메시지 아이콘 strokeWidth 2는 2026-07-03 "인스타식 축소"로 2.6에서 내린 값
   return (
     <View style={styles.headerArea}>
       <View style={styles.topBar}>

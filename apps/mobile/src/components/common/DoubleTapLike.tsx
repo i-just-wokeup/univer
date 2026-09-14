@@ -97,6 +97,7 @@ export function DoubleTapLike({
         pointerEvents="none"
         style={[styles.heart, { opacity, transform: [{ scale }] }]}
       >
+        {/* 의도: strokeWidth 0 — 꽉 찬 하트라 테두리가 없어야 한다. 굵기 통일 대상 아님 */}
         <Heart color={colors.white} fill={colors.white} size={96} strokeWidth={0} />
       </Animated.View>
     </Pressable>
