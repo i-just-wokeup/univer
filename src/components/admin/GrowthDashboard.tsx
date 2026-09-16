@@ -18,21 +18,50 @@ function Metric({ label, value, detail }: { label: string; value: ReactNode; det
 }
 
 export function GrowthDashboard({ stats }: { stats: AdminGrowthStats }) {
-  const { acquisition, activation, retention, powerUsers } = stats;
+  const { acquisition, activation, retention, powerUsers, content } = stats;
   const maxUsers = Math.max(1, ...powerUsers.map(row => row.users));
+  const maxAuthors = Math.max(1, ...content.northStar.map(row => row.authors));
+  const currentWeek = content.northStar[content.northStar.length - 1];
   return (
-    <div className="space-y-8">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8">
       <section className="border-b border-zinc-200 pb-6">
-        <h2 className="text-sm font-medium text-zinc-600">주간 활동 사용자 · WAU</h2>
-        <p className="mt-2 text-5xl font-bold text-zinc-950">{number(retention.wau)}<span className="ml-2 text-lg font-medium text-zinc-500">명</span></p>
-        <p className="mt-2 text-xs text-zinc-500">오늘 포함 최근 7일 · {new Date(stats.asOf).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })} KST</p>
+        <h2 className="text-sm font-medium text-zinc-600">이번 주 반응받은 작성자</h2>
+        <p className="mt-2 text-5xl font-bold text-zinc-950">{number(currentWeek.authors)}<span className="ml-2 text-lg font-medium text-zinc-500">명</span></p>
+        <p className="mt-2 text-xs text-zinc-500">KST 월요일부터 작성한 글 · 타인 좋아요·댓글 기준 · {new Date(stats.asOf).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })} KST</p>
+        <div className="mt-4 space-y-2">
+          {/* 의도: 모든 주는 왼쪽 기준선과 동일 최대값을 공유한다. */}
+          {content.northStar.map(row => (
+            <div key={row.weekStart} className="grid grid-cols-[6rem_minmax(0,1fr)_3rem] items-center gap-2 text-xs">
+              <span className="text-zinc-500">{row.weekStart}</span>
+              <div className="h-4 overflow-hidden rounded-sm bg-zinc-200" aria-hidden="true">
+                <div className="h-full bg-zinc-700" style={{ width: `${row.authors / maxAuthors * 100}%` }} />
+              </div>
+              <span className="text-right text-zinc-700">{number(row.authors)}명</span>
+            </div>
+          ))}
+          <div className="grid grid-cols-[6rem_minmax(0,1fr)_3rem] gap-2 text-xs text-zinc-500" aria-hidden="true">
+            <span />
+            <div className="flex justify-between border-t border-zinc-300 pt-1"><span>0</span><span>{number(maxAuthors)}명</span></div>
+            <span />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">콘텐츠 반응</h2>
+        <dl className="grid gap-3 sm:grid-cols-3">
+          <Metric label="무반응률" value={percent(content.noReaction.rate)} detail={`최근 30일 ${content.noReaction.posts}개 중 ${content.noReaction.silent}개 · 새 글 포함`} />
+          <Metric label="첫 반응까지 중앙값" value={content.firstReaction.medianHours === null ? "반응 없음" : `${number(content.firstReaction.medianHours)}시간`} detail={`최근 30일 · 타인 반응받은 ${content.firstReaction.measured}개 글`} />
+          <Metric label="7일 이내 재작성률" value={percent(content.rewrite.rate)} detail={`${content.rewrite.repeated} / ${content.rewrite.eligible}명 · 첫 글 후 7일이 지난 작성자`} />
+        </dl>
       </section>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">유입</h2>
-        <dl className="grid gap-3 sm:grid-cols-3">
-          <Metric label="오늘 가입" value={`${number(acquisition.today)}명`} />
-          <Metric label="이번 주 가입" value={`${number(acquisition.week)}명`} detail="KST 월요일부터" />
+        <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Metric label="오늘 가입" value={`${number(acquisition.day1)}명`} detail="KST 오늘" />
+          <Metric label="최근 7일 가입" value={`${number(acquisition.day7)}명`} detail="KST 오늘 포함" />
+          <Metric label="최근 30일 가입" value={`${number(acquisition.day30)}명`} detail="KST 오늘 포함" />
           <Metric label="누적 가입" value={`${number(acquisition.total)}명`} detail="활성 계정 · 탈퇴 제외" />
         </dl>
       </section>
@@ -63,11 +92,15 @@ export function GrowthDashboard({ stats }: { stats: AdminGrowthStats }) {
         <h2 className="mb-3 text-lg font-semibold">활동과 잔존</h2>
         <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <Metric label="오늘 DAU" value={`${number(retention.dau)}명`} detail="KST 오늘" />
+          <Metric label="WAU" value={`${number(retention.wau)}명`} detail="오늘 포함 최근 7일" />
           <Metric label="DAU 7일 평균" value={`${number(retention.dau7Average)}명`} detail="오늘 포함 · 활동 0일도 포함" />
           <Metric label="MAU" value={`${number(retention.mau)}명`} detail="오늘 포함 최근 30일" />
           <Metric label="끈끈함" value={percent(retention.averageStickiness)} detail="DAU 7일 평균 ÷ MAU · 얼마나 자주 오나" />
           <Metric label="돌아온 사용자" value={`${number(retention.resurrected)}명`} detail="14일 이상 무활동 후 최근 7일 복귀" />
-          {retention.cohorts.map(row => <Metric key={row.day} label={`D${row.day} 잔존율`} value={percent(row.rate)} detail={`${number(row.retained)} / ${number(row.eligible)}명 · 해당 KST 날짜가 지난 가입자`} />)}
+          {retention.cohorts.map(row => <Metric key={row.day}
+            label={`D${row.day} · ${row.windowStart === row.windowEnd ? row.windowEnd : `${row.windowStart}~${row.windowEnd}`}일차`}
+            value={<><span className="block">잔존 {percent(row.rate)}</span><span className="mt-1 block text-base text-zinc-500">이탈 {percent(row.churnRate)}</span></>}
+            detail={`${number(row.retained)} / ${number(row.eligible)}명 · 마지막 판정 날짜가 지난 가입자`} />)}
         </dl>
       </section>
 

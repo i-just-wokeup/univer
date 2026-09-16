@@ -1,9 +1,18 @@
 export type GrowthStage = { key: string; count: number; rate: number | null };
-export type GrowthCohort = { day: number; eligible: number; retained: number; rate: number | null };
+export type GrowthCohort = {
+  day: number; windowStart: number; windowEnd: number;
+  eligible: number; retained: number; rate: number | null; churnRate: number | null;
+};
 export type AdminGrowthStats = {
   asOf: string;
   timezone: string;
-  acquisition: { today: number; week: number; total: number };
+  acquisition: { day1: number; day7: number; day30: number; total: number };
+  content: {
+    noReaction: { posts: number; silent: number; rate: number | null };
+    firstReaction: { medianHours: number | null; measured: number };
+    rewrite: { eligible: number; repeated: number; rate: number | null };
+    northStar: { weekStart: string; authors: number }[];
+  };
   activation: {
     stages: GrowthStage[];
     averageFirstPostHours: number | null;
@@ -53,13 +62,33 @@ export function parseAdminGrowthStats(value: unknown): AdminGrowthStats {
   const acquisition = object(root.acquisition);
   const activation = object(root.activation);
   const retention = object(root.retention);
+  const content = object(root.content);
+  const noReaction = object(content.noReaction);
+  const firstReaction = object(content.firstReaction);
+  const rewrite = object(content.rewrite);
   if (typeof root.asOf !== "string" || !Number.isFinite(Date.parse(root.asOf)) || root.timezone !== "Asia/Seoul") {
     throw new Error("성장 지표 집계 시각을 확인할 수 없습니다.");
   }
   return {
     asOf: root.asOf,
     timezone: root.timezone,
-    acquisition: { today: number(acquisition.today), week: number(acquisition.week), total: number(acquisition.total) },
+    acquisition: { day1: number(acquisition.day1), day7: number(acquisition.day7), day30: number(acquisition.day30), total: number(acquisition.total) },
+    content: {
+      noReaction: { posts: number(noReaction.posts), silent: number(noReaction.silent), rate: nullable(noReaction.rate) },
+      firstReaction: { medianHours: nullable(firstReaction.medianHours), measured: number(firstReaction.measured) },
+      rewrite: { eligible: number(rewrite.eligible), repeated: number(rewrite.repeated), rate: nullable(rewrite.rate) },
+      northStar: array(content.northStar, 8).map((value, index, rows) => {
+        const row = object(value);
+        if (typeof row.weekStart !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(row.weekStart)
+          || !Number.isFinite(Date.parse(row.weekStart))
+          || new Date(row.weekStart).toISOString().slice(0, 10) !== row.weekStart
+          || new Date(row.weekStart).getUTCDay() !== 1
+          || (index > 0 && Date.parse(row.weekStart) - Date.parse(String(object(rows[index - 1]).weekStart)) !== 7 * 86400000)) {
+          throw new Error("주간 반응 추이가 올바르지 않습니다.");
+        }
+        return { weekStart: row.weekStart, authors: number(row.authors) };
+      }),
+    },
     activation: {
       stages: array(activation.stages, 5).map((value, index) => {
         const row = object(value);
@@ -79,7 +108,10 @@ export function parseAdminGrowthStats(value: unknown): AdminGrowthStats {
         const row = object(value);
         const day = [1, 7, 30][index];
         if (row.day !== day) throw new Error("잔존 기간이 올바르지 않습니다.");
-        return { day, eligible: number(row.eligible), retained: number(row.retained), rate: nullable(row.rate) };
+        const windowStart = [1, 5, 28][index];
+        if (row.windowStart !== windowStart || row.windowEnd !== day) throw new Error("잔존 판정 구간이 올바르지 않습니다.");
+        return { day, windowStart, windowEnd: day, eligible: number(row.eligible),
+          retained: number(row.retained), rate: nullable(row.rate), churnRate: nullable(row.churnRate) };
       }),
     },
     powerUsers: array(root.powerUsers, 30).map((value, index) => {

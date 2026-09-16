@@ -5,7 +5,7 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 > ⚠️ 스키마 변경 시 이 문서 반드시 업데이트. 노션 DB 스키마 페이지와 동기화 유지.
 
 ## 확정된 원칙
-성장 지표 RPC `get_admin_growth_stats()` 로컬 마이그레이션 추가(2026-09-15, **원격 미적용**): 관리자 검사·SECURITY DEFINER·빈 search_path·authenticated 실행 권한, JSONB 반환. 집계 정의/반환 구조/검산은 [ADMIN_GROWTH.md](./ADMIN_GROWTH.md) 참고. 기존 테이블 변경 없음.
+성장 지표 RPC `get_admin_growth_stats()` 확장(2026-09-16, **원격 적용 완료**, 마이그레이션 20260916023916): 인자 없음/JSONB·관리자 검사·SECURITY DEFINER·빈 search_path·authenticated 실행 권한 유지. 콘텐츠 반응·재작성·8주 대표 추이, D1/5~7/28~30일 잔존·이탈률, 유입 day1/day7/day30 반환. 기존 테이블 변경 없음. 정의/검산은 [ADMIN_GROWTH.md](./ADMIN_GROWTH.md) 참고.
 
 - 인증: `auth.users` / 서비스 프로필: `public.users`
 - 시간: UTC 저장, KST 출력
