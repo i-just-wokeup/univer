@@ -7,6 +7,12 @@
 ## 2026-09-16
 
 ### 완료
+- 영상 삭제 접수 관찰 단계: `20260916074702_stream_deletion_receipts` 원격 qmslcvnuzjraphvnaqxx 적용. 접수표·5개 트리거·관리자 SELECT RLS 추가. 기존 함수 DROP/수정 없이 soft/hard/복구/UID 교체·NULL/늦은 미디어 추가를 관찰한다. 실제 Cloudflare 삭제/HTTP/크론/앱 변경 없음.
+- 백필 게시물 15 + 스토리 2 = 접수 17건, 고유 영상 17개, 전부 pending/eligible_after NULL. 원본 삭제 시각과 접수 시각 분리 확인. Cloudflare 계정 ID는 원본에 없어 NULL로 남기고 실행 전 확인 사항으로 기록했다.
+- 격리 PGlite 테스트에 실제 탈퇴/복구/관리자 신고 RPC 본문을 로드해 취소·재삭제 generation, UID 교체/재부착, 공유 UID, CASCADE 부모 소멸, 만료 제외, 접수 INSERT 실패 주입 시 원본 삭제 계속/경고 로그를 확인했다. 운영 콘텐츠 삭제/복구 테스트는 하지 않았다.
+- 웹 TypeScript 검사(`node node_modules/typescript/bin/tsc --noEmit`) 및 이번 변경의 diff 공백 검사 통과. 테스트용 PGlite는 /tmp에만 설치하고 앱/웹 의존성은 변경하지 않았다.
+- 원격 관리자 17행/일반 사용자 0행, 일반 INSERT/UPDATE/DELETE 불가, anon SELECT 불가, 내부 3함수 실행 차단·SECURITY DEFINER/빈 search_path, FK 없음/5개 트리거 활성 확인. 보안 advisor에서 새 접수 객체 지적 없음(기존 pg_net/public, 기존 RPC 실행권한 등의 경고는 별도).
+- 보존 기준: 취소 후 90일 수동 정리, 미해결은 90일마다 검토하면서 해결까지 보존. 실패 허용에 따른 누락·복구 취소 실패와 원본 없는 업로드는 보장 범위 밖임을 `STREAM_DELETION_RECEIPTS.md`에 명시했다.
 - 관리자 성장 지표에 콘텐츠 반응(무반응률/첫 반응 중앙값/7일 내 재작성률), 이번 주 반응받은 작성자 대표 숫자와 8주 추이를 추가했다. 앱 수정 없음. 유입은 KST 오늘/최근 7일/30일로 정렬하고 WAU는 활동 구획에 유지했다.
 - 잔존은 D1=1일차, D7=5~7일차, D30=28~30일차로 변경했다. 마지막 판정 날짜 종료 조건은 유지하며 서버가 windowStart/windowEnd/churnRate를 반환한다. 의도와 관찰 기간은 DECISIONS/ADMIN_GROWTH에 기록했다.
 - 원격 qmslcvnuzjraphvnaqxx에 20260916023916_admin_growth_content_metrics 적용 완료. CREATE OR REPLACE로 기존 인자 없음/JSONB/SECURITY DEFINER/빈 search_path/관리자 검사 유지. 관리자 성공, 일반 사용자 Unauthorized, anon 실행 불가 확인. 과거 마이그레이션과 Json 반환 DB 타입은 변경 불필요하여 보존했다.
@@ -16,6 +22,7 @@
 - 로컬 빌드에 실제 RPC 집계 응답을 주입해 1280px/375px 화면과 축·막대를 확인했다. 모바일 가로 넘침 없음, 성장 조회 실패 시 오류 표시 및 운영 성공 지표 유지 확인. 운영 인증을 우회하는 코드는 저장소에 추가하지 않았다.
 
 ### 다음
+- 영상 접수 목록을 주기적으로 관찰. 다음 단계는 업로드 대장/Cloudflare 읽기 전용 대조, 실제 계정 매핑과 복구 경합 방지·삭제/보존 정책 승인이다. 실제 삭제 실행기는 아직 없다.
 - 웹 배포 필요. 원격 함수의 acquisition 키가 변경되어 구버전 웹 파서는 호환되지 않는다. 앱 빌드/OTA는 필요 없다.
 
 ## 2026-09-15

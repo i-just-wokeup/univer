@@ -5,6 +5,8 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 > ⚠️ 스키마 변경 시 이 문서 반드시 업데이트. 노션 DB 스키마 페이지와 동기화 유지.
 
 ## 확정된 원칙
+영상 삭제 접수 `public.stream_deletion_receipts` 추가(2026-09-16, **원격 적용 완료**, 20260916074702). 영상 식별(provider/account/asset), 원본(source_table/source_id/post_id/nullable owner_id), 사건(id/generation/reason/source_deleted_at/recorded_at/hard_deleted_at), 상태(pending/cancelled/held/cancelled_at/hold_reason/last_checked_at), 정책(eligible_after=NULL 제한/policy_version)을 저장한다. 원본·사용자 FK 없음. 계정 ID는 현재 미확인 NULL. 관리자 SELECT RLS만 허용, 클라이언트 쓰기/내부 함수 실행 금지. 3개 DEFINER/빈 search_path 함수와 5개 트리거가 posts 삭제 상태 및 post_media/stories 참조 변경·하드 삭제를 관찰한다. 백필 17건/고유 UID 17개. 실제 삭제/HTTP/크론 없음. 상세/보존/조회 SQL: [STREAM_DELETION_RECEIPTS.md](./STREAM_DELETION_RECEIPTS.md).
+
 성장 지표 RPC `get_admin_growth_stats()` 확장(2026-09-16, **원격 적용 완료**, 마이그레이션 20260916023916): 인자 없음/JSONB·관리자 검사·SECURITY DEFINER·빈 search_path·authenticated 실행 권한 유지. 콘텐츠 반응·재작성·8주 대표 추이, D1/5~7/28~30일 잔존·이탈률, 유입 day1/day7/day30 반환. 기존 테이블 변경 없음. 정의/검산은 [ADMIN_GROWTH.md](./ADMIN_GROWTH.md) 참고.
 
 - 인증: `auth.users` / 서비스 프로필: `public.users`
