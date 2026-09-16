@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { parseAdminGrowthStats, type AdminGrowthStats } from "./growth";
 import type { Database, Json } from "@/types/database.types";
 
 export type AdminPeriod = "day" | "month" | "year" | "all";
@@ -402,6 +403,13 @@ export async function getAdminOpsStats(): Promise<AdminOpsStats> {
   }
 
   return normalizeOpsStats((data ?? null) as Json | null);
+}
+
+export async function getAdminGrowthStats(): Promise<AdminGrowthStats> {
+  const supabase = requireSupabaseClient();
+  const { data, error } = await supabase.rpc("get_admin_growth_stats");
+  if (error) throw new Error("성장 지표를 불러오지 못했습니다.");
+  return parseAdminGrowthStats(data);
 }
 
 export async function getAdminReports(

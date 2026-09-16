@@ -5,6 +5,8 @@ Supabase Postgres 기준. 모든 테이블 RLS 적용.
 > ⚠️ 스키마 변경 시 이 문서 반드시 업데이트. 노션 DB 스키마 페이지와 동기화 유지.
 
 ## 확정된 원칙
+성장 지표 RPC `get_admin_growth_stats()` 로컬 마이그레이션 추가(2026-09-15, **원격 미적용**): 관리자 검사·SECURITY DEFINER·빈 search_path·authenticated 실행 권한, JSONB 반환. 집계 정의/반환 구조/검산은 [ADMIN_GROWTH.md](./ADMIN_GROWTH.md) 참고. 기존 테이블 변경 없음.
+
 - 인증: `auth.users` / 서비스 프로필: `public.users`
 - 시간: UTC 저장, KST 출력
 - soft delete: `deleted_at` 패턴

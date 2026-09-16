@@ -2,9 +2,12 @@
 
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { GrowthDashboard } from "@/components/admin/GrowthDashboard";
+import type { AdminGrowthStats } from "@/features/admin/growth";
 
 import {
   getAdminOpsStats,
+  getAdminGrowthStats,
   getDashboardStats,
   type AdminOpsStats,
   type AdminPeriod,
@@ -93,6 +96,10 @@ function DashboardSkeleton() {
 }
 
 export default function AdminDashboardPage() {
+  const [tab, setTab] = useState<"ops" | "growth">("ops");
+  const [growth, setGrowth] = useState<AdminGrowthStats | null>(null);
+  const [growthError, setGrowthError] = useState<string | null>(null);
+  const [hasStats, setHasStats] = useState(false);
   const [period, setPeriod] = useState<AdminPeriod>("day");
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
   const [ops, setOps] = useState<AdminOpsStats>(EMPTY_OPS);
@@ -104,20 +111,24 @@ export default function AdminDashboardPage() {
   const loadStats = useCallback(async (showRefreshing = false) => {
     try {
       setError(null);
+      setGrowthError(null);
       setIsLoading(!showRefreshing);
       setIsRefreshing(showRefreshing);
 
       // 한쪽이 실패해도 다른 쪽은 보여준다. 묶어두면 새 지표가 죽을 때
       // 기존 KPI까지 0으로 보여 실제 값처럼 읽힌다.
-      const [statsResult, opsResult] = await Promise.allSettled([
+      const [statsResult, opsResult, growthResult] = await Promise.allSettled([
         getDashboardStats(),
         getAdminOpsStats(),
+        getAdminGrowthStats(),
       ]);
 
       if (statsResult.status === "fulfilled") {
         setStats(statsResult.value);
+        setHasStats(true);
       } else {
         setStats(EMPTY_STATS);
+        setHasStats(false);
         setError("대시보드 통계를 불러오지 못했습니다.");
       }
 
@@ -130,6 +141,12 @@ export default function AdminDashboardPage() {
         setError((current) =>
           current ? current : "운영 지표를 불러오지 못했습니다.",
         );
+      }
+      if (growthResult.status === "fulfilled") {
+        setGrowth(growthResult.value);
+      } else {
+        setGrowth(null);
+        setGrowthError("성장 지표를 불러오지 못했습니다.");
       }
     } catch (loadError) {
       setError(
@@ -155,16 +172,13 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[28px] border border-zinc-200 bg-white p-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-950">대시보드</h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            신고, 가입, 콘텐츠 생성 현황을 한 번에 확인합니다.
-          </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="inline-flex rounded-2xl bg-zinc-100 p-1">
+        <div className="flex flex-wrap items-center gap-3">
+          {tab === "ops" ? <div className="inline-flex rounded-2xl bg-zinc-100 p-1">
             {PERIOD_TABS.map((tab) => (
               <button
                 key={tab.value}
@@ -179,10 +193,11 @@ export default function AdminDashboardPage() {
                 {tab.label}
               </button>
             ))}
-          </div>
+          </div> : null}
 
           <button
             type="button"
+            disabled={isLoading || isRefreshing}
             onClick={() => {
               void loadStats(true);
             }}
@@ -194,6 +209,34 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      <div role="tablist" aria-label="대시보드 지표" className="flex gap-1 border-b border-zinc-200">
+        {(["ops", "growth"] as const).map(value => (
+          <button key={value} id={`tab-${value}`} role="tab" aria-selected={tab === value}
+            aria-controls={`panel-${value}`} type="button" onClick={() => setTab(value)}
+            tabIndex={tab === value ? 0 : -1}
+            onKeyDown={event => {
+              if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const next = event.key === "Home" ? "ops" : event.key === "End" ? "growth" : value === "ops" ? "growth" : "ops";
+              setTab(next);
+              document.getElementById(`tab-${next}`)?.focus();
+            }}
+            className={`border-b-2 px-5 py-3 text-sm font-semibold ${tab === value ? "border-zinc-950 text-zinc-950" : "border-transparent text-zinc-500"}`}>
+            {value === "ops" ? "운영" : "성장"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "growth" ? (
+        <div role="tabpanel" id="panel-growth" aria-labelledby="tab-growth">
+          {isLoading ? <DashboardSkeleton /> : growthError ? <p role="alert" className="p-4 text-red-600">{growthError}</p> : growth ? <GrowthDashboard stats={growth} /> : null}
+        </div>
+      ) : (
+      <div role="tabpanel" id="panel-ops" aria-labelledby="tab-ops" className="space-y-6">
+      <section className="border-b border-zinc-200 pb-6">
+        <h2 className="text-sm text-zinc-600">최근 24시간 접속</h2>
+        <p className="mt-2 text-5xl font-bold">{isLoading ? "…" : hasOps ? formatNumber(ops.activity.today) : "조회 실패"}</p>
+      </section>
       {error ? (
         <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
           {error}
@@ -211,14 +254,14 @@ export default function AdminDashboardPage() {
             >
               <p className="text-sm font-semibold text-zinc-500">{item.label}</p>
               <p className="mt-5 text-4xl font-bold tracking-tight text-zinc-950">
-                {formatNumber(currentMetrics[item.key])}
+                {hasStats ? formatNumber(currentMetrics[item.key]) : <span className="text-base text-red-600">조회 실패</span>}
               </p>
             </div>
           ))}
         </div>
       )}
 
-      {isLoading || !hasOps ? null : (
+      {isLoading ? null : !hasOps ? <p role="alert" className="text-sm text-red-600">접속·앱 버전·영상 처리 지표를 불러오지 못했습니다.</p> : (
         <div className="grid gap-4 lg:grid-cols-3">
           <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
             <p className="text-sm font-semibold text-zinc-500">접속</p>
@@ -325,6 +368,8 @@ export default function AdminDashboardPage() {
             ) : null}
           </section>
         </div>
+      )}
+      </div>
       )}
     </div>
   );
