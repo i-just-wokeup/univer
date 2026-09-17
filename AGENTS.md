@@ -44,6 +44,7 @@ docs/             ← 운영 문서
 ## 현재 진행상황
 → `docs/PLAN.md` 참고 (현재 작업 / 다음 작업)
 → `docs/WORKLOG.md` 참고 (날짜별 완료 기록)
+→ `docs/VIDEO_DATA_PRODUCT.md` — 데이터 사업 구상 **별도 트랙, 코드 수정 없음**
 
 ## Supabase
 - 프로젝트 ID: qmslcvnuzjraphvnaqxx
